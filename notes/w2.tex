@@ -1,0 +1,283 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 2 \& 3}
+\author{Koen Essers}
+\tutorial{Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\usetagform{Accent_color}
+
+\thispagestyle{empty}
+\maketitle
+\vspace{-80pt}
+\tableofcontents
+\section{Setup}
+I opted to install MESA version r23.05.1 using MESASDK version 21.4.1 since the inlist and run\_star\_extras from \citet{rees2024a} specifically state that they used these version as well.
+
+They include inlists for all evolutionary phases up to the TPAGB phase and a common inlist that is includes settings that do not change during the evolution. 
+
+The common file includes the predefined solar composition from \citet{asplund2009} \lstinline[style=output, breaklines=true]|initial_zfracs = 6|, as well as the EOS options \lstinline[style=output, breaklines=true]|Z_all_OPAL = 0.045d0| and \lstinline[style=output, breaklines=true]|Z_all_HELM = 0.045d0|.
+
+Why do the authors use a different metallicity in the EOS? According to \url{https://docs.mesastar.org/en/stable/eos/overview.html}, the metallicity changes the boundaries between different EOS regimes.
+
+Then, the opacity settings use a standard solar metallicity, \lstinline[style=output, breaklines=true]|Zbase = 0.014| and enable the Type 2 opacities, which should be used for extra C/O during and after He burning.
+Custom opacity tables are used, namely \lstinline[style=output, breaklines=true]|a09, a09.co| and \lstinline[style=output, breaklines=true]|AESOPUS| \citep{marigo2009} for the low temperature regime.
+The common inlist file also specifies the mass and metallicity.
+The whole simulation uses the Henyey mixing length prescription \citep{henyey1965} with a mixing length parameter of \lstinline[style=output, breaklines=true]|mixing_length_alpha = 1.931| which has been chosen based on the value that \citet{cinquegrana2022} used.
+The \citet{henyey1965} mixing length prescription is important as this prescription does not assume efficient convection and thus gives better results near the surface layers of stars where convection is often inefficient.
+The common inlist also includes the option \lstinline[style=output, breaklines=true]|convergence_ ignore_equL_residuals = .true.| to ignore the luminosity residuals when determining convergence. I am not sure why.
+\citet{rees2024a} use the following options for the atmosphere: \lstinline[style=output, breaklines=true]|atm_option = 'T_tau', atm_T_tau_ relation = 'Eddington'| \& \lstinline[style=output, breaklines=true]|atm_T_tau_opacity = 'fixed'|.
+
+The inlists for the different phases all reset the time and model number, and change some important prescriptions. The MS, GB and CHeB inlists all use the Ledoux criterion for convection, while the EAGB and TPAGB inlists use the Schwarzschild criterion. 
+In addition, the TPAGB inlist uses the \lstinline[style=output, breaklines=true]|eps_grav| energy equation while the other inlists use the \lstinline[style=output, breaklines=true]|dedt| prescription, which generally yields less cumulative error, but is less reliable in degenerate regions.
+The MS and CHeB inlists include predictive mixing prescriptions, with the MS inlist using the \lstinline[style=output, breaklines=true]|do_conv_premix = .true.| while the CHeB inlists uses the \lstinline[style=output, breaklines=true]|predictive_mix(1) = .true.| prescription for He\(_4\).
+All phases except for the AGB inlists also use the \lstinline[style=output, breaklines=true]|use_superad_reduction = .true.| prescription. I am not sure what this does.
+No semiconvection is used.
+All inlists use different overshooting parameters, for the shell and core.
+To conclude, the accuracy controls vary for the inlists. Most importantly, during the TPAGB phase, which takes by far the longest, the maximum change in He\(_4\) luminosity is changed from \lstinline[style=output, breaklines=true]|delta_lgL_He_limit = 0.025| to \lstinline[style=output, breaklines=true]|delta_lgL_He_limit = 0.01|
+
+The files from \citet{rees2024a} also include some run\_star\_ extras to accurately resolve the third dredge up and prevent HRI and FeI instabilities.
+
+\newpage
+\section{\texorpdfstring{$4 M_\odot $}{4 solar mass} TPAGB star using Rees, et. al. (2024)}
+I started by simulating a \(4\,M_\odot \) star using the inlists and extras from \citet{rees2024a}. I opted for a \(4\,M_\odot \) star because the authors show results for this star in their paper, and, according to table 2 from \citet{rees2024b}, this star experiences relatively few thermal pulses.
+
+The figure below shows the radius evolution, as well as CO radio and envelope mass evolution for this star with time.
+\begin{figure}[ht]
+    \centering
+    \incplot{4msuntpagb}
+\end{figure}
+
+I had to prematurely end the simulation with approximately \(1\,M_\odot \) of \(M_\text{env}\) left, because the model did not evolve further.
+This is more clearly visible when viewing the model evolution as a function of the model numbers.
+The last pulse evolves with tiny \(\Delta t\) values and very small \(\beta \) values.
+The earlier pulses do not show this.
+This seems like the FeI instability that \citet{rees2024b} talks about, which should be prevented automatically.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{4msuntpagbmodelnumber}
+\end{figure}
+
+A zoom on the last pulse shows the peculiar evolution. The timestep \(\Delta t\) and the ratio \(\beta \) decrease to very low values, which halts the simulation.
+\begin{figure}[ht]
+    \centering
+    \incplot{4msuntpagbzoom}
+\end{figure}
+
+After tens of hours, I decided to stop the simulation. 
+After re-reading \citet{rees2024b}, I noticed that I had to modify the source code of MESA due to a bug. 
+After fixing this bug and recompiling MESA, I decided to test the fix using a new star.
+
+
+\newpage
+\section{\texorpdfstring{$2 M_\odot $}{2 solar mass} TPAGB star using Rees, et. al. (2024)}
+
+I decided to simulate a \(2\, M_\odot \) star, because such a star should not show a lot of thermal pulses. Therefore, it should be relatively fast to run.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{2msuntpagb}
+\end{figure}
+
+This time, the star terminates on its own due to the stopping condition \(M _\text{env} < 0.01 M_\odot \). An important difference that I can see between the \(2 M_\odot \) star and the \(4M_\odot \) star is difference in radius during the interpulse period and the pulse.
+For the \(2 M_\odot \) star, the radii are always biggest during the pulses, while for the \(4M_\odot \) star, this is only the case for the first few, and the last pulses.
+This will potentially have important effects for the mass transfer stability.
+My intuition says that for the heavier stars, where the radius is largest during the interpulse period, the mass transfer stability will be very similar to that of heavy late RGB stars.f
+For the lower mass stars, the short duration of the pulse could potentially drastically affect the stability.
+
+It is again interesting to look at the stellar evolution of the thermally pulsing phase as a function of model number. This is shown below.
+\begin{figure}[ht]
+    \centering
+    \incplot{2msuntpagbmodelnumber}
+\end{figure}
+
+This time, the star finishes its evolution in about \(\frac{1}{2}\) of the model number steps as the point where the \(4M_\odot \) star reaches its instability.
+The star also prevents the FeI instability which can be seen by looking at \(\beta _\text{min}\), which does not drop below values of about \(0.2\).
+
+According to \citet{rees2024b}, the \(2M_\odot \) star should experience both HRI and FeI instabilities after 19 thermal pulses.
+This star only experiences 18 thermal pulses, but it does end its evolution.
+I am unsure what causes the differences between the \(2M_\odot \) star that I simulated and the \(2M_\odot \) star from \citet{rees2024a,rees2024b}
+
+The simulation saved models during every luminosity peak during every thermal pulse.
+Below, I show a plot of the entropy, local thermal timescale and the critical mass loss rate, similar to the plots of \citet{temmink2022}. 
+
+\begin{figure}[ht]
+    \centering
+    \incplot{2msuntpagbprofiles}
+\end{figure}
+
+These look similar in shape to the profiles from \citet{temmink2022}.
+Due to the much larger radii however, the critical mass loss rate is \emph{higher} and extends further into the envelope. 
+
+
+\newpage
+\section{\texorpdfstring{$5 M_\odot $}{5 solar mass} TPAGB star using Rees, et. al. (2024)}
+Similar for the \(2M_\odot \) star, let's plot the evolution of the radius, CO ratio and envelope mass.
+\begin{figure}[ht]
+    \centering
+    \incplot{5msuntpagb}
+\end{figure}
+
+Again, this time the star terminates due to the envelope mass shrinking to below \(0.01M_\odot \), which means the simulation was able to avoid the HRI and FeI instabilities.
+For this star, the maximum radius of the star up to that point in the evolution seems to only increase during the interpulse period up until a significant portion of the envelope has been stripped. Only then, does the maximum radius appear during the He burning flash.
+The figure also clearly shows that this star experiences a lot more thermal pulses that the lighter star.
+
+The plot below shows the model number evolution.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{5msuntpagbmodelnumber}
+\end{figure}
+
+It is clear that the evolution requires more models to accurately model the evolution when envelope mass becomes small and the radius reaches its maximum value. Again, we see that \(\beta \) does not reach values close to \(0\), although this heavier star does have lower \(\beta \) values than the \(2M_\odot \) star.
+\begin{figure}[ht]
+    \centering
+    \incplot{5msuntpagbprofiles}
+\end{figure}
+
+Again, the results look similar to that of the \(2M_\odot \) star and the results from \citet{temmink2022}. It is however interesting to see how the entropy profiles significantly change due to the very small envelope mass.
+During the last pulse, the core mass is about \(99.9\%\) of the total mass.
+This also changes how the local thermal timescale and critical mass loss rate profiles change, but towards the envelope, the results again align with those of \citet{temmink2022}.
+
+
+\newpage
+\section{\texorpdfstring{$2 M_\odot $}{2 solar mass} Simplified TPAGB star }
+
+Since the models take a very long time to evolve, even with 10 cores, I thought it would be advantageous to see if a simpler TPAGB procedure can accurately reproduce the envelope properties of the detailed models. In the following sections, I describe the steps I took to develop simpler models.
+
+For my first attempt, I simply comment out a lot of the settings that increase temporal or spatial resolution in the model from the inlist file. 
+I also, by accident, disable the extra hooks for the TPAGB phase, which, as I will show, leads to problems with mass loss.
+
+Most importantly, let's see if the simplified model is actually faster:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-times-1}
+\end{figure}
+
+It is about 2 \(\times \) faster, which is significant.
+I manually stopped the simulation after the evolution time exceeded the age at which the \(2M_\odot \) star terminated due to envelope expulsion.
+This was necessary since I accidentally disabled the mass loss procedure.
+
+The figure below compares the radius of the simple stellar model with the radius of the detailed model using the prescriptions from \citet{rees2024a} and \citet{rees2024b}.
+
+The plot also shows \(\Delta t\) and the envelope mass \(M _\text{env}\) as a function of stellar age.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-evolution-complex-simple}
+\end{figure}
+
+For the almost all of the thermal pulses before significant mass loss sets in, the simplified model and the detailed model share very similar radial evolutions.
+
+Since I forgot to enable the TPAGB phase parameter in the inlist, the simplified model used no run\_star\_star\_extra hooks. 
+Therefore, the third dregde-up is not resolved so no accurate carbon and oxygen enrichment can be obtained from this model.
+
+More importantly, the authors use a custom wind, which they enable only for the EAGB and TPAGB phase. This wind was therefore not simulated either.
+The last few thermal pulses of the simplified model therefore significantly differ from the last thermal pulses of the detailed model.
+
+Since the thermal pulses were not being counted, and models are saved when a new pulse starts, there are also no profiles available to compare.
+
+\newpage
+\section{\texorpdfstring{$2 M_\odot $}{2 solar mass} simplified TPAGB star with mass loss}
+
+Mass loss is an important aspect of evolution during the TPAGB phase. Therefore, I tried to simulate a simplified model that does not resolve the third dredge ups, but still simulates mass loss.
+
+\citet{rees2024b} provide an \lstinline[style=output, breaklines=true]|other\_winds\_hook| that allows for the use of two different wind models, both of which they describe in their paper.
+The method that is enabled by default is the more aggressive wind, described by \citet{trabucchi2018}. This wind is described like this:
+\begin{lstlisting}[style=output, firstnumber=1]
+
+m = log10(Msurf/(1.9885D33))
+r = log10(Rsurf/(6.957D10))
+c12 = s% net_iso(ic12)
+o16 = s% net_iso(io16)
+CO = s% xa(c12,1)/ s% xa(o16,1)
+
+logP = -1.12166+1.24449*m+1.07886*r
+       +0.87741*m**2-1.53239*m*r
+       +0.10382*r**2-0.07659*m**3
+       -0.26130*m**2*r+0.26867*m*r**2
+       +0.03278*r**3-0.02713*log10(Z)
+       +0.14872*Y
+       -0.01455*log10(CO/0.4125541984736385)
+P = 10.0**logP
+\end{lstlisting}
+
+It requires a CO ratio (at the surface?). 
+Since the simplified model I am trying to build is not expected to resolve the third dredge-up efficiently, this model cannot accurately predict the surface CO ratio.
+I opt to use the alternative wind loss scheme that the authors also provide:
+
+\begin{lstlisting}[style=output, firstnumber=1]
+logP = -2.07+1.94*log10(Rsurf/(6.957D10))
+       -0.9*log10(Msurf/(1.9885D33))
+   P = 10.0**logP
+\end{lstlisting}
+
+This is the mass-loss scheme by \citet{vassiliadis1993}. This method only requires the mass and radius of the star, which should be relatively accurate, even for the simplified model. \citet{rees2024b} have shown that the method by \citet{vassiliadis1993} results in lower mass loss rates for longer on the AGB phase. In turn, stars will thus experience more thermal pulses.
+
+I also enable the function \lstinline[style=output, breaklines=true]|check_TP|, which, at the end of every evolution step, checks if the model is experiencing a new thermal pulse. This function is also directly responsible for the creation of the profiles during every thermal pulse.
+
+These two functions cause the star to evolve slightly slower, but still significantly faster than the detailed model. Below, I show a comparison between the wall times of the simplified model, simplified model with mass loss, and the detailed model.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-times-2}
+\end{figure}
+
+Although the simple model with wind has a longer lifetime, it terminates significantly quicker (a little over 8 hours vs a little over 13 hours). The mass loss model without winds is clearly the fastest model, but this one is not physically accurate.
+
+The figure below compares the radius of the simple stellar model with the radius of the detailed model using the prescriptions from \citet{rees2024a} and \citet{rees2024b}.
+
+The plot also shows \(\Delta t\) and the envelope mass \(M _\text{env}\) as a function of stellar age.
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-evolution-complex-simple-mass-loss}
+\end{figure}
+
+This time, the simple model does lose its envelope, but, like described by \citet{rees2024b}, the wind prescription by \citet{vassiliadis1993} is slightly less aggressive than the one by \citet{trabucchi2018}.
+Thus, the simple model starts to lose significant amounts of mass later than the detailed model.
+
+The simple model also terminates. I think this is because no opacities were available in the AESOPUS opacity table by \citet{marigo2009}.
+\citet{joyce2024} also encountered these issues.
+They therefore used the \citet{ferguson1905} opacities and no convective overshooting.
+They also use the default structural and time resolution coefficients like I did. 
+The first thermal pulses are again very similar. I think the different mass loss and the built up of slightly different interpulse lengths cause the final pulses to shift.
+
+In the figure below, I show the model evolution for both of the stars.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{2msuntpagbmodelnumbersimple}
+\end{figure}
+
+The first thing to note is that the simple model uses fewer models to evolve the star, especially towards the end of the evolution.
+This can be useful for heavier stars, where I have seen that the last pulses require many model steps. 
+It is also nice to see that \(\beta _\text{min}\) does not reach values that are too small, even without the FeI instability avoidance procedure.
+
+Lastly, I compare some of the profiles of the detailed and simple star during the thermal pulses.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-profiles-1}
+\end{figure}
+
+During the first few pulses, where the radii also align well, the profiles are very similar. This is good!
+
+\newpage
+\bibliography{master.bib}
+\end{document}
