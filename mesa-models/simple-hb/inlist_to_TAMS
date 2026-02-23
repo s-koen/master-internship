@@ -1,0 +1,52 @@
+&star_job
+
+      create_pre_main_sequence_model = .true.
+      load_saved_model = .false.
+
+      save_model_when_terminate = .true.
+      save_model_filename = '2.0_tams.mod'
+
+      history_columns_file = 'history_columns.list' 
+
+      initial_zfracs = 6
+
+      change_initial_net = .true.      
+      new_net_name = 'pp_and_cno_extras.net'
+
+
+/ !end of star_job namelist
+
+&eos
+
+/ ! end of eos namelist
+
+&kap
+      Zbase = 2d-2
+/ ! end of kap namelist
+
+&controls
+
+      initial_mass = 2.0
+      initial_z = 2d-2
+
+    
+! When to stop
+
+      xa_central_lower_limit_species(1) = 'h1' ! isotope name as defined in chem_def
+      xa_central_lower_limit(1) = 0.0001
+      
+
+
+! output controls
+
+      log_directory = 'LOGS_MS'
+      photo_interval = 100
+      photo_digits = 5
+      profile_interval = 100
+      history_interval = 1
+      terminal_interval = 10
+      write_header_frequency = 10
+      
+/ ! end of controls namelist
+
+

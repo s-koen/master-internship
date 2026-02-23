@@ -1,0 +1,108 @@
+&star_job
+
+	read_extra_star_job_inlist(1) = .true.
+	extra_star_job_inlist_name(1) = 'inlist_common'
+
+	load_saved_model = .true.
+	load_model_filename = 'ZACHeB.mod'
+	save_model_when_terminate = .true.
+	save_model_filename = 'TACHeB.mod'
+
+	required_termination_code_string = 'xa_central_lower_limit'
+
+	history_columns_file = ''
+	profile_columns_file = ''
+
+	set_initial_age = .true.
+	initial_age = 0
+	set_initial_model_number = .true.
+	initial_model_number = 0
+	set_initial_cumulative_energy_error = .true.
+	new_cumulative_energy_error = 0d0
+
+!	auto_extend_net = .true.
+!	h_he_net = 'basic.net'
+!	co_net = 'co_burn.net'
+!	adv_net = 'approx21.net'
+
+/ !end of star_job namelist
+
+&eos
+
+	read_extra_eos_inlist(1) = .true.
+	extra_eos_inlist_name(1) = 'inlist_common'
+
+/ !end of eos namelist
+
+&kap
+
+	read_extra_kap_inlist(1) = .true.
+	extra_kap_inlist_name(1) = 'inlist_common'
+
+/ !end of kap namelist
+
+&controls
+
+	x_integer_ctrl(1) = 3 ! evol_phase
+
+	read_extra_controls_inlist(1) = .true.
+	extra_controls_inlist_name(1) = 'inlist_common'
+
+	! log_directory = '/users/nr00492/parallel_scratch/test_agb_grid/Z0.014/4.0/LOGS_CHeB'
+	log_directory = 'LOGS/CHeB'
+	! photo_directory = '/users/nr00492/parallel_scratch/test_agb_grid/Z0.014/4.0/photos_CHeB'
+	photo_directory = 'photos/CHeB'
+
+	xa_central_lower_limit_species(1) = 'he4'
+	xa_central_lower_limit(1) = 1d-4
+
+	max_model_number = 5000
+
+	min_timestep_limit = 1d0
+
+	num_trace_history_values = 5
+	trace_history_value_name(1) = 'log_L_div_Ledd'
+	trace_history_value_name(2) = 'min_beta'
+	trace_history_value_name(3) = 'alpha_mlt_surface'
+	trace_history_value_name(4) = 'alpha_mlt_max'
+	trace_history_value_name(5) = 'mass_conv_core'
+
+	delta_XHe_cntr_limit = 0.001d0
+	delta_lg_XHe_cntr_limit = 0.01d0
+
+	use_Ledoux_criterion = .true.
+
+	predictive_mix(1) = .true.
+	predictive_zone_type(1) = 'any'
+	predictive_zone_loc(1) = 'core'
+	predictive_bdy_loc(1) = 'any'
+	predictive_superad_thresh(1) = 0.005
+	predictive_avoid_reversal = 'he4'
+
+	overshoot_scheme(2) = 'exponential'
+	overshoot_zone_type(2) = 'nonburn'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174
+	overshoot_f0(2) = 0.00174
+	overshoot_D0(2) = 0d0
+	overshoot_Delta0(2) = 1d0
+
+	convergence_ignore_equL_residuals = .true.
+
+	use_superad_reduction = .true.
+	superad_reduction_Gamma_limit = 0.5
+	superad_reduction_Gamma_limit_scale = 5
+	superad_reduction_Gamma_inv_scale = 5
+	superad_reduction_diff_grads_limit = 1d-2
+	superad_reduction_limit = -1d0
+
+	photo_interval = 500
+	profile_interval = 100
+	history_interval = 10
+	terminal_interval = 10
+
+	write_header_frequency = 10
+
+/ !end of controls namelist
+

@@ -10,7 +10,7 @@ for phase in phases:
     try:
         complex.append(
             mr.MesaData(
-                f"/home/koen/master-internship/mesa-models/rees2024-2M/LOGS/{phase}/history.data"
+                f"/home/koen/master-internship/mesa-models/tpagb-test-high-mass/LOGS/{phase}/history.data"
             )
         )
     except:
@@ -22,22 +22,22 @@ for phase in phases:
     try:
         simple.append(
             mr.MesaData(
-                f"/home/koen/master-internship/mesa-models/mesa-default-other-mass-loss/LOGS/{phase}/history.data"
+                f"/home/koen/master-internship/mesa-models/mesa-default-other-mass-loss-5M/LOGS/{phase}/history.data"
             )
         )
     except:
         ...
 
-simple_no_wind = []
-for phase in phases:
-    try:
-        simple_no_wind.append(
-            mr.MesaData(
-                f"/home/koen/master-internship/mesa-models/mesa-default/LOGS/{phase}/history.data"
-            )
-        )
-    except:
-        ...
+# simple_no_wind = []
+# for phase in phases:
+#     try:
+#         simple_no_wind.append(
+#             mr.MesaData(
+#                 f"/home/koen/master-internship/mesa-models/mesa-default/LOGS/{phase}/history.data"
+#             )
+#         )
+#     except:
+#         ...
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
@@ -321,31 +321,36 @@ plt.tight_layout()
 plt.savefig("2msuntpagb.pdf", format="pdf")
 plt.savefig("/home/koen/LaTeX-setup/plots/2msuntpagb.pgf", format="pgf")
 # %%
-fig, axs = plt.subplots(3, 1, sharex=True, figsize=set_size(width, height=2))
+fig, axs = plt.subplots(3, 1, sharex=True, figsize=set_size(column, height=2))
 delta = 0
 
 comp = complex[-1]
 simp = simple[-1]
-condition = np.where(complex[-1].star_age > 1e6)
 
 axs[0].plot(
-    comp.star_age[condition] - comp.star_age[condition][0],
-    comp.R[condition],
+    # comp.star_age[condition] - comp.star_age[condition][0],
+    comp.star_age,
+    # comp.R[condition],
+    comp.R,
     c="C0",
     label="detailed",
 )
 axs[0].plot(simp.star_age, simp.R, c="C1", label="simple")
 axs[0].set_ylabel("$R$ ($R_\\odot$)")
 axs[1].plot(
-    comp.star_age[condition] - comp.star_age[condition][0],
-    comp.log_dt[condition],
+    # comp.star_age[condition] - comp.star_age[condition][0],
+    comp.star_age,
+    # comp.log_dt[condition],
+    comp.log_dt,
     c="C0",
 )
 axs[1].plot(simp.star_age, simp.log_dt, c="C1")
 axs[1].set_ylabel(r"$\log (\Delta t)$ (yr)")
 axs[2].plot(
-    comp.star_age[condition] - comp.star_age[condition][0],
-    comp.star_mass[condition] - comp.he_core_mass[condition],
+    # comp.star_age[condition] - comp.star_age[condition][0],
+    comp.star_age,
+    # comp.star_mass[condition] - comp.he_core_mass[condition],
+    comp.star_mass - comp.he_core_mass,
     c="C0",
 )
 P = 10 ** (-2.07 + 1.94 * np.log10(simp.R) - 0.9 * np.log10(simp.star_mass))
@@ -360,21 +365,21 @@ axs[2].set_xlabel(r"$t$ (yr)")
 
 axs[0].legend()
 plt.tight_layout()
-plt.savefig(
-    "/home/koen/LaTeX-setup/plots/compare-evolution-complex-simple-mass-loss.pgf",
-    format="pgf",
-)
-
-plt.close()
-# plt.show()
+# plt.savefig(
+#     "/home/koen/LaTeX-setup/plots/compare-evolution-complex-simple-mass-loss.pgf",
+#     format="pgf",
+# )
+#
+# plt.close()
+plt.show()
 # %%
 fig, axs = plt.subplots(3, 1, sharex=True, figsize=set_size(width, height=2))
 delta = 0
 simp = simple[-1]
 comp = complex[-1]
 
-axs[0].plot(delta + comp.model_number / 1000, comp.log_R)
-axs[0].plot(delta + simp.model_number / 1000, simp.log_R)
+axs[0].plot(delta + comp.model_number / 1000, comp.log_R, label="detailed")
+axs[0].plot(delta + simp.model_number / 1000, simp.log_R, label="simple")
 axs[0].set_ylabel("$\\log R$ ($R_\\odot$)")
 axs[1].plot(delta + comp.model_number / 1000, comp.log_dt)
 axs[1].plot(delta + simp.model_number / 1000, simp.log_dt)
@@ -384,12 +389,14 @@ axs[2].plot(delta + simp.model_number / 1000, simp.min_beta)
 axs[2].set_ylabel(r"$\beta_\textrm{min} = \min(P_\textrm{gas}/P)$")
 
 axs[2].set_xlabel(r"model number $/ 1000$")
+axs[0].legend()
 # ax.set_yscale("log")
 # ax.set_xscale("log")
 plt.tight_layout()
-plt.savefig(
-    "/home/koen/LaTeX-setup/plots/2msuntpagbmodelnumbersimple.pgf", format="pgf"
-)
+# plt.savefig(
+#     "/home/koen/LaTeX-setup/plots/2msuntpagbmodelnumbersimple.pgf", format="pgf"
+# )
 #
 
+plt.show()
 # %%

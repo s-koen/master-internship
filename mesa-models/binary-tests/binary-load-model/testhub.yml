@@ -1,0 +1,62 @@
+    - inlist: inlist
+      runtime_minutes:   4.96
+      model_number:          307
+      star_age:     1.2452697976831229E+08
+      num_retries:            6
+      log_rel_run_E_err:        -9.2459123850977214
+      steps:         1072
+      retries:            6
+      redos:            0
+      solver_calls_made:         1078
+      solver_calls_failed:            6
+      solver_iterations:         9247
+    - inlist: inlist
+    - inlist: inlist
+      runtime_minutes:   0.01
+      model_number:         1287
+      star_age:     1.0578299601304464E+09
+      num_retries:            0
+      log_rel_run_E_err:        -7.5413111780947633
+      steps:            1
+      retries:            0
+      redos:            0
+      solver_calls_made:            1
+      solver_calls_failed:            0
+      solver_iterations:            3
+    - inlist: inlist
+      runtime_minutes:   0.01
+      model_number:         1287
+      star_age:     1.0578299601304464E+09
+      num_retries:            0
+      log_rel_run_E_err:        -7.5413111780947633
+      steps:            1
+      retries:            0
+      redos:            0
+      solver_calls_made:            1
+      solver_calls_failed:            0
+      solver_iterations:            3
+    - inlist: inlist
+    - inlist: inlist
+      runtime_minutes:   0.01
+      model_number:         1287
+      star_age:     1.0578299601304464E+09
+      num_retries:            0
+      log_rel_run_E_err:        -7.5413111780947633
+      steps:            1
+      retries:            0
+      redos:            0
+      solver_calls_made:            1
+      solver_calls_failed:            0
+      solver_iterations:            3
+    - inlist: inlist
+      runtime_minutes: 185.10
+      model_number:         6315
+      star_age:     1.0652992535434901E+09
+      num_retries:            0
+      log_rel_run_E_err:        -7.5042988316159942
+      steps:        24380
+      retries:            0
+      redos:            0
+      solver_calls_made:        24380
+      solver_calls_failed:            0
+      solver_iterations:        79396

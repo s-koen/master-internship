@@ -1,0 +1,236 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\usepackage{changepage}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 4}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Dredge-Up Efficiency}
+
+    \emph{Dredge-up} is mixing process that brings materials created during nuclear fusion in the burning regions to the surface due to a (temporary) expansion of the convective envelope to these regions. The first dredge-up occurs after the end of H-core burning. A second dredge-up can occur at the end of He-core burning. The third-dredge up can occur after a helium flash in TPAGB stars \citep{herwig2005}.
+
+    Although a TPAGB star can undergo numerous thermal pulses, and thus numerous dredge-up episodes, these are all called the third-dredge up.
+    During these episodes, He, C and \(s\)-process elements are mixed into the envelope.
+    The mixing of C into the envelope changes the C/O ratio, which in turn affects which bands are visible in the spectra of stars.
+    Further more, the C/O ratio affects the opacities \sidenote{See for example Fig. 10 from \citet{marigo2009}}.
+    The third-dredge up could therefore affect properties of the stellar envelope, where these opacities are most drastically influenced by a changing C/O ratio.
+    Theferofe, it can be interesting to compare dredge-up efficiencies for different MESA models.
+
+    The MESA procedure from \citet{rees2024b} is specifically designed to accurately simulate these dredge-up episodes.
+    The efficiency of dredge-up can be expressed by the dredge-up parameter \(\lambda = \Delta M _\text{DUP} / \Delta M _\text{H}\), where \(\Delta M _\text{DUP}\) is the mass dredged up after a thermal pulse and \(\Delta M_{H} \) is the core growth during the preceding interpulse phase.
+
+    On the other hand, the mesa model optimized for speed \sidenote{By using the default mesa time and mesh resolution parameters, and not explicitly using routines to fully resolve the third dredge-up},
+    are not designed with accurately simulating the third dredge-up episodes.
+    It is interesting to compare the models.
+
+    Below, I show the radius of the model by \citet{rees2024b} and the simplified model for a 2 \(M_\odot \) star. The plots below show properties related to the third dredge-up episodes.
+
+    \begin{figure}[ht]
+        \marginfignote{21}{The simple model does not contain computed dredge-up efficiencies, but they can be estimated by looking at the change in He-core mass.}
+        \incplot{dredge-up-efficiency-2-msun}
+    \end{figure}
+
+    The plots seem to imply that the simple model underestimates the dredge-up efficiency. This is in line with the conclusions by \citet{rees2024b}, where they state that default MESA settings underestimate the third dredge-up efficiencies by up to 75\%.
+
+    I also compare models with a hot third dredge-up (HTDU)\sidenote{Near the end of the third dredge-up, the base of the envelope contracts and heats up. In massive AGB stars, the temperature can be sufficiently high for sustained hydrogen burning in this envelope region. This is known as a hot third dredge-up \citep{rees2024b}.}. HTDU occurs in stars with masses roughly at and above \(5M_\odot \) and results in an initially decreasing C/O ratio, as the hydrogen burning in the convective envelope converts carbon nuclei to nitrogen using the CNO cycle.
+
+    This plots below show the same parameters, but now for a \(5M_\odot \) star.
+
+    \begin{figure}[ht]
+        \marginfignote{11}{The core mass of the simple model stabilises, meaning \(
+        \lambda _\text{DUP} \approx 1\). The core mass of the detailed model keeps increasing slightly between thermal pulses, meaning \(\lambda _\text{DUP}< 1\).}
+        \marginfignote{21}{Again, the simple model does not contain computed dredge-up efficiencies.}
+        \marginfignote{31}{I think the differences mean the simple model does not predict hydrogen burning in the convective envelope during the dredge-up episodes after about 50000 years, while the detailed model does.}
+        \incplot{dredge-up-efficiency-5-msun}
+    \end{figure}
+
+    This time, the plot of the He-core mass seems to imply, that at least eventually, the simple model overestimates the amount of dredge-up that occurs. This is again in line with the results from \citet{rees2024b}, which indicate that HTDU is overestimated by the default parameters of MESA by as much as \(55\%\).
+
+    The simple model shows some peaks in the radius during thermal pulses occuring between 50000 and 100000 years after the start of the TPAGB phase. The detailed model does not show these peaks.
+
+    The simple model actually took a really long time to evolve as well and did not start losing its envelope even when the detailed star had fully lost its envelope.
+    This might be concerning, especially since the loss of the envelope seems to cause the radius of the star to expand significantly.
+    It is important to note that the simple model used the \citet{vassiliadis1993} wind prescription, while the detailed model used the prescription by \citet{trabucchi2018}.
+
+    Below, I show the mass evolution and the wall time.
+
+    \begin{figure}[ht]
+        \centering
+        \marginfignote{11
+        }{Even though it looks like the simple model is not losing any mass, it actually is, just \emph{very} little. The plot below shows this.}
+        \marginfignote{22}{It seems like it would take a very long time before the envelope will be completely stripped in the simple model. I therefore decided to stop the evolution after 60 hours to free up computing power on my pc.}
+        \incplot{mass-loss-5-msun}
+    \end{figure}
+    
+    \newsection{Getting Familiar with the Binary Module}
+    To understand how to effectively use the binary component of MESA, I decided to start with the test suite \lstinline[style=output, breaklines=true]|star_plus_point_mass|.
+        This test suite contains 4 inlist files, 1 of which is empty and is supposed to represent the point mass star. The main inlist is called \lstinline[style=output, breaklines=true]|inlist|. It points directly to \lstinline[style=output, breaklines=true]|inlist_project|. This inlist specifies which inlists should be used for the evolution of the individual stars \sidenote{\lstinline[style=output, breaklines=true]|inlist1| and \lstinline[style=output, breaklines=true]|inlist2| respectively. They contain the usual components of inlists of single stars, including all parameters responsible for time and mesh resolution.}. This inlist also specifies the masses of the stars. In contrast to the single star case, the masses are not specified in the star inlist files. Then, the inlist specifies an initial separation and some parameters for specifying the exact procedures that are used during mass transfer, including resolution and time controls.
+
+    Running the \lstinline[style=output, breaklines=true]|test_suite| is easy. It produces two history files. One containing the binary evolution history and one containing the single star evolution of the donor. It is then easy to inspect the properties of the binary and single star evolution. For example, below I show the mass loss rate of the donor and the mass of the donor as a function of time\sidenote{The mass loss rate is obtained from the \lstinline[style=output, breaklines=true]|binary_history.data| file, while the donor mass is obtained from \lstinline[style=output, breaklines=true]|history.data|.}
+    .
+
+    \begin{figure}[ht]
+        \centering
+        \incplot{binary-test-plot-1}
+    \end{figure}
+    
+    The binary module seems to work fine. Now I want to try to start the binary evolution using a model of a star and introduce a point mass later.
+
+    To achieve this, let me run a standard 2 solar mass star and evolve it. I use the \lstinline[style=output, breaklines=true]|hb_2M| test-suite for this purpose. I modified it to evolve over 4 distinct phases. The first phase evolves the star from the pre-MS to the TAMS similar to the original test-suite. The next three phases evolve the star to radii \(25M_\odot \), \(50M_\odot \) and \(75M_\odot \) respectively\sidenote{To achieve this. I copied the \lstinline[style=output, breaklines=true]|inlist_to_ZACHeB| inlist \(3\) times and simply changed the stopping condition in these files to \lstinline[style=output, breaklines=true]|log_Rsurf_upper_limit = <value>|. I then modified the \lstinline[style=output, breaklines=true]|rn| file to run the new inlists in the correct order.}.
+    After every phase, the simulation saves a \lstinline[style=output, breaklines=true]|.mod| file, which I hope to use in my binary simulation.
+
+    Below, I show the evolution of the simple model from the MS to a radius of \(75R_\odot \). The dots represent the \lstinline[style=output, breaklines=true]|.mod| files that are saved at the end of every inlist. I am only interested in the models with the specified radii, which all lie on the GB.
+    \begin{figure}[ht]
+        \centering
+      \incplot{model-selection-test-simple}
+    \end{figure}
+
+    I then save the models and the inlists in a new directory containing the binary component of MESA and a new inlist containing the binary settings, largely based on the binary inlist by \citet{temmink2022}. It is important to specify a correct initial separation, such that the star starts its evolution very close to filling its Roche lobe. As a starting point, I use that the initial separation should be such that \(R / R_{L} \approx 0.9\). To find the orbital separation that produces this ratio, I use the Roche lobe fitting formula from \citet{eggleton1983},
+
+    \begin{equation*}
+        \frac{R_{L}}{a} \approx \frac{0.49 q^{-2 / 3} }{0.6 q^{-2 / 3} + \ln (1 + q^{-1 / 3} ) } .
+    \end{equation*}
+
+    For simplicity, and the expected stability according to \citet{temmink2022}, I use a mass ratio \(q \equiv M _\text{a} / M _\text{d} = 1\). The Roche lobe fitting formula reduces to
+    
+    \begin{equation*}
+        R_{L} \approx  \frac{0.49 a}{0.6 + \ln (2)}.
+    \end{equation*}
+
+    The final separation becomes\sidenote{Using the equation for the Roche lobe and the radius ratio criterion:
+    \begin{align*}
+        \frac{R}{R_{L} } \approx \frac{0.6 R + R \ln 2}{0.49a} &= 0.9\\
+        0.6 R + R \ln 2 &= 0.441 a.
+    \end{align*}
+    }
+    \begin{align*}
+        a &\approx 2.9323R.\\
+        \intertext{Starting with our 25 \(R_\odot \) star, this would equate to an initial separation of}
+        a &\approx 73.308 R_\odot. 
+    \end{align*}
+
+    Below, I plot the evolution of the star in the HR-diagram as well as its mass loss rate over time.
+
+    \begin{figure}[ht]
+        \centering
+        \incplot{model-selection-test-simple-binary}
+    \end{figure}
+
+    The right subplot looks very similar to the results of \citet{temmink2022} Figure 5. We recognise the peak in the mass transfer rate that is typical for donor stars with convective envelopes\sidenote{I am not sure what actually causes the drop in mass transfer rate again}.
+
+    I notice some oscillations in the mass transfer rate after the initial peak. I am not sure if this is caused by the crude default MESA single star GB evolution, an inaccuracy in binary mass transfer prescription, or an actual physical process.
+
+    Next, I want to simulate mass transfer on the EAGB branch using the detailed model by \citet{rees2024b} for the single star evolution.
+
+
+    \newsection{Selecting a Model for Mass Transfer}
+
+    In order to prepare for simulating mass transfer during the TPAGB phase, we want to try to simulate mass transfer for a phase where mass transfer stability is better understood. The work by \citet{temmink2022} has shown how MESA can be used to simulate mass transfer (stability) in binary stars with giant type donors. We want to apply the same techniques. 
+
+    For this, we need a starting model to start the binary evolution with. 
+    Below, I show the evolution of the \(2M_\odot \) star by \citet{rees2024b}.
+    \begin{figure}[ht]
+        \centering
+        \incplot{model-selection-test}
+    \end{figure}
+
+    The radial evolution of a \(2M_\odot \) mass star makes it very unlikely that this star will interact during the EAGB phase. The work by \citet{temmink2022} shows that a slightly heavier star will be more likely to interact on the EAGB phase.
+    As a first test, I therefore decided to simulate a \(3M_\odot \) star using the prescription by \citet{rees2024b}.
+
+    I modify the \lstinline[style=output, breaklines=true]|run_star_extras.f90| in order to save models every time the radius increases.
+
+    Below, I note the steps I took:
+    \begin{minted}{fortran}
+! src/run_star_extras.f90
+module run_star_extras
+
+use star_lib
+use star_def
+use const_def
+use math_lib
+
+implicit none
+
+integer :: evol_phase
+
+include 'agb/agb_params.inc' ! <- inside this file i include
+integer, parameter :: x_last_saved_R = 6 ! <- this line.
+
+! these routines are called by the standard run_star check_model
+contains
+    ...
+    \end{minted}
+    MESA is now aware that it should save a sixth extra real value inside the star object. The other 5 reals are values that \citet{rees2024b} define and use. I do not initialize this real in \lstinline[style=output, breaklines=true]|subroutine extras_startup(id, restart, ierr)| since the default value of 0 is sufficient.
+
+    I then modify the extra code that runs after every completed step:
+
+    \begin{minted}{fortran}
+! src/agb/agb_run_star_extras.inc
+integer function extras_finish_step(id)
+    integer, intent(in) :: id
+    integer :: ierr
+    type (star_info), pointer :: s
+    logical :: do_termination
+    character(len=50) :: do_termination_code_str
+
+    ! declare variables for saving models
+    character (len=200) :: fname
+    real(dp) :: R_now, R_last
+    real(dp) :: h1c
+
+    ierr = 0
+    call star_ptr(id, s, ierr)
+    if (ierr /= 0) return
+    extras_finish_step = keep_going
+
+   ! write a new model every time the radius has increased 
+   ! by 10% with respect to the previous saved model.
+   R_now = s% photosphere_R
+   R_last = s% xtra(x_last_saved_R)
+
+   h1c = s% center_h1
+
+   if (.not. (h1c == h1c)) then
+       h1c = 1d0
+   end if
+
+   if ((R_now > 1.1d0 * R_last) .and. (h1c < 0.68d0)) then
+       write(fname, fmt="(a12,f0.3,a8)") 'LOGS/models/', R_now, 'Rsun.mod'
+
+       ! write model, profile and history
+       call star_write_model(id, fname, ierr)
+       s% need_to_update_history_now = .true.
+       s% need_to_save_profiles_now = .true.
+
+       if (ierr /= 0) then
+           write(*,*) 'error writing model'
+           ierr = 0
+       end if
+
+       s% xtra(x_last_saved_R) = R_now
+   end if 
+
+   ...
+
+end function extras_finish_step
+
+    \end{minted}
+    This code ensures models are saved every time the radius of the star exceeds the radius of the last saved model. 
+
+    
+\bibliography{master.bib}
+\end{document}

@@ -1,0 +1,13 @@
+    - inlist: inlist_semiconvection_header
+      runtime_minutes:   3.92
+      model_number:          293
+      star_age:     1.3650218291656713E+09
+      num_retries:            0
+      log_rel_run_E_err:        -9.6751123634598191
+      steps:          293
+      retries:            0
+      redos:            0
+      solver_calls_made:          293
+      solver_calls_failed:            0
+      solver_iterations:         2053
+    - inlist: inlist_semiconvection_header

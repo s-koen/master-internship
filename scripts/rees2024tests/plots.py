@@ -9,7 +9,8 @@ import sys
 sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 from plot_size import set_size
 
-width = 255.22122
+column = 312.98032
+full = 483.69684
 plt.style.use("default")
 plt.style.use("tex rm")
 
@@ -120,7 +121,7 @@ axs[2].set_xlabel(r"model number")
 # xax.set_xscale("log")
 plt.show()
 # %%
-fig, axs = plt.subplots(3, 1, sharex=True, figsize=set_size(width, height=2))
+fig, axs = plt.subplots(3, 1, sharex=True, figsize=set_size(full, height=2))
 
 
 delta = 0
@@ -139,7 +140,7 @@ axs[2].set_xlabel(r"$t$ (yr)")
 # ax.set_xscale("log")
 plt.tight_layout()
 plt.savefig("4msuntpagb.pdf", format="pdf")
-plt.savefig("/home/koen/LaTeX-setup/plots/4msuntpagb.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/4msuntpagb-full.pgf", format="pgf")
 
 # %%
 fig, axs = plt.subplots(3, 1, sharex=True)
@@ -352,3 +353,12 @@ axs[2].set_xlabel(r"$t$ (yr)")
 plt.tight_layout()
 plt.savefig("/home/koen/LaTeX-setup/plots/4msuntpagbzoom.pgf", format="pgf")
 # %%
+
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column))
+
+plt.xlabel("")
+plt.ylabel("")
+plt.savefig("dredge-up-effiency-2-solar-mass.pdf", format="pdf")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/dredge-up-effiency-2-solar-mass.pgf", format="pgf"
+)

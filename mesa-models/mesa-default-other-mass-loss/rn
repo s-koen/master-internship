@@ -1,0 +1,23 @@
+#!/bin/bash
+
+rm -f restart_photo
+
+date "+DATE: %Y-%m-%d%nTIME: %H:%M:%S"
+
+# this provides the definition of do_one (run one part of test)
+# do_one [inlist] [output model] [LOGS directory]
+#MESA_DIR=../../..
+source "${MESA_DIR}/star/test_suite/test_suite_helpers"
+
+# cp inlist_MS inlist
+# ./star inlist_MS
+# cp inlist_GB inlist
+# ./star inlist_GB
+# cp inlist_CHeB inlist
+# ./star inlist_CHeB
+# cp inlist_EAGB inlist
+# ./star inlist_EAGB
+cp inlist_TPAGB inlist
+./star inlist_TPAGB
+
+date "+DATE: %Y-%m-%d%nTIME: %H:%M:%S"
