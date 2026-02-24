@@ -31,7 +31,7 @@ TPAGB = mr.MesaData(
     "/home/koen/master-internship/mesa-models/rees2024-2M/LOGS/TPAGB/history.data"
 )
 phases = [MS, GB, CHeB, EAGB]
-phases_names = ["MS", "GB", "CHeB", "EAGB"]
+phases_names = ["MS", "RGB", "CHeB", "EAGB"]
 # %%
 models = {}
 
@@ -98,7 +98,7 @@ axs[0].invert_xaxis()
 axs[0].legend()
 
 axs[0].set_ylabel(r"Luminosity $(L_\odot)$")
-axs[0].set_xlabel(r"Effective temperature $(T_\textrm{eff})$")
+axs[0].set_xlabel(r"Effective temperature (K)")
 axs[1].set_ylabel(r"Radius $(R_\odot)$")
 axs[1].set_xlabel(r"Model number ")
 plt.savefig("/home/koen/LaTeX-setup/plots/model-selection-test.pgf", format="pgf")
@@ -161,7 +161,7 @@ axs[0].invert_xaxis()
 axs[0].legend()
 
 axs[0].set_ylabel(r"Luminosity $(L_\odot)$")
-axs[0].set_xlabel(r"Effective temperature $(T_\textrm{eff})$")
+axs[0].set_xlabel(r"Effective temperature (K)")
 axs[1].set_ylabel(r"Radius $(R_\odot)$")
 axs[1].set_xlabel(r"Model number ")
 plt.savefig(
@@ -180,7 +180,7 @@ B_TO25R = mr.MesaData(
 )
 
 B_TO75R = mr.MesaData(
-    "/home/koen/master-internship/mesa-models/binary-load-model/LOGS/history.data"
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-load-model/LOGS/history.data"
 )
 
 phases = [B_MS, B_TO25R, B_TO75R]
@@ -192,7 +192,7 @@ phases_names = [
 ]
 
 binary_history = mr.MesaData(
-    "/home/koen/master-internship/mesa-models/binary-load-model/binary_history.data"
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-load-model/binary_history.data"
 )
 # %%
 
@@ -332,7 +332,7 @@ axs[0].invert_xaxis()
 axs[0].legend()
 
 axs[0].set_ylabel(r"Luminosity $(L_\odot)$")
-axs[0].set_xlabel(r"Effective temperature $(T_\textrm{eff})$")
+axs[0].set_xlabel(r"Effective temperature (K)")
 axs[2].set_ylabel(r"$\log(\dot{M} / (M_\odot \textrm{yr}^{-1}))$")
 fig.text(0.79, 0.045, "Time (Myr)", ha="center", va="center")
 
@@ -344,6 +344,275 @@ fig.get_layout_engine().set(w_pad=-2, wspace=0)
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/model-selection-test-simple-binary.pgf", format="pgf"
 )
+plt.show()
+plt.close()
+# %%
+
+folders = [
+    "rees2024-2M/LOGS/",
+    "binary-tests/rees2024-2.5M/LOGS/",
+    "binary-tests/rees2024-3M/LOGS/",
+]
+
+phase_folders = ["MS", "GB", "CHeB", "EAGB"]
+mass = ["2", "2.5", "3"]
+
+histories = {}
+for i, folder in enumerate(folders):
+    histories[mass[i]] = {}
+    for j, phase_folder in enumerate(phase_folders):
+        histories[mass[i]][phases_names[j]] = mr.MesaData(
+            f"/home/koen/master-internship/mesa-models/{folder}{phase_folder}/history.data"
+        )
+# %%
+
+fig, axs = plt.subplots(
+    1,
+    2,
+    figsize=set_size(full, height=0.5),
+    subplot_kw={"projection": "3d"},
+    constrained_layout=True,
+)
+
+
+for m, model in enumerate(histories):
+    delta = 0
+    phases = histories[model]
+    for i, phase_name in enumerate(phases):
+        phase = phases[phase_name]
+
+        if phase_name == "MS":
+            PMS_index = np.where(phase.center_h1 / phase.center_h1[0] < 0.997)[0][0]
+            axs[0].plot(
+                phase.log_Teff[PMS_index:],
+                phase.log_L[PMS_index:],
+                phase.star_age[PMS_index:] / 1e9,
+                c=f"C{m}",
+            )
+            axs[1].plot(
+                phase.log_cntr_Rho[PMS_index:],
+                phase.log_cntr_T[PMS_index:],
+                phase.star_age[PMS_index:] / 1e9,
+                label=f"{float(mass[m]):.1f} $R_\\odot$",
+                c=f"C{m}",
+            )
+        else:
+            axs[0].plot(
+                phase.log_Teff,
+                phase.log_L,
+                delta + phase.star_age / 1e9,
+                c=f"C{m}",
+            )
+            axs[1].plot(
+                phase.log_cntr_Rho,
+                phase.log_cntr_T,
+                delta + phase.star_age / 1e9,
+                c=f"C{m}",
+            )
+        delta += phase.star_age[-1] / 1e9
+axs[0].invert_xaxis()
+
+handles, labels = axs[1].get_legend_handles_labels()
+fig.legend(handles, labels, loc="upper center")
+
+axs[0].set_proj_type("ortho")
+axs[0].set_ylabel(r"$L$ $(L_\odot)$")
+axs[0].set_xlabel(r"$T_\textrm{eff}$ (K)")
+axs[0].set_zlabel(r" ")
+axs[1].set_proj_type("ortho")
+axs[1].set_ylabel(r"$T_\textrm{c}$ (K)")
+axs[1].set_xlabel(r"$\rho_\textrm{c}$ (g cm$^{-3}$)")
+
+ax = axs[1]
+tmp_planes = ax.zaxis._PLANES
+ax.zaxis._PLANES = (
+    tmp_planes[2],
+    tmp_planes[3],
+    tmp_planes[0],
+    tmp_planes[1],
+    tmp_planes[4],
+    tmp_planes[5],
+)
+# rotate label
+ax.zaxis.set_rotate_label(False)  # disable automatic rotation
+ax.set_zlabel(
+    r"$\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,$   Star age (Gyr)", rotation=90
+)
+ax.grid(False)
+axs[0].grid(False)
+
+fig.get_layout_engine().set(w_pad=0, wspace=0.25)
+plt.savefig("/home/koen/LaTeX-setup/plots/model-selection-compare.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+scatter_folders = [
+    "binary-tests/rees2024-2.5M/LOGS/",
+    "binary-tests/rees2024-3M/LOGS/",
+]
+
+phases_names = ["MS", "RGB", "CHeB", "EAGB"]
+phase_folders = ["MS", "GB", "CHeB", "EAGB"]
+mass = ["2.5", "3"]
+
+scatter_models = {}
+for i, folder in enumerate(scatter_folders):
+    scatter_models[mass[i]] = {}
+    for j, phase_folder in enumerate(phase_folders):
+        try:
+            models = mr.MesaLogDir(
+                f"/home/koen/master-internship/mesa-models/{folder}{phase_folder}"
+            ).model_numbers
+        except:
+            models = [
+                mr.MesaData(
+                    f"/home/koen/master-internship/mesa-models/{folder}{phase_folder}/profile1.data"
+                ).model_number
+            ]
+
+        scatter_models[mass[i]][phases_names[j]] = [
+            histories[mass[i]][phases_names[j]].index_of_model_number(m) for m in models
+        ][:-1]
+
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for m, model in enumerate(histories):
+    delta = 0
+    phases = histories[model]
+    for i, phase_name in enumerate(phases):
+        phase = phases[phase_name]
+
+        if phase_name == "MS":
+            PMS_index = np.where(phase.center_h1 / phase.center_h1[0] < 0.997)[0][0]
+            plt.plot(
+                phase.star_age[PMS_index:] / 1e9,
+                phase.R[PMS_index:],
+                c=f"C{m}",
+            )
+        else:
+            plt.plot(
+                delta + phase.star_age / 1e9,
+                phase.R,
+                c=f"C{m}",
+            )
+        if m == 0:
+            delta += phase.star_age[-1] / 1e9
+            continue
+        indices = scatter_models[model][phase_name]
+        print(phase, indices)
+
+        plt.scatter(
+            delta + phase.star_age[indices] / 1e9, phase.R[indices], c=f"C{m}", s=5
+        )
+        delta += phase.star_age[-1] / 1e9
+
+
+plt.xlabel("Star age (Gyr)")
+plt.ylabel(r"$\log R$ ($R_\odot$)")
+plt.yscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/compare-radius.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+folders = [
+    "rees2024-2M/LOGS/",
+    "binary-tests/rees2024-2.5M-fix/LOGS/",
+    "binary-tests/rees2024-3M-fix/LOGS/",
+]
+
+phase_folders = ["MS", "GB", "CHeB", "EAGB"]
+mass = ["2", "2.5", "3"]
+
+histories = {}
+for i, folder in enumerate(folders):
+    histories[mass[i]] = {}
+    for j, phase_folder in enumerate(phase_folders):
+        histories[mass[i]][phases_names[j]] = mr.MesaData(
+            f"/home/koen/master-internship/mesa-models/{folder}{phase_folder}/history.data"
+        )
+
+
+scatter_folders = [
+    "binary-tests/rees2024-2.5M-fix/LOGS/",
+    "binary-tests/rees2024-3M-fix/LOGS/",
+]
+
+phases_names = ["MS", "RGB", "CHeB", "EAGB"]
+phase_folders = ["MS", "GB", "CHeB", "EAGB"]
+mass = ["2.5", "3"]
+
+scatter_models = {}
+for i, folder in enumerate(scatter_folders):
+    scatter_models[mass[i]] = {}
+    for j, phase_folder in enumerate(phase_folders):
+        try:
+            models = mr.MesaLogDir(
+                f"/home/koen/master-internship/mesa-models/{folder}{phase_folder}"
+            ).model_numbers
+        except:
+            models = [
+                mr.MesaData(
+                    f"/home/koen/master-internship/mesa-models/{folder}{phase_folder}/profile1.data"
+                ).model_number
+            ]
+
+        scatter_models[mass[i]][phases_names[j]] = [
+            histories[mass[i]][phases_names[j]].index_of_model_number(m) for m in models
+        ][:-1]
+# %%
+print(scatter_models)
+# %%
+for history in histories["3"]:
+    f = histories["3"][history]
+    plt.plot(f.star_age, f.last_saved_R)
+
+plt.show()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for m, model in enumerate(histories):
+    delta = 0
+    phases = histories[model]
+    for i, phase_name in enumerate(phases):
+        phase = phases[phase_name]
+
+        if phase_name == "MS":
+            PMS_index = np.where(phase.center_h1 / phase.center_h1[0] < 0.997)[0][0]
+            plt.plot(
+                phase.star_age[PMS_index:] / 1e9,
+                phase.R[PMS_index:],
+                c=f"C{m}",
+            )
+        else:
+            plt.plot(
+                delta + phase.star_age / 1e9,
+                phase.R,
+                c=f"C{m}",
+            )
+        if m == 0:
+            delta += phase.star_age[-1] / 1e9
+            continue
+        indices = scatter_models[model][phase_name]
+        print(phase, indices)
+
+        plt.scatter(
+            delta + phase.star_age[indices] / 1e9, phase.R[indices], c=f"C{m}", s=15
+        )
+        delta += phase.star_age[-1] / 1e9
+
+
+plt.xlabel("Star age (Gyr)")
+plt.ylabel(r"$\log R$ ($R_\odot$)")
+plt.yscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/compare-radius-fix.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%

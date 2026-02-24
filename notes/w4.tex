@@ -145,16 +145,19 @@
     Below, I show the evolution of the \(2M_\odot \) star by \citet{rees2024b}.
     \begin{figure}[ht]
         \centering
+        \marginfignote{0}{Notice how only a very tiny part of the evolution on the EAGB has a larger radius than the maximum radius on the RGB.}
         \incplot{model-selection-test}
     \end{figure}
 
     The radial evolution of a \(2M_\odot \) mass star makes it very unlikely that this star will interact during the EAGB phase. The work by \citet{temmink2022} shows that a slightly heavier star will be more likely to interact on the EAGB phase.
-    As a first test, I therefore decided to simulate a \(3M_\odot \) star using the prescription by \citet{rees2024b}.
+    As a first test, I therefore decided to simulate a \(3M_\odot \) star and a \(2.5M_\odot \) star using the prescription by \citet{rees2024b}.
 
     I modify the \lstinline[style=output, breaklines=true]|run_star_extras.f90| in order to save models every time the radius increases.
 
     Below, I note the steps I took:
-    \begin{minted}{fortran}
+
+\marginfignote{22}{This line is actually included in \lstinline[style=output, breaklines=true]|agb/agb_params.inc|} but i show it here for clarity.
+    \begin{minted}[fontsize=\small,breaklines]{fortran}
 ! src/run_star_extras.f90
 module run_star_extras
 
@@ -167,10 +170,9 @@ implicit none
 
 integer :: evol_phase
 
-include 'agb/agb_params.inc' ! <- inside this file i include
-integer, parameter :: x_last_saved_R = 6 ! <- this line.
+include 'agb/agb_params.inc' 
+integer, parameter :: x_last_saved_R = 6 
 
-! these routines are called by the standard run_star check_model
 contains
     ...
     \end{minted}
@@ -178,7 +180,7 @@ contains
 
     I then modify the extra code that runs after every completed step:
 
-    \begin{minted}{fortran}
+    \begin{minted}[fontsize=\small]{fortran}
 ! src/agb/agb_run_star_extras.inc
 integer function extras_finish_step(id)
     integer, intent(in) :: id
@@ -227,10 +229,110 @@ integer function extras_finish_step(id)
    ...
 
 end function extras_finish_step
-
     \end{minted}
-    This code ensures models are saved every time the radius of the star exceeds the radius of the last saved model. 
+    This code ensures models are saved every time the radius of the star exceeds the radius of the last saved model.
+    Below, I show the evolution of the two new models compared to the \(2M_\odot \) model.
 
+    \begin{figure}[ht]
+        \centering
+        \incplot{model-selection-compare}
+    \end{figure}
+
+    The figure shows that the \(2M_\odot \) star obtains a degenerate core and undergoes a He-flash, which causes a spike in luminosity (and radius) and a steep rise in central density and temperature. The heavier stars do not experience this flash, and thus maintain a smaller radius on the red giant branch and the following CHeB phase. This increases the probability of mass transfer occurring on the EAGB phase \sidenote{This is a phase of helium shell burning before the onset of thermal pulses.}.
+
+    Below, I show a plot of the radius evolution of the three stars, with markers where models have been saved for the new stars.
     
+    \begin{figure}[ht]
+        \centering
+        \incplot{compare-radius}
+    \end{figure}
+
+    First things first, it works! MESA saved models every time the radius increased and I now have models that I can use to simulate mass transfer on the EAGB phase. The \(3M_\odot \) model looks particularly well suited for this.
+    However, I notice two things.
+    \begin{enumd}
+        \item Saving a model when the radius increases by just \(10\%\) results in too many models. For now, I will just increase the percentage to \(25\%\)\sidenote{Saving every \(\Delta  \log R _\text{d} = 0.2\), like \citet{temmink2022} did, is probably sufficient for a broader study. Saving every \(25\%\) increase will result in roughly double the number of models.}.
+        \item  The custom star variable \lstinline[style=output, breaklines=true]|last_saved_R| gets set to \(0\) after every inlist change. This results in saved models that \emph{do not} have larger radii than the maximum radius during a previous phase. 
+\end{enumd}
+
+\newsection{Fixing ``Problems''}
+    The first ``problem'' can easily be fixed by simply changing the condition for saving models to \mintinline[breaklines, fontsize=\small]{fortran}{if ((R_now > 1.25d0 * R_last) .and. (h1c < 0.68d0)) then}.
+
+
+    In order to solve the second ``problem'', we need to modify the way MESA initializes \lstinline[style=output, breaklines=true]|xtra(x_last_saved_R)| in \lstinline[style=output, breaklines=true]|extras_startup|.
+
+    We want MESA to always use the last saved R, even when starting a new run with a different inlist \sidenote{For example, when the MS evolution is complete, the model will terminate, the inlist will be swapped and a new run is started.}. I therefore write a simple file every time the last saved radius gets updated:
+    \begin{minted}[fontsize=\small,breaklines]{fortran}
+! agb/agb_run_star_extras.inc
+...
+call star_write_model(id, fname, ierr)
+s% need_to_update_history_now = .true.
+s% need_to_save_profiles_now = .true.
+open(1, file = "last_saved_R.dat", status="replace")
+write(1,*) R_now
+close(1)
+...
+    \end{minted}
+    Then, in the \lstinline[style=output, breaklines=true]|extras_startup|:
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! agb/agb_run_star_extras.inc
+subroutine extras_startup(id, restart, ierr)
+    integer, intent(in) :: id
+    logical, intent(in) :: restart
+    integer, intent(out) :: ierr
+    type (star_info), pointer :: s
+
+    integer :: ios
+    real(dp) :: stored_R
+
+    ierr = 0
+    call star_ptr(id, s, ierr)
+    if (ierr /= 0) return
+
+    open(1, file='last_saved_R.dat', status='old', action='read', iostat=ios)
+    if (ios == 0) then
+       read(1,*,iostat=ios) stored_R
+       if (ios == 0) then
+          s%xtra(x_last_saved_R) = stored_R
+          write(*,*) 'loaded last_R = ', stored_R
+       end if
+       close(1)
+    else
+       write(*,*) 'no last_R.dat found, initializing with 0'
+       s%xtra(x_last_saved_R) = 0
+    end if
+    ...
+end subroutine extras_startup
+\end{minted}
+This code ensures that the file gets read, \emph{or}, the value gets initialized to \(0\) in the case that the file does not exist.
+
+Below, I show the updated results.
+
+    \begin{figure}[ht]
+        \centering
+        \incplot{compare-radius-fix}
+    \end{figure}
+
+I can now freely choose a model on the EAGB branch and use it as a starting model for the binary evolution.
+    
+    \newsection{Results!}
+
+    \begin{figure}[ht]
+        \centering
+        \incplot{mass-loss-binary-rees-3MSUN}
+    \end{figure}
+    
+
+    \begin{figure}[ht]
+        \centering
+        \incplot{binary-rees-3MSUN-profiles}
+    \end{figure}
+    
+    For varying \(q\), we need the full expression from \citet{eggleton1983}.
+    \begin{align*}
+        \frac{R}{R _\text{L}} & = \frac{0.6\cdot  q^{-2 / 3}R + R \cdot \ln (1 + q^{- 1/ 3} )}{0.49 \cdot q^{-2 / 3}a } = 0.9\\
+        a &= \frac{0.6\cdot  q^{-2 / 3}R + R \cdot \ln (1 + q^{- 1/ 3} )}{0.411\cdot  q^{-2 / 3}}.
+    \end{align*}
+    For the \(59.194R_\odot \) model and a mass ratio of \(q = M _\text{a} / M _\text{d} = 0.8\), this yield an initial separation of \(a = 177.147R_\odot \).
 \bibliography{master.bib}
 \end{document}
