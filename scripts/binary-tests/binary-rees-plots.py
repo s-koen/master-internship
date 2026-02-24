@@ -200,9 +200,9 @@ fig, axs = plt.subplots(
     constrained_layout=True,
 )
 
-axs[0].plot(binary_history.age / 1e6, binary_history.lg_mstar_dot_1)
+axs[0].plot(binary_history.age / 1e3, binary_history.lg_mstar_dot_1)
 axs[0].scatter(
-    binary_history.age[index] / 1e6,
+    binary_history.age[index] / 1e3,
     binary_history.lg_mstar_dot_1[index],
     c=binary_history.star_1_mass[index],
     cmap="viridis",
@@ -212,9 +212,9 @@ axs[0].scatter(
     s=15,
 )
 axs[0].set_ylim(-8, 0)
-axs[0].set_xlim(0.22, 0.279)
-axs[1].plot(binary_history.age / 1e6, binary_history.lg_mstar_dot_1)
-axs[1].set_xlim(0.279, 1.05)
+axs[0].set_xlim(220, 279)
+axs[1].plot(binary_history.age / 1e3, binary_history.lg_mstar_dot_1)
+axs[1].set_xlim(279, 1050)
 axs[1].set_ylim(-8, 0)
 
 axs[0].spines["right"].set_visible(False)
@@ -239,14 +239,21 @@ axs[1].plot((-d, +d), (-d, +d), **kwargs)
 # of the spines they are 'breaking'
 
 axs[0].set_ylabel(r"$\log(\dot{M} / (M_\odot \textrm{yr}^{-1}))$")
-fig.text(0.495, 0.045, "Time (Myr)", ha="center", va="center")
-
+fig.text(0.495, 0.0, "Time (Kyr)", ha="center", va="bottom")
+fig.text(
+    0.175,
+    0.85,
+    r"$R_\textrm{initial}= 59.2 R_\odot$, $M_\textrm{a} / M_\textrm{d} = 1.0$",
+    ha="left",
+    va="top",
+    fontsize=8,
+)
 sm = mpl.cm.ScalarMappable(norm=norm2, cmap=cmap2)
 
 cbar = fig.colorbar(sm, ax=axs[1], pad=0.02, location="right")
 cbar.set_label(r"$M$ ($M_\odot$)")
 
-fig.get_layout_engine().set(h_pad=0.3)
+fig.get_layout_engine().set(h_pad=0.2)
 
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/mass-loss-binary-rees-3MSUN.pgf", format="pgf"
@@ -254,4 +261,149 @@ plt.savefig(
 plt.show()
 plt.close()
 
+# %%
+
+binary_history2 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-rees-3M-59R-q0.8/binary_history.data"
+)
+
+star_history2 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-rees-3M-59R-q0.8/LOGS/EAGB/history.data"
+)
+# %%
+
+fig, axs = plt.subplots(
+    1,
+    2,
+    figsize=set_size(column),
+    constrained_layout=True,
+)
+
+index_shift = np.argwhere(binary_history.lg_mstar_dot_1 > -8)[0][0]
+t_shift = binary_history.age[index_shift] / 1e3
+
+index_shift2 = np.argwhere(binary_history2.lg_mstar_dot_1 > -8)[0][0]
+t_shift2 = binary_history2.age[index_shift2] / 1e3
+
+axs[0].plot(binary_history.age / 1e3 - t_shift, binary_history.lg_mstar_dot_1)
+axs[0].plot(binary_history2.age / 1e3 - t_shift2, binary_history2.lg_mstar_dot_1)
+axs[0].set_ylim(-8, 0)
+axs[0].set_xlim(0, 79)
+axs[1].plot(
+    binary_history.age / 1e3 - t_shift,
+    binary_history.lg_mstar_dot_1,
+    label=r"$M_\textrm{a} / M_\textrm{d} = 1.0$",
+)
+axs[1].plot(
+    binary_history2.age / 1e3 - t_shift2,
+    binary_history2.lg_mstar_dot_1,
+    label=r"$M_\textrm{a} / M_\textrm{d} = 0.8$",
+)
+axs[1].set_xlim(79, 850)
+axs[1].set_ylim(-8, 0.5)
+axs[1].legend()
+
+axs[0].spines["right"].set_visible(False)
+axs[1].spines["left"].set_visible(False)
+# axs[0].yaxis.tick_left()
+axs[1].yaxis.set_ticklabels([])
+axs[1].yaxis.set_ticks([])
+
+d = 0.015  # how big to make the diagonal lines in axes coordinates
+# arguments to pass plot, just so we don't keep repeating them
+kwargs = dict(transform=axs[0].transAxes, color="C8", clip_on=False, linewidth=0.75)
+axs[0].plot((1 - d, 1 + d), (-d, +d), **kwargs)
+axs[0].plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)
+
+kwargs.update(transform=axs[1].transAxes)  # switch to the bottom axes
+axs[1].plot((-d, +d), (1 - d, 1 + d), **kwargs)
+axs[1].plot((-d, +d), (-d, +d), **kwargs)
+
+# What's cool about this is that now if we vary the distance between
+# ax and ax2 via f.subplots_adjust(hspace=...) or plt.subplot_tool(),
+# the diagonal lines will move accordingly, and stay right at the tips
+# of the spines they are 'breaking'
+
+axs[0].set_ylabel(r"$\log(\dot{M} / (M_\odot \textrm{yr}^{-1}))$")
+fig.text(0.520, 0.0, "Time (Kyr)", ha="center", va="bottom")
+fig.text(
+    0.175,
+    0.85,
+    r"$R_\textrm{initial}= 59.2 R_\odot$",
+    ha="left",
+    va="top",
+    fontsize=8,
+)
+fig.get_layout_engine().set(h_pad=0.2)
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/mass-loss-binary-rees-3MSUN-compare-q.pgf",
+    format="pgf",
+)
+plt.show()
+plt.close()
+# %%
+
+
+binary_history3 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-rees-3M-115R-q1/binary_history.data"
+)
+
+star_history3 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-rees-3M-115R-q1/LOGS/EAGB/history.data"
+)
+
+binary_history4 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-rees-3M-115R-q0.8/binary_history.data"
+)
+
+star_history4 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-rees-3M-115R-q0.8/LOGS/EAGB/history.data"
+)
+
+# %%
+
+fig, axs = plt.subplots(
+    1,
+    1,
+    figsize=set_size(column),
+    constrained_layout=True,
+)
+
+index_shift3 = np.argwhere(binary_history3.lg_mstar_dot_1 > -8)[0][0]
+t_shift3 = binary_history3.age[index_shift3] / 1e3
+
+index_shift4 = np.argwhere(binary_history4.lg_mstar_dot_1 > -8)[0][0]
+t_shift4 = binary_history4.age[index_shift4] / 1e3
+
+axs.plot(
+    binary_history3.age / 1e3 - t_shift3,
+    binary_history3.lg_mstar_dot_1,
+    label=r"$M_\textrm{a} / M_\textrm{d} = 1.0$",
+)
+axs.plot(
+    binary_history4.age / 1e3 - t_shift4,
+    binary_history4.lg_mstar_dot_1,
+    label=r"$M_\textrm{a} / M_\textrm{d} = 0.8$",
+)
+axs.set_ylim(-9, 0.5)
+axs.set_xlim(0, 185)
+axs.set_ylabel(r"$\log(\dot{M} / (M_\odot \textrm{yr}^{-1}))$")
+axs.set_xlabel(r"Time (Kyr)")
+axs.legend()
+plt.text(
+    0.075,
+    0.91,
+    r"$R_\textrm{initial}= 116.0 R_\odot$",
+    ha="left",
+    va="top",
+    transform=axs.transAxes,
+    fontsize=8,
+)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/mass-loss-binary-rees-3MSUN-compare-q-2.pgf",
+    format="pgf",
+)
+plt.show()
+plt.close()
 # %%

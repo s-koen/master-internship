@@ -578,6 +578,7 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
+masses = ["2.0", "2.5", "3.0"]
 for m, model in enumerate(histories):
     delta = 0
     phases = histories[model]
@@ -590,6 +591,7 @@ for m, model in enumerate(histories):
                 phase.star_age[PMS_index:] / 1e9,
                 phase.R[PMS_index:],
                 c=f"C{m}",
+                label=f"${float(masses[m]):.1f}R_\odot$",
             )
         else:
             plt.plot(
@@ -601,14 +603,32 @@ for m, model in enumerate(histories):
             delta += phase.star_age[-1] / 1e9
             continue
         indices = scatter_models[model][phase_name]
-        print(phase, indices)
+        print(indices)
 
+        if phase_name == "EAGB" and masses[m] == "3.0":
+            plt.scatter(
+                delta + phase.star_age[indices[-3]] / 1e9,
+                phase.R[indices[-3]],
+                c="k",
+                s=60,
+                zorder=1000,
+                marker="*",
+            )
+            plt.scatter(
+                delta + phase.star_age[indices[-6]] / 1e9,
+                phase.R[indices[-6]],
+                c="k",
+                s=60,
+                zorder=1000,
+                marker="*",
+            )
         plt.scatter(
             delta + phase.star_age[indices] / 1e9, phase.R[indices], c=f"C{m}", s=15
         )
         delta += phase.star_age[-1] / 1e9
 
 
+plt.legend()
 plt.xlabel("Star age (Gyr)")
 plt.ylabel(r"$\log R$ ($R_\odot$)")
 plt.yscale("log")
