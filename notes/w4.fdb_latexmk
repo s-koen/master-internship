@@ -1,21 +1,21 @@
 # Fdb version 4
-["bibtex w4"] 1771929405.6133 "w4.aux" "w4.bbl" "w4" 1771932870.53543 0
+["bibtex w4"] 1771980750.29744 "w4.aux" "w4.bbl" "w4" 1771980754.93426 0
   "./master.bib" 1771772097.54179 15910 5324406827e9dd35e223d12d1719bf50 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w4.aux" 1771932870.20529 3054 0103aae7cd7cb19af3dbf30f48d9fae8 "pdflatex"
+  "w4.aux" 1771980754.6009 3728 fcf156f24292a9ae22406c56a5624024 "pdflatex"
   (generated)
   "w4.bbl"
   "w4.blg"
   (rewritten before read)
-["pdflatex"] 1771932865.91176 "w4.tex" "w4.pdf" "w4" 1771932870.53559 0
+["pdflatex"] 1771980750.39244 "w4.tex" "w4.pdf" "w4" 1771980754.93441 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
   "/home/koen/LaTeX-setup//LaTeX-files/listings.tex" 1739308810.95949 27571 9f1d93b589b3961f6fd7d842d0658ca5 ""
-  "/home/koen/LaTeX-setup//LaTeX-files/master-internship.tex" 1771860628.02262 11085 9e8a819206b492f2add7c020c179b18c ""
-  "/home/koen/LaTeX-setup//plots/binary-rees-3MSUN-profiles-img0.png" 1771929088.42156 346 f7b0029c71a953ac452353fa98fdbbe0 ""
-  "/home/koen/LaTeX-setup//plots/binary-rees-3MSUN-profiles-img1.png" 1771929088.43275 353 5d8b02d13543f6241e25b2bfe33140ed ""
-  "/home/koen/LaTeX-setup//plots/binary-rees-3MSUN-profiles.pgf" 1771929088.43856 1844157 b73ee1a319a7525ef1b33b9c22b75294 ""
+  "/home/koen/LaTeX-setup//LaTeX-files/master-internship.tex" 1771976933.75947 11335 5b3296a1694a08afe45a218acefa456e ""
+  "/home/koen/LaTeX-setup//plots/binary-rees-3MSUN-profiles-img0.png" 1771979881.26404 346 f7b0029c71a953ac452353fa98fdbbe0 ""
+  "/home/koen/LaTeX-setup//plots/binary-rees-3MSUN-profiles-img1.png" 1771979881.2712 353 5d8b02d13543f6241e25b2bfe33140ed ""
+  "/home/koen/LaTeX-setup//plots/binary-rees-3MSUN-profiles.pgf" 1771979881.27483 1844171 388e6e503f66307e640fb4964824096d ""
   "/home/koen/LaTeX-setup//plots/binary-test-plot-1.pgf" 1771626677.87763 35665 43d6810f22feeff1f550ee0546412604 ""
   "/home/koen/LaTeX-setup//plots/compare-radius-fix.pgf" 1771932789.95598 88745 1a2685ff036a3a79fa0e0117b6d1afac ""
   "/home/koen/LaTeX-setup//plots/compare-radius.pgf" 1771878931.7479 92740 8122a0e200eaffc7f9be45fcd6feb175 ""
@@ -417,20 +417,23 @@
   "/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1734805718 5485709 8129e419010b46b234085a26866cdb87 ""
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1734805844 3343776 1d1db4be7b32d13d500bec482c2ee25e ""
   "/usr/local/texlive/2024/texmf.cnf" 1734805714.41611 455 5b996dcaa0eb4ef14a83b026bc0a008c ""
+  "_minted/CF14520D0887E99E8BA1C18E7DCEE679.highlight.minted" 1771980553.70588 125 3fdfc91a9295de33534cf2ba515d3553 ""
   "_minted/CFB35C5EFC470C4F4BFFF5DC15017193.highlight.minted" 1771851170.84951 4947 c9bd0e626844f0095c25b3aa5b659b4c ""
   "_minted/D7B061C8090889ED2A7EB8753C2FCA37.highlight.minted" 1771876472.50771 438 69cc11d819ec97af1c697df13ba84006 ""
   "_minted/E5EC408FAA935A060DAB229639747CF4.highlight.minted" 1771860799.42824 788 2c39da29e48dfb77f189b572bc01d29b ""
   "_minted/F7E957C195252AEF6FD0BBC046B89789.highlight.minted" 1771879550.22744 1106 39971f4ed86d853cd3f13dc6529384d6 ""
   "_minted/FBB3AA25417DFDC5DC9FEEB82A363004.highlight.minted" 1771879700.24994 3345 b582efa83cbc98b50bd0cb13d2869fe6 ""
-  "_minted/_3E7A4A12EE1F6CD3EFFDA98455B640EF.index.minted" 1771879700.69675 488 6d49c8674a8ff3a9380d525caa3fac4f ""
+  "_minted/_3E7A4A12EE1F6CD3EFFDA98455B640EF.index.minted" 1771980554.02698 545 69f4d98449375dec86c151b82e504bfe ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w4.aux" 1771932870.20529 3054 0103aae7cd7cb19af3dbf30f48d9fae8 "pdflatex"
-  "w4.bbl" 1771929405.73651 2820 97e5b15c450039ae4235890e4f87ef4c "bibtex w4"
-  "w4.out" 1771932870.20625 891 8f1299560a96d3a85160b26a79aa195d "pdflatex"
-  "w4.tex" 1771929396.69737 20663 302c0ef7c2284cf9102d8a5ec54a4e12 ""
+  "w4.aux" 1771980754.6009 3728 fcf156f24292a9ae22406c56a5624024 "pdflatex"
+  "w4.bbl" 1771980750.38284 2820 97e5b15c450039ae4235890e4f87ef4c "bibtex w4"
+  "w4.out" 1771980754.60221 1207 03066fede1e083b8c89855ea85ce4e9c "pdflatex"
+  "w4.tex" 1771980745.43932 25516 d9039be35b4814bf08f97acfc22899d7 ""
+  "w4.toc" 1771980754.60221 679 d0bba90b2af79ac908f14233488b259f "pdflatex"
   (generated)
   "w4.aux"
   "w4.log"
   "w4.out"
   "w4.pdf"
+  "w4.toc"
   (rewritten before read)

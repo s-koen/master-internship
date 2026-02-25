@@ -248,7 +248,7 @@ fig, axs = plt.subplots(3, 1, sharex=True, figsize=set_size(width, height=2))
 model_numbers = []
 
 norm = mpl.colors.Normalize(vmin=347.98267018114024, vmax=808.1474163104338)
-cmap = cm.cividis  # or plasma, magma, etc.
+cmap = cm.viridis  # or plasma, magma, etc.
 
 for model in models_simple["TPAGB"]:
 

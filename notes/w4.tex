@@ -19,7 +19,8 @@
 %Begin the document
 \begin{document}
 \setuplayout
-\section{Dredge-Up Efficiency}
+\tableofcontents
+\newsection{Dredge-Up Efficiency}
 
     \emph{Dredge-up} is mixing process that brings materials created during nuclear fusion in the burning regions to the surface due to a (temporary) expansion of the convective envelope to these regions. The first dredge-up occurs after the end of H-core burning. A second dredge-up can occur at the end of He-core burning. The third-dredge up can occur after a helium flash in TPAGB stars \citep{herwig2005}.
 
@@ -117,11 +118,11 @@
         0.6 R + R \ln 2 &= 0.441 a.
     \end{align*}
     }
-    \begin{align*}
-        a &\approx 2.9323R.\\
+    \begin{align}
+        a &\approx 2.9323R.\nonumber\\
         \intertext{Starting with our 25 \(R_\odot \) star, this would equate to an initial separation of}
-        a &\approx 73.308 R_\odot. 
-    \end{align*}
+        a &\approx 73.308 R_\odot.\label{eq:a} 
+    \end{align}
 
     Below, I plot the evolution of the star in the HR-diagram as well as its mass loss rate over time.
 
@@ -274,6 +275,7 @@ close(1)
     \end{minted}
     Then, in the \lstinline[style=output, breaklines=true]|extras_startup|:
 
+\marginfignote{28}{\lstinline[style=output, breaklines=true]|iostat| indicates the status of the data transfer operation. A positive integer corresponds to an error, a negative integer corresponds to an end of file event and a 0 value means no errors or end events.}
 \begin{minted}[fontsize=\small,breaklines]{fortran}
 ! agb/agb_run_star_extras.inc
 subroutine extras_startup(id, restart, ierr)
@@ -304,7 +306,7 @@ subroutine extras_startup(id, restart, ierr)
     ...
 end subroutine extras_startup
 \end{minted}
-This code ensures that the file gets read, \emph{or}, the value gets initialized to \(0\) in the case that the file does not exist.
+This code ensures that the file gets read, \emph{or}, the value gets initialized to \(0\) in the case that the file does not exist\sidenote{There is probably a nicer and better way to achieve the same result using internal properties of MESA, but I was not able to find it and this approach is a quick and easy way to implement the desired behaviour.}.
 
 Below, I show the updated results.
 
@@ -314,39 +316,76 @@ Below, I show the updated results.
     \end{figure}
 
 I can now freely choose a model on the EAGB branch and use it as a starting model for the binary evolution.
+    I chose to look at mass transfer for two different radii in the \(3M_\odot \) star, \(59.2 R_\odot \) and \(116.0R_\odot \). The models are highlighted with a star in the figure above.
     
-    \newsection{Results!}
+    \newsection{Binary evolution}
+
+    Using the models in the binary evolution is pretty straightforward. I simply use the EAGB inlist from \citet{rees2024b} as the inlist for the evolving star, and I use the binary inlist from \citet{temmink2022} to ensure mass transfer is resolved properly.
+
+    It is important to include the extra methods from \citet{rees2024b} in order to make sure the star runs correctly during the AGB phase\sidenote{The extras contain an oversight that causes the \emph{binary} module to prematurely stop the evolution. The \lstinline[style=output, breaklines=true]|logical do_termination| is never initialized in \lstinline[style=output, breaklines=true]|extras_finish_step|. I fix this by simply setting it to \lstinline[style=output, breaklines=true]|.false.|.}
+    .
+
+    For the binary evolution, it is obviously unnecessary to also save models when the radius increases, so I left out my own code described above.
+
+    \subsection{Profiles}
+
+    I first test the binary evolution using a single model at a radius of \(59.2 R_\odot \). I use a mass ratio \(q = M _\text{a} / M _\text{d} = 1\) initially. Using equation \eqref{eq:a}, I find that the initial separation should be \(173.57R_\odot \). These values give the following mass loss rate.
 
     \begin{figure}[ht]
         \centering
+        \marginfignote{1}{The dots indicate at which points a profile is saved during the evolution. The colors show the mass of the star in that profile. For clarity, only models during the mass transfer rate peak are shown. The simulation saved many more.}
         \incplot{mass-loss-binary-rees-3MSUN}
     \end{figure}
-    
+
+    The general shape aligns with what I see in \citet{temmink2022} but is is difficult to truly compare models since the mass and starting radius is different from the models explicitly shown by \citet{temmink2022}.
+    The model terminates after exceeding the minimum envelope mass.
+
+    Below, I show the profiles of the star during the mass transfer peak. These are the same profiles as shown in the figure above. The columns show the same plots, just using a different colorbar.
+    The colorbar used for the right column is equivalent to the colorbar of the figure above.
 
     \begin{figure}[ht]
         \centering
         \incplot{binary-rees-3MSUN-profiles}
     \end{figure}
     
+    The figure shows that, even during phases of rapid mass loss, the star is able to maintain its entropy profile, thermal timescale profile and thus its critical mass loss profile. This is an important result for mass transfer stability.
+
+   \newsubsection{Varying q}
+   I also want to try models with unequal mass ratios. I think it is interesting to compare these directly to models with equal mass ratios. Therefore, I first run a second model with an equal mass ratio, this time at a radius of \(116.0R_\odot \). Again, using \eqref{eq:a}, I find that this setup requires an initial separation of \(a = 340.13R_\odot \).
+
     For varying \(q\), we need the full expression from \citet{eggleton1983}.
     \begin{align*}
         \frac{R}{R _\text{L}} & = \frac{0.6\cdot  q^{-2 / 3}R + R \cdot \ln (1 + q^{- 1/ 3} )}{0.49 \cdot q^{-2 / 3}a } = 0.9\\
         a &= \frac{0.6\cdot  q^{-2 / 3}R + R \cdot \ln (1 + q^{- 1/ 3} )}{0.411\cdot  q^{-2 / 3}}.
     \end{align*}
-    For the \(59.194R_\odot \) model and a mass ratio of \(q = M _\text{a} / M _\text{d} = 0.8\), this yield an initial separation of \(a = 177.147R_\odot \).
+    For the \(59.194R_\odot \) model and a mass ratio of \(q = M _\text{a} / M _\text{d} = 0.8\), this yield an initial separation of \(a = 177.147R_\odot \). For the \(116.0R_\odot \) model, this yield an initial separation of \(a = 347.133R_\odot \).
+
+    Below, I first show the two models simulated at an initial stellar radius of \(59.2R_\odot \).
 
 \begin{figure}[ht]
     \centering
+    \marginfignote{1}{The mass transfer times are shifted so they are 0 when the rate exceeds \(10^{-8} M_\odot \) yr\(^{-1} \). This choice is arbitrary.}
     \incplot{mass-loss-binary-rees-3MSUN-compare-q}
 \end{figure}
 
-Nice!
-\newsection{}
+The peak for the unequal mass ratio is \emph{higher}. This is expected, and as shown by \citet{temmink2022}, the peak can become so high that it exceeds the maximum mass loss rate sustainable by the local thermal timescale.
+
+Both models terminate due to the envelope mass dropping below a minimum value. The models below show the evolution when mass transfer happens later on the EAGB, at a radius of \(R=116.0R_\odot \).
+
 \begin{figure}[ht]
     \centering
     \incplot{mass-loss-binary-rees-3MSUN-compare-q-2}
 \end{figure}
+Again, the peak is higher for the unequal mass ratio setup. Both models terminate due to the start of the first thermal pulse, which I used as a stopping condition.
 
+Although the models terminated successfully, a lot of warnings appeared during the evolution noting that
+\mintinline{text}{AESOPUS_interp: logR, logT outside of table bounds.}
+
+I therefore think a larger opacity table might be needed.
+
+\section{Coma Cluster}
+
+This week, I still performed all simulations locally. Although I am able to access the cluster using the command line, I am unsure how to install MESA correctly (maybe in my own directory?) and I might need help or a resource on how to proceed.
 
 \bibliography{master.bib}
 \end{document}

@@ -174,7 +174,7 @@ axs[5].set_xlabel(r"$\log(1- m / M)$")
 sm = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
 
 cbar = fig.colorbar(sm, ax=axs[0], pad=0.02, location="top")
-cbar.set_label(r"$\dot{M}_\textrm{d}$ ($M_\odot$ yr$^{-1}$)")
+cbar.set_label(r"$\log(\dot{M}_\textrm{d} / (M_\odot\textrm{ yr}^{-1}))$)")
 
 sm = mpl.cm.ScalarMappable(norm=norm2, cmap=cmap2)
 
