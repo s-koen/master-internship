@@ -1,0 +1,236 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 5}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Varying Prescriptions of \texorpdfstring{$2 M_\odot $}{2 solar mass} Stars}
+\subsection{Wind Prescriptions}
+I have already simulated a detailed TPAGB star using the \citet{trabucchi2018} mass-loss prescription.
+
+To compare how the mass-loss prescription affects the evolution of TPAGB stars, I simulate additional \(2M_\odot \) stars with the same MESA options, except a different mass-loss prescription.
+
+I start by simulating a star using \emph{Reimers + Bl\"ocker} prescriptions with the same parameters as \citet{cinquegrana2022}.
+To be explicit, they use:
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+cool_wind_RGB_scheme = 'Reimers'
+cool_wind_AGB_scheme = 'Blocker'
+RGB_to_AGB_wind_switch = 1.0d-4
+Reimers_scaling_factor = 0.477d0
+Blocker_scaling_factor = 0.01d0 
+\end{minted}
+I then simulate a star using the same Reimers + Bl\"ocker prescription, now with the "standard" MESA Bl\"ocker scaling factor:
+\mintinline[fontsize=\small]{fortran}{Blocker_scaling_factor = 0.1d0}
+Lastly, I simulate a star with the Vassiliadis + Woods prescription.
+This is done by modifying the \lstinline[style=output, breaklines=true]|other_winds| hook from \citet{rees2024b}.
+
+Below, I show the radial evolution for the 4 prescriptions.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-mass-loss}
+\end{figure}
+
+For the first few pulses, the radii of all tested mass loss prescriptions agree very well. However, once significant portions of the envelope mass is lost, the pulses will become stronger. Because the different mass loss prescriptions cause the star to (relatively) quickly lose its mass at different times in the evolution, the number of thermal pulses, and maximum radius that is achieved is very different for the different mass loss prescriptions. 
+
+The Reimers + Blöcker using the Blöcker scaling factor from \citet{cinquegrana2022} terminates before expelling all of its envelope, because the AESOPUS opacity table \citet{cinquegrana2022} could not find values and eventually the time step dropped below the minimum timestep.
+
+The other models terminate after exceeding the minimum envelope mass.
+
+Below I plot the HR diagram of the four models. The plot is very messy, but I think two things are interesting.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-mass-loss-HR}
+\end{figure}
+
+\begin{citemize}
+    \item The last few pulses of the AGB star cause it move (to me) in unpredictable ways. 
+    \item The mass-loss prescription from Trabucchi leads to a different approach to the post-AGB phase in the HR diagram.
+\end{citemize}
+
+Below, I plot the absolute mass loss rate of the star for the various mass-loss prescriptions.
+\begin{figure}[ht]
+    \marginfignote{1}{The colors are the same as in the figure above. The two models using Reimers + Blöcker have the same general shape. The other two models also have the same general shape.}
+    \centering
+    \incplot{compare-mdot}
+\end{figure}
+
+
+Below, I plot the envelope mass of the star for the various mass-loss prescriptions.
+\begin{figure}[ht]
+    \marginfignote{1}{Again, the differences between the mass loss prescriptions are obvious.}
+    \marginfignote{5}{The models using Reimers + Blöcker start at a lower mass, because the mass loss rate is higher during the previous giant evolutionary phases.}
+    \centering
+    \incplot{compare-env-mass}
+\end{figure}
+
+\nextpage
+Lastly, I compare the dredge up of the different models.
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-dredge-up}
+\end{figure}
+
+Here, a couple of things are interesting.
+\begin{citemize}
+    \item The helium core mass is nearly identical for all models. 
+    \item  The dredge-up efficiency \(\lambda _\text{DUP}\) seems to be more efficient when a larger part of the envelope is intact, meaning initially, the models using Reimers + Blöcker mass loss prescription have slightly lower efficiencies. After the fast mass loss phase starts, the efficiency quickly drops below that of the \citet{cinquegrana2022} Reimers + Blöcker mass loss prescription.
+    \item  The C/O-ratio makes significantly larger jumps when using the Trabucchi or Vassiliadis + Woods prescription.
+\end{citemize}
+
+I am not sure which mass-loss prescription is \emph{best}. I opt to use the \citet{vassiliadis1993} prescription for two reason.
+\begin{enumd}
+    \item For a \(2M_\odot\) star, this prescription seems to be a middle ground between the prescription used by \citet{rees2024b} and the prescription used by \citet{cinquegrana2022}.
+    \item  I already have models for this star, while I do not have models for the star using the \citet{trabucchi2018} prescription.
+\end{enumd}
+
+
+\newsubsection{Opacity Tables}
+
+Because some models seem to have trouble finding opacities in the \AE SOPUS opacity table, I thought it would be interesting to compare how much difference using a different table would make.
+I compare \AE SOPUS from \citet{marigo2009} with the \citet{ferguson1905} opacities for a \citet{asplund2009} solar model, which is assumed in the high T regime as well.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-opacity}
+\end{figure}
+
+Clearly, but not surprisingly, using a different opacity table has profound effects on the radius of the star. Apparently, the opacities of \citet{ferguson1905} are slightly higher, resulting in a larger radius, especially for a very large convective envelope.
+
+Below I show the HR diagram of the two models.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{compare-opacity-HR}
+\end{figure}
+
+Unlike the different approach to the post-AGB phase that the \AE SOPUS model has for the \citet{trabucchi2018} mass-loss prescription, this approach is not present when using the \citet{ferguson1905} opacities.
+
+Since \AE SOPUS from \citet{marigo2009} specifically takes into account the varying C/O ratio, and because this table is used in \citet{rees2024b}, I decide to try mass transfer using this opacity table, \emph{but} this might mean I encounter difficulties with out of bound parameters.
+
+\newsection{Quasi-Adiabatic limit}
+
+\subsection{Implementation}
+I need to implement the quasi-adiabatic stopping condition from \citet{temmink2022} in the \lstinline[style=output, breaklines=true]|run_binary_ extras| code\sidenote{This is the binary equivalent for the run\_star\_extras, where extra methods can be implemented before, during and after binary steps, and the binary pointer b\% containing the binary structure.}. This condition gives an upper limit for the mass transfer rate. I want to terminate the binary models when the mass transfer rate exceeds the condition. To achieve this, I implement the following code in the \lstinline[style=output, breaklines=true]|integer function extras_binary_ finish_step(binary_id)|.
+
+For the quasi-adiabatic stopping condition from \citet{temmink2022}, we need the local thermal timescale. MESA internally saves this value in profile data when this is enabled. I found the calculation of the local thermal timescale in the file \lstinline[style=output, breaklines=true]|profile_getval.f90|:
+\begin{minted}[fontsize=\small]{fortran}
+! profile_getval.f90
+subroutine getval_for_profile(s, c, k, val, int_flag, int_val)
+...
+  case (p_thermal_time_to_surface)
+    if (s% L(1) > 0) &
+      val = sum(s% dm(1:k)*s% cp(1:k)*s% T(1:k))/s% L(1)
+...
+end subroutine getval_for_profile
+\end{minted}
+I implement this same definition. It is the discrete version of the thermal timescale definition given in \citet{temmink2022}.
+The local thermal time is then used to calculate the critical mass loss rate using equation 8 of \citet{temmink2022}.
+Below I show the code I added in \lstinline[style=output, breaklines=true]|integer function extras_binary_finish_step (binary_id)|
+
+\begin{minted}[fontsize=\small]{fortran}
+integer function extras_binary_finish_step(binary_id)
+   type (binary_info), pointer :: b
+   type (star_info), pointer :: s1
+   integer, intent(in) :: binary_id
+   integer :: ierr
+
+   logical :: do_termination
+
+   real(dp) :: cum_energy, tau_local, Mdot_crit, max_Mdot_crit
+   integer :: k
+
+   call binary_ptr(binary_id, b, ierr)
+   call star_ptr(b% star_ids(1), s1, ierr)
+   if (ierr /= 0) then ! failure in  binary_ptr
+      return
+   end if
+  
+   extras_binary_finish_step = keep_going
+
+   do_termination = .false.
+
+   cum_energy = 0d0
+   max_Mdot_crit = -1d99
+  
+  do k = 1, s1% nz
+     cum_energy = cum_energy + s1% dm(k) * s1% cp(k) * s1% T(k)
+  
+     if (s1% L(1) <= 0d0) cycle
+     tau_local = cum_energy / s1% L(1) 
+
+     if (tau_local <= 0d0) cycle
+     Mdot_crit = (s1% mstar - s1% m(k)) / Msun / (tau_local / secyer)
+     max_Mdot_crit = max(max_Mdot_crit, Mdot_crit)
+  end do
+
+  write(*,'(A,1PE12.5)') 'critical Mdot = ', max_Mdot_crit
+  write(*,'(A,1PE12.5)') 'current  Mdot = ', -s1% star_mdot 
+  
+  if (-s1% star_mdot > max_Mdot_crit ) then
+     do_termination = .True.
+  end if
+
+  if (do_termination .eqv. .True.) then
+     termination_code_str(t_xtra1) = "Critical mass loss rate exceeded"
+     s1% termination_code = t_xtra1
+     extras_binary_finish_step = terminate
+  end if
+
+end function extras_binary_finish_step
+\end{minted}
+
+
+
+
+\subsection{A simple test}
+As a test, I take the EAGB mass transfer model that I ran last week, and I modify the quasi-adiabatic condition such that it triggers much earlier.
+
+The EAGB model nicely terminates once the mass loss rate exceeds the critial mass loss rate:
+\begin{minted}[fontsize=\small]{text}
+critical Mdot =  8.40666E-12
+current  Mdot =  9.15848E-12
+save LOGS/EAGB/profile1.data for model 99
+
+                                  max increase dt limit         100
+
+bin     ... 
+ save photos/b_x099, photos/EAGB/1_x099 for model          99
+
+                 runtime (minutes), retries, steps        1.71         0        99
+termination code: Critical mass loss rate exceeded
+_______________________________________________________________________
+       step   ... 
+_______________________________________________________________________
+       99     ...
+min_beta             0.8937377141189621
+alpha_mlt_max        1.9310000000000000
+alpha_mlt_surface    1.9310000000000000
+
+DATE: 2026-03-01
+TIME: 01:02:26
+finished 
+\end{minted}
+
+\newsection{Testing TPAGB stars}
+
+
+
+
+\bibliography{master.bib}
+\end{document}

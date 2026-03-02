@@ -1,0 +1,117 @@
+&star_job
+
+	read_extra_star_job_inlist(1) = .true.
+	extra_star_job_inlist_name(1) = 'inlist_common'
+
+	auto_extend_net = .true.
+	h_he_net = 'basic.net'
+	co_net = 'co_burn.net'
+	adv_net = 'approx21.net'
+
+	load_saved_model = .true.
+	load_model_filename = 'TACHeB.mod'
+	save_model_when_terminate = .true.
+	save_model_filename = '1TP.mod'
+
+	required_termination_code_string = 'TP_started'
+
+	history_columns_file = ''
+	profile_columns_file = 'profile_columns.list'
+
+	set_initial_age = .true.
+	initial_age = 0
+	set_initial_model_number = .true.
+	initial_model_number = 0
+	set_initial_cumulative_energy_error = .true.
+	new_cumulative_energy_error = 0d0
+
+	change_initial_v_flag = .true.
+	new_v_flag = .false.
+
+/ !end of star_job namelist
+
+&eos
+
+	read_extra_eos_inlist(1) = .true.
+	extra_eos_inlist_name(1) = 'inlist_common'
+
+/ !end of eos namelist
+
+&kap
+
+	read_extra_kap_inlist(1) = .true.
+	extra_kap_inlist_name(1) = 'inlist_common'
+
+/ !end of kap namelist
+
+&controls
+
+	x_integer_ctrl(1) = 4 ! part number
+
+	read_extra_controls_inlist(1) = .true.
+	extra_controls_inlist_name(1) = 'inlist_common'
+
+	! log_directory = '/users/nr00492/parallel_scratch/test_agb_grid/Z0.014/4.0/LOGS_EAGB'
+	log_directory = 'LOGS/EAGB'
+	! photo_directory = '/users/nr00492/parallel_scratch/test_agb_grid/Z0.014/4.0/photos_EAGB'
+	photo_directory = 'photos/EAGB'
+
+	num_trace_history_values = 4
+	trace_history_value_name(1) = 'min_beta'
+	trace_history_value_name(2) = 'alpha_mlt_max'
+	trace_history_value_name(3) = 'alpha_mlt_surface'
+	trace_history_value_name(4) = 'last_saved_R'
+
+	max_model_number = 50000
+
+	envelope_mass_limit = 0.01
+
+	use_Ledoux_criterion = .false.
+
+	make_gradr_sticky_in_solver_iters = .true.
+
+	alpha_semiconvection = 1d-2
+	semiconvection_option = 'Langer_85'
+
+	thermohaline_coeff = 1
+
+	energy_eqn_option = 'dedt'
+
+	delta_lgL_He_limit = 0.01
+	lgL_He_burn_min = 2.0
+
+	overshoot_scheme(1) = 'exponential' ! IPCZ overshooting controls
+	overshoot_zone_type(1) = 'burn_He'
+	overshoot_zone_loc(1) = 'shell'
+	overshoot_bdy_loc(1) = 'bottom'
+	overshoot_f(1) = 0.008 ! Herwig 2008
+	overshoot_f0(1) = 0.0008
+	overshoot_scheme(2) = 'exponential' ! envelope overshooting
+	overshoot_zone_type(2) = 'nonburn'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174
+	overshoot_f0(2) = 0.00174
+	overshoot_scheme(3) = 'exponential' ! carbon burning
+	overshoot_zone_type(3) = 'any'
+	overshoot_zone_loc(3) = 'any'
+	overshoot_bdy_loc(3) = 'bottom'
+	overshoot_f(3) = 0.005
+	overshoot_f0(3) = 0.0005
+
+	! use_other_wind = .true. ! Vassilliadis & Wood 1993
+
+	op_split_burn = .true.
+	op_split_burn_min_T = 3d8
+	op_split_burn_eps = 1d-7
+	op_split_burn_odescal = 1d-8
+
+	photo_interval = 100
+	profile_interval = 0
+	history_interval = 10
+	terminal_interval = 10
+
+	write_header_frequency = 10
+
+/ !end of controls namelist
+

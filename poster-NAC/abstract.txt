@@ -1,0 +1,8 @@
+Title: Stable Mass Transfer from TP-AGB Stars as a Formation Channel for Barium Stars
+
+Abstract:
+Mass transfer from a thermally pulsing (TP) asymptotic giant branch (AGB) star is a common phase in the evolution of low- and intermediate-mass binary systems. When carbon and s-process-enriched material is transferred from the TP-AGB star to a relatively unevolved companion, the accretor can become a barium- or carbon-enriched star. Observationally, such systems are found in binaries with orbital periods between about 100 and 20,000 days. This is difficult to reconcile with the large radii reached by TP-AGB stars and the long-standing assumption that Roche-lobe overflow (RLOF) in giant stars is unstable, leading to a common-envelope phase and much shorter orbital periods.
+
+Recent detailed modelling has shown that RLOF from red-giant and early-AGB donors can remain stable over a wider range of periods and mass ratios than previously assumed. This raises the possibility that stable mass transfer from TP-AGB stars may account for a subset of the observed barium- and carbon-enriched stars. However, this regime has not yet been systematically explored with detailed binary models.
+
+We investigate the stability of RLOF from TP-AGB donor stars using the stellar evolution code MESA. We construct detailed TP-AGB models and use them in binary evolution calculations to explore how mass-transfer stability depends on mass ratio and orbital period. Preliminary results will assess whether stable TP-AGB mass transfer can reproduce some of the observed orbits of barium- and carbon-enriched stars.
