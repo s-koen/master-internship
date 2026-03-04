@@ -71,6 +71,7 @@ Below, I plot the absolute mass loss rate of the star for the various mass-loss 
 \end{figure}
 
 
+\nextpage
 Below, I plot the envelope mass of the star for the various mass-loss prescriptions.
 \begin{figure}[ht]
     \marginfignote{1}{Again, the differences between the mass loss prescriptions are obvious.}
@@ -79,7 +80,7 @@ Below, I plot the envelope mass of the star for the various mass-loss prescripti
     \incplot{compare-env-mass}
 \end{figure}
 
-\nextpage
+
 Lastly, I compare the dredge up of the different models.
 \begin{figure}[ht]
     \centering
@@ -228,6 +229,141 @@ finished
 \end{minted}
 
 \newsection{Testing TPAGB stars}
+
+I ran 15 models of TPAGB stars. I chose 4 different (initial) RLOF radii and simulated 4 different \(q\) values for each radius\sidenote{Except for the smallest RLOF radius. This model had stability problems. I will come back to this.}. The smallest RLOF radius was chosen such that the initial radius of the starting model is \(0.9\times \) the radius of the initial Roche lobe. The starting model has a radius of \(R \approx 113 R_\odot\) and as such, the initial RLOF radius of the model is \(R _\text{RL} \approx 126 R_\odot \). For this radius, I simulated \(q= 1, 0.75\) and \( 0.50\).
+
+Then, I simulated binary models for three additional initial RLOF radii: \(R _\text{RL} \approx 200, 250\) and \(300\). For all of these, I simulated \(q = 1.0, 0.75, 0.50\) and \(0.25\).
+
+Below, I show some properties of the binary evolution for \(q=1.0\).
+
+\begin{figure}[ht]
+    \marginfignote{0}{The \(q=1\) model for \(R _\text{RL} = 250 R_\odot \) terminated early due to exceeding the RLOF retry limit.}
+    \marginfignote{11}{The first pulse where \(R \approx R _\text{RL}\) generally seems to result in the highest mass loss rate and the most amount of mass lost. The pulses following the strong pulse are less extreme and transfer less mass.}
+    \marginfignote{22}{For some models, especially more evolved TPAGB models, the stars lose significant amounts of mass between pulses due to winds.}
+    \centering
+    \incplot{tpagb-binary-test-all}
+\end{figure}
+
+Now I show the binary models with \(R _\text{RL} = 126 R_\odot \)
+
+\begin{figure}[ht]
+    \marginfignote{0}{The transparent line shows the evolution of the Roche lobe radius of the donor.}
+
+    \marginfignote{11}{The first pulse transfers a significant amount of mass. The following pulses only a very small amount. The Roche Lobe radius jumps after every pulse. Eventually, the model terminates due to \emph{wind} mass loss. }
+
+    \marginfignote{22}{The \(q=1\) model terminates due to exceeding the minimum envelope mass limit. This is great. The other two models however, terminate due to repeated problems finding suitable input values for the opacity table. After many retries, the minimum \(\Delta t\) is exceeded and the models terminate. }
+    \centering
+    \incplot{tpagb-binary-test-1}
+\end{figure}
+
+Below is the same plot, now for the \(R _\text{RL} = 200 R_\odot \) models.
+\begin{figure}[ht]
+    \marginfignote{0}{The \(q=0.25\) model terminates due to repeated problems finding suitable input values for the opacity table. Again, after many tries, the minimum \(\Delta t\) exceeds the minimum value set. This seems to be the same problem that caused the models for the \(R _\text{RL} = 126R_\odot \) case to terminate.}
+    \marginfignote{11}{The low \(q\) models have stronger mass transfer. They also transfer more mass during the first substantial pulse.}
+    \centering
+    \incplot{tpagb-binary-test-2}
+\end{figure}
+
+\nextpage
+Below is the same plot, now for the \(R _\text{RL} = 250 R_\odot \) models.
+\begin{figure}[ht]
+    \marginfignote{0}{This time, the \(q=1\) model failed to terminate due to exceeding the envelope mass limit. The solver gave up after requiring more than 100 iterations to find the mass transfer rate due to RLOF. The other models ran successfully.}
+
+    \marginfignote{11}{I think it is interesting to see that, depending on the mass ratio \(q\), significant amounts of mass transfer will occur during different pulses.}
+
+    \marginfignote{22}{For the \(q=0.25\) model, the mass transfer rate is so strong during the first significant pulse, that it sheds its entire envelope during this single pulse. However, the mass loss rate \emph{never} exceeds the critical mass loss rate. The maximum mass loss rate was about \(0.43\,M_\odot / \text{ yr} \) while the critial mass loss rate at that point is \(2.5\, M_\odot / \text{ yr} \).}
+    \centering
+    \incplot{tpagb-binary-test-3}
+\end{figure}
+
+The plot below zooms in on the pulse that sheds the entire envelope at once.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-test-zoom-1}
+\end{figure}
+
+To me, it seems concerning that at one point, the radius is more than 3 \(\times \) bigger than the Roche lobe at the most extreme point.
+
+Below, I plot the binary evolution for the models with an initial Roche lobe radius of \(R _\text{RL} = 300R_\odot \).
+
+\begin{figure}[ht]
+    \marginfignote{0}{All models terminate due to exceeding the minimum envelope mass. The models with \(q=0.25\) and \(0.50\) undergo their first phase of significant mass transfer one pulse earlier than the other two models.}
+    \centering
+    \incplot{tpagb-binary-test-4}
+\end{figure}
+
+\nextpage
+
+To see what part of the mass loss is due to winds, and what part is due to RLOF mass transfer, I plot the respective parts below.
+
+\begin{figure}[ht]
+    \marginfignote{0}{During the interpulse period, mass loss is dominated by winds. During (later) pulses, mass loss is dominated by RLOF mass transfer. This aligns well with the plots showing the mass of the envelope, where significant drops in envelope mass can be seen during some of the pulses.}
+    \centering
+    \incplot{wind-vs-transfer}
+\end{figure}
+
+Below, I plot the evolution of the orbital period of the binary for the \(q=1\) systems.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The orbital period drastically increases due to the mass transfer and the jumps align with the periods of fast RLOF mass transfer.}
+    \centering
+    \incplot{period}
+\end{figure}
+
+There are some important slight differences for different mass ratios though. Below I plot:
+\begin{figure}[ht]
+    \marginfignote{0}{From this sample, it looks like systems with lower \(q\) end up as shorter period binaries.}
+    \marginfignote{16}{Systems with \(q\) significantly lower than \(1\) also tend to first undergo a phase in which the orbit shrinks, after expanding again.}
+    \centering
+    \incplot{period-q}
+\end{figure}
+
+\nextpage
+
+Below I plot a zoom in on the strongest pulse for these systems.
+
+\begin{figure}[ht]
+    \marginfignote{0}{I also add the radius and Roche lobe radius. Here, the drop in period is much more visible. It aligns very well with the drop in Roche Lobe radius while the stellar radius tends to increase at this point. This is also the point with the strongest mass loss.}
+    \centering
+    \incplot{period-q-zoom}
+\end{figure}
+
+Now. I plot the radius of the failed models:
+\begin{figure}[ht]
+    \marginfignote{0}{Apart from the \(q=1\) model that failed due to the RLOF iteration limit, the other models all fail when the Roche lobe radius is dropping.}
+    \centering
+    \incplot{fail-2}
+\end{figure}
+
+Below, I plot the side deck figure for completeness.
+\begin{figure}[ht]
+    \centering
+    \incplot{slide-deck}
+\end{figure}
+
+
+
+\newsection{\texorpdfstring{\AE}{AE}SOPUS}
+
+When the following message is printed to the terminal,
+\mintinline[fontsize=\small]{text}{AESOPUS_interp: logR, logT outside of table bounds},
+
+MESA has internally called this function and evaluated it to .false.:
+\begin{minted}[fontsize=\small]{fortran}
+! kap/private/kap_aesopus.f90
+logical function outside_R_and_T_bounds(logR,logT)
+    real(dp), intent(in) :: logR, logT
+    outside_R_and_T_bounds = &
+         logR < kA% min_logR .or. logR > kA% max_logR .or. &
+         logT < kA% min_logT .or. logT > kA% max_logT
+  end function outside_R_and_T_bounds
+\end{minted}
+Here, \(R = \rho /(T/10^{6} \text{ K})^{3}\).
+
+Unfortunately, I do not have access to the surface density, so I cannot easily compute \(R\) for models that fail.
+
+I am going to include this in the next models I run.
 
 
 
