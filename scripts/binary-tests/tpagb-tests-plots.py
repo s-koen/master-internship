@@ -383,6 +383,7 @@ style = dict(
     zorder=0,
 )
 
+j = 0
 for k in [0, 1]:
     for i, id in enumerate([14]):
         if j == 0:
@@ -432,7 +433,6 @@ for k in [0, 1]:
 for ax in axs[1]:
     ax.yaxis.tick_right()
 # axs[1].set_yscale("log")
-axs[0][2].legend()
 axs[0][0].set_ylabel(r"$R$ ($R_\odot$)")
 axs[0][1].set_ylabel(r"$\log(\dot{M} / M_\odot \textrm{ yr}^{-1})$")
 axs[0][2].set_ylabel(r"$M_\textrm{env}$ ($M_\odot$)")
@@ -555,7 +555,7 @@ plt.close()
 # %%
 
 fig, axs = plt.subplots(
-    3, 1, sharex=True, figsize=set_size(full, height=0.7), constrained_layout=True
+    3, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
 )
 
 style = dict(
@@ -566,23 +566,19 @@ style = dict(
 )
 
 for i, id in enumerate([4]):
-    if j == 0:
-        posneg = 1
-    else:
-        posneg = -1
     history = binary_histories[id]
     star_history = star_histories[id]
 
     index = np.argwhere(ref_EAGB.last_saved_R >= 113.62)[0][0]
 
-    axs[0].plot(
+    (l0,) = axs[0].plot(
         star_history.age,
         star_history.R,
         c=f"C{i}",
-        zorder=10 + posneg * i,
+        zorder=10 + i,
         label="Donor star",
     )
-    axs[0].plot(
+    (l1,) = axs[0].plot(
         history.age,
         history.rl_1,
         zorder=0,
@@ -595,17 +591,17 @@ for i, id in enumerate([4]):
     lims = axs[0].get_xlim()
     limsy = axs[0].get_ylim()
 
-    axs[1].plot(history.age, history.lg_mstar_dot_1, c=f"C{i}", zorder=10 + posneg * i)
+    axs[1].plot(history.age, history.lg_mstar_dot_1, c=f"C{i}", zorder=10 + i)
 
     axs[2].plot(
         star_history.star_age,
         star_history.star_mass - star_history.he_core_mass,
         c=f"C{i}",
         label=f"$q={1-i*.25:.2f}$",
-        zorder=10 + posneg * i,
+        zorder=10 + i,
     )
 
-axs[0].plot(
+(l2,) = axs[0].plot(
     ref_EAGB.star_age[index:] - ref_EAGB.star_age[index],
     ref_EAGB.R[index:],
     **style,
@@ -640,7 +636,7 @@ axs[2].plot(
 )
 
 # axs[1].set_yscale("log")
-axs[0].legend(loc="upper left")
+axs[2].legend(loc="upper right", handles=[l0, l1, l2])
 axs[2].set_xlim(lims[0], 1.1 * lims[1])
 axs[0].set_ylim(limsy[0], limsy[1])
 axs[0].set_ylabel(r"$R$ ($R_\odot$)")
@@ -653,4 +649,450 @@ print(history.period_days[0], history.period_days[-1])
 plt.savefig(f"/home/koen/LaTeX-setup/plots/slide-deck.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+
+fig, axs = plt.subplots(
+    3, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
+)
+
+style = dict(
+    c="C8",
+    alpha=0.7,
+    linewidth=4,
+    zorder=0,
+)
+
+for i, id in enumerate(range(7, 11)):
+    history = binary_histories[id]
+    star_history = star_histories[id]
+
+    index = np.argwhere(ref_EAGB.last_saved_R >= 113.62)[0][0]
+
+    (l0,) = axs[0].plot(
+        star_history.star_mass - star_history.he_core_mass,
+        star_history.R,
+        c=f"C{i}",
+        zorder=10 + i,
+        label="Donor star",
+    )
+    (l1,) = axs[0].plot(
+        star_history.star_mass - star_history.he_core_mass,
+        star_history.rl_1,
+        zorder=0,
+        c=f"C{i}",
+        alpha=0.4,
+        linewidth=3,
+        label="Roche lobe donor star",
+    )
+
+    lims = axs[0].get_xlim()
+    limsy = axs[0].get_ylim()
+
+    axs[1].plot(
+        star_history.star_mass - star_history.he_core_mass,
+        star_history.lg_mstar_dot_1,
+        c=f"C{i}",
+        zorder=10 + i,
+    )
+
+    axs[1].plot(
+        star_history.star_mass - star_history.he_core_mass,
+        star_history.lg_wind_mdot_1,
+        c=f"C{i}",
+        alpha=0.4,
+        linewidth=3,
+    )
+
+    axs[2].plot(
+        star_history.star_mass - star_history.he_core_mass,
+        star_history.period_days,
+        c=f"C{i}",
+        label=f"$q={1-i*.25:.2f}$",
+        zorder=10 + i,
+    )
+
+axs[2].set_xlim(lims[1], lims[0])
+axs[0].set_ylim(limsy[0], limsy[1])
+axs[0].set_ylabel(r"$R$ ($R_\odot$)")
+axs[1].set_ylabel(r"$\log(\dot{M} / M_\odot \textrm{ yr}^{-1})$")
+axs[2].set_ylabel(r"$M_\textrm{env}$ ($M_\odot$)")
+axs[2].set_xlabel("TPAGB age (yr)")
+
+print(history.period_days[0], history.period_days[-1])
+
+# plt.savefig(f"/home/koen/LaTeX-setup/plots/mass-test.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+fig, axs = plt.subplots(
+    3, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
+)
+
+style = dict(
+    c="C8",
+    alpha=0.7,
+    linewidth=4,
+    zorder=0,
+)
+
+for i, id in enumerate(range(7, 11)):
+    history = binary_histories[id]
+    star_history = star_histories[id]
+
+    index = np.argwhere(ref_EAGB.last_saved_R >= 113.62)[0][0]
+    env_mass = star_history.star_mass - star_history.he_core_mass
+    env_mass = np.log10(env_mass / env_mass[0])
+
+    (l0,) = axs[0].plot(
+        env_mass,
+        star_history.R,
+        c=f"C{i}",
+        zorder=10 + i,
+        label="Donor star",
+    )
+    (l1,) = axs[0].plot(
+        env_mass,
+        star_history.rl_1,
+        zorder=0,
+        c=f"C{i}",
+        alpha=0.4,
+        linewidth=3,
+        label="Roche lobe donor star",
+    )
+
+    lims = axs[0].get_xlim()
+    limsy = axs[0].get_ylim()
+
+    axs[1].plot(
+        env_mass,
+        star_history.lg_mstar_dot_1,
+        c=f"C{i}",
+        zorder=10 + i,
+    )
+
+    axs[1].plot(
+        env_mass,
+        star_history.lg_wind_mdot_1,
+        c=f"C{i}",
+        alpha=0.4,
+        linewidth=3,
+    )
+
+    axs[2].plot(
+        env_mass,
+        star_history.period_days,
+        c=f"C{i}",
+        label=f"$q={1-i*.25:.2f}$",
+        zorder=10 + i,
+    )
+
+axs[2].set_xlim(lims[1], lims[0])
+axs[0].set_ylim(limsy[0], limsy[1])
+axs[0].set_ylabel(r"$R$ ($R_\odot$)")
+axs[1].set_ylabel(r"$\log(\dot{M} / M_\odot \textrm{ yr}^{-1})$")
+axs[2].set_ylabel(r"$M_\textrm{env}$ ($M_\odot$)")
+axs[2].set_xlabel("TPAGB age (yr)")
+
+print(history.period_days[0], history.period_days[-1])
+
+# plt.savefig(f"/home/koen/LaTeX-setup/plots/mass-test.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+lists = [
+    [0, 1, 2],
+    [3, 4, 5, 6],
+    [11, 12, 13, 14],
+    [7, 8, 9, 10],
+]
+for j, l in enumerate(lists):
+    fig, axss = plt.subplots(
+        3,
+        2,
+        sharex=True,
+        figsize=set_size(full, height=0.8),
+        constrained_layout=True,
+        width_ratios=[1.6, 1],
+    )
+
+    axs = axss[:, 0][::-1]
+    laxs = axss[:, 1][::-1]
+
+    for lax in laxs:
+        lax.axis("off")
+    style = dict(
+        c="C8",
+        alpha=0.7,
+        linewidth=4,
+        zorder=0,
+    )
+
+    ls = []
+    for i, id in enumerate(l):
+        if j == 0:
+            posneg = 1
+        else:
+            posneg = -1
+        history = binary_histories[id]
+        star_history = star_histories[id]
+
+        index = np.argwhere(ref_EAGB.last_saved_R >= 113.62)[0][0]
+        env_mass = star_history.star_mass - star_history.he_core_mass
+        # env_mass = np.log10(env_mass / env_mass[0])
+
+        (l,) = axs[0].plot(
+            env_mass,
+            star_history.R,
+            c=f"C6",
+            zorder=0,
+            label="Star radius",
+        )
+        axs[0].plot(
+            env_mass,
+            star_history.R,
+            c=f"C{i}",
+            zorder=10 + posneg * i,
+            label="Star radius",
+        )
+        (l2,) = axs[0].plot(
+            env_mass[0],
+            star_history.rl_1[0],
+            zorder=0,
+            c=f"C6",
+            alpha=0.5,
+            linewidth=3,
+            label="Roche lobe radius",
+        )
+        axs[0].plot(
+            env_mass,
+            star_history.rl_1,
+            zorder=0,
+            c=f"C{i}",
+            alpha=0.5,
+            linewidth=3,
+            label="Roche lobe radius",
+        )
+        laxs[0].legend(
+            handles=[l, l2],
+            loc="center left",
+        )
+
+        lims = axs[0].get_xlim()
+        limsy = axs[0].get_ylim()
+
+        (l,) = axs[1].plot(
+            env_mass[0],
+            star_history.lg_mstar_dot_1[0],
+            c=f"C6",
+            zorder=10 + posneg * i,
+            label="Total $\dot{M}$",
+        )
+        axs[1].plot(
+            env_mass, star_history.lg_mstar_dot_1, c=f"C{i}", zorder=10 + posneg * i
+        )
+        (l2,) = axs[1].plot(
+            env_mass[0],
+            star_history.lg_wind_mdot_1[0],
+            c=f"C6",
+            alpha=0.4,
+            linewidth=3,
+            label="Wind $\dot{M}$",
+        )
+        axs[1].plot(
+            env_mass,
+            star_history.lg_wind_mdot_1,
+            c=f"C{i}",
+            alpha=0.4,
+            linewidth=3,
+        )
+
+        laxs[1].legend(
+            handles=[l, l2],
+            loc="center left",
+        )
+
+        (l,) = axs[2].plot(
+            env_mass,
+            star_history.period_days,
+            c=f"C{i}",
+            label=f"$q={1-i*.25:.2f}$",
+            zorder=10 + i,
+        )
+        ls.append(l)
+        laxs[2].legend(
+            handles=ls,
+            loc="center left",
+        )
+    # axs[1].set_yscale("log")
+    axs[2].set_xlim(lims[1], lims[0])
+    axs[0].set_ylim(limsy[0], limsy[1])
+    axs[0].set_ylabel(r"$R$ ($R_\odot$)")
+    axs[1].set_ylabel(r"$\log(\dot{M} / M_\odot \textrm{ yr}^{-1})$")
+    axs[2].set_ylabel(r"Orbital period (days)")
+    axs[0].set_xlabel(r"Envelope mass ($M_\odot$)")
+    fig.text(
+        0.11,
+        0.95,
+        f"$R_\\textrm{{RL}} = {history.rl_1[0]:.0f}\\, R_\\odot$",
+        ha="left",
+        va="bottom",
+        fontsize=8,
+    )
+
+    plt.savefig(
+        f"/home/koen/LaTeX-setup/plots/tpagb-binary-mass-{j+1}.pgf", format="pgf"
+    )
+    plt.show()
+    plt.close()
+# %%
+
+lists = [
+    [0, 1, 2],
+    [3, 4, 5, 6],
+    [11, 12, 13, 14],
+    [7, 8, 9, 10],
+]
+for j, l in enumerate(lists):
+    fig, axss = plt.subplots(
+        3,
+        2,
+        sharex=True,
+        figsize=set_size(full, height=0.8),
+        constrained_layout=True,
+        width_ratios=[1.6, 1],
+    )
+
+    axs = axss[:, 0][::-1]
+    laxs = axss[:, 1][::-1]
+
+    for lax in laxs:
+        lax.axis("off")
+    style = dict(
+        c="C8",
+        alpha=0.7,
+        linewidth=4,
+        zorder=0,
+    )
+
+    ls = []
+    for i, id in enumerate(l):
+        if j == 0:
+            posneg = 1
+        else:
+            posneg = -1
+        history = binary_histories[id]
+        star_history = star_histories[id]
+
+        index = np.argwhere(ref_EAGB.last_saved_R >= 113.62)[0][0]
+        env_mass = star_history.star_mass - star_history.he_core_mass
+        env_mass = np.log10(env_mass / env_mass[0])
+
+        (l,) = axs[0].plot(
+            env_mass,
+            star_history.R,
+            c=f"C6",
+            zorder=0,
+            label="Star radius",
+        )
+        axs[0].plot(
+            env_mass,
+            star_history.R,
+            c=f"C{i}",
+            zorder=10 + posneg * i,
+            label="Star radius",
+        )
+        (l2,) = axs[0].plot(
+            env_mass[0],
+            star_history.rl_1[0],
+            zorder=0,
+            c=f"C6",
+            alpha=0.5,
+            linewidth=3,
+            label="Roche lobe radius",
+        )
+        axs[0].plot(
+            env_mass,
+            star_history.rl_1,
+            zorder=0,
+            c=f"C{i}",
+            alpha=0.5,
+            linewidth=3,
+            label="Roche lobe radius",
+        )
+        laxs[0].legend(
+            handles=[l, l2],
+            loc="center left",
+        )
+
+        lims = axs[0].get_xlim()
+        limsy = axs[0].get_ylim()
+
+        (l,) = axs[1].plot(
+            env_mass[0],
+            star_history.lg_mstar_dot_1[0],
+            c=f"C6",
+            zorder=10 + posneg * i,
+            label="Total $\dot{M}$",
+        )
+        axs[1].plot(
+            env_mass, star_history.lg_mstar_dot_1, c=f"C{i}", zorder=10 + posneg * i
+        )
+        (l2,) = axs[1].plot(
+            env_mass[0],
+            star_history.lg_wind_mdot_1[0],
+            c=f"C6",
+            alpha=0.4,
+            linewidth=3,
+            label="Wind $\dot{M}$",
+        )
+        axs[1].plot(
+            env_mass,
+            star_history.lg_wind_mdot_1,
+            c=f"C{i}",
+            alpha=0.4,
+            linewidth=3,
+        )
+
+        laxs[1].legend(
+            handles=[l, l2],
+            loc="center left",
+        )
+
+        (l,) = axs[2].plot(
+            env_mass,
+            star_history.period_days,
+            c=f"C{i}",
+            label=f"$q={1-i*.25:.2f}$",
+            zorder=10 + i,
+        )
+        ls.append(l)
+        laxs[2].legend(
+            handles=ls,
+            loc="center left",
+        )
+    # axs[1].set_yscale("log")
+    axs[2].set_xlim(lims[1], lims[0])
+    axs[0].set_ylim(limsy[0], limsy[1])
+    axs[0].set_ylabel(r"$R$ ($R_\odot$)")
+    axs[1].set_ylabel(r"$\log(\dot{M} / M_\odot \textrm{ yr}^{-1})$")
+    axs[2].set_ylabel(r"Orbital period (days)")
+    axs[0].set_xlabel(r"$\log(M_\textrm{env} / M_\textrm{env, ini})$")
+    fig.text(
+        0.11,
+        0.95,
+        f"$R_\\textrm{{RL}} = {history.rl_1[0]:.0f}\\, R_\\odot$",
+        ha="left",
+        va="bottom",
+        fontsize=8,
+    )
+
+    plt.savefig(
+        f"/home/koen/LaTeX-setup/plots/tpagb-binary-mass-{j+1}-log.pgf", format="pgf"
+    )
+    plt.show()
+    plt.close()
 # %%

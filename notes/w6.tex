@@ -1,0 +1,595 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 6}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Mass coordinate}
+
+Instead of plotting relevant stellar and binary properties as a function of time / age, one can plot them against the remaining envelope mass as well.
+Plotting the properties like this, makes it much easier to see what is actually happening during the most dominant phases of mass transfer.
+
+Below, I plot the same models that I showed last week, but this time with the envelope mass on the horizontal axis.
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-1}
+\end{figure}
+
+This figure shows that nearly all of the mass is lost due to mass transfer, except for maybe the last couple of \(0.01 M_\odot \) of envelope. By plotting the envelope mass on the horizontal axis, it is much easier to compare the star radius with the Roche lobe radius during the mass transfer episodes. For the \(q=1\) model, the stellar radius stays relatively close to Roche lobe radius.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-2}
+\end{figure}
+
+This figure starts to show clear effects of the mass ratio.
+These can be explained by mass-ratio equalising effects that occur in binaries with unequal mass ratios with fully conservative mass transfer.
+Most importantly, the Roche lobe radius and orbital period shrink. These effects cause the star to lose more mass.
+
+The significant bump in radius for the \(q=0.5\) model is interesting. I am not sure what causes this. 
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-3}
+\end{figure}
+
+This plot tells a similar story. Again, there is a significant bump in radius for the low \(q\) models, with the \(q=0.25\) model also showing big changes between steps.
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-4}
+\end{figure}
+
+Here, the bumps are not visible. This leads me to believe they might be nonfysical.
+
+\section{\texorpdfstring{\AE}{AE}SOPUS}
+
+To check the details of the \AE SOPUS table that MESA uses,
+I added the following line to the \emph{kap} module of my inlist:
+\mintinline[fontsize=\small]{fortran}{show_info = .true.}
+
+Below, I show the output:
+\begin{minted}[fontsize=\small]{text}
+read filename </home/koen/mesa-r23.05.1//data/kap_data/AESOPUS_AGSS09.h5>
+ AESOPUS composition parameters
+        Zsun =   1.337E-02
+     fCO_ref =  -0.385
+      fC_ref =  -0.752
+      fN_ref =  -1.286
+
+ AESOPUS logT and logR range (logR = logRho - 3 * logT + 18)
+   num logTs =  42
+       logTs =   3.200   3.220   3.240   3.260   3.280   3.300   3.320   3.340
+         3.360   3.380   3.400   3.420   3.440   3.460   3.480   3.500   3.520
+         3.540   3.560   3.580   3.600   3.620   3.640   3.660   3.680   3.700
+         3.750   3.800   3.850   3.900   3.950   4.000   4.050   4.100   4.150
+         4.200   4.250   4.300   4.350   4.400   4.450   4.500
+   num logRs =  19
+       logRs =  -8.000  -7.500  -7.000  -6.500  -6.000  -5.500  -5.000  -4.500
+        -4.000  -3.500  -3.000  -2.500  -2.000  -1.500  -1.000  -0.500   0.000
+         0.500   1.000
+
+ AESOPUS metallicities
+ (These Z values are the reference metallicities)
+      num Zs =  13
+          Zs =   1.000E-05   3.000E-05   1.000E-04   3.000E-04   1.000E-03
+                 2.000E-03   3.000E-03   5.000E-03   1.000E-02   2.000E-02
+                 3.000E-02   5.000E-02   1.000E-01
+
+Table 0.000010: Z = 1.000E-05
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000   0.170   0.270   0.290   0.310   0.330   1.350   2.520   3.700
+     num fCs =   5
+         fCs =  -1.000   0.300   1.600   2.900   4.200
+     num fNs =   5
+         fNs =   0.000   1.170   2.350   3.520   4.700
+
+Table 0.000030: Z = 3.000E-05
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000   0.060   0.270   0.290   0.310   0.330   1.110   2.170   3.220
+     num fCs =   5
+         fCs =  -1.000   0.180   1.360   2.540   3.720
+     num fNs =   5
+         fNs =   0.000   1.060   2.110   3.170   4.220
+
+Table 0.000100: Z = 1.000E-04
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.080   0.270   0.290   0.310   0.330   0.850   1.770   2.700
+     num fCs =   5
+         fCs =  -1.000   0.050   1.100   2.150   3.200
+     num fNs =   5
+         fNs =   0.000   0.920   1.850   2.770   3.700
+
+Table 0.000300: Z = 3.000E-04
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.190   0.270   0.290   0.310   0.330   0.610   1.420   2.220
+     num fCs =   5
+         fCs =  -1.000  -0.070   0.860   1.790   2.720
+     num fNs =   5
+         fNs =   0.000   0.810   1.610   2.420   3.220
+
+Table 0.001000: Z = 1.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.330   0.270   0.290   0.310   0.330   0.350   1.020   1.700
+     num fCs =   5
+         fCs =  -1.000  -0.200   0.600   1.400   2.200
+     num fNs =   5
+         fNs =   0.000   0.670   1.350   2.020   2.700
+
+Table 0.002000: Z = 2.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.400   0.200   0.270   0.290   0.310   0.330   0.800   1.400
+     num fCs =   5
+         fCs =  -1.000  -0.280   0.450   1.170   1.900
+     num fNs =   5
+         fNs =   0.000   0.600   1.200   1.800   2.400
+
+Table 0.003000: Z = 3.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.440   0.110   0.270   0.290   0.310   0.330   0.670   1.220
+     num fCs =   5
+         fCs =  -1.000  -0.320   0.360   1.040   1.720
+     num fNs =   5
+         fNs =   0.000   0.560   1.110   1.670   2.220
+
+Table 0.005000: Z = 5.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.500   0.000   0.270   0.290   0.310   0.330   0.500   1.000
+     num fCs =   5
+         fCs =  -1.000  -0.380   0.250   0.880   1.500
+     num fNs =   5
+         fNs =   0.000   0.500   1.000   1.500   2.000
+
+Table 0.010000: Z = 1.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.580  -0.150   0.000   0.270   0.290   0.310   0.330   0.700
+     num fCs =   5
+         fCs =  -1.000  -0.450   0.100   0.650   1.200
+     num fNs =   5
+         fNs =   0.000   0.420   0.850   1.270   1.700
+
+Table 0.020000: Z = 2.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.650  -0.300   0.050   0.270   0.290   0.310   0.330   0.400
+     num fCs =   5
+         fCs =  -1.000  -0.530  -0.050   0.420   0.900
+     num fNs =   5
+         fNs =   0.000   0.350   0.700   1.050   1.400
+
+Table 0.030000: Z = 3.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.690  -0.390  -0.080   0.220   0.270   0.290   0.310   0.330
+     num fCs =   5
+         fCs =  -1.000  -0.570  -0.140   0.290   0.720
+     num fNs =   5
+         fNs =   0.000   0.310   0.610   0.920   1.220
+
+Table 0.050000: Z = 5.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.750  -0.500  -0.250   0.000   0.270   0.290   0.310   0.330
+     num fCs =   5
+         fCs =  -1.000  -0.620  -0.250   0.120   0.500
+     num fNs =   5
+         fNs =   0.000   0.250   0.500   0.750   1.000
+
+Table 0.100000: Z = 1.000E-01
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.830  -0.650  -0.480  -0.300   0.270   0.290   0.310   0.330
+     num fCs =   5
+         fCs =  -1.000  -0.700  -0.400  -0.100   0.200
+     num fNs =   5
+         fNs =   0.000   0.170   0.350   0.520   0.700
+
+ Finished reading AESOPUS tables
+\end{minted}
+\nextpage
+Most importantly, this table ranges from \(\log T = 3.2\,\,\, (1585 \text{ K})\) to \(\log T = 4.5\,\,\, (31622 \text{ K})\) and from \(\log R = \log (\rho / (T / 10^6 \text{ K})^3) = -8\) to \(\log R = 1\). This is the full range \AE SOPUS 1.0 \citep{marigo2009} and \AE SOPUS 2.0 table \citet{marigo2023}.
+\emph{However}, the most recent \AE SOPUS 2.1 table \citep{marigo2024}, which was released after \emph{MESA r23.05.1}, has an extended low temperature range going down to \(\log T = 2\). 
+
+\AE SOPUS 2.1 tables can be generated and downloaded from their website:
+\url{https://stev.oapd.inaf.it/cgi-bin/aesopus_2.1}\sidenote{I tried to generate and download some tables, but I was unable to generate tables with multiple \(f_\text{CO}\), \(f _\text{C}\) and \(f _\text{N}\) values. This makes it very difficult to download all of the required tables.}.
+
+Once downloaded, these tables can be used to create opacity tables for \emph{MESA}. The file \lstinline[style=output, breaklines=true]|$MESA_DIR/kap/preprocessor/AESOPUS/README| describes how this should be done.
+
+Below, I plot the minimum \(R\) and \(T\) of the standard \(2M_\odot \) TPAGB star that I used to generate the models.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Clearly, the minima stay well within the table bounds.}
+    \centering
+    \incplot{standard_minima}
+\end{figure}
+The maxima should not be important, since here, the high-\(T\) opacity tables will be used.
+
+It is good news that even at its most extreme, the star is still well within the \AE SOPUS bounds.
+However, most problems were encountered in a binary simulation.
+
+Below, I plot a couple of the binaries that displayed the \AE SOPUS out of bounds message (spoiler), as well as a model that successfully terminated.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{binary_minima}
+\end{figure}
+
+Surprisingly, none of the models temperatures or densities anywhere near the table minima, and seem to even be moving towards more stable configurations before abruptly stopping.
+I think it is interesting that the successful model seems transition to larger envelope temperatures much more gradually than the models that terminate. The maximum reached is also much lower.
+
+So what is going on?
+
+\newsection{Binary problems}
+
+In this section, I explore the problems with the models that terminate early.
+
+To start, let me write an example of the terminal output below:
+\begin{minted}[fontsize=\small]{text}
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ retry:  adjust_correction failed in eval_equations -- give up in solver    3568
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+...
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ retry:  adjust_correction failed in eval_equations -- give up in solver    3568
+ retry:  logT < hydro_mtx_min_allowed_logT          68    3568
+                                                     dt    6.9635367095860718D-07
+   i                                  min_timestep_limit    9.9999999999999995D-07
+ stopping because of problems dt < min_timestep_limit
+\end{minted}
+Although the output \emph{looks} like it fails due to problems with the opacity module, this is not the \emph{true} problem.
+
+By digging a little deeper, and enabling \lstinline[style=output, breaklines=true]|report_solver_progress = .true.| we can see that the model actually fails during the Newton solver step. Below, I show part of this output.
+\begin{minted}[fontsize=\tiny]{text}
+solver_call_number        1673
+              gold tolerances level           1
+   correction tolerances: norm, max    3.0000000000000001D-05    3.0000000000000001D-03
+tol1 residual tolerances: norm, max    9.9999999999999994D-12    1.0000000000000001D-09
+   618  1  coeff 1.0000 avg resid  0.124E-07     max resid dv_dt   178  0.79835E-05 mix type 11111 avg corr  0.175E-04
+   max corr lnd   168 -0.17969E-02 mix type 11111  avg+max resid
+   618  2  coeff 0.0400 avg resid  0.448E-07     max resid dv_dt   193  0.16398E-03 mix type 11111 avg corr  0.226E-03
+   max corr lnT    68 -0.30562E-01 mix type 11111  avg+max corr+resid
+   ./main.
+
+   618  3  coeff 0.0400 avg resid  0.577E-07   max resid dlnE_dt   192  0.16523E-03 mix type 11111 avg corr  0.207E-03
+   max corr lnT    69 -0.28046E-01 mix type 11111  avg+max corr+resid'o
+buttons = new Buttons[12];
+
+   618  4  coeff 0.0400 avg resid  0.755E-07   max resid dlnE_dt   191  0.20763E-03 mix type 11111 avg corr  0.192E-03
+   max corr lnT    70 -0.25964E-01 mix type 11111  avg+max corr+resid
+tol2 residual tolerances: norm, max    1.0000000000000000D-08    9.9999999999999995D-07.i./maini
+
+   618  5  coeff 0.0400 avg resid  0.875E-07   max resid dlnE_dt   190  0.27603E-03 mix type 11111 avg corr  0.177E-03
+   max corr lnT    70 -0.24251E-01 mix type 11111  avg+max corr+resid
+   618  6  coeff 0.0400 avg resid  0.983E-07   max resid dlnE_dt   189  0.39503E-03 mix type 11111 avg corr  0.166E-03
+   max corr lnT    70 -0.22525E-01 mix type 11111  avg+max corr+resid
+   618  7  coeff 0.0400 avg resid  0.133E-06   max resid
+   ./main.
+   dlnE_dt   188  0.75783E-03 mix type 11111 avg corr  0.157E-03
+   max corr lnT   188  0.25259E-01 mix type 11111  avg+i618  8  coeff 0.0400 avg resid  0.133E-06   max resid dlnE_dt
+   188  0.70644E-03 mix type 11111 avg corr  0.122E-03
+   max corr lnT   187  0.24678E-01 mix type 11111  avg+max corr+resid
+   618  9  coeff 0.0400 avg resid  0.135E-06   max resid dlnE_dt   187  0.53552E-03 mix type 11111 avg corr  0.115E-03
+   max corr lnT   186  0.22707E-01 mix type 11111  avg+max corr+resid
+
+tol3 residual tolerances: norm, max    9.9999999999999995D-07    1.0000000000000000D-04
+   618 10  coeff 0.0400 avg resid  0.131E-06   max resid dlnE_dt   186  0.54998E-03 mix type 11111 avg corr  0.105E-03
+   max corr lnT   185  0.17053E-01 mix type 11111  avg+max corr+resid
+   618 11  coeff 0.0400 avg resid  0.151E-06   max resid dlnE_dt   185  0.76469E-03 mix type 11111 avg corr  0.100E-03
+   max corr lnT   184  0.16357E-01 mix type 11111  avg+max corr+resid
+   618 12  coeff 0.0400 avg resid  0.170E-06   max resid dlnE_dt   184  0.82843E-03 mix type 11111 avg corr  0.923E-04
+   max corr lnT   183  0.17007E-01 mix type 11111  avg+max corr+resid
+   618 13  coeff 0.0400 avg resid  0.196E-06   max resid dlnE_dt   182  0.12851E-02 mix type 11111 avg corr  0.877E-04
+   max corr lnT   182  0.24143E-01 mix type 11111  avg+max corr+resid
+   618 14  coeff 0.0400 avg resid  0.181E-06   max resid dlnE_dt   182  0.10598E-02 mix type 11111 avg corr  0.770E-04
+   max corr lnT   193 -0.18414E-01 mix type 11111  avg+max corr+resid
+   618 15  coeff 0.0400 avg resid  0.202E-06   max resid dlnE_dt   180  0.11054E-02 mix type 11111 avg corr  0.712E-04
+   max corr lnT   193 -0.19715E-01 mix type 11111  avg+max corr+resid
+   618 16  coeff 0.0400 avg resid  0.220E-06   max resid dlnE_dt   179  0.10888E-02 mix type 11111 avg corr  0.673E-04
+   max corr lnT   193 -0.22830E-01 mix type 11111  avg+max corr+resid
+   618 17  coeff 0.0400 avg resid  0.195E-06   max resid dlnE_dt   178  0.91832E-03 mix type 11111 avg corr  0.687E-04
+   max corr lnT   193 -0.27989E-01 mix type 11111  avg+max corr+resid
+   618 18  coeff 0.0400 avg resid  0.194E-06     max resid dv_dt   194  0.10607E-02 mix type 11111 avg corr  0.763E-04
+   max corr lnT   193 -0.28176E-01 mix type 11111  avg+max corr+resid
+   618 19  coeff 0.0400 avg resid  0.226E-06   max resid dlnE_dt   176  0.12811E-02 mix type 11111 avg corr  0.747E-04
+   max corr lnT   194 -0.21301E-01 mix type 11111  avg+max corr+resid
+   618 20  coeff 0.0400 avg resid  0.253E-06   max resid dlnE_dt   175  0.11581E-02 mix type 11111 avg corr  0.918E-04
+   max corr lnd   193  0.27332E-01 mix type 11111  avg+max corr+resid
+   618 21  coeff 0.0400 avg resid  0.286E-06     max resid dv_dt   194  0.11760E-02 mix type 11111 avg corr  0.101E-03
+   max corr lnd   193  0.32277E-01 mix type 11111  avg+max corr+resid
+   618 22  coeff 0.0100 avg resid  0.283E-06     max resid dv_dt   194  0.11807E-02 mix type 11111 avg corr  0.116E-03
+   max corr lnd   193  0.39914E-01 mix type 11111  avg+max corr+resid
+   618 23  coeff 1.0000 avg resid  0.295E-04     max resid dv_dt   195  0.17796E+00 mix type 11111 avg corr  0.117E-03
+   max corr lnd   193  0.41098E-01 mix type 11111  avg+max corr+resid
+   618 24  coeff 0.2000 avg resid  0.219E-04     max resid dv_dt   195  0.12982E+00 mix type 11111 avg corr  0.202E-03
+   max corr lnd   193 -0.11133E+00 mix type 11111  avg+max corr+resid
+   618 25  coeff 0.4090 avg resid  0.118E-04     max resid dv_dt   195  0.11553E+00 mix type 11111 avg corr  0.107E-03
+   max corr lnd   193 -0.53383E-01 mix type 11111  avg+max corr+resid -- give up
+            residual_norm > tol_residual_norm         618    1.1817550808262498D-05    9.9999999999999995D-07
+              max_residual > tol_max_residual         618    1.1553036550833190D-01    1.0000000000000000D-04
+  correction_norm > tol_correction_norm*coeff         618    1.0741774061258967D-04    1.2269375609887810D-05    4.0897918699626029D-01
+max_abs_correction > tol_max_correction*coeff         618    5.3382667224584936D-02    1.2269375609887808D-03    4.0897918699626029D-01
+                  solver rejected trial model
+                              s% model_number         618
+                        s% solver_call_number        1673
+                                           nz        1675
+                               s% num_retries           7
+                                           dt    1.0835754258239651D+05
+                                log dt/secyer   -2.4642448198843656D+00
+\end{minted}
+
+This is quite long, but the most important part to note is that the solver does not seem to converge.
+This happens both in the \lstinline[style=output, breaklines=true]|dv_dt| and \lstinline[style=output, breaklines=true]|dlnE_dt| equations.
+
+It is possible to inspect the individual results from the equations for every solver call and zone. I am not sure how to proceed, but below I show at least one problematic zone:
+\begin{minted}[fontsize=\tiny]{text}
+                                       equ name dlnE_dt
+        d_dlnE_dt(k)/d_lnd(k-1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+?????     d_dlnE_dt(k)/d_lnd(k)     190    lg rel diff    -6.87666    lg uncertainty    -6.72797    Analytic    1.026601473909E-04    Numeric    1.026601337530E-04
+        d_dlnE_dt(k)/d_lnd(k+1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+
+        d_dlnE_dt(k)/d_lnT(k-1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+*****     d_dlnE_dt(k)/d_lnT(k)     190    lg rel diff     2.17428    lg uncertainty    -8.00876    Analytic   -4.305584167190E-04    Numeric   -6.474479420316E-02
+        d_dlnE_dt(k)/d_lnT(k+1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+
+        d_dlnE_dt(k)/d_lnR(k-1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+          d_dlnE_dt(k)/d_lnR(k)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+        d_dlnE_dt(k)/d_lnR(k+1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+
+          d_dlnE_dt(k)/d_L(k-1)     190    lg rel diff   -99.00000    lg uncertainty   -99.00000    Analytic    0.000000000000E+00    Numeric    0.000000000000E+00
+            d_dlnE_dt(k)/d_L(k)     190    lg rel diff    -7.75482    lg uncertainty    -7.83850    Analytic   -3.585721220221E-38    Numeric   -3.585721283281E-38
+          d_dlnE_dt(k)/d_L(k+1)     190    lg rel diff    -7.75482    lg uncertainty    -7.83850    Analytic    3.585721220221E-38    Numeric    3.585721283281E-38
+\end{minted}
+There seems to be a problem with the \lstinline[style=output, breaklines=true]|d_dlnE_dt(k)/d_lnT(k)| equation.
+
+Here, I show the last temperature gradient profile of a model (\(R _\text{RL} = 126, q=0.5\)) just before it failed very early on during the mass transfer episode.
+\begin{figure}[ht]
+    \marginfignote{0}{There is an unexpected dip in the temperature gradient in the convective envelope. This dip is caused by a broader dip in the radiative temperature gradient, and very locally, the envelope actually becomes radiative instead of convective.}
+    \marginfignote{15}{The temperature gradient actually becomes negative in these regions. To me, this seems very problematic.}
+    \centering
+    \incplot{problem-gradTgradR}
+\end{figure}
+
+This unstable situation develops during 1 or 2 successful model steps. Just before this instability occurs, the profiles look perfectly normal (at least to me).
+Below, I show the profile of the model just before the model failed.
+\begin{figure}[ht]
+    \marginfignote{0}{Clearly, the unexpected dip is not present here.}
+    \centering
+    \incplot{success-gradTgradR}
+\end{figure}
+
+I wanted to check if the problems had something to do with the superadiabatic nature of the outer layers of the star.
+Here, I show the entropy profile for the models:
+\begin{figure}[ht]
+    \marginfignote{0}{The same dip is present here at the same location in the star.}
+    \marginfignote{13}{However, as can also clearly be seen, this is \emph{not} in the superadiabatic regions of the star, but in the "normal" convective region.}
+    \centering
+    \incplot{succes-entropy}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+    \centering
+    \incplot{all-fails}
+\end{figure}
+
+\section{Refactor}
+
+Since I am using the \lstinline[style=output, breaklines=true]|run_star_extras| code from \citet{rees2024b} and implementing my own pieces of code, I wanted to clean up the current \lstinline[style=output, breaklines=true]|extra| files that I am using.
+
+I split the code up into multiple files, making it much more clear what belongs together.
+
+The \lstinline[style=output, breaklines=true]|src| folder now looks like this:
+\begin{minted}[fontsize=\small,breaklines]{text}
+- src
+|- inc
+|   |- additional_routines.inc
+|   |- params.inc
+|   |- rees2024_agb_routines.inc
+|   |- rees2024_mixing_routines.inc
+|   |- run_star_extras.inc
+|- binary_run.f90
+|- run_binary_extras.f90
+|- run_star_extras.f90
+\end{minted}
+
+This makes it much easier to find the relevant pieces of code.
+
+In the \lstinline[style=output, breaklines=true]|additional_routines|, I implement all my custom routines, for example, the routines for saving models at specific radii.
+
+
+I also implemented code to save the maximum and minimum temperature and \(R = \rho / (T / 10^6 \text{ K})^3\). Lastly, I save the quasi-adiabatic critical mass loss rate as well.
+
+\section{New models}
+
+I started some new simulations. Most of them are still running:
+
+\begin{minted}[fontsize=\small]{text}
+678480_[21-63%16] proj_stev run-bina  kessers PD       0:00      1 (Resources)
+        678480_20 proj_stev run-bina  kessers  R    1:27:39      1 coma43
+        678480_19 proj_stev run-bina  kessers  R    1:31:53      1 coma45
+        678480_18 proj_stev run-bina  kessers  R   15:20:12      1 coma44
+        678480_13 proj_stev run-bina  kessers  R 1-20:20:39      1 coma43
+        678480_12 proj_stev run-bina  kessers  R 1-20:31:40      1 coma44
+        678480_11 proj_stev run-bina  kessers  R 1-20:40:35      1 coma43
+         678480_5 proj_stev run-bina  kessers  R 1-21:08:39      1 coma44
+         678480_6 proj_stev run-bina  kessers  R 1-21:08:39      1 coma45
+         678480_7 proj_stev run-bina  kessers  R 1-21:08:39      1 coma45
+\end{minted}
+
+This has two reasons.
+\begin{enumd}
+    \item I made a typo in my SLURM job script
+    \item I changed some inlist settings.
+\end{enumd}
+
+\subsection{SLURM typo}
+The previous array job that I submitted used run directories with the names \lstinline[style=output, breaklines=true]|{NAME}_{index}|. This is fine, but not very clear when modifying both \(q\) and \(R _\text{RL}\), and later possibly other values as well.
+
+Therefore, I changed the run directories to more descriptive names, and I had to change the SLURM script to account for this, so I wrote this:
+
+\marginfignote{20}{This typo caused the \lstinline[style=output, breaklines=true]|WORK_DIR| to be empty, which is very bad, because it is later used to copy all files in the directory to the cluster node.}
+\begin{minted}[fontsize=\small,breaklines]{bash}
+#!/bin/bash
+#SBATCH --mail-user=koen.essers@ru.nl
+#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE
+#SBATCH --output=output_slurm/R-%x_%A_%a.out
+#SBATCH --error=output_slurm/R-%x_%A_%a.err
+#SBATCH -p proj_stev
+#SBATCH --mem=8G
+#SBATCH -N 1 -n 8 
+#SBATCH --time=0-48:00:00
+
+
+idx=${SLURM_ARRAY_TASK_ID}
+MODELS_DIRS=($(ls -d /vol/astro8/onnop/kessers/tpagb-mass-transfer/ mesa-models/binary-tpagb-grid-2/runs/*))
+WORK_DIR=${MODEL_DIRS[$idx]}
+\end{minted}
+
+After some time I realised that things were not progressing as they should and I realised my mistake.
+
+The empty \lstinline[style=output, breaklines=true]|WORK_DIR| meant that SLURM / bash thought the \lstinline[style=output, breaklines=true]|WORK_DIR| was the cluster root directory, and \emph{A LOT} of data was copied to \lstinline[style=output, breaklines=true]|proj_stev| cluster nodes scratch storage.
+
+I sent an email to Simon and he cleaned up the scratch for me, after which I could actually start simulating.
+
+\subsection{Inlist changes}
+
+I wanted to modify my inlist settings for a couple of reasons. I wanted to
+\begin{enumd}
+    \item prevent RLOF solver instabilities,
+    \item  resolve mass loss more accurately,
+    \item relax the termination condition,
+\end{enumd}
+
+I did this by increasing the total number of retries that the solver is allowed to make, such that it can (hopefully) find an acceptable RLOF mass transfer value to prevent the failure that I saw last week:
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+redo_limit = 300
+retry_limit = 300
+\end{minted}
+
+I also added a maximum change in mass criterion to the star, similar to what \citet{temmink2022} did:
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+delta_lg_star_mass_limit = 1.0d-4
+delta_lg_star_mass_hard_limit = 1.0d-3
+\end{minted}
+
+Lastly, I relaxed the minimum envelope mass to:
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+envelope_mass_limit = 0.0001
+\end{minted}
+
+I think especially the last two conditions cause the models to take significantly longer to terminate, with the bulk of the computational time being used to transition to a white dwarf.
+
+I was only able to analyse one of the stars, since only the other models failed, or are still running.
+
+Below, I make some plots of the \(R=225.00\,R_\odot \) and \(q=0.375\) model, starting with plotting the radius.
+\begin{figure}[ht]
+    \centering
+    \incplot{rocheouterlobe}
+\end{figure}
+
+The models from last week did not show the last "bump" and drop to very small (white dwarf) radii.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{rocheouterlobe-mass}
+\end{figure}
+
+Clearly, the model extends past the outer Roche lobe very early on in its dominant mass transfer episode.
+
+\nextpage
+
+To show the transition of the star to a white dwarf, I plot the HR diagram.
+\begin{figure}[ht]
+    \centering
+    \incplot{w6-HR}
+\end{figure}
+
+Interestingly, there is a loop just before the final path to a white dwarf. It aligns with the "bump" that was visible in the plots above.
+
+Below, I plot the mass loss rate and the quasi-adiabatic critical mass loss rate from \citet{temmink2022}.
+\begin{figure}[ht]
+    \centering
+    \incplot{mass-loss-vs-quasi-adiabatic}
+\end{figure}
+
+Clearly, the model is below this critical rate all of the time.
+Lastly, I plot the period.
+\begin{figure}[ht]
+    \centering
+    \incplot{w5-period}
+\end{figure}
+
+
+
+\bibliography{master.bib}
+
+\newsection{Additional plots}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-1-log}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-2-log}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-3-log}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{tpagb-binary-mass-4-log}
+\end{figure}
+
+\end{document}

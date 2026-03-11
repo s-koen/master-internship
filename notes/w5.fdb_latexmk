@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w5"] 1772619690.67711 "w5.aux" "w5.bbl" "w5" 1772620926.4581 0
+["bibtex w5"] 1772619690.67711 "w5.aux" "w5.bbl" "w5" 1772640141.48635 0
   "./master.bib" 1772115198.81528 15910 5324406827e9dd35e223d12d1719bf50 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w5.aux" 1772620926.10281 3813 1b75fc7012e979097ab148f456ff6638 "pdflatex"
+  "w5.aux" 1772640141.12867 3813 1b75fc7012e979097ab148f456ff6638 "pdflatex"
   (generated)
   "w5.bbl"
   "w5.blg"
   (rewritten before read)
-["pdflatex"] 1772620921.36773 "w5.tex" "w5.pdf" "w5" 1772620926.45825 0
+["pdflatex"] 1772640136.70742 "w5.tex" "w5.pdf" "w5" 1772640141.48651 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
@@ -24,13 +24,13 @@
   "/home/koen/LaTeX-setup//plots/period-q-zoom.pgf" 1772617964.99991 107306 ff0eb87069c9105abd1eb8d17334bc2e ""
   "/home/koen/LaTeX-setup//plots/period-q.pgf" 1772615506.59763 138332 240195b3b0fe182980e81c0cd5f7a13e ""
   "/home/koen/LaTeX-setup//plots/period.pgf" 1772616078.8115 118892 db630a1a764fac3e3a2cfd96d2bfd9b7 ""
-  "/home/koen/LaTeX-setup//plots/slide-deck.pgf" 1772620761.36151 219767 9282eddba73c0d857d8fd059a537f74a ""
+  "/home/koen/LaTeX-setup//plots/slide-deck.pgf" 1772621967.46939 174299 3203882434a53a3c54e36649b805284e ""
   "/home/koen/LaTeX-setup//plots/tpagb-binary-test-1.pgf" 1772552494.84225 175025 c6acc5561bea30fbe1748f101b309307 ""
   "/home/koen/LaTeX-setup//plots/tpagb-binary-test-2.pgf" 1772552500.01233 284376 40aa409f1a74ab1c3ada37033341cb42 ""
   "/home/koen/LaTeX-setup//plots/tpagb-binary-test-3.pgf" 1772552513.56754 260317 38dca49cfd09e733c1d27098016cd8bb ""
   "/home/koen/LaTeX-setup//plots/tpagb-binary-test-4.pgf" 1772552535.65389 266401 2b8c0dd9e43a69517cf2c7e76297ce3f ""
   "/home/koen/LaTeX-setup//plots/tpagb-binary-test-all.pgf" 1772532420.65809 228003 93294ca7925b6129cd492cff19f78252 ""
-  "/home/koen/LaTeX-setup//plots/tpagb-binary-test-zoom-1.pgf" 1772558793.81096 95948 b569d7ba583b2e178e87416b4494357a ""
+  "/home/koen/LaTeX-setup//plots/tpagb-binary-test-zoom-1.pgf" 1772640136.25159 94089 0f4383ada75e3bdddbc6c090660ba015 ""
   "/home/koen/LaTeX-setup//plots/wind-vs-transfer.pgf" 1772614140.18498 81222 91aad38d1917fc53a579f02aa89571f6 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1276641224 6938 5135be6a8802f13a7faf296d1959a1ab ""
@@ -428,10 +428,10 @@
   "_minted/F08A0861BA3D900504AB49BE2C305CA4.highlight.minted" 1772534179.02478 1415 2690254ad42d90c2cfd12a5aba562eb6 ""
   "_minted/_236A1E1BC4BCD3015D6BAD55FEE5923C.index.minted" 1772534237.1024 602 e2e771978877b647cbef6908b1001b0b ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w5.aux" 1772620926.10281 3813 1b75fc7012e979097ab148f456ff6638 "pdflatex"
+  "w5.aux" 1772640141.12867 3813 1b75fc7012e979097ab148f456ff6638 "pdflatex"
   "w5.bbl" 1772619690.77942 3605 14c693771e3bf6ff06267524366bbe9d "bibtex w5"
-  "w5.out" 1772620926.10489 1184 ba9a32f2a0a78b43dd0ff13ff0741432 "pdflatex"
-  "w5.tex" 1772620920.45073 18335 efc7d2516526186cef1285fe11c1f29d ""
+  "w5.out" 1772640141.13035 1184 ba9a32f2a0a78b43dd0ff13ff0741432 "pdflatex"
+  "w5.tex" 1772638778.38172 18336 fce96eee84dd4e52699f1df23f79aed2 ""
   (generated)
   "w5.aux"
   "w5.log"

@@ -358,3 +358,109 @@ plt.savefig("/home/koen/LaTeX-setup/plots/compare-opacity-HR.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%
+standard = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/standard-2msun/LOGS/TPAGB/history.data"
+)
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+axs[0].plot(standard.star_age, np.log10(standard.min_kapR))
+axs[0].set_ylim(-9, 2)
+axs[0].set_xlim(*axs[0].get_xlim())
+axs[0].fill_between([*axs[0].get_xlim()], [-8, -8], [1, 1], alpha=0.4, color="C8")
+axs[1].plot(standard.star_age, np.log10(standard.min_T))
+axs[1].set_ylim(3.1, 4.1)
+axs[1].set_xlim(*axs[1].get_xlim())
+axs[1].fill_between([*axs[1].get_xlim()], [3.2, 3.2], [4, 4], alpha=0.4, color="C8")
+
+axs[0].set_ylabel(r"$\min(\log R)$")
+axs[1].set_ylabel(r"$\min(\log T)$")
+axs[1].set_xlabel(r"TPAGB age (yr)")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/standard_minima.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+q125 = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/binary-tpagb-grid-2/runs/R225.00_q0.125/LOGS/TPAGB/history.data"
+)
+
+q250 = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/binary-tpagb-grid-2/runs/R225.00_q0.250/LOGS/TPAGB/history.data"
+)
+
+q250_2 = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/binary-tests/binary-tpagb-test-3/model-3/LOGS/TPAGB/history.data"
+)
+
+q375 = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/binary-tpagb-grid-2/runs/R150.00_q0.375/LOGS/TPAGB/history.data"
+)
+
+q500 = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/binary-tpagb-grid-2/runs/R150.00_q0.500/LOGS/TPAGB/history.data"
+)
+
+succes = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/binary-tpagb-grid-2/runs/R225.00_q0.375/LOGS/TPAGB/history.data"
+)
+
+# %%
+fig, axss = plt.subplots(
+    2,
+    2,
+    sharex=True,
+    figsize=set_size(
+        full,
+    ),
+    constrained_layout=True,
+    width_ratios=[1.6, 1],
+)
+
+axs = axss[:, 0]
+laxs = axss[:, 1]
+
+for lax in laxs:
+    lax.axis("off")
+
+style = ["-", ":"]
+labels = [
+    r"$R_\textrm{RL} = 225\,R_\odot$, $q=0.125$",
+    r"$R_\textrm{RL} = 225\,R_\odot$, $q=0.250$",
+    r"$R_\textrm{RL} = 225\,R_\odot$, $q=0.375$",
+    r"$R_\textrm{RL} = 126\,R_\odot$, $q=0.250$",
+    r"$R_\textrm{RL} = 150\,R_\odot$, $q=0.375$",
+    r"$R_\textrm{RL} = 150\,R_\odot$, $q=0.500$",
+]
+ls = []
+for i, model in enumerate([q125, q250, succes, q250_2, q375, q500]):
+    (l,) = axs[0].plot(
+        model.star_mass - model.he_core_mass,
+        np.log10(model.min_kapR),
+        zorder=1000 - i,
+        label=labels[i],
+    )
+    ls.append(l)
+    axs[1].plot(
+        model.star_mass - model.he_core_mass, np.log10(model.min_T), zorder=1000 - i
+    )
+laxs[0].legend(loc="center left", handles=ls)
+axs[0].set_ylim(-4.5, -3.5)
+axs[1].set_xlim(1.5, 0.9)
+axs[0].fill_between([*axs[0].get_xlim()], [-8, -8], [1, 1], alpha=0.4, color="C8")
+axs[1].set_ylim(3.5, 3.65)
+axs[1].fill_between([*axs[1].get_xlim()], [3.2, 3.2], [4, 4], alpha=0.4, color="C8")
+
+axs[0].set_ylabel(r"$\min(\log R)$")
+axs[1].set_ylabel(r"$\min(\log T)$")
+axs[1].set_xlabel(r"Envelope mass ($M_\odot$)")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/binary_minima.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
