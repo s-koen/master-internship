@@ -1,0 +1,218 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 7}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Overshooting}
+
+I compare the single star evolution of stars with different masses for 3 different overshooting prescriptions:
+\begin{enumd}
+    \item  Overshooting from \citet{rees2024b}
+    \item  Overshooting from \citet{temmink2022}
+    \item  Overshooting from \citet{temmink2022} with different \(f _\text{ov,0}\).
+\end{enumd}
+
+Below, I note the exact inlist settings for all three cases.
+\subsection{\texorpdfstring{\citet{rees2024b}}{Rees et al. (2024)}}
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! inlist_MS
+&controls
+    ...
+	overshoot_scheme(1) = 'step' !jermyn et al 2022
+	overshoot_zone_type(1) = 'any'
+	overshoot_zone_loc(1) = 'core'
+	overshoot_bdy_loc(1) = 'any'
+	overshoot_f(1) = 0.129
+	overshoot_f0(1) = 0.0129
+	overshoot_D0(1) = 0d0
+	overshoot_Delta0(1) = 1d0
+	overshoot_scheme(2) = 'exponential'
+	overshoot_zone_type(2) = 'nonburn'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174
+	overshoot_f0(2) = 0.00174
+	overshoot_D0(2) = 0d0
+	overshoot_Delta0(2) = 1d0
+    ...
+\end{minted}
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! inlist_GB
+&controls
+    ...
+	overshoot_scheme(1) = 'exponential'
+	overshoot_zone_type(1) = 'nonburn'
+	overshoot_zone_loc(1) = 'shell'
+	overshoot_bdy_loc(1) = 'any'
+	overshoot_f(1) = 0.0174
+	overshoot_f0(1) = 0.00174
+	overshoot_D0(1) = 0d0
+	overshoot_Delta0(1) = 1d0
+    ...
+\end{minted}
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! inlist_CHeB
+&controls
+    ...
+	predictive_mix(1) = .true.
+	predictive_zone_type(1) = 'any'
+	predictive_zone_loc(1) = 'core'
+	predictive_bdy_loc(1) = 'any'
+	predictive_superad_thresh(1) = 0.005
+	predictive_avoid_reversal = 'he4'
+
+	overshoot_scheme(2) = 'exponential'
+	overshoot_zone_type(2) = 'nonburn'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174
+	overshoot_f0(2) = 0.00174
+	overshoot_D0(2) = 0d0
+	overshoot_Delta0(2) = 1d0
+   ...
+\end{minted}
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! inlist_EAGB
+&controls
+    ...
+	overshoot_scheme(1) = 'exponential' ! IPCZ overshooting controls
+	overshoot_zone_type(1) = 'burn_He'
+	overshoot_zone_loc(1) = 'shell'
+	overshoot_bdy_loc(1) = 'bottom'
+	overshoot_f(1) = 0.008 ! Herwig 2008
+	overshoot_f0(1) = 0.0008
+	overshoot_scheme(2) = 'exponential' ! envelope overshooting
+	overshoot_zone_type(2) = 'nonburn'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174
+	overshoot_f0(2) = 0.00174
+	overshoot_scheme(3) = 'exponential' ! carbon burning
+	overshoot_zone_type(3) = 'any'
+	overshoot_zone_loc(3) = 'any'
+	overshoot_bdy_loc(3) = 'bottom'
+	overshoot_f(3) = 0.005
+	overshoot_f0(3) = 0.0005
+  ...
+\end{minted}
+
+\subsection{\texorpdfstring{\citet{temmink2022}}{Temmink et al. (2023)}}
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! inlist_common
+&controls
+    ...
+	overshoot_scheme(1) = 'exponential'
+	overshoot_zone_type(1) = 'any'
+	overshoot_zone_loc(1) = 'core'
+	overshoot_bdy_loc(1) = 'top'
+	overshoot_f(1) = 0.016d0
+	overshoot_f0(1) = 0.08d0
+
+	overshoot_scheme(2) = 'exponential'
+	overshoot_zone_type(2) = 'any'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174d0
+	overshoot_f0(2) = 0.0087d0
+    ...
+\end{minted}
+
+\subsection{\texorpdfstring{\citet{temmink2022}}{Temmink et al. (2023)} other \texorpdfstring{\(f_\text{ov,0}\)}{f\_ov,0}}
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! inlist_common
+&controls
+    ...
+	overshoot_scheme(1) = 'exponential'
+	overshoot_zone_type(1) = 'any'
+	overshoot_zone_loc(1) = 'core'
+	overshoot_bdy_loc(1) = 'top'
+	overshoot_f(1) = 0.016d0
+	overshoot_f0(1) = 0.008d0
+
+	overshoot_scheme(2) = 'exponential'
+	overshoot_zone_type(2) = 'any'
+	overshoot_zone_loc(2) = 'shell'
+	overshoot_bdy_loc(2) = 'any'
+	overshoot_f(2) = 0.0174d0
+	overshoot_f0(2) = 0.0087d0
+   ...
+\end{minted}
+
+\newsubsection{Results}
+
+Below, I show Hertzsprung Russel diagrams for the pre-TPAGB phases. For 7 different masses, the overshooting options listed above are shown.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{hr-overshooting}
+\end{figure}
+
+The tracks in the HR-diagrams for stars using the overshooting options from \citet{rees2024b} and \citet{temmink2022} are very similar. When using the other \(f _\text{ov,0}\), the results are however significantly different. In general, these stars have higher luminosities.
+
+Below, I show Kippenhahn diagrams of the evolutionary stages for all stars.
+For completeness, I plot all of them, but really, the different masses are not very different.
+
+The gray regions are convective regions in the star. The red regions are overshooting regions. The blue "contours" show where nuclear burning is happening. The black line is the He-core mass and the blue line is the CO-core mass.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn2}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn3}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn4}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn5}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn6}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn7}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{kippenhahn8}
+\end{figure}
+
+The core mass at the start of the TPAGB is indistiguishable for the different models.
+
+
+\bibliography{master.bib}
+\end{document}
