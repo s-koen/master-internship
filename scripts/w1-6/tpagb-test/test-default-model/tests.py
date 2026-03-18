@@ -213,6 +213,7 @@ fig, axsss = plt.subplots(
 
 axss = axsss[:, 0:2]
 laxs = axsss[:, 2]
+
 for lax in laxs:
     lax.axis("off")
 

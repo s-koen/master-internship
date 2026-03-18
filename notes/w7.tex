@@ -18,13 +18,289 @@
 %Begin the document
 \begin{document}
 \setuplayout
-\section{Overshooting}
+\section{Results TPAGB Grid Week 6}
+
+Presumably due to the very low \lstinline[style=output, breaklines=true]|envelope_mass_limit| of \lstinline[style=output, breaklines=true]|0.0001|, many of the TPAGB mass transfer models took very long to run.
+
+Since the evolution from the end of the TPAGB phase to a white dwarf is not important for mass transfer, this extra computation is unnecessary.
+I ended the pending jobs from last week and let the remaining models finish\sidenote{
+Either until the star is a white dwarf, or the 2 days wall time had exceeded.}. This resulted in a total of 30 models.
+
+Although 30 is not an unmanageable amount to manually load, I think, also with the future in mind, I could really use a nice \lstinline[style=output, breaklines=true]|MesaGrid| class to handle the loading and retrieving of mesa models in grids.
+
+\subsection{MesaGrid Class}
+
+The \lstinline[style=output, breaklines=true]|MesaGrid| class has a few core features.
+\begin{citemize}
+    \item Loading all, or specific \lstinline[style=output, breaklines=true]|binary| and \lstinline[style=output, breaklines=true]|star| \lstinline[style=output, breaklines=true]|history.data| files.
+    \item Sorting \lstinline[style=output, breaklines=true]|history| data.
+    \item Iteratively retrieving all models.
+    \item Iteratively retrieving models with equal \(q\) or \(R_\text{RL}\).
+    \item Retrieving a specific model.
+    \item Accessing reference single star \lstinline[style=output, breaklines=true]|history| data
+    \item Aligning binary \lstinline[style=output, breaklines=true]|history| data with single star \lstinline[style=output, breaklines=true]|history| data.
+\end{citemize}
+
+To achieve this, I use two classes. A \lstinline[style=output, breaklines=true]|MesaModel| class, used to store the important data and properties for the mesa models and the \lstinline[style=output, breaklines=true]|MesaGrid| class.
+
+The \lstinline[style=output, breaklines=true]|MesaModel| class is very simple and is only used to conveniently access model data.
+\begin{minted}[fontsize=\small]{py}
+class MesaModel:
+    def __init__(self, binary_path=None, tpagb_path=None, initial_age=None):
+
+        self.binary = mr.MesaData(str(binary_path)) if binary_path else None
+        self.star = mr.MesaData(str(tpagb_path)) if tpagb_path else None
+        self.initial_age = initial_age
+        self.age = self.star.star_age if tpagb_path else None
+        self.env_mass = (
+            self.star.star_mass - self.star.he_core_mass if tpagb_path else None
+        )
+
+    def __str__(self):
+        if self.star:
+            return f"MESA model with R = {self.star.R[0]:.2f},\
+            R_RL = {self.star.rl_1[0]:.2f} and \
+            q = {(self.star.star_2_mass[0] / self.star.star_1_mass[1]):.3f}"
+
+        return f"Empty MESA model"
+
+    def set_initial_age(self, age):
+        self.initial_age = age
+        self.age = self.star.star_age + self.initial_age
+
+\end{minted}
+
+The \lstinline[style=output, breaklines=true]|MesaGrid| class is much longer, so I will only show the most important parts:
+
+\marginfignote{4}{Set the grid directory and filters. Call internal functions to load the models and references.}
+\marginfignote{20}{Load the single star reference histories and save them.}
+\marginfignote{25}{Find the reference star age at the start of the TPAGB.}
+\marginfignote{29}{Normalises input of \lstinline[style=output, breaklines=true]|R1| and \lstinline[style=output, breaklines=true]|q| into a set.}
+\marginfignote{35}{Returns whether the requested model passes the user given filter.}
+\marginfignote{41}{Reads \lstinline[style=output, breaklines=true]|R_1| and \lstinline[style=output, breaklines=true]|q| from the model run directory and returns these values.}
+\marginfignote{47}{For all models, parses the directory name, checks if the model passes the user defined filter and reads the binary and single star history. It then computes the initial age of the model and saves it to a last of all models. It also adds the parsed info into the sets of \lstinline[style=output, breaklines=true]|q| and \lstinline[style=output, breaklines=true]|R_1|.}
+\marginfignote{80}{Finds the initial age of the model relative to the TPAGB by comparing the first entry of the history data with the reference single star history.}
+\marginfignote{86}{Sorts the keys so they are ordered first by ascending Roche lobe radius, then by ascending \(q\).}
+\marginfignote{90}{Allows easy access of specific model.}
+\marginfignote{94}{Also access specific model, no error if the model does not exist.}
+\marginfignote{98}{Iterate in sorted order: R1 ascending, then q ascending}
+\marginfignote{104}{Return all models with given R1 sorted by q}
+\marginfignote{114}{Return all models with given mass ratio
+        sorted by R1.}
+\begin{minted}[fontsize=\small,breaklines]{py}
+class MesaGrid:
+    def __init__(self, grid_dir, R1=None, q=None):
+        ...
+        self.R1_filter = self._normalize_filter(R1)
+        self.q_filter = self._normalize_filter(q)
+
+        self._get_tpagb_age()
+        self._load_references()
+
+        self._load_models()
+        self._finalize_grid()
+
+        
+    def _load_references(self):
+        ...
+        
+    def _get_tpagb_age(self):
+        ...
+
+    def _normalize_filter(self, val):
+        ...
+        return {filter}
+
+    def _passes_filter(self, R1, q):
+        ...
+        return bool
+
+    def _parse_name(self, name):
+        ...
+        return R1, q
+
+    def _load_models(self):
+        ...
+        for run_dir in run_dirs:
+            ...
+            parsed = self._parse_name(run_dir.name)
+            ...
+            R1, q = parsed
+
+            if not self._passes_filter(R1, q):
+                continue
+
+            ...
+            model = MesaModel(
+                binary_path,
+                tpagb_path,
+            )
+
+            age = self._find_initial_age(model)
+            model.set_initial_age(age)
+
+            self.models[(R1, q)] = model
+            self.R1_vals.add(R1)
+            self.q_vals.add(q)
+
+    def _find_initial_age(self, model):
+        ...
+        return model_age - self.tpagb_age
+
+    def _finalize_grid(self):
+        ...
+
+    def __getitem__(self, key):
+        return self.models[key]
+
+    def get(self, R1, q):
+        return self.models.get((R1, q))
+
+    def iter_models(self):
+        for R1, q in self.sorted_keys:
+            yield R1, q, self.models[(R1, q)]
+
+    def get_R1_slice(self, R1):
+        return [
+            (q, self.models[(R1, q)]) 
+            for q in self.q_vals
+            if (R1, q) in self.models
+        ]
+
+    def get_q_slice(self, q):
+        return [
+            (R1, self.models[(R1, q)])
+            for R1 in self.R1_vals 
+            if (R1, q) in self.models
+        ]
+\end{minted}
+
+\newsubsection{Demo}
+Below, I show some use cases:
+\marginfignote{3}{Loads all models with \(q=0.5\)}
+\begin{minted}[fontsize=\small,breaklines]{py}
+grid = MesaGrid(".../grid-dir/", q=0.500)
+print(grid.models)
+\end{minted}
+\begin{minted}[fontsize=\small]{text}
+{(225.0, 0.5): <scripts.general_utils.mesa_grid.MesaModel object at 0x7ff1c3aa27b0>,
+ (150.0, 0.5): <scripts.general_utils.mesa_grid.MesaModel object at 0x7ff1d6e10410>,
+ (375.0, 0.5): <scripts.general_utils.mesa_grid.MesaModel object at 0x7ff1d6e11090>,
+ (300.0, 0.5): <scripts.general_utils.mesa_grid.MesaModel object at 0x7ff1d7f31350>}
+\end{minted}
+We can iterate over these models using the \lstinline[style=output, breaklines=true]|grid.iter_models()| function:
+\begin{minted}[fontsize=\small,breaklines]{py}
+for R1, q, model in grid.iter_models():
+    print(f"{R1 = }, {q = }, {model}")
+\end{minted}
+\begin{minted}[fontsize=\small]{text}
+R1 = 150.0, q = 0.5, MESA model with R = 116.62, R_RL = 150.00 and q = 0.500 
+R1 = 225.0, q = 0.5, MESA model with R = 116.62, R_RL = 225.00 and q = 0.500
+R1 = 300.0, q = 0.5, MESA model with R = 213.79, R_RL = 300.00 and q = 0.500
+R1 = 375.0, q = 0.5, MESA model with R = 272.64, R_RL = 375.00 and q = 0.500
+\end{minted}
+
+Loading a 2d grid is also easy:
+\begin{minted}[fontsize=\small,breaklines]{py}
+grid = MesaGrid(
+    ".../grid-dir/", 
+    q=[0.125,0.250,0.375], 
+    R1=[150,225,300])
+for R1, q, model in grid.iter_models():
+    print(f"{R1 = }, {q = :.3f}, {model}")
+\end{minted}
+\begin{minted}[fontsize=\small]{text}
+R1 = 150.0, q = 0.125, MESA model with R = 116.62, R_RL = 150.00 and q = 0.125
+R1 = 150.0, q = 0.250, MESA model with R = 116.62, R_RL = 150.00 and q = 0.250
+R1 = 150.0, q = 0.375, MESA model with R = 116.62, R_RL = 150.00 and q = 0.375
+R1 = 225.0, q = 0.125, MESA model with R = 116.62, R_RL = 225.00 and q = 0.125
+R1 = 225.0, q = 0.250, MESA model with R = 116.62, R_RL = 225.00 and q = 0.250
+R1 = 225.0, q = 0.375, MESA model with R = 116.62, R_RL = 225.00 and q = 0.375
+R1 = 300.0, q = 0.125, MESA model with R = 213.79, R_RL = 300.00 and q = 0.125
+R1 = 300.0, q = 0.250, MESA model with R = 213.79, R_RL = 300.00 and q = 0.250
+R1 = 300.0, q = 0.375, MESA model with R = 213.79, R_RL = 300.00 and q = 0.375
+\end{minted}
+
+The grid can be sliced using the \lstinline[style=output, breaklines=true]|get_q_slice| and \lstinline[style=output, breaklines=true]|get_R1_slice| functions:
+\begin{minted}[fontsize=\small,breaklines]{py}
+print("slicing q")
+for R1, model in grid.get_q_slice(q=0.125):
+    print(model)
+
+print("\nslicing R1")
+for R1, model in grid.get_R1_slice(R1=225):
+    print(model)
+\end{minted}
+\begin{minted}[fontsize=\small]{text}
+slicing q
+MESA model with R = 116.62, R_RL = 150.00 and q = 0.125
+MESA model with R = 116.62, R_RL = 225.00 and q = 0.125
+MESA model with R = 213.79, R_RL = 300.00 and q = 0.125
+
+slicing R1
+MESA model with R = 116.62, R_RL = 225.00 and q = 0.125
+MESA model with R = 116.62, R_RL = 225.00 and q = 0.250
+MESA model with R = 116.62, R_RL = 225.00 and q = 0.375
+\end{minted}
+
+Using the \lstinline[style=output, breaklines=true]|MesaGrid| class, we can select the reference single star history. It is also possible to select a single model from the grid:
+\begin{minted}[fontsize=\small,breaklines]{py}
+model = grid.get(R1=300, q=0.875)
+plt.plot(grid.ref_tpagb.star_age, grid.ref_tpagb.R)
+plt.plot(model.age, model.star.R)
+plt.show()
+\end{minted}
+\begin{figure}[ht]
+    \centering
+    \incplot{w7-compare-with-ref}
+\end{figure}
+\begin{minted}[fontsize=\small,breaklines]{py}
+model = grid.get(R1=300, q=0.875)
+plt.plot(model.env_mass, model.star.R)
+plt.plot(model.env_mass, model.star.rl_1)
+plt.gca().invert_xaxis()
+plt.show()
+\end{minted}
+\begin{figure}[ht]
+    \centering
+    \incplot{w7-show-mass}
+\end{figure}
+
+\newsubsection{Results}
+
+Below, I plot the relative Roche lobe sizes as a function of envelope mass for different \(q\) and a starting Roche lobe radius of \(R_\text{RL} = 300 R_\odot \).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{relativerocheloberadius}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{relativeouterrocheloberadius}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{R300period}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w7-mdot}
+\end{figure}
+
+
+
+\newsection{Overshooting}
 
 I compare the single star evolution of stars with different masses for 3 different overshooting prescriptions:
 \begin{enumd}
     \item  Overshooting from \citet{rees2024b}
     \item  Overshooting from \citet{temmink2022}
-    \item  Overshooting from \citet{temmink2022} with different \(f _\text{ov,0}\).
+    \item  Overshooting from \citet{temmink2022} with different \(f_\text{ov,0}\).
 \end{enumd}
 
 Below, I note the exact inlist settings for all three cases.
@@ -160,22 +436,49 @@ Below, I note the exact inlist settings for all three cases.
 
 Below, I show Hertzsprung Russel diagrams for the pre-TPAGB phases. For 7 different masses, the overshooting options listed above are shown.
 
+I also compare these tracks with MIST \citep{choi2016} EEP tracks.
+
 \begin{figure}[ht]
     \centering
     \incplot{hr-overshooting}
 \end{figure}
 
-The tracks in the HR-diagrams for stars using the overshooting options from \citet{rees2024b} and \citet{temmink2022} are very similar. When using the other \(f _\text{ov,0}\), the results are however significantly different. In general, these stars have higher luminosities.
+Now, it is quite difficult to see real differences in these small plots. Therefore, I plot the phases separately as well.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{hr-overshooting-MS}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{hr-overshooting-GB}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{hr-overshooting-CHeB}
+\end{figure}
+
+The tracks in the HR-diagrams for stars using the overshooting options from \citet{rees2024b} and \citet{temmink2022} are very similar. When using the other \(f _\text{ov,0}\), the results are however significantly different and closer to MIST EEPs. In general, these stars have higher luminosities.
+
+For the MIST \citep{choi2016} EEP tracks, I used a set of non-rotating [Fe/H] = 0 models. This corresponds with an initial \(Z=0.01429\), slightly higher than the \(Z=0.014\) used for my MESA models. The MIST models also use Ferguson low-T opacities as well as a slightly different mixing length parameter \(\alpha _\text{MLT} = 1.82\) instead of \(\alpha _\text{MLT} = 1.931\) from \citet{cinquegrana2022}. Maybe these differences could account for the differences visible between the MIST and \citet{temmink2022} models with alternative \(f _\text{ov, 0}\).
 
 Below, I show Kippenhahn diagrams of the evolutionary stages for all stars.
 For completeness, I plot all of them, but really, the different masses are not very different.
 
 The gray regions are convective regions in the star. The red regions are overshooting regions. The blue "contours" show where nuclear burning is happening. The black line is the He-core mass and the blue line is the CO-core mass.
 
+The last row compares the overshooting regions. The blue regions are the overshooting regions from \citet{rees2024b}. The orange regions are the overshooting regions from \citet{temmink2022} and the green regions are the overshooting regions from \citet{temmink2022} with a different value of \(f _\text{ov,0}\).
+
 \begin{figure}[ht]
     \centering
     \incplot{kippenhahn2}
 \end{figure}
+
+
 
 \begin{figure}[ht]
     \centering
@@ -211,7 +514,21 @@ The gray regions are convective regions in the star. The red regions are oversho
     \incplot{kippenhahn8}
 \end{figure}
 
-The core mass at the start of the TPAGB is indistiguishable for the different models.
+The core mass at the start of the TPAGB is indistiguishable for the different models. Does this mean it is not very important which prescription is used?
+
+\newsection{Opacity tables}
+
+Ferguson \(R_\text{RL} = 150\), \(q = 0.25\):
+\begin{figure}[ht]
+    \centering
+    \incplot{w7-problem-gradTgradR}
+\end{figure}
+
+\AE SOPUS \(R_\text{RL} = 150\), \(q = 0.25\)
+\begin{figure}[ht]
+    \centering
+    \incplot{w7-problem-gradTgradR-aeso}
+\end{figure}
 
 
 \bibliography{master.bib}

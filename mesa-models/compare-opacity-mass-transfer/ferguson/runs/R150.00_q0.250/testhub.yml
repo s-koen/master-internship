@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes:  24.68
+      model_number:          808
+      star_age:     3.4149130092308071E+04
+      num_retries:           76
+      log_rel_run_E_err:        -4.4533835822118650
+      steps:         1767
+      retries:           77
+      redos:            0
+      solver_calls_made:         1844
+      solver_calls_failed:           77
+      solver_iterations:         6765
