@@ -536,17 +536,146 @@ for i, axs in enumerate(axss):
         ax.set_ylim(*ylims[j])
         ax.set_xlabel(xaxis_label[i])
         ax.set_ylabel(r"$\nabla$")
-        ax.plot(xaxis[i], model.gradT, zorder=1000, label=r"$\nabla$")
-        ax.plot(xaxis[i], model.gradr, label=r"$\nabla_\textrm{rad}$")
-        ax.plot(xaxis[i], model.grada, label=r"$\nabla_\textrm{ad}$")
+        if i == 0 and j == 0:
+            ax.plot(xaxis[i], model.gradT, zorder=1000, label=r"$\nabla$")
+            ax.plot(xaxis[i], model.gradr, label=r"$\nabla_\textrm{rad}$")
+            ax.plot(xaxis[i], model.grada, label=r"$\nabla_\textrm{ad}$")
+        else:
+            ax.plot(xaxis[i], model.gradT, zorder=1000)
+            ax.plot(xaxis[i], model.gradr)
+            ax.plot(xaxis[i], model.grada)
 
 
 plt.ylabel(r"$\nabla$")
-axss[0, 1].legend()
+fig.legend(loc="outside upper center", ncols=3)
 # plt.xlim(2.5, 15)
 # plt.gca().invert_xaxis()
 # plt.ylim(-1.5, 4)
 plt.savefig("/home/koen/LaTeX-setup/plots/w7-problem-gradTgradR-aeso.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(ferguson.iter_models()):
+    if model.env_mass[-1] > 0.2:
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            model.env_mass,
+            c=f"C{i}",
+            label=f"$R_\\textrm{{RL}} = {R:.0f}, q = {q}$",
+            zorder=1000 - i,
+        )
+    else:
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            model.env_mass,
+            c=f"C9",
+            alpha=0.5,
+            zorder=-10,
+        )
+
+for i, (R, q, model) in enumerate(aesopus.iter_models()):
+    print(R)
+    if model.env_mass[-1] > 0.2:
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            model.env_mass,
+            c=f"C{i}",
+            linewidth=5,
+            alpha=0.5,
+            zorder=1000 - i,
+        )
+    else:
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            model.env_mass,
+            c=f"C9",
+            alpha=0.5,
+            zorder=-10,
+        )
+
+plt.ylim(1.175, 1.525)
+plt.xlim(-0.25, 3.5)
+
+fig.legend(loc="outside upper center", ncols=3)
+
+
+plt.xlabel("Elapsed time (hr)")
+plt.ylabel("Envelope mass ($M_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w7-compare-opacity.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+count = -1
+ref_R = 0
+for i, (R, q, model) in enumerate(ferguson.iter_models()):
+    if R != ref_R:
+        count += 1
+        ref_R = R
+
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            np.log10(model.env_mass),
+            c=f"C{count}",
+            label=f"$R_\\textrm{{RL}} = {R}, q = {q}$",
+        )
+
+    else:
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            np.log10(model.env_mass),
+            c=f"C{count}",
+        )
+
+count = -1
+ref_R = 0
+
+for i, (R, q, model) in enumerate(aesopus.iter_models()):
+    if R != ref_R:
+        count += 1
+        ref_R = R
+
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            np.log10(model.env_mass),
+            c=f"C{count}",
+            label=f"$R_\\textrm{{RL}} = {R:.0f}, q = {q}$",
+        )
+
+    else:
+        plt.plot(
+            model.star.elapsed_time / 3600,
+            np.log10(model.env_mass),
+            c=f"C{count}",
+        )
+
+
+fig.legend(loc="outside upper center", ncols=3)
+
+
+plt.xlabel("Elapsed time (hr)")
+plt.ylabel("Envelope mass ($M_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w7-all-compare-opacity.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/binary-tpagb-grid-4/", R1=300)
+
+# %%
+
+for R, q, model in grid.iter_models():
+    plt.plot(model.age, model.R)
+plt.show()
 # %%

@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w7"] 1773765299.87962 "w7.aux" "w7.bbl" "w7" 1773795304.96981 0
+["bibtex w7"] 1773832648.52231 "w7.aux" "w7.bbl" "w7" 1773832661.22911 0
   "./master.bib" 1773677043.28484 18779 423e41f445a22c2bc83d5b84b9c2b38c ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w7.aux" 1773795304.55805 3162 74c125195369d186cac3b86c340cb119 "pdflatex"
+  "w7.aux" 1773832660.78148 4127 7f7644c357aa7a1d14800e894bfd5ec7 "pdflatex"
   (generated)
   "w7.bbl"
   "w7.blg"
   (rewritten before read)
-["pdflatex"] 1773795293.43387 "w7.tex" "w7.pdf" "w7" 1773795304.96999 0
+["pdflatex"] 1773832648.62683 "w7.tex" "w7.pdf" "w7" 1773832661.22929 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
@@ -146,7 +146,13 @@
   "/home/koen/LaTeX-setup//plots/kippenhahn8.pgf" 1773590389.74394 220313 a371f9dbfa9767e1defc4d2988c237c4 ""
   "/home/koen/LaTeX-setup//plots/relativeouterrocheloberadius.pgf" 1773680804.09812 268568 5b96b46c94ab3a1070b1e0d41bd41ed1 ""
   "/home/koen/LaTeX-setup//plots/relativerocheloberadius.pgf" 1773669847.84894 280661 f7d2afff3aae8a3b8780c0fd204d2a0b ""
+  "/home/koen/LaTeX-setup//plots/w7-all-compare-opacity.pgf" 1773827662.97719 300398 b70b26a590337baab46733ab45aab0d7 ""
+  "/home/koen/LaTeX-setup//plots/w7-compare-opacity.pgf" 1773826360.51113 149159 34eed5491ce7da797320daa5b90b175d ""
+  "/home/koen/LaTeX-setup//plots/w7-compare-q.pgf" 1773827227.0352 85944 1db4f9ae3bf86a234fe44f39c95c6ce6 ""
   "/home/koen/LaTeX-setup//plots/w7-compare-with-ref.pgf" 1773763266.12119 96561 fc1a65c7352f955fd717d2073e25a40d ""
+  "/home/koen/LaTeX-setup//plots/w7-end-img0.png" 1773832538.15543 402 dee63ca811d36571afa7cbb8a307ea84 ""
+  "/home/koen/LaTeX-setup//plots/w7-end.pgf" 1773832538.16643 361554 167f405c4faf53d93dfc8f8e33d128d2 ""
+  "/home/koen/LaTeX-setup//plots/w7-large-R.pgf" 1773830866.60041 104264 fb67ad5eaabe3361cd9de04a1ae9d721 ""
   "/home/koen/LaTeX-setup//plots/w7-mdot.pgf" 1773679675.5488 1220487 9a214a2dfb9fdd552882f6c03b3cdcdf ""
   "/home/koen/LaTeX-setup//plots/w7-problem-gradTgradR-aeso.pgf" 1773795253.49927 110598 749a1ef3cf9599ca87ab7bf32ed88a2f ""
   "/home/koen/LaTeX-setup//plots/w7-problem-gradTgradR.pgf" 1773795220.61677 104800 5a82961876af20d23ea3a44a5f68384d ""
@@ -554,10 +560,10 @@
   "_minted/FD9D7A21AB96B3A4F791D338591B990B.highlight.minted" 1773763469.22078 3391 918a0884d53f45e202bf59e726ed1be4 ""
   "_minted/_3CD48215EF4AC20CDCAC8D8FFD79DECE.index.minted" 1773763478.30335 1229 c92ebe63c508b00d638be0e46be89e65 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w7.aux" 1773795304.55805 3162 74c125195369d186cac3b86c340cb119 "pdflatex"
-  "w7.bbl" 1773765300.00601 2011 bf9402df507577049ad5bc26fc1fc081 "bibtex w7"
-  "w7.out" 1773795304.55909 1381 c2ee42164a0b35e66a5c1660e2a37bec "pdflatex"
-  "w7.tex" 1773795291.64185 18735 349d1906c64eab98b3281d4ef2f08afb ""
+  "w7.aux" 1773832660.78148 4127 7f7644c357aa7a1d14800e894bfd5ec7 "pdflatex"
+  "w7.bbl" 1773832648.61628 2848 5d592bf236a12e5cbae627d024e6b0d8 "bibtex w7"
+  "w7.out" 1773832660.78248 1813 0dd1d9cce6e39129d80fdbe9d68f485e "pdflatex"
+  "w7.tex" 1773832634.07827 23015 9b9bc57f09ee615a156d6238bafc4384 ""
   (generated)
   "w7.aux"
   "w7.log"

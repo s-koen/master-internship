@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: ******
+      model_number:        29111
+      star_age:     4.5609171747381851E+05
+      num_retries:          220
+      log_rel_run_E_err:        -2.8322444623655492
+      steps:        95366
+      retries:          220
+      redos:            0
+      solver_calls_made:        95586
+      solver_calls_failed:          220
+      solver_iterations:       403669

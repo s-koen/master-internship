@@ -266,7 +266,9 @@ plt.show()
     \incplot{w7-show-mass}
 \end{figure}
 
-\newsubsection{Results}
+\subsection{Results}
+
+Since I ended last week's run early, I only had a complete set of models for \(R_{RL} = 300R_\odot \). Therefore, I will plot some (hopefully) interesting things using these models.
 
 Below, I plot the relative Roche lobe sizes as a function of envelope mass for different \(q\) and a starting Roche lobe radius of \(R_\text{RL} = 300 R_\odot \).
 
@@ -274,24 +276,31 @@ Below, I plot the relative Roche lobe sizes as a function of envelope mass for d
     \centering
     \incplot{relativerocheloberadius}
 \end{figure}
+I think this nicely shows how import the mass ratio is for the resulting maximum \(R_\text{star} / R_\text{RL}\).
 
+\nextpage
+
+In a similar way, using the analytic approximation for the outer Roche lobe radius from \citet{temmink2022}, the effects of \(q\) on the ratio \(R_\text{star} / R_\text{ROL}\) can be plotted. Here, I shade the region above this value, the MESA simulations are not reliable.
 \begin{figure}[ht]
     \centering
     \incplot{relativeouterrocheloberadius}
 \end{figure}
+
+Similarly, the radius of the star and the radius of the orbit can be compared. When the ratio exceeds 2, the system must be a contact binary, even for the smallest accretor. 
 
 \begin{figure}[ht]
     \centering
     \incplot{R300period}
 \end{figure}
 
-\nextpage
+Then, the ratio of actual mass loss over the quasi adiabatic limit. Here a value of 1 should mean mass loss cannot be stable.
 
 \begin{figure}[ht]
     \centering
     \incplot{w7-mdot}
 \end{figure}
 
+Clearly, all models stay well below 1.
 
 
 \newsection{Overshooting}
@@ -434,6 +443,8 @@ Below, I note the exact inlist settings for all three cases.
 
 \newsubsection{Results}
 
+
+\subsubsection{HR-diagrams}
 Below, I show Hertzsprung Russel diagrams for the pre-TPAGB phases. For 7 different masses, the overshooting options listed above are shown.
 
 I also compare these tracks with MIST \citep{choi2016} EEP tracks.
@@ -466,8 +477,11 @@ The tracks in the HR-diagrams for stars using the overshooting options from \cit
 
 For the MIST \citep{choi2016} EEP tracks, I used a set of non-rotating [Fe/H] = 0 models. This corresponds with an initial \(Z=0.01429\), slightly higher than the \(Z=0.014\) used for my MESA models. The MIST models also use Ferguson low-T opacities as well as a slightly different mixing length parameter \(\alpha _\text{MLT} = 1.82\) instead of \(\alpha _\text{MLT} = 1.931\) from \citet{cinquegrana2022}. Maybe these differences could account for the differences visible between the MIST and \citet{temmink2022} models with alternative \(f _\text{ov, 0}\).
 
+
+\subsubsection{Kippenhahn diagrams}
+
 Below, I show Kippenhahn diagrams of the evolutionary stages for all stars.
-For completeness, I plot all of them, but really, the different masses are not very different.
+For completeness, I plot all of them, but really, the different masses are not very different\sidenote{It took me quite some time to figure out that the \lstinline[style=output, breaklines=true]|mkipp| code that I was using, used MESAs old definitions of mixing regions, while my models used the new definitions. I therefore had to change the \lstinline[style=output, breaklines=true]|mkipp| code to use the newer definitions.}.
 
 The gray regions are convective regions in the star. The red regions are overshooting regions. The blue "contours" show where nuclear burning is happening. The black line is the He-core mass and the blue line is the CO-core mass.
 
@@ -518,6 +532,46 @@ The core mass at the start of the TPAGB is indistiguishable for the different mo
 
 \newsection{Opacity tables}
 
+To see if using the \citet{ferguson1905} opacity table might improve stability during episodes of fast mass transfer during a thermal pulse, I compare binary models with donor TPAGB stars using the \citet{ferguson1905} opacity tables, and the \citet{marigo2009} opacity tables.
+
+I set up a grid for 24 models for both stars where for every initial Roche lobe radius, I simulate the binary for \(q=0.25, 0.5, 0.75\) and \(1\).
+For the radii, I chose \(R_\text{RL} (R_\odot )= 150, 240, 330, 420, 510\) and \(600\).
+
+Unfortunately, it quite quickly became clear that both models have trouble with stability at low \(q\) and low \(R_\text{RL}\).
+
+Below, I plot which models failed. The thick lines correspond to \AE SOPUS models, while the thin lines correspond to Ferguson models.
+
+\begin{figure}[ht]
+    \marginfignote{4}{I think it is interesting that the problem only occurs for small radii. Maybe this has to do with the ratio of star radius versus Roche lobe radius.}
+    \centering
+    \incplot{w7-compare-opacity}
+\end{figure}
+
+To test my hypothesis, I plot the ratio of star radius over Roche lobe radius for \(q=0.25\) and different starting radii for the Ferguson models.
+
+\begin{figure}[ht]
+    \marginfignote{4}{There does seem to be a correlation between the initial Roche lobe radius and the ratio \(R_\text{star} / R_\text{RL}\).}
+    \centering
+    \incplot{w7-compare-q}
+\end{figure}
+
+I also plot elapsed time for all Ferguson models.
+
+\begin{figure}[ht]
+    \marginfignote{4}{Two things here are interesting: 
+    \begin{citemize}
+    \item Generally, models with a larger starting Roche lobe radius take longer to start losing mass. 
+    \item  The last part of the evolution can take a significant portion of the computing time, even when ending at \(0.01M_\odot \).
+\end{citemize}
+    }
+    \centering
+    \incplot{w7-all-compare-opacity}
+\end{figure}
+
+\nextpage
+
+I also check if the temperature gradient problems are present for both failing \citet{ferguson1905} models, as well as failing \AE SOPUS \citep{marigo2009} models. Unfortunately, this is the case, as can be seen below:
+
 Ferguson \(R_\text{RL} = 150\), \(q = 0.25\):
 \begin{figure}[ht]
     \centering
@@ -528,6 +582,24 @@ Ferguson \(R_\text{RL} = 150\), \(q = 0.25\):
 \begin{figure}[ht]
     \centering
     \incplot{w7-problem-gradTgradR-aeso}
+\end{figure}
+
+I also thought the \(R_\text{RL} = 600R_\odot \) model looked interesting in the plots above. Below I plot the evolution of the Roche lobe:
+
+\begin{figure}[ht]
+    \marginfignote{4}{I think this figure quite clearly shows that in parts where wind mass loss is important, the Roche lobe radius will increase significantly as a result. In extreme cases, this can mean that the star just barely avoids filling its Roche lobe.}
+    \centering
+    \incplot{w7-large-R}
+\end{figure}
+
+\newsection{Close \texorpdfstring{\(R_\text{RL}\)}{R\_RL} Spacing}
+
+I also simulated a grid of models with \(q=0.8\) and \(R_\text{RL}\) ranging from \(506R_\odot \) to \(550R_\odot \).
+
+These models just finished this morning and I only had time to make a basic plot without looking too much into the models too much.
+\begin{figure}[ht]
+    \centering
+    \incplot{w7-end}
 \end{figure}
 
 
