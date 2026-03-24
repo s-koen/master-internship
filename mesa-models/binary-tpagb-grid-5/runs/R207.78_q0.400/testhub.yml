@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 110.19
+      model_number:         4285
+      star_age:     2.3352358963757139E+05
+      num_retries:           36
+      log_rel_run_E_err:        -3.5904048906884269
+      steps:         8664
+      retries:           37
+      redos:            0
+      solver_calls_made:         8701
+      solver_calls_failed:           37
+      solver_iterations:        40553

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes:  31.46
+      model_number:         1144
+      star_age:     1.7403917624666268E+04
+      num_retries:          125
+      log_rel_run_E_err:        -4.0558459865676078
+      steps:         2874
+      retries:          126
+      redos:            0
+      solver_calls_made:         3000
+      solver_calls_failed:          126
+      solver_iterations:        14713

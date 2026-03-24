@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 711.93
+      model_number:        14119
+      star_age:     1.8157221758657863E+05
+      num_retries:            0
+      log_rel_run_E_err:        -3.0008174818405511
+      steps:        53748
+      retries:            0
+      redos:            0
+      solver_calls_made:        53748
+      solver_calls_failed:            0
+      solver_iterations:       265759

@@ -1,0 +1,46 @@
+&binary_job
+
+        evolve_both_stars = .false.
+
+/ ! end of binary_job namelist
+
+&binary_controls
+         
+! P H Y S I C A L   P A R A M E T E R S for the system      
+
+	m1 = 1.9999423305776218d0  ! donor mass in Msun
+	m2 = 1.5999538644620976d0  ! donor mass in Msun
+        initial_period_in_days = -1d0  !15d0, if <0, below is used
+	initial_separation_in_Rsuns = 443.1511633090874d0 ! in Rsun units
+
+
+        ! Mass transfer efficiency controls
+        limit_retention_by_mdot_edd = .false.   
+        ! Set to fully conservative
+        mass_transfer_alpha = 0d0      
+        mass_transfer_beta = 0d0     
+        mass_transfer_delta = 0d0      
+
+        ! Orbital angular momentum controls
+        do_jdot_mb = .false.     
+        do_jdot_gr = .true.     
+        do_jdot_ml = .true.      
+
+        ! Mass transfer scheme
+        mdot_scheme = "Kolb"
+
+        max_tries_to_achieve = 300      
+        min_mdot_for_implicit = 1d-15    
+
+        implicit_scheme_tolerance = 1d-3    
+
+        fr = 0.01d0          
+        fr_limit = 1d-3      
+        fr_dt_limit = 1d0    
+	
+	history_interval = 10
+        terminal_interval = 50
+        report_rlo_solver_progress = .false.
+
+/ ! end of binary_controls namelist
+

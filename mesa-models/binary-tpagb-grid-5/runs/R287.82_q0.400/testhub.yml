@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 319.13
+      model_number:        10406
+      star_age:     3.9274161860774766E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.8590060356517277
+      steps:        28438
+      retries:            0
+      redos:            0
+      solver_calls_made:        28438
+      solver_calls_failed:            0
+      solver_iterations:       138272

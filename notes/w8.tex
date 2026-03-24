@@ -18,27 +18,86 @@
 %Begin the document
 \begin{document}
 \setuplayout
-\section{bla}
+\section{Selecting Starting models Efficiently}
+
+From previous binary TPAGB models, it became clear that a lot of the computational time was spent recomputing parts of the single star evolution, without any noticeable effects from the binary companion. It can therefore be a worthwhile investigation to look at the exact moment where the binary companion starts to significantly impact the donor star and try to select a new starting model criterion from this.
+
+Below, I plot the radius of the \AE SOPUS models from last week for \(q = 0.75\) and different starting orbital separations. I also show the difference in envelope \emph{mass} for the reference single star model, and the binary model. 
+
 \begin{figure}[ht]
     \centering
     \incplot{w8-mass-0.75}
 \end{figure}
 
-\newsection{Additional plots}
+I also made similar plots for the other \(q\) values, which can be found at the end of this document.
+By taking a maximum \(\Delta M = \abs{M_\text{sin} - M_\text{bin}}\) of about \(0.01 M_\odot \), we can see that in most cases the star only exceeds this maximum after the first Roche lobe overflowing thermal pulse. Sometimes however, the first pulse can \emph{fail}, as can be seen for the \(R_\text{RL} = 330R_\odot \) model. Then There are two pulses where the star exceeds the maximum.
+
+I therefore wrote the following starting model selector:
+\begin{minted}[fontsize=\small]{py}
+def find_model(R):
+    searching_TP = True
+    # search models in order of descending radius
+    for key in list(models_dict.keys())[::-1]:
+        model = models_dict[key]
+
+        # searching for the thermal pulse count
+        # of the first presumable RLOF occurence
+        if searching_TP:
+            if model["R"] < 0.95 * R:
+                TP_collision = model["TP"]
+                searching_TP = False
+
+        # after finding the thermal pulse count,
+        # finding a model 2 thermal pulses earlier
+        else:
+            print(model["TP"], model["R"])
+            if model["TP"] <= (np.max([TP_collision - 2, 0])) and model["R"] < 0.9 * R:
+                return model
+\end{minted}
+This basically ensures the starting model occurs at least 2 thermal pulses before the Roche lobe overflowing thermal pulse, and has a starting radius smaller than \(0.9R_\text{RL}\).
+
+I use this new implementation for the next grid of models. I also changed it so the grid uses initial \(q\) instead of \(q\) at the moment the accretor gets added\sidenote{However, I forgot to change this in the grid of models I ran, so these still use the other \(q\).}.
+
+\newsection{A new Grid}
+I ran models with 10 log spaced \(R_\text{RL}\) values from 150 to 650 \(R_\odot \) and \(q\) from \(0.4\) to \(1\) in steps of \(0.1\).
+
+As a comparison, here is the same plot as I showed above, but now for the new grid and \(q=0.8\):
 \begin{figure}[ht]
     \centering
-    \incplot{w8-mass-0.25}
+    \incplot{w8-mass-0.8-2}
+\end{figure}
+
+The simulation times before the onset of significant mass transfer are a bit shorter. Maybe an even more aggressive setting can be used though.
+
+Below, I show which models ran successfully:
+\begin{figure}[ht]
+    \marginfignote{0}{There is a model missing at \(R_\text{RL} = 552.27\) and \(q=0.7\). This model did not finish its evolution in 2 days. The results are still in the scratch directory of the node at which the model ran. I would need to manually move it to my work directory which I have not done yet.}
+    \centering
+    \incplot{w8-grid-1}
+\end{figure}
+
+Below, I show the final periods for the models:
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-grid-2}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-grid-3}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
-    \incplot{w8-mass-0.5}
+    \incplot{w8-grid-4}
 \end{figure}
 
-\begin{figure}[ht]
-    \centering
-    \incplot{w8-mass-1}
-\end{figure}
+
+I am not sure which other plots are interesting to make, except for looking at the individual models.
+
+
 
 \newsection{Tidal Synchronization}
 
@@ -179,7 +238,7 @@ end subroutine toy_tides
 
 I also add the spin angular frequency and the orbit angular frequency to the history columns to visualize the effect of the tides.
 
-It is important to realize that the toy model is an extremely simplified version of a full tidal implementation. Below, I plot the results of the simple model, first for a initially non-rotating star.
+It is important to realize that the toy model is an extremely simplified version of a full tidal implementation. Below, I plot the results of the simple model. The star is initially non-rotating.
 \begin{figure}[ht]
     \centering
     \incplot{w8-tides-1}
@@ -266,14 +325,283 @@ subroutine toy_tides_with_star_evo(binary_id, ierr)
     write(*,*) "a =", b% separation
 
 end subroutine toy_tides_with_star_evo
-
 \end{minted}
 
+The only change with respect to the previous version is the addition of \lstinline[style=output, breaklines=true]|dlnI/dt| and the separation of the tides.
+
+Below, I write a quick derivation of \lstinline[style=output, breaklines=true]|domega_dt = - omega * dLnI_dt|, where I assume no tides. If there are no tides, then
+\begin{align*}
+    \dv{J}{t} &= \dv{}{t}\l(I \Omega \r) = I \dv{\Omega }{t} + \Omega \dv{I}{t} = 0.\\
+    \intertext{Rearranging gives}
+    \dv{\Omega }{t} &= -\Omega \frac{1}{I}\dv{I}{t} = -\Omega \dv{\ln I}{t}. \\
+    \intertext{Obviously, this also means that}
+    \dv{\Omega }{t} &= \l(\dv{\Omega }{t}\r) _\text{tides} -\Omega \frac{1}{I}\dv{I}{t} = -\Omega \dv{\ln I}{t}.
+\end{align*}
+
+Below, I show the same plots as I did for the first toy model.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-4}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-3}
+\end{figure}
+
+Quite a stark difference. The spin nicely reacts to the change in radius of the star, exactly as I would expect. However, the implementation of the actual tides is still really simplified. In the next subsection, I describe a more sophisticated approach.
+
+\newsubsection{MESA Tidal Model without correction factor}
+
+The bulk of the tides subroutine stays the same:
+\begin{minted}[fontsize=\small]{fortran}
+subroutine tides(binary_id, ierr)
+    ! --- following the required input and output of default_jdot_ls
+    integer, intent(in) :: binary_id
+    integer, intent(out) :: ierr
+
+    ! --- getting access to the binary object and star object
+    type(binary_info), pointer :: b
+    type(star_info), pointer :: s_d
+    type(star_info), pointer :: s_a
+
+    ! --- necessary other variables
+    real(dp) :: omega, omega_orb, domega_dt
+    real(dp) :: I_eff, Jdot_tides, dt
+    real(dp) :: I_old, dlnI_dt, rg2
+    real(dp) :: domega_dt_tides, q, R
+    real(dp) :: a, k_over_T
+
+    integer :: k ! for counting zones
+
+    ierr = 0
+    call binary_ptr(binary_id, b, ierr)
+    s_d => b% s_donor 
+
+    dt = s_d% dt
+
+    ! --- compute mass ratio, R and a
+    q = b% m(2) / b% m(1) 
+    R = s_d% photosphere_r * Rsun ! in cm
+    a = b% separation ! in cm
 
 
+    ! --- compute k_over_T
+    k_over_T = compute_k_over_T(s_d)
+
+    ! --- get initial spin and orbital frequency
+    omega = s_d% x_ctrl(3)
+    omega_orb = 2d0*pi / b% period
+
+    ! --- compute moment of inertia of solid body and gyration radius
+    I_eff = compute_I_eff(s_d)
+    rg2 = compute_rg2(s_d, I_eff)
+
+    ! --- compute dlnI/dt
+    I_old = s_d% x_ctrl(4)
+    if (I_old > 0d0 .and. dt > 0d0) then
+        dlnI_dt = (log(I_eff) - log(I_old)) / dt
+    else
+        dlnI_dt = 0d0
+    end if
+
+    ! --- hut spin evolution
+    domega_dt_tides = 3* k_over_T * q**2 / (rg2) * (R / a)**6 * (omega_orb - omega)
+
+    ! --- total spin evolution (structure + tides)
+    domega_dt = domega_dt_tides - omega * dLnI_dt
+
+    ! --- update spin
+    omega = omega + dt * domega_dt
+    s_d% x_ctrl(3) = omega 
+
+    ! --- store I for next step
+    s_d% x_ctrl(4) = I_eff
 
 
+    ! --- change jdot orbit
+    Jdot_tides = I_eff * domega_dt_tides
+    b% jdot_ls = - Jdot_tides
 
+    ! --- write orbit and spin frequency
+    write(*,*) "Omega_star = ", omega 
+    write(*,*) "Omega_orb  = ", omega_orb
+    write(*,*) "J_orb =", b% angular_momentum_j
+    write(*,*) "a =", b% separation
+    write(*,*) "dt=", dt
+    write(*,*) "I_eff =", I_eff
+    write(*,*) "rg2   =", rg2
+end subroutine tides
+\end{minted}
+However, the routine now calls some functions to compute some necessary variables, starting with \lstinline[style=output, breaklines=true]|compute_I_eff|. This function is quite simple:
+\begin{minted}[fontsize=\small]{fortran}
+real(dp) function compute_I_eff(s) result(I_eff)
+    implicit none
+
+    type(star_info), pointer :: s
+    integer :: k
+
+    I_eff = 0d0
+    do k = 1, s% nz
+        I_eff = I_eff + (2d0/3d0) * s% dm_bar(k) * s% r(k)**2
+    end do
+
+end function compute_I_eff
+\end{minted}
+Here, I have now added the factor 2/3 because we are summing mass shells and not point masses. Computing \(r_{g}^{2} \) is then almost trivial:
+\begin{minted}[fontsize=\small]{fortran}
+real(dp) function compute_rg2(s, I_eff) result(rg2)
+    implicit none
+
+    type(star_info), pointer :: s
+    integer :: k
+    real(dp) :: I_eff, M, R
+
+    M = s% mstar
+    R = s% r(1)
+
+    if (M > 0d0 .and. R > 0d0) then
+        rg2 = I_eff / (M * R * R)
+    else
+        rg2 = 0d0
+    end if
+
+end function compute_rg2
+\end{minted}
+The only thing that is important to realise is that \lstinline[style=output, breaklines=true]|r(k)| goes from the outside to the inside, such that \lstinline[style=output, breaklines=true]|r(1)| is the radius of the outside layer.
+
+Then I defined \lstinline[style=output, breaklines=true]|compute_k_over_T|, based on \citet{preece2022}:
+\begin{minted}[fontsize=\small]{fortran}
+real(dp) function compute_k_over_T(s) result(k_over_T)
+    implicit none
+
+    type(star_info), pointer :: s
+    real(dp) :: a, b, c
+    real(dp) :: log_z
+    real(dp) :: R_conv, R
+    real(dp) :: M_conv, M
+    real(dp) :: t_conv
+
+    log_z = log10(0.014)
+    a = 2.72 + 0.63 * log_z
+    b = 0.68 - 0.219 * log_z
+    c = 0.12 - 0.023 * log_z
+
+    M_conv = compute_M_conv(s)
+    M = s% star_mass
+
+    R_conv = compute_R_conv(s)
+    R = s% photosphere_r
+
+    t_conv = compute_t_conv(s, M_conv, R_conv)
+
+    k_over_T = (R_conv / R)**a * (M_conv / M)**b * c/t_conv
+
+end function compute_k_over_T
+\end{minted}
+
+This function is really simple, but it does call three other functions, \lstinline[style=output, breaklines=true]|compute_M_conv|, \lstinline[style=output, breaklines=true]|compute_R_conv| and \lstinline[style=output, breaklines=true]|compute_t_conv|. I write them on the next page.
+\nextpage
+\begin{minted}[fontsize=\small]{fortran}
+real(dp) function compute_M_conv(s) result(M_conv)
+    implicit none
+
+    type(star_info), pointer :: s
+    integer :: i
+    real(dp) :: q_top, q_bot
+
+    M_conv = 0
+    do i = 1, s% n_conv_regions
+        if (abs(s% cz_top_mass(i) / Msun / s% star_mass - 1d0) < 3d-2) then
+            ! --- this is the envelope
+            q_top = s% cz_top_mass(i) / Msun / s% star_mass
+            q_bot = s% cz_bot_mass(i) / Msun / s% star_mass
+    
+            M_conv = s% mstar * (q_top - q_bot) / Msun
+        end if
+    end do
+
+end function compute_M_conv
+
+real(dp) function compute_R_conv(s) result(R_conv)
+    implicit none
+
+    type(star_info), pointer :: s
+    real(dp) :: R_bot, q_bot, R_top
+    integer :: k, i
+
+    R_conv = 0
+    R_top = s% r(1)
+
+    ! --- first find bottom q
+    do i = 1, s% n_conv_regions
+        if (abs(s% cz_top_mass(i) / Msun / s% star_mass - 1d0) < 3d-2) then
+            ! --- this is the envelope
+            q_bot = s% cz_bot_mass(i) / Msun / s% star_mass
+        end if
+    end do
+
+
+    ! --- now find which r this corresponds to
+    R_bot = 0d0 ! for safety
+
+    do k = 1, s% nz
+        if (s% m(k) / Msun / s% star_mass <= q_bot) then
+            R_bot = s% r(k)
+            exit
+        end if
+    end do
+
+    R_conv = (R_top - R_bot) / Rsun
+
+end function compute_R_conv
+
+real(dp) function compute_t_conv(s, M_conv, R_conv) result(t_conv)
+    implicit none
+
+    type(star_info), pointer :: s
+    real(dp) M_conv, R_conv, L
+
+    t_conv = 0.4311* (3 * M_conv * R_conv**2 / (s% photosphere_L))**(1/3) * secyer
+
+end function compute_t_conv
+\end{minted}
+
+Below, I show the results of a test run:
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-6}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-5}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-7}
+\end{figure}
 
 \bibliography{master.bib}
+
+\newsection{Additional plots}
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-0.25}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-0.5}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-1}
+\end{figure}
+
+
+
 \end{document}

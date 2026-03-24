@@ -137,6 +137,12 @@ class MesaGrid:
                 tpagb_path if tpagb_path.exists() else None,
             )
 
+            if not binary_path.exists():
+                print(run_dir)
+
+            if not tpagb_path.exists():
+                print(run_dir)
+
             age = self._find_initial_age(run_dir)
             model.set_initial_age(age)
 

@@ -75,7 +75,7 @@ plt.show()
 for q in [0.25, 0.5, 0.75, 1]:
 
     fig, axs = plt.subplots(
-        2, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
+        2, 1, sharex=True, figsize=set_size(full, height=0.7), constrained_layout=True
     )
 
     plt.xlabel("Star age (yr)")
@@ -94,6 +94,7 @@ for q in [0.25, 0.5, 0.75, 1]:
             linewidth=5,
             color="C9",
         )
+    axs[0].set_ylim(50, 1000)
 
     for R, model in aeso.get_q_slice(q):
         mass_ref_interp = np.interp(

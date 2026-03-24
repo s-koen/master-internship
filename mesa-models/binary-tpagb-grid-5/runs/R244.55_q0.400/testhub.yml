@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 370.52
+      model_number:        10925
+      star_age:     2.7231546797838609E+05
+      num_retries:            2
+      log_rel_run_E_err:        -2.9389476881281316
+      steps:        33333
+      retries:            2
+      redos:            0
+      solver_calls_made:        33335
+      solver_calls_failed:            2
+      solver_iterations:       161715
