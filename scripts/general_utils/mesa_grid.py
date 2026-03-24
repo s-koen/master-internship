@@ -137,34 +137,20 @@ class MesaGrid:
                 tpagb_path if tpagb_path.exists() else None,
             )
 
-            age = self._find_initial_age(model)
+            age = self._find_initial_age(run_dir)
             model.set_initial_age(age)
 
             self.models[(R1, q)] = model
             self.R1_vals.add(R1)
             self.q_vals.add(q)
 
-    def _find_initial_age(self, model):
-        initial_R = model.star.R[0]
-        model_age = 0
-
-        for history in [
-            self.ref_ms,
-            self.ref_gb,
-            self.ref_cheb,
-            self.ref_eagb,
-            self.ref_tpagb,
-        ]:
-            try:
-                arg = np.argwhere(history.log_R > np.log10(initial_R))[0][0]
-                model_age += history.star_age[arg]
-                print(f"found model age = {model_age}")
-                break
-            except IndexError:
-                model_age += history.star_age[-1]
-                print(f"excepted, new model age = {model_age}")
-
-        return model_age - self.tpagb_age
+    def _find_initial_age(self, run_dir):
+        name = str(run_dir / "start.mod")
+        model = mr.MesaData(name)
+        if model.header("net_name") == "c13.net":
+            return model.header("star_age")
+        else:
+            return model.header("star_age") - self.ref_eagb.star_age[-1]
 
     def _finalize_grid(self):
         """sort grid axes and keys"""

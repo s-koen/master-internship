@@ -1,0 +1,279 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 8}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{bla}
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-0.75}
+\end{figure}
+
+\newsection{Additional plots}
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-0.25}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-0.5}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-mass-1}
+\end{figure}
+
+\newsection{Tidal Synchronization}
+
+\subsection{Theory}
+
+Here, I describe the (I think) relevant results from \citet{hut1981} and \citet{preece2022}. In particular, I describe the tidal evolution equations (9), (10) and (11) from \citet{hut1981}:
+\begin{align}
+    \dv{a}{t} &= -6 \frac{k}{T}q(1 +q) \l(\frac{R}{a}\r)^{8} \frac{a}{(1- e^{2} )^{15/2} }\l[f_{1}(e^{2}) - (1-e^{2} )^{3 / 2} f_{2} (e^{2}) \frac{\Omega}{n}\r],\nonumber \\
+    \dv{e}{t} &= -27 \frac{k}{T} q (1+q)\l(\frac{R}{a}\r)^{8} \frac{e}{(1-e^{2} )^{13 / 2} } \l[f_{3}(e^{2} ) - \frac{11}{18}(1-e^{2} )^{3 / 2} f_{4}(e^{2} )\frac{\Omega}{n}\r],\nonumber\\
+    \dv{\Omega}{t} &= 3 \frac{k}{T} \frac{q^{2}}{r_{g}^{2}}\l(\frac{R}{a}\r)^{6} \frac{n}{(1-e^{2} )^{6}}\l[f_{2}(e^{2}) - (1 - e^{2})^{3 / 2} f_{5} (e^{2})\frac{\Omega}{n}\r].\nonumber\\
+    \intertext{
+    Here, \(f_{i} \) is a family of functions only dependent on \(e^{2}\) which a nice similarity, namely that when \(e = 0\), \(f_{i} = 1 \). Since we are (at least now,) only looking at circular orbits (\(e = 0 \)), the equations above simplify to}
+    \dv{a}{t} &= -6 \frac{k}{T}q(1 +q) \l(\frac{R}{a}\r)^{8}a \l[1 - \frac{\Omega}{n}\r],\label{eq:dadt} \\
+    \dv{e}{t} &= 0,\label{eq:dedt}\\
+    \dv{\Omega}{t} &= 3 \frac{k}{T} \frac{q^{2}}{r_{g}^{2}}\l(\frac{R}{a}\r)^{6} n \l[1 - \frac{\Omega}{n}\r]. \label{eq:domegadt}
+\end{align}
+
+In these equations, \(n\)\sidenote{\(n \equiv G^{1 / 2}(M + m)^{1 / 2} a^{- 3 / 2}\)} is the mean orbital angular velocity and \(r_{g}\) is the radius of gyration\sidenote{\(r_g\) is defined as \(I = M(r_{g} R)^{2}\), where \(I\) the moment of inertia of the primary.}.
+
+A last important factor in these equations is the ratio \(k / T\), which contains the dependence of the equations on the structure of the star \citep{preece2022}. Here, the \(k\) is the \emph{absidal motion} constant\sidenote{Does this relate to how much an elliptical orbit will rotate (absidal precession)?} and \(T\) is the tidal response time.
+
+This ratio can be approximated following \citet{preece2022} as
+\begin{equation}\label{eq:kovert}
+    \l(\frac{k}{T}\r)_\text{conv} = \l(\frac{R_\text{conv}}{R}\r)^{a} \l(\frac{M_\text{conv}}{M}\r)^{b} \frac{c}{t_\text{conv}},
+\end{equation}
+where \(a\), \(b\) and \(c\) are functions of the metallicity \(z\) only, and \(t_\text{conv}\) is given by
+\begin{equation}\label{eq:tconv}
+    t_\text{conv} = 0.4311 \l[ \frac{3 M_\text{conv} R_\text{conv}^{2} }{L}\r]^{1 / 3} \text{ yr}.
+\end{equation}
+For completeness, I also list the equations for \(a, \) \(b\) and \(c\) below as well:
+\begin{align*}
+    a & \approx  2.72 + 0.63\phantom{0}\cdot \log z,\\
+    b & \approx 0.68 - 0.219\cdot \log z,\\
+    c & \approx 0.12 - 0.023\cdot \log z.
+\end{align*}
+Lastly, a correction factor \(f_\text{conv}\) for \emph{fast tides}\sidenote{Regime where the tidal period (what is the tidal period?) is shorter than the convective turnover time \(t_\text{conv}\).} can be used to change \(k / T\) in the fast tide regime.
+
+There exist multiple prescriptions for choosing sensible values for \(f_\text{conv}\). I only describe the prescription by \citet{goldreich1989} as it is implemented in \emph{Binary Star Evolution} (BSE)  \citep{hurley1902}:
+\begin{equation*}
+    f_\text{conv} = \min \l[1, \l(\frac{P_\text{tid}}{2 t_\text{conv}}\r)^{2} \r],
+\end{equation*}
+where \(P_\text{tid}\) is the tidal pumping timescale given by
+\begin{equation*}
+    \frac{1}{P_\text{tid}} = \abs{\frac{1}{P_\text{orb}} - \frac{1}{P_\text{spin}}}.
+\end{equation*}
+
+In the case of a radiative envelope, the ratio \(k / T\) should be damped, but since TPAGB stars only have convective envelopes, there is (at least at this point) no need to describe and implement this damping.
+
+\newsubsection{MESA Toy Model}
+
+MESA has an implementation for tides in binary stars. This option has to be turned on in the binary inlist settings using \lstinline[style=output, breaklines=true]|do_tidal_sync|.
+The implementation of the tidal interactions is interiorly written in the file \lstinline[style=output, breaklines=true]|$MESA/ binary/private/binary_tides.f90| and largely follows the theory described above.
+
+There are, however, small differences. To start, MESA does not use the fit for \(k / T\) from \citet{preece2022}, but a similar fit from \citet{hurley1902}. Then, MESA actually only directly computes the change of the spin angular frequency of the star(s). By keeping track of the lost or gained angular momentum, the orbital separation and eccentricity are then adjusted using conservation of angular momentum elsewhere. Below, I show the piece of code that is responsible for adjusting the spin angular momentum in the default implementation of tides in MESA:
+\begin{minted}[fontsize=\small]{fortran}
+! binary_tides.f90
+subroutine sync_spin_to_orbit(...)
+    ...
+    if (sync_mode == "Uniform") then
+        a1 = f2(b% eccentricity)
+        a2 = pow(1-pow2(b% eccentricity), 1.5d0)*f5(b% eccentricity)
+        do k=1,nz
+            delta_j(k) = (1d0 - exp(-a2*dt_next/t_sync))*(s% j_rot(k) - a1/a2*j_sync(k))
+        end do
+    ...
+
+    if (.not. b% doing_first_model_of_run) then
+        do k=1,nz
+            s% extra_jdot(k) = s% extra_jdot(k) - delta_j(k)/dt_next
+        end do
+    end if
+
+end subroutine sync_spin_to_orbit
+\end{minted}
+
+The \lstinline[style=output, breaklines=true]|s% extra_jdot(k)| is used to spin the star up or down. In most cases, this is exactly what we want, but in our case, where we want to only see the effects of the tides, and preferably keep a naive non-rotating star, this is not what we want.
+
+To only affect the \emph{orbit}, we need to bypass the star interiorly and update the orbital angular momentum directly. I think the easiest way to do is to utilize the \lstinline[style=output, breaklines=true]|other_jdot_ls| hook. By enabling this other hook in the binary inlist, and writing the following line in the \lstinline[style=output, breaklines=true]|extras_run_binary_controls|:
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+b% other_jdot_ls => toy_tides
+\end{minted}
+we can now implement our own tide formulation. As the name of the \lstinline[style=output, breaklines=true]|other_jdot_ls| hook reveals, my first try will just be a very simple toy example. Below, I write down my code:
+\begin{minted}[fontsize=\small]{fortran}
+! src/bin/additional_routines.inc
+subroutine toy_tides(binary_id, ierr)
+    ! --- following the required input and output of default_jdot_ls
+    integer, intent(in) :: binary_id
+    integer, intent(out) :: ierr
+
+    ! --- getting access to the binary object and star object
+    type(binary_info), pointer :: b
+    type(star_info), pointer :: s
+
+    ! --- necessary other variables
+    real(dp) :: omega, omega_orb, domega_dt
+    real(dp) :: I_eff, Jdot_tides, dt
+    real(dp) :: t_sync
+    integer :: k ! for counting zones
+
+    ierr = 0
+    call binary_ptr(binary_id, b, ierr)
+    s => b% s_donor 
+
+    dt = s% dt
+
+    ! --- get initial spin and orbital frequency
+    omega = s% x_ctrl(3)
+    omega_orb = 2d0*pi / b% period
+
+    ! --- arbitrary sync timescale
+    t_sync = 1d12 ! in seconds (30000 yr)
+
+    ! --- simplified hut spin evolution
+    domega_dt = (omega_orb - omega) / t_sync
+
+    ! --- update spin
+    omega = omega + dt * domega_dt
+    s% x_ctrl(3) = omega 
+
+    ! --- compute moment of inertia of solid body
+    I_eff = 0
+    do k=1,s% nz
+        I_eff = I_eff + s% dm_bar(k) * (s% r(k)**2)
+    end do
+    Jdot_tides = I_eff * domega_dt
+
+    ! --- change jdot orbit
+    b% jdot_ls = - Jdot_tides
+
+    ! --- write orbit and spin frequency
+    write(*,*) "Omega_star = ", omega 
+    write(*,*) "Omega_orb  = ", omega_orb
+    write(*,*) "J_orb =", b% angular_momentum_j
+    write(*,*) "a =", b% separation
+
+end subroutine toy_tides
+\end{minted}
+
+I also add the spin angular frequency and the orbit angular frequency to the history columns to visualize the effect of the tides.
+
+It is important to realize that the toy model is an extremely simplified version of a full tidal implementation. Below, I plot the results of the simple model, first for a initially non-rotating star.
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w8-tides-2}
+\end{figure}
+
+It is obvious that the simple tidal model works in the sense that the difference between the orbital angular frequency and spin angular frequency approach eachother. Since the star stars out with a slower spin, the orbit decreases (and thus the Roche lobe radius too). The second plot however, shows that the spin of the star at this point, is completely unaffected by changes in the structure of the star. During a radius peak, conservation of angular momentum should cause the star to show down its rotation, but this does not happen.
+
+I think this is nice and easy improvement to make to the toy model:
+
+\newsubsection{MESA Toy Model with Stellar Evolution}
+\begin{minted}[fontsize=\small]{fortran}
+! src/bin/additional_routines.inc
+subroutine toy_tides_with_star_evo(binary_id, ierr)
+    ! --- following the required input and output of default_jdot_ls
+    integer, intent(in) :: binary_id
+    integer, intent(out) :: ierr
+
+    ! --- getting access to the binary object and star object
+    type(binary_info), pointer :: b
+    type(star_info), pointer :: s
+
+    ! --- necessary other variables
+    real(dp) :: omega, omega_orb, domega_dt
+    real(dp) :: I_eff, Jdot_tides, dt
+    real(dp) :: I_old, dlnI_dt, t_sync
+    real(dp) :: domega_dt_tides
+
+    integer :: k ! for counting zones
+
+    ierr = 0
+    call binary_ptr(binary_id, b, ierr)
+    s => b% s_donor 
+
+    dt = s% dt
+
+    ! --- get initial spin and orbital frequency
+    omega = s% x_ctrl(3)
+    omega_orb = 2d0*pi / b% period
+
+    ! --- arbitrary sync timescale
+    t_sync = 1d12
+
+    ! --- compute moment of inertia of solid body
+    I_eff = 0
+    do k=1,s% nz
+        I_eff = I_eff + s% dm_bar(k) * (s% r(k)**2)
+    end do
+
+    ! --- compute dlnI/dt
+    I_old = s% x_ctrl(4)
+    if (I_old > 0d0 .and. dt > 0d0) then
+        dlnI_dt = (log(I_eff) - log(I_old)) / dt
+    else
+        dlnI_dt = 0d0
+    end if
+
+    ! --- simplified hut spin evolution
+    domega_dt_tides = (omega_orb - omega) / t_sync
+
+    ! --- total spin evolution (structure + tides)
+    domega_dt = domega_dt_tides - omega * dLnI_dt
+
+    ! --- update spin
+    omega = omega + dt * domega_dt
+    s% x_ctrl(3) = omega 
+
+    ! --- store I for next step
+    s% x_ctrl(4) = I_eff
+
+
+    ! --- change jdot orbit
+    Jdot_tides = I_eff * domega_dt_tides
+    b% jdot_ls = - Jdot_tides
+
+    ! --- write orbit and spin frequency
+    write(*,*) "Omega_star = ", omega 
+    write(*,*) "Omega_orb  = ", omega_orb
+    write(*,*) "J_orb =", b% angular_momentum_j
+    write(*,*) "a =", b% separation
+
+end subroutine toy_tides_with_star_evo
+
+\end{minted}
+
+
+
+
+
+
+
+\bibliography{master.bib}
+\end{document}

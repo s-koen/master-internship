@@ -1,0 +1,31 @@
+    - inlist: inlist
+      runtime_minutes: ******
+      model_number:        30299
+      star_age:     3.8851113174436142E+05
+      num_retries:          832
+      log_rel_run_E_err:        -2.8520439333653633
+      steps:       111902
+      retries:          832
+      redos:            0
+      solver_calls_made:       112734
+      solver_calls_failed:          832
+      solver_iterations:       565906
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
+    - inlist: inlist
