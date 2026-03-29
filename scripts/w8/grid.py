@@ -57,7 +57,7 @@ for i, qs in enumerate(np.round(np.linspace(0.4, 1, 7), 2)):
             periods.append(model.star.period_days[-1])
             Rs.append(R)
 
-    plt.plot(Rs, periods, "o-", label=f"$q={qs}$")
+    plt.plot(Rs, periods, ".-", label=f"$q={qs}$")
 
 fig.legend(loc="outside upper center", ncols=4)
 plt.xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
@@ -132,7 +132,7 @@ for i, qs in enumerate(np.round(np.linspace(0.4, 1, 7), 2)):
             max_ratio.append(np.max(model.star.R / model.star.rl_1))
             Rs.append(R)
 
-    plt.plot(Rs, max_ratio, "o-", label=f"$q={qs}$")
+    plt.plot(Rs, max_ratio, ".-", label=f"$q={qs}$")
 
 fig.legend(loc="outside upper center", ncols=4)
 plt.xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
@@ -165,7 +165,7 @@ for i, qs in enumerate(np.round(np.linspace(0.4, 1, 7), 2)):
             max_ratio.append(np.max(model.star.R / rol(model.star)))
             Rs.append(R)
 
-    plt.plot(Rs, max_ratio, "o-", label=f"$q={qs}$")
+    plt.plot(Rs, max_ratio, ".-", label=f"$q={qs}$")
 
 
 plt.xlim(plt.gca().get_xlim())

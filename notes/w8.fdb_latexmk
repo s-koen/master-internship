@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w8"] 1774352406.50542 "w8.aux" "w8.bbl" "w8" 1774353559.77301 0
+["bibtex w8"] 1774352406.50542 "w8.aux" "w8.bbl" "w8" 1774428501.78347 0
   "./master.bib" 1774271121.11162 22671 aa0ec408615015594a55fc84ab1fb272 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w8.aux" 1774353559.25231 2549 964ca62f4e9ccc089e1359c0f47eb337 "pdflatex"
+  "w8.aux" 1774428501.43299 2549 964ca62f4e9ccc089e1359c0f47eb337 "pdflatex"
   (generated)
   "w8.bbl"
   "w8.blg"
   (rewritten before read)
-["pdflatex"] 1774353551.88614 "w8.tex" "w8.pdf" "w8" 1774353559.77323 0
+["pdflatex"] 1774428496.62016 "w8.tex" "w8.pdf" "w8" 1774428501.78362 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
@@ -26,9 +26,9 @@
   "/home/koen/LaTeX-setup//plots/w8-tides-2.pgf" 1774304832.87407 41840 6785467075796724f384706abdd293f6 ""
   "/home/koen/LaTeX-setup//plots/w8-tides-3.pgf" 1774344270.9081 44798 768cbbbe9d6e7058cdcc5c14517a65a5 ""
   "/home/koen/LaTeX-setup//plots/w8-tides-4.pgf" 1774344275.36017 47941 e3eecb164cd27eec1a0fe57329e35f0b ""
-  "/home/koen/LaTeX-setup//plots/w8-tides-5.pgf" 1774353509.52657 49322 f2238bd4044647d3187b632aea700de2 ""
-  "/home/koen/LaTeX-setup//plots/w8-tides-6.pgf" 1774353512.29361 55317 0add6b08d55f70fb14640ab9331d8a52 ""
-  "/home/koen/LaTeX-setup//plots/w8-tides-7.pgf" 1774353515.67866 34742 524383264dfd343e4d5959861ff01e25 ""
+  "/home/koen/LaTeX-setup//plots/w8-tides-5.pgf" 1774428459.13851 96171 42e0ab9d4ec7b49376e1e7132caa5d91 ""
+  "/home/koen/LaTeX-setup//plots/w8-tides-6.pgf" 1774428474.20468 82918 b317c966eb7d06c2423261629f66dbcf ""
+  "/home/koen/LaTeX-setup//plots/w8-tides-7.pgf" 1774428496.46693 62765 8fa01266eae7784bdccd8958ba927d81 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1276641224 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/sourcecodepro/a_lutrty.enc" 1558300257 2905 926f570532f1104044846d18d8d97080 ""
@@ -422,9 +422,9 @@
   "_minted/F684F00E0E3DEC39D7D4558B57EF6252.highlight.minted" 1774298447.68155 5776 d967d40a7b26052fe32eff86d5563c4b ""
   "_minted/_2B3492BEDDB0203EF8328E3BEF41DF22.index.minted" 1774350886.81501 773 fd14fd11d9218ca7ceae794716467c31 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w8.aux" 1774353559.25231 2549 964ca62f4e9ccc089e1359c0f47eb337 "pdflatex"
+  "w8.aux" 1774428501.43299 2549 964ca62f4e9ccc089e1359c0f47eb337 "pdflatex"
   "w8.bbl" 1774352406.61365 1596 71e98d610e22fe271815c00e038c6bb7 "bibtex w8"
-  "w8.out" 1774353559.255 1372 728ec754b2ec4aa2268a2b2a0e638baa "pdflatex"
+  "w8.out" 1774428501.43476 1372 728ec754b2ec4aa2268a2b2a0e638baa "pdflatex"
   "w8.tex" 1774353551.17119 23075 d0e60bfb599ff749c351f5b75d30014c ""
   (generated)
   "w8.aux"

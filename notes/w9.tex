@@ -1,0 +1,394 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 9}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Validating Tides Implementation}
+
+In the output, the convective turnover timescale was not changing. I traced this bug down to the following line of code:
+\begin{minted}[fontsize=\small]{fortran}
+t_conv = 0.4311* (3 * M_conv * R_conv**2 / (s% photosphere_L))**(1/3) * secyer
+\end{minted}
+Here, the integer division in the exponent leads to \(x^0 = 1\) always.
+
+Another problem revealed itself when analysing the output.
+\begin{minted}[fontsize=\small]{text}
+ R_top =    380.72570878310302     
+ R_bot =    365.63276071638143     
+ R_conv=    15.092948066721579     
+ in compute_t_conv: M_conv =    1.7530753171383301E-003
+ in compute_t_conv: R_conv =    15.092948066721579     
+ in compute_t_conv: L      =    8637.1120791303983     
+   5.1764712937202029E-002
+ M_conv=   1.7530753171383301E-003  Msun
+ R_conv=   15.092948066721579       Rsun
+ t_conv=   704232.07225991588       s
+ t_conv=  0.26778921296673353       months
+ k_over_T   =   7.7600225066267609E-013  /s
+ Omega_star =   2.6920249879859447E-008  /s
+ Omega_orb  =   2.4471986527612926E-008  /s
+ J_orb =   3.5784679676889668E+053  g cm^2 / s
+ a     =   91940611174289.297       cm
+ dt    =   888553195.76110470       s
+ I_eff =   2.8898415232377608E+059  g cm^2
+ rg2   =   0.10857893011391405     
+\end{minted}
+
+The convective regions give wrong results, likely due to the superadiabicity of the outer layers looking at the minimal mass involved in the convective region.
+
+Below, I plot the entropy profile of a star where my code finds a very tiny convective mass and radius:
+\begin{figure}[ht]
+    \marginfignote{3}{In the superadiabatic region, there is a small bump, just large enough to create a very small convective region. The width of this bump aligns quite nicely with the values I find for the convective region.}
+    \centering
+    \incplot{w9-gradT}
+\end{figure}
+
+Therefore, I should adjust the methods to find the mass and radius of the convective envelope region.
+My idea is to look for \emph{all} convective regions that start sufficiently close to the outer edge of the star, and figure out which is the largest. I use this one for the final result.
+
+\begin{minted}[fontsize=\small]{fortran}
+real(dp) function compute_M_conv(s) result(M_conv)
+    implicit none
+
+    type(star_info), pointer :: s
+    integer :: i
+    real(dp) :: q_top, q_bot, q_max
+
+    M_conv = 0
+    q_max = 0
+    do i = 1, s% n_conv_regions
+        if (abs(s% cz_top_mass(i) / Msun / s% star_mass - 1d0) < 3d-2) then
+            ! --- starts sufficiently close to the edge 
+            q_top = s% cz_top_mass(i) / Msun / s% star_mass
+            q_bot = s% cz_bot_mass(i) / Msun / s% star_mass
+
+            write(*,*) q_top, q_bot
+
+            if (q_top - q_bot > q_max) then
+                q_max = q_top - q_bot
+                write(*,*) "found new q_max:" 
+                write(*,*) q_top, q_bot, q_max
+
+            end if
+
+        end if
+    end do
+    write(*,*) "found M_conv:" 
+    write(*,*) q_max, "gives M_conv = ", s% mstar * q_max / Msun
+
+    M_conv = s% mstar * q_max / Msun
+
+end function compute_M_conv
+
+real(dp) function compute_R_conv(s) result(R_conv)
+    implicit none
+
+    type(star_info), pointer :: s
+    real(dp) :: R_bot, R_top
+    real(dp) :: q_top, q_bot, q_max
+    real(dp) :: q_top_max, q_bot_max
+    integer :: k, i
+
+    R_conv = 0
+
+    ! --- first find q_top and q_bot
+
+    q_max = 0
+    q_top_max = 0
+    q_bot_max = 0
+
+    do i = 1, s% n_conv_regions
+        if (abs(s% cz_top_mass(i) / Msun / s% star_mass - 1d0) < 3d-2) then
+            ! --- starts sufficiently close to the edge 
+            q_top = s% cz_top_mass(i) / Msun / s% star_mass
+            q_bot = s% cz_bot_mass(i) / Msun / s% star_mass
+
+            if (q_top - q_bot > q_max) then
+                q_max = q_top - q_bot
+                q_top_max = q_top
+                q_bot_max = q_bot
+            end if
+        end if
+    end do
+
+    ! --- now find which rs this corresponds to
+    R_top = 0d0 
+ 
+    do k = 1, s% nz
+        if (s% m(k) / Msun / s% star_mass <= q_top_max) then
+            R_top = s% r(k)
+            exit
+        end if
+    end do
+
+    R_bot = 0d0 ! for safety
+
+    do k = k, s% nz
+        if (s% m(k) / Msun / s% star_mass <= q_bot_max) then
+            R_bot = s% r(k)
+            exit
+        end if
+    end do
+
+    R_conv = (R_top - R_bot) / Rsun
+
+end function compute_R_conv
+\end{minted}
+This results in the "correct" convective regions\sidenote{At least, that is what I thought.}.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-tides-1}
+\end{figure}
+
+The "Correct" tide model terminates before the envelope is fully stripped. Again, my tides implementation cannot find the correct size of the convective envelope.
+
+\nextpage
+
+\begin{minted}[fontsize=\small,breaklines]{text}
+ rl_relative_gap for each component                       NaN                       NaN
+ rl for each component                       NaN                       NaN
+ r for each component   35119709581892.098        0.0000000000000000     
+ m for each component   1.4776735316624046E+033   4.2199201770478900E+033
+ separation, angular momentum                       NaN                       NaN
+ jdot, jdot_mb, jdot_gr, jdot_ml:                       NaN   0.0000000000000000       -1.2689479219736663E+024  -9.0373276853257355E+040
+ jdot_ls, jdot_missing_wind, extra_jdot:                       NaN   0.0000000000000000        0.0000000000000000     
+ error solving rl_rel_gap
+ retry   21509
+ found M_conv:
+   0.0000000000000000      gives M_conv =    0.0000000000000000     
+ M_conv=   0.0000000000000000       Msun
+ R_conv=   0.0000000000000000       Rsun
+ t_conv=   0.0000000000000000       s
+ t_conv=   0.0000000000000000       months
+ k_over_T   =                       NaN  /s
+ Omega_star =                       NaN  /s
+ Omega_orb  =   1.0050389612588993E-008  /s
+ J_orb =   2.6621375288468520E+053  g cm^2 / s
+ a     =   155565622649979.09       cm
+ dt    =   91137198.467318997       s
+ I_eff =   8.4459593589120531E+058  g cm^2
+ rg2   =    4.6331363281327982E-002
+\end{minted}
+
+In my code, I do
+\begin{minted}[fontsize=\small]{fortran}
+    do i = 1, s% n_conv_regions
+        if (abs(s% cz_top_mass(i) / Msun / s% star_mass - 1d0) < 3d-2) then
+            ! --- find envelope
+\end{minted}
+to find envelope regions. This however, fails when the envelope becomes small, as relative to the star mass, the superadiabatic region grows and the convective envelope starts deeper into the star, surpassing \(0.03M_\text{star}\). Really, we should just check the largest convective region that is NOT the core. For TPAGB-stars, the core is radiative, so we could probably just take the largest convective region. However, for the sake of generality, I still want to implement the core criterion. We can define the core mass using the mesa variable \lstinline[style=output, breaklines=true]|s% he_core_mass|. Then, the new check is trivial:
+\begin{minted}[fontsize=\small]{fortran}
+    do i = 1, s% n_conv_regions
+        if (s% cz_top_mass(i) / Msun - s% he_core_mass > 8d-3) then
+            ! --- find envelope
+\end{minted}
+Here, I use \lstinline[style=output, breaklines=true]|0.008| as a minimum mass above which the envelope should start. I think this is fine, since the simulation only goes down to \(0.02M_\odot \).
+
+This results in the red line from the plot above. The discontinuity arises from the sudden jump in convective envelope mass, but the important thing is that the model terminates due to a stripped envelope.
+
+These are the typical values of the tides at the start of the evolution:
+\begin{minted}[fontsize=\small,breaklines]{text}
+ M_conv=   1.4104929944399043       Msun
+ R_conv=   346.63684044545323       Rsun
+ t_conv=   51634029.747670218       s
+ t_conv=   19.634204026036283       months
+ k_over_T   =   2.1318031522939941E-009  /s
+ Omega_star =   2.4405051105719117E-008  /s
+ Omega_orb  =   2.6326289142027669E-008  /s
+ J_orb =   3.6267648430630879E+053  g cm^2 / s
+ a     =   88316477043967.516       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090070529471E+059  g cm^2
+ rg2   =   0.11698324528595912
+\end{minted}
+And these are typical values at the end of the evolution:
+\begin{minted}[fontsize=\small,breaklines]{text}
+ M_conv=   1.9333378562878496E-002  Msun
+ R_conv=   275.58270883774799       Rsun
+ t_conv=   11041685.311094698       s
+ t_conv=   4.1986787250341084       months
+ k_over_T   =   2.8328298198011495E-010  /s
+ Omega_star =   1.7601613982742538E-008  /s
+ Omega_orb  =   9.2259421941393170E-009  /s
+ J_orb =   2.3516310877365511E+053  g cm^2 / s
+ a     =   162522837053206.97       cm
+ dt    =   31346875.096955534       s
+ I_eff =   9.0310976468297850E+057  g cm^2
+ rg2   =   1.5792074851643058E-002
+\end{minted}
+I think (?) these values look alright. The change in convective envelope mass makes sense due to the mass loss from RLOF and wind. With similar radii, this decreases the convective turnover timescale as well. Due to RLOF, the orbit expands drastically which decreases the orbital frequency and increases \(a\). To me it also makes sense that the moment of inertia decreases, as is lost from the system while maintaining similar radii. This also describes why the gyration radius decreases.
+
+
+
+
+\newsection{Analytical Period, Mass-Ratio, Roche-Lobe Radius Relations}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-2}
+\end{figure}
+
+\newsection{Investigating Curiosities TPAGB-grid}
+
+\newsection{Wind Loss}
+
+MESA accounts for orbital angular momentum changes using the \lstinline[style=output, breaklines=true]|standard_jdot_ml| routine. Below, I show the full thing:
+
+\begin{minted}[fontsize=\small]{fortran}
+subroutine default_jdot_ml(binary_id, ierr)
+  integer, intent(in) :: binary_id
+  integer, intent(out) :: ierr
+  type (binary_info), pointer :: b
+  real(dp) :: alfa
+  ierr = 0
+  call binary_ptr(binary_id, b, ierr)
+  if (ierr /= 0) then
+    write(*,*) 'failed in binary_ptr'
+    return
+  end if
+  !mass lost from vicinity of donor
+  b% jdot_ml = (b% mdot_system_transfer(b% d_i) + b% mdot_system_wind(b% d_i))*&
+    pow2(b% m(b% a_i)/(b% m(b% a_i)+b% m(b% d_i))*b% separation)*2*pi/b% period *&
+    sqrt(1 - pow2(b% eccentricity))
+  !mass lost from vicinity of accretor
+  b% jdot_ml = b% jdot_ml + (b% mdot_system_transfer(b% a_i) + b% mdot_system_wind(b% a_i))*&
+    pow2(b% m(b% d_i)/(b% m(b% a_i)+b% m(b% d_i))*b% separation)*2*pi/b% period *&
+    sqrt(1 - pow2(b% eccentricity))
+  !mass lost from circumbinary coplanar toroid
+  b% jdot_ml = b% jdot_ml + b% mdot_system_cct * b% mass_transfer_gamma * &
+    sqrt(standard_cgrav * (b% m(1) + b% m(2)) * b% separation)
+end subroutine default_jdot_ml
+\end{minted}
+
+The change in orbital angular momentum is clearly the sum of three terms. First, a term for mass loss from the donor. This term is quite similar to the fast winds approximation or the Jeans mode \citep{jeans1924}, which is generally described using the specific angular momentum as:
+\begin{align*}
+    h &= \frac{J}{M_\text{d}} = a^{2}_{d}\omega = \l(\frac{M_\text{a}}{M_\text{a} + M_\text{d}} \r)^{2} \sqrt{G (M_\text{a} + M_\text{d})a}\\
+      &= \l(\frac{M_\text{a}a}{M_\text{a} + M_\text{d}} \r)^{2} \sqrt{G \frac{M_\text{a} + M_\text{d}}{a^{3}}}.\\
+    \intertext{Now, applying Kepler's third law, this reduces to}
+    h &= \l(\frac{M_\text{a}a}{M_\text{a} + M_\text{d}} \r)^{2} \frac{2\pi}{T}\\ 
+\dv{J}{t} &= h \dv{M_\text{d}}{t} = \l(\dot{M}_\text{d,wind} + \dot{M}_\text{d,transfer}\r)\l(\frac{M_\text{a}a}{M_\text{a} + M_\text{d}} \r)^{2} \frac{2\pi}{T} 
+\end{align*}
+In the absence of eccentricity, this is exactly the first equation in the MESA implementation. The second equation is simply the same, just now for the accretor.
+
+The last equation is again just the Jeans mode, but now for material escaping from a circumbinary coplanar toroid\sidenote{Read donut-shaped ring of gas lying in the same plane as the orbit.}. There are two new terms here though, \(\gamma_\text{mass transfer}\) and \(\dot{M}_\text{cct}\). The new term, \(\gamma_\text{mass transfer}\) just determines the radius of the circumbinary coplanar toroid (cct), where \(r_\text{cct} = \gamma_\text{mass transfer}^{2}  \cdot a_\text{orb}\). The term \(\dot{M}_\text{cct}\) just determines the amount of mass that is lost from the cct and in mesa is defined as
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+b% mdot_system_cct = b% mtransfer_rate * b% mass_transfer_delta
+\end{minted}
+and \lstinline[style=output, breaklines=true]|b% mass_tranfer_delta| is the fraction of mass lost from circumbinary coplanar toroid.
+
+For now, we assume fully conservative mass transfer, such that \(\delta_\text{mass transfer} = 0\) so \(\dot{M}_\text{cct}= 0\). Similarly, since we assume fully conservative mass transfer, \(\dot{M}_\text{transfer} = 0 \) for both the donor and the accretor. The accretor is modelled as a point mass and therefore does not lose any mass due to winds.
+
+In our case, MESA's implementation is really just
+\begin{minted}[fontsize=\small]{fortran}
+subroutine default_jdot_ml(binary_id, ierr)
+  integer, intent(in) :: binary_id
+  integer, intent(out) :: ierr
+  type (binary_info), pointer :: b
+  real(dp) :: alfa
+  ierr = 0
+  call binary_ptr(binary_id, b, ierr)
+  if (ierr /= 0) then
+    write(*,*) 'failed in binary_ptr'
+    return
+  end if
+  !mass lost from vicinity of donor
+  b% jdot_ml = b% mdot_system_wind(b% d_i) *&
+    pow2(b% m(b% a_i)/(b% m(b% a_i)+b% m(b% d_i))*b% separation)*2*pi/b% period
+end subroutine default_jdot_ml
+\end{minted}
+
+The default MESA implementation of the angular momentum loss due to mass loss can be changed by using the \lstinline[style=output, breaklines=true]|other_jdot_ml| hook and writing a custom routine to change \lstinline[style=output, breaklines=true]|b% jdot_ml|. To start, I want to test a custom \emph{no wind} and \emph{simple fast wind} prescription.
+
+Both are very simple. The first routine simply sets \lstinline[style=output, breaklines=true]|b% jdot_ml = 0| in all cases. This can used as a test. In the case where the angular momentum of the orbit remains unchanged, one would expect the orbits to grow significantly more than in the case where the angular momentum of the orbit \emph{shrinks}. So really, this test should give an upper bound of the orbital radius.
+
+Similarly, I implement the simplified code I wrote above as a routine. This can also be used as a test. It \emph{should} give the same results as the default MESA implementation.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-wind-1}
+\end{figure}
+
+The \lstinline[style=output, breaklines=true]|orbit_evol.py| file also implements the fast wind in a very similar way by calculating the change in orbital angular momentum as
+
+\begin{minted}[fontsize=\small]{py}
+# Change in semi-major axis, from angular momentum conservation.
+dj_dt_orb = (
+    (1 - beta)
+    * eta
+    * a**2
+    * np.sqrt(1 - e**2)
+    * omega_Kep(SP.mass + mcomp, a)
+    * SP.dM_dt
+)
+\end{minted}
+In the fast tides mode, \(\beta = 0\) and \(\eta = (1 +q)^{-2} \) with \(q = M_\text{d} / M_\text{a}\). This thus reduces to
+\begin{align*}
+    \dv{J}{t} = \dot{M}_\text{d,wind} \l(\frac{M_\text{a}a}{M_\text{a} +M_\text{d}}\r)^{2} \omega.
+\end{align*}
+This is obviously the same result as the result from MESA. The cool thing however, is that this python file shows how we can modify \(\beta \) and \(\eta \) to use different wind angular momentum loss prescriptions. The most interesting one for us here is the prescription by \citet{saladino2019}.
+
+The code from \lstinline[style=output, breaklines=true]|orbit_evol.py| contains the following definitions for \(\beta \) and \(\eta \).
+
+\begin{minted}[fontsize=\small]{py}
+def wind_loss(a, e, spin, mcomp, SP, EvPars):
+    ...
+    if EvPars.wind_model == "Saladino":
+            # Accretion and AM loss from SPH simulations by Saladino et al (2019).
+            # (N.B. model results and fit are only for circular orbits...)
+            eta = eta_Sal(Q, vw_over_vorb)
+            beta = beta_Sal(Q, vw_over_vorb)
+    ...
+
+def beta_Sal(q, v):
+    """
+    Fit to the accretion efficieny from the SPH simulation results of
+    Saladino et al (2019) [eq.11 in the paper].
+        q = M_loser/M_companion
+        v = ratio of outflow velocity to orbital velocity
+    """
+    c1 = 1.7 + 0.3 * q
+    c2 = 0.5 + 0.2 * q
+    alpha = 1.0 / (c1 + (c2 * v) ** 5) + 0.75
+    beta_max = min(0.3, 1.4 / q**2)
+    beta = min(beta_BHL(q, v, alpha), beta_max)
+    return beta
+
+def eta_Sal(q, v):
+    """
+    Specific orbital angular momentum loss (in units of J/mu = a^2 omega) fitted
+    to the SPH simulation results of Saladino et al (2019) [eq.7 in the paper].
+        q = M_loser/M_companion
+        v = ratio of outflow velocity to orbital velocity
+    """
+    eta_iso = (1 + q) ** (-2)
+    c1 = max(q, 0.6 * q**1.7)
+    c2 = 1.5 + 0.3 * q
+    eta = min(1.0 / (c1 + (c2 * v) ** 3) + eta_iso, 0.6)
+    return eta
+\end{minted}
+
+
+
+\bibliography{master.bib}
+\end{document}

@@ -192,9 +192,16 @@ fig, axs = plt.subplots(
 plt.plot(hist.age, hist.R, label="Star radius")
 plt.plot(hist.age, hist.rl_1, label="Roche lobe radius")
 
+fig.legend(loc="outside upper center", ncols=2)
 plt.xlabel(r"Time (yr)")
 plt.ylabel(r"Radius ($R_\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w8-tides-7.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+plt.plot(hist.age, np.abs(hist.jdot_ls))
+plt.plot(hist.age, np.abs(hist.jdot_ml))
+
+plt.show()
 # %%
