@@ -374,6 +374,17 @@ def beta_Sal(q, v):
     beta = min(beta_BHL(q, v, alpha), beta_max)
     return beta
 
+def beta_BHL(q, v, alpha=0.75):
+    """
+    Bondi-Hoyle-Lyttleton accretion efficiency, for a circular orbit.
+        q = M_loser/M_companion
+        v = ratio of outflow velocity to orbital velocity
+        alpha = BHL efficiency parameter (0.75 by default)
+    """
+    vrel = np.sqrt(1 + v**2)
+    beta = alpha / ((1 + q) ** 2 * v * vrel**3)
+    return beta
+
 def eta_Sal(q, v):
     """
     Specific orbital angular momentum loss (in units of J/mu = a^2 omega) fitted
@@ -387,8 +398,98 @@ def eta_Sal(q, v):
     eta = min(1.0 / (c1 + (c2 * v) ** 3) + eta_iso, 0.6)
     return eta
 \end{minted}
+\nextpage
+These functions are all pretty easy to implement in Fortran. For completeness, I wrote them at the end of this document.
+Below, I show the fortran subroutine that is responsible for the wind angular momentum change.
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+subroutine wind_loss(binary_id, ierr)
+    integer, intent(in) :: binary_id
+    integer, intent(out) :: ierr
+    type(binary_info), pointer :: b
+    real(dp) :: q, v
+    real(dp) :: beta, eta
+    ierr = 0
+    call binary_ptr(binary_id, b, ierr)
+    if (ierr /= 0) then
+        write (*, *) 'failed in binary_ptr'
+        return
+    end if
+
+    ! --- compute q == m_accretor / m_donor and v
+    q = b%m(b%a_i)/b%m(b%d_i)
+
+    ! --- get beta and eta from Saladino
+    beta = compute_beta_Sal(q, v)
+    eta = compute_eta_Sal(q, v)
+
+    !mass lost from vicinity of donor
+    b%jdot_ml = b%mdot_system_wind(b%d_i) &
+                *(1 - beta) &
+                *eta &
+                *(b%separation)**2 &
+                *sqrt(1 - pow2(b%eccentricity)) &
+                *2*pi/b%period
+
+end subroutine wind_loss
+\end{minted}
+\marginfig{p-cygni}
+To complete the routine, we need a method to compute the wind velocity. The file \lstinline[style=output, breaklines=true]|star_model.py| contains a method to compute the wind velocity based on results from \citet{lamers1995}. They determined the terminal velocities \(v_{\infty}\) of the stellar winds of 117 stars using 3 different methods, but most importantly by looking at the violet extend of the black absorption trough of saturated P Cygni profiles. These profiles are special as both an absorption dip, as well as an emission peak can be seen for the same spectral line. This is caused by Doppler shifting of the light, which can be used to derive the escape velocity. I show a schematic depiction in the margin (source: \citet{wikimedia2024}).
+
+\citet{lamers1995} find a bystable relation between the escape velocity and the effective temperature of the star shown in figure 4. This relation can quite easily, but not extremely accurately be described by the following set of criteria:
+\begin{equation*}
+    v_{\infty } / v_\text{esc} = \begin{cases}
+        0.35 &\qq{if} \log T_\text{eff} < 3.5,\\
+        1.3 &\qq{if} 4.0 \leq \log(T_\text{eff}) < 4.35,\\
+        2.6 &\qq{if} \log(T_\text{eff}) \geq 4.35,\\
+        0.7 + 0.7 (\log T_\text{eff} - 4.0) &\qq{else.}
+\end{cases}
+\end{equation*}
+
 
 
 
 \bibliography{master.bib}
+
+\newsection{Fortran Functions}
+\begin{minted}[fontsize=\small]{fortran}
+real(dp) function compute_beta_Sal(q, v) result(beta)
+    implicit none
+
+    real(dp) :: q, v
+    real(dp) :: c1, c2
+    real(dp) :: alpha, beta_max
+
+    c1 = 1.7 + 0.3*1/q
+    c2 = 0.5 + 0.2*1/q
+    alpha = 1.0/(c1 + (c2*v)**5) + 0.75
+    beta_max = min(0.3, 1.4*q**2)
+    beta = min(compute_beta_BHL(q, v, alpha), beta_max)
+
+end function compute_beta_Sal
+
+real(dp) function compute_beta_BHL(q, v, alpha) result(beta)
+    implicit none
+
+    real(dp) :: q, v, alpha
+    real(dp) :: vrel
+
+    vrel = sqrt(1 + v**2)
+    beta = alpha/((1 + 1/q)**2*v/vrel**3)
+
+end function compute_beta_Sal
+
+real(dp) function compute_eta_Sal(q, v) result(eta)
+    implicit none
+
+    real(dp) :: q, v
+    real(dp) :: eta_iso, c1, c2
+
+    eta_iso = (1 + 1/q)**(-2)
+    c1 = max(1/q, 0.6*(1/q)**1.7)
+    c2 = 1.5 + 0.3/q
+    eta = min(1.0/(c1 + (c2*v)**3) + eta_iso, 0.6)
+
+end function compute_eta_Sal
+\end{minted}
+
 \end{document}

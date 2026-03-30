@@ -1,22 +1,41 @@
+! *****************************************************************
+!             ██                       ██   ▀▀
+! ▄█▀▀▀ ██ ██ ████▄ ████▄ ▄███▄ ██ ██ ▀██▀▀ ██  ████▄ ▄█▀█▄ ▄█▀▀▀
+! ▀███▄ ██ ██ ██ ██ ██ ▀▀ ██ ██ ██ ██  ██   ██  ██ ██ ██▄█▀ ▀███▄
+! ▄▄▄█▀ ▀██▀█ ████▀ ██    ▀███▀ ▀██▀█  ██   ██▄ ██ ██ ▀█▄▄▄ ▄▄▄█▀
+!
+! *****************************************************************
+
 subroutine wind_loss(binary_id, ierr)
     integer, intent(in) :: binary_id
     integer, intent(out) :: ierr
-    type (binary_info), pointer :: b
-    real(dp) :: alfa
+    type(binary_info), pointer :: b
+    real(dp) :: q, vw_over_vorb
+    real(dp) :: beta, eta
     ierr = 0
     call binary_ptr(binary_id, b, ierr)
     if (ierr /= 0) then
-        write(*,*) 'failed in binary_ptr'
+        write (*, *) 'failed in binary_ptr'
         return
     end if
+
+    ! --- compute q == m_accretor / m_donor and v
+    q = b%m(b%a_i)/b%m(b%d_i)
+    vw_over_vorb = compute_vwind(b%d_i) / compute_vorbit(b% m(1) + b% m(2), b% separation) 
+
+    ! --- get beta and eta from Saladino
+    beta = compute_beta_Sal(q, vw_over_vorb)
+    eta = compute_eta_Sal(q, vw_over_vorb)
+
     !mass lost from vicinity of donor
-    b% jdot_ml = b% mdot_system_wind(b% d_i) &
-                 * (1 - beta) &
-                 * eta &
-                 * (b% separation)**2 &
-                 * sqrt(1 - pow2(b% eccentricity)) &
-                 * 2*pi/b% period
-        end subroutine wind_loss
+    b%jdot_ml = b%mdot_system_wind(b%d_i) &
+                *(1 - beta) &
+                *eta &
+                *(b%separation)**2 &
+                *sqrt(1 - pow2(b%eccentricity)) &
+                *2*pi/b%period
+
+end subroutine wind_loss
 
 subroutine tides(binary_id, ierr)
     ! --- following the required input and output of default_jdot_ls
@@ -42,69 +61,160 @@ subroutine tides(binary_id, ierr)
 
     ierr = 0
     call binary_ptr(binary_id, b, ierr)
-    s_d => b% s_donor 
+    s_d => b%s_donor
 
-    dt = s_d% dt
+    dt = s_d%dt
 
     ! --- compute mass ratio, R and a
-    q = b% m(2) / b% m(1) 
-    R = s_d% photosphere_r * Rsun ! in cm
-    a = b% separation ! in cm
-
+    q = b%m(2)/b%m(1)
+    R = s_d%photosphere_r*Rsun ! in cm
+    a = b%separation ! in cm
 
     ! --- compute k_over_T (including f_conv)
     k_over_T = compute_k_over_T(b, s_d)
 
     ! --- get initial spin and orbital frequency
-    omega = s_d% x_ctrl(3)
-    omega_orb = 2d0*pi / b% period
+    omega = s_d%x_ctrl(3)
+    omega_orb = 2d0*pi/b%period
 
     ! --- compute moment of inertia of solid body and gyration radius
     I_eff = compute_I_eff(s_d)
     rg2 = compute_rg2(s_d, I_eff)
 
     ! --- angular momentum loss due to structural change
-    I_old = s_d% x_ctrl(4)
+    I_old = s_d%x_ctrl(4)
     if (I_old > 0d0 .and. dt > 0d0) then
-        dlnI_dt = (log(I_eff) - log(I_old)) / dt
+        dlnI_dt = (log(I_eff) - log(I_old))/dt
     else
         dlnI_dt = 0d0
     end if
-    domega_dt_structure = -omega * dLnI_dt
+    domega_dt_structure = -omega*dLnI_dt
 
     ! --- hut spin evolution
-    domega_dt_tides = 3* k_over_T * q**2 / (rg2) * (R / a)**6 * (omega_orb - omega) 
+    domega_dt_tides = 3*k_over_T*q**2/(rg2)*(R/a)**6*(omega_orb - omega)
 
     ! --- angular momentum loss due to winds
-    dj_dt_rot = b% mdot_system_wind(b% d_i) * R**2 * omega / 1.5
-    domega_dt_wind = dj_dt_rot / I_eff
+    dj_dt_rot = b%mdot_system_wind(b%d_i)*R**2*omega/1.5
+    domega_dt_wind = dj_dt_rot/I_eff
 
     ! --- total spin evolution (structure + wind + tides)
     domega_dt = domega_dt_structure + domega_dt_wind + domega_dt_tides
 
     ! --- update spin
-    omega = omega + dt * domega_dt
-    s_d% x_ctrl(3) = omega 
+    omega = omega + dt*domega_dt
+    s_d%x_ctrl(3) = omega
 
     ! --- store I for next step
-    s_d% x_ctrl(4) = I_eff
-
+    s_d%x_ctrl(4) = I_eff
 
     ! --- change jdot orbit
-    Jdot_tides = I_eff * domega_dt_tides
-    b% jdot_ls = - Jdot_tides
+    Jdot_tides = I_eff*domega_dt_tides
+    b%jdot_ls = -Jdot_tides
 
     ! --- write orbit and spin frequency
-    write(*,*) "Omega_star =", omega, " /s"
-    write(*,*) "Omega_orb  =", omega_orb, " /s"
-    write(*,*) "J_orb =", b% angular_momentum_j, " g cm^2 / s"
-    write(*,*) "a     =", b% separation, " cm"
-    write(*,*) "dt    =", dt, " s"
-    write(*,*) "I_eff =", I_eff, " g cm^2"
-    write(*,*) "rg2   = ", rg2
-    write(*,*) ""
+    write (*, *) "Omega_star =", omega, " /s"
+    write (*, *) "Omega_orb  =", omega_orb, " /s"
+    write (*, *) "J_orb =", b%angular_momentum_j, " g cm^2 / s"
+    write (*, *) "a     =", b%separation, " cm"
+    write (*, *) "dt    =", dt, " s"
+    write (*, *) "I_eff =", I_eff, " g cm^2"
+    write (*, *) "rg2   = ", rg2
+    write (*, *) ""
 
 end subroutine tides
+
+! ****************************************************
+!   ▄▄
+!  ██                     ██   ▀▀
+! ▀██▀ ██ ██ ████▄ ▄████ ▀██▀▀ ██  ▄███▄ ████▄ ▄█▀▀▀
+!  ██  ██ ██ ██ ██ ██     ██   ██  ██ ██ ██ ██ ▀███▄
+!  ██  ▀██▀█ ██ ██ ▀████  ██   ██▄ ▀███▀ ██ ██ ▄▄▄█▀
+!
+! ****************************************************
+
+real(dp) function compute_vwind(s) result(vwind)
+    implicit none
+
+    type(star_info), pointer :: s
+    real(dp) :: m, R, log_Teff, vw_factor
+
+    m = s% star_mass * Msun
+    R = s%photosphere_r * Rsun
+    log_Teff = log10(s% Teff)
+
+    v_esc = sqrt(2.0 * standard_cgrav * m * R)
+    if (log_Teff < 3.5d0) then
+        vw_factor = 0.35d0
+    else if (log_Teff <= 4.0d0) then
+        vw_factor = 0.7d0 + 0.7d0 * (log_Teff - 4.0d0)
+    else if (log_Teff <= 4.35d0) then
+        vw_factor = 1.3d0
+    else
+        vw_factor = 2.6d0
+    end if 
+    vwind = vw_factor * v_esc
+end function compute_vwind
+
+def v_orbit(Mtot, a):
+    """
+    Relative orbital (circular) velocity [km/s].
+
+        Args:
+        Mtot = binary mass [Msun]
+        a = semi-major axis [Rsun]
+    """
+    vorb = np.sqrt(const.G * (Mtot * const.Msun) / (a * const.Rsun))
+    vorb_kms = vorb * 1e-5
+    return vorb_kms
+
+real(dp) function compute_vorbit(Mtot, a) result(vorbit)
+    implicit none
+
+    real(dp) :: Mtot, a
+    vorb = sqrt( standard_cgrav * Mtot / a)
+
+end function compute_vorbit
+
+
+
+real(dp) function compute_beta_Sal(q, v) result(beta)
+    implicit none
+
+    real(dp) :: q, v
+    real(dp) :: c1, c2
+    real(dp) :: alpha, beta_max
+
+    c1 = 1.7 + 0.3*1/q
+    c2 = 0.5 + 0.2*1/q
+    alpha = 1.0/(c1 + (c2*v)**5) + 0.75
+    beta_max = min(0.3, 1.4*q**2)
+    beta = min(compute_beta_BHL(q, v, alpha), beta_max)
+
+end function compute_beta_Sal
+
+real(dp) function compute_beta_BHL(q, v, alpha) result(beta)
+    implicit none
+
+    real(dp) :: q, v, alpha
+    real(dp) :: vrel
+
+    vrel = sqrt(1 + v**2)
+    beta = alpha/((1 + 1/q)**2*v/vrel**3)
+
+end function compute_beta_Sal
+
+real(dp) function compute_eta_Sal(q, v) result(eta)
+    implicit none
+
+    real(dp) :: q, v
+    real(dp) :: eta_iso, c1, c2
+
+    eta_iso = (1 + 1/q)**(-2)
+    c1 = max(1/q, 0.6*(1/q)**1.7)
+    c2 = 1.5 + 0.3/q
+    eta = min(1.0/(c1 + (c2*v)**3) + eta_iso, 0.6)
+
+end function compute_eta_Sal
 
 real(dp) function compute_I_eff(s) result(I_eff)
     implicit none
@@ -113,8 +223,8 @@ real(dp) function compute_I_eff(s) result(I_eff)
     integer :: k
 
     I_eff = 0d0
-    do k = 1, s% nz
-        I_eff = I_eff + (2d0/3d0) * s% dm_bar(k) * s% r(k)**2
+    do k = 1, s%nz
+        I_eff = I_eff + (2d0/3d0)*s%dm_bar(k)*s%r(k)**2
     end do
 
 end function compute_I_eff
@@ -132,28 +242,26 @@ real(dp) function compute_k_over_T(b, s) result(k_over_T)
     real(dp) :: f_conv
 
     log_z = log10(0.014)
-    a = 2.72 + 0.63 * log_z
-    b1 = 0.68 - 0.219 * log_z
-    c = 0.12 - 0.023 * log_z
+    a = 2.72 + 0.63*log_z
+    b1 = 0.68 - 0.219*log_z
+    c = 0.12 - 0.023*log_z
 
     M_conv = compute_M_conv(s)
-    M = s% star_mass
+    M = s%star_mass
 
     R_conv = compute_R_conv(s)
-    R = s% photosphere_r
+    R = s%photosphere_r
 
     t_conv = compute_t_conv(s, M_conv, R_conv)
     f_conv = compute_f_conv(s, b, t_conv)
 
-    k_over_T = (R_conv / R)**a * (M_conv / M)**b1 * c/t_conv * f_conv
+    k_over_T = (R_conv/R)**a*(M_conv/M)**b1*c/t_conv*f_conv
 
-
-    write(*,*) "M_conv=", M_conv, " Msun"
-    write(*,*) "R_conv=", R_conv, " Rsun"
-    write(*,*) "t_conv=", t_conv, " s"
-    write(*,*) "t_conv=", t_conv / secyer * 12, " months"
-    write(*,*) "k_over_T   =", k_over_t, " /s"
-
+    write (*, *) "M_conv=", M_conv, " Msun"
+    write (*, *) "R_conv=", R_conv, " Rsun"
+    write (*, *) "t_conv=", t_conv, " s"
+    write (*, *) "t_conv=", t_conv/secyer*12, " months"
+    write (*, *) "k_over_T   =", k_over_t, " /s"
 
 end function compute_k_over_T
 
@@ -166,27 +274,27 @@ real(dp) function compute_M_conv(s) result(M_conv)
 
     M_conv = 0
     q_max = 0
-    do i = 1, s% n_conv_regions
-        if (s% cz_top_mass(i) / Msun - s% he_core_mass > 8d-3) then
-            ! --- starts sufficiently close to the edge 
-            q_top = s% cz_top_mass(i) / Msun / s% star_mass
-            q_bot = s% cz_bot_mass(i) / Msun / s% star_mass
+    do i = 1, s%n_conv_regions
+        if (s%cz_top_mass(i)/Msun - s%he_core_mass > 8d-3) then
+            ! --- starts sufficiently close to the edge
+            q_top = s%cz_top_mass(i)/Msun/s%star_mass
+            q_bot = s%cz_bot_mass(i)/Msun/s%star_mass
 
-            write(*,*) q_top, q_bot
+            write (*, *) q_top, q_bot
 
             if (q_top - q_bot > q_max) then
                 q_max = q_top - q_bot
-                write(*,*) "found new q_max:" 
-                write(*,*) q_top, q_bot, q_max
+                write (*, *) "found new q_max:"
+                write (*, *) q_top, q_bot, q_max
 
             end if
 
         end if
     end do
-    write(*,*) "found M_conv:" 
-    write(*,*) q_max, "gives M_conv = ", s% mstar * q_max / Msun
+    write (*, *) "found M_conv:"
+    write (*, *) q_max, "gives M_conv = ", s%mstar*q_max/Msun
 
-    M_conv = s% mstar * q_max / Msun
+    M_conv = s%mstar*q_max/Msun
 
 end function compute_M_conv
 
@@ -207,11 +315,11 @@ real(dp) function compute_R_conv(s) result(R_conv)
     q_top_max = 0
     q_bot_max = 0
 
-    do i = 1, s% n_conv_regions
-        if (s% cz_top_mass(i) / Msun - s% he_core_mass > 8d-3) then
-            ! --- starts sufficiently close to the edge 
-            q_top = s% cz_top_mass(i) / Msun / s% star_mass
-            q_bot = s% cz_bot_mass(i) / Msun / s% star_mass
+    do i = 1, s%n_conv_regions
+        if (s%cz_top_mass(i)/Msun - s%he_core_mass > 8d-3) then
+            ! --- starts sufficiently close to the edge
+            q_top = s%cz_top_mass(i)/Msun/s%star_mass
+            q_bot = s%cz_bot_mass(i)/Msun/s%star_mass
 
             if (q_top - q_bot > q_max) then
                 q_max = q_top - q_bot
@@ -222,25 +330,25 @@ real(dp) function compute_R_conv(s) result(R_conv)
     end do
 
     ! --- now find which rs this corresponds to
-    R_top = 0d0 
- 
-    do k = 1, s% nz
-        if (s% m(k) / Msun / s% star_mass <= q_top_max) then
-            R_top = s% r(k)
+    R_top = 0d0
+
+    do k = 1, s%nz
+        if (s%m(k)/Msun/s%star_mass <= q_top_max) then
+            R_top = s%r(k)
             exit
         end if
     end do
 
     R_bot = 0d0 ! for safety
 
-    do k = k, s% nz
-        if (s% m(k) / Msun / s% star_mass <= q_bot_max) then
-            R_bot = s% r(k)
+    do k = k, s%nz
+        if (s%m(k)/Msun/s%star_mass <= q_bot_max) then
+            R_bot = s%r(k)
             exit
         end if
     end do
 
-    R_conv = (R_top - R_bot) / Rsun
+    R_conv = (R_top - R_bot)/Rsun
 
 end function compute_R_conv
 
@@ -250,7 +358,7 @@ real(dp) function compute_t_conv(s, M_conv, R_conv) result(t_conv)
     type(star_info), pointer :: s
     real(dp) M_conv, R_conv, L
 
-    t_conv = 0.4311d0 * (3 * M_conv * R_conv**2 / (s% photosphere_L))**(1d0/3d0) * secyer
+    t_conv = 0.4311d0*(3*M_conv*R_conv**2/(s%photosphere_L))**(1d0/3d0)*secyer
 
 end function compute_t_conv
 
@@ -261,8 +369,8 @@ real(dp) function compute_f_conv(s, b, t_conv) result(f_conv)
     type(binary_info), pointer :: b
     real(dp) frac, t_conv, P_tid
 
-    P_tid = abs(1d0/(b% period) - (2d0*pi)/(s% x_ctrl(3)))
-    frac = P_tid / (2d0 * t_conv)
+    P_tid = abs(1d0/(b%period) - (2d0*pi)/(s%x_ctrl(3)))
+    frac = P_tid/(2d0*t_conv)
     f_conv = min(1d0, frac**2d0)
 
 end function compute_f_conv
@@ -274,28 +382,26 @@ real(dp) function compute_rg2(s, I_eff) result(rg2)
     integer :: k
     real(dp) :: I_eff, M, R
 
-    M = s% mstar
-    R = s% r(1)
+    M = s%mstar
+    R = s%r(1)
 
     if (M > 0d0 .and. R > 0d0) then
-        rg2 = I_eff / (M * R * R)
+        rg2 = I_eff/(M*R*R)
     else
         rg2 = 0d0
     end if
 
 end function compute_rg2
 
-
 subroutine add_hist(names, vals, k, name, val)
-   integer, intent(inout) :: k
-   character(len=*), intent(in) :: name
-   character(len=maxlen_history_column_name) :: names(:)
-   real(dp) :: vals(:)
-   real(dp), intent(in) :: val
+    integer, intent(inout) :: k
+    character(len=*), intent(in) :: name
+    character(len=maxlen_history_column_name) :: names(:)
+    real(dp) :: vals(:)
+    real(dp), intent(in) :: val
 
-   k = k + 1
-   names(k) = name
-   vals(k)  = val
+    k = k + 1
+    names(k) = name
+    vals(k) = val
 end subroutine
-
 

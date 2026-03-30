@@ -226,11 +226,11 @@ qs = []
 Rs = []
 for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
-        (l1,) = plt.scatter(R, q, c="C9", s=80, marker="x", label="Crashed")
+        l1 = plt.scatter(R, q, c="C9", s=80, marker="x", label="Crashed")
     elif np.max(model.star.R / rol(model.star)) > 1:
-        (l2,) = plt.scatter(R, q, c="C3", s=80, marker="^", label="Outer lobe overflow")
+        l2 = plt.scatter(R, q, c="C3", s=80, marker="^", label="Outer lobe overflow")
     else:
-        (l3,) = plt.scatter(R, q, c="C0", s=80, label="No outer lobe overflow")
+        l3 = plt.scatter(R, q, c="C0", s=80, label="No outer lobe overflow")
 
 
 fig.legend(loc="outside upper center", ncols=3, handles=[l1, l2, l3])

@@ -23,7 +23,7 @@ default_wind = mr.MesaData(f"{MASTER}/tides/6/LOGS/TPAGB/history.data")
 # %%
 no_wind = mr.MesaData(f"{MASTER}/wind/1/LOGS/TPAGB/history.data")
 # %%
-wind = mr.MesaData(f"{MASTER}/wind/1/LOGS/TPAGB/history.data")
+wind = mr.MesaData(f"{MASTER}/wind/2/LOGS/TPAGB/history.data")
 # %%
 
 
@@ -80,16 +80,34 @@ fig, axs = plt.subplots(
 )
 
 # plt.plot(hist1.age, hist1.R, c="C9")
-plt.plot(default_wind.age, default_wind.rl_1, label="MESA default")
-plt.plot(wind.age, wind.rl_1, label="Fast isotropic wind momentum loss")
-plt.plot(no_wind.age, no_wind.rl_1, label="No wind angular momentum loss")
+plt.plot(
+    default_wind.age,
+    default_wind.rl_1,
+    label="MESA default",
+)
+plt.plot(
+    wind.age,
+    wind.rl_1,
+    label="Fast isotropic wind momentum loss",
+    alpha=0.4,
+    linewidth=6,
+    zorder=-1,
+    c="C2",
+)
+plt.plot(
+    no_wind.age,
+    no_wind.rl_1,
+    label="No wind angular momentum loss",
+    linestyle=":",
+    linewidth=3,
+    c="C3",
+)
 plt.plot(no_wind.age, no_wind.R, c="C9", label="Star Radius")
 
 fig.legend(loc="outside upper center", ncols=2)
 plt.xlabel(r"Time (yr)")
 plt.ylabel(r"Radius ($R_\odot$)")
-plt.yscale("log")
-plt.ylim(100)
+plt.ylim(450, 750)
 plt.savefig("/home/koen/LaTeX-setup/plots/w9-wind-1.pgf", format="pgf")
 plt.show()
 plt.close()
