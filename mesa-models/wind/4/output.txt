@@ -1,0 +1,1327 @@
+run 
+DATE: 2026-03-31
+TIME: 00:44:20
+
+
+ reading user weak rate file /home/koen/mesa-r23.05.1//data/rates_data/rate_tables/S13_r_be7_wk_li7.h5
+ version_number r23.05.1
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.0_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.0_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.0_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.0_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.0_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.001_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.001_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.001_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.001_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.001_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.004_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.004_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.004_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.004_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.004_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.03_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.03_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.03_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.03_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.03_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.05_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.05_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.05_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.05_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.05_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.1_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.1_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.1_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.1_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.1_x0.7.data>
+ Loading lowT AESOPUS tables
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/AESOPUS_AGSS09.h5>
+ AESOPUS composition parameters
+        Zsun =   1.337E-02
+     fCO_ref =  -0.385
+      fC_ref =  -0.752
+      fN_ref =  -1.286
+
+ AESOPUS logT and logR range (logR = logRho - 3 * logT + 18)
+   num logTs =  42
+       logTs =   3.200   3.220   3.240   3.260   3.280   3.300   3.320   3.340   3.360   3.380   3.400   3.420   3.440   3.460   3.480   3.500   3.520   3.540   3.560   3.580   3.600   3.620   3.640   3.660   3.680   3.700   3.750   3.800   3.850   3.900   3.950   4.000   4.050   4.100   4.150   4.200   4.250   4.300   4.350   4.400   4.450   4.500
+   num logRs =  19
+       logRs =  -8.000  -7.500  -7.000  -6.500  -6.000  -5.500  -5.000  -4.500  -4.000  -3.500  -3.000  -2.500  -2.000  -1.500  -1.000  -0.500   0.000   0.500   1.000
+
+ AESOPUS metallicities
+ (These Z values are the reference metallicities)
+      num Zs =  13
+          Zs =   1.000E-05   3.000E-05   1.000E-04   3.000E-04   1.000E-03   2.000E-03   3.000E-03   5.000E-03   1.000E-02   2.000E-02   3.000E-02   5.000E-02   1.000E-01
+
+Table 0.000010: Z = 1.000E-05
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000   0.170   0.270   0.290   0.310   0.330   1.350   2.520   3.700
+     num fCs =   5
+         fCs =  -1.000   0.300   1.600   2.900   4.200
+     num fNs =   5
+         fNs =   0.000   1.170   2.350   3.520   4.700
+
+Table 0.000030: Z = 3.000E-05
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000   0.060   0.270   0.290   0.310   0.330   1.110   2.170   3.220
+     num fCs =   5
+         fCs =  -1.000   0.180   1.360   2.540   3.720
+     num fNs =   5
+         fNs =   0.000   1.060   2.110   3.170   4.220
+
+Table 0.000100: Z = 1.000E-04
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.080   0.270   0.290   0.310   0.330   0.850   1.770   2.700
+     num fCs =   5
+         fCs =  -1.000   0.050   1.100   2.150   3.200
+     num fNs =   5
+         fNs =   0.000   0.920   1.850   2.770   3.700
+
+Table 0.000300: Z = 3.000E-04
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.190   0.270   0.290   0.310   0.330   0.610   1.420   2.220
+     num fCs =   5
+         fCs =  -1.000  -0.070   0.860   1.790   2.720
+     num fNs =   5
+         fNs =   0.000   0.810   1.610   2.420   3.220
+
+Table 0.001000: Z = 1.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.330   0.270   0.290   0.310   0.330   0.350   1.020   1.700
+     num fCs =   5
+         fCs =  -1.000  -0.200   0.600   1.400   2.200
+     num fNs =   5
+         fNs =   0.000   0.670   1.350   2.020   2.700
+
+Table 0.002000: Z = 2.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.400   0.200   0.270   0.290   0.310   0.330   0.800   1.400
+     num fCs =   5
+         fCs =  -1.000  -0.280   0.450   1.170   1.900
+     num fNs =   5
+         fNs =   0.000   0.600   1.200   1.800   2.400
+
+Table 0.003000: Z = 3.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.440   0.110   0.270   0.290   0.310   0.330   0.670   1.220
+     num fCs =   5
+         fCs =  -1.000  -0.320   0.360   1.040   1.720
+     num fNs =   5
+         fNs =   0.000   0.560   1.110   1.670   2.220
+
+Table 0.005000: Z = 5.000E-03
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.500   0.000   0.270   0.290   0.310   0.330   0.500   1.000
+     num fCs =   5
+         fCs =  -1.000  -0.380   0.250   0.880   1.500
+     num fNs =   5
+         fNs =   0.000   0.500   1.000   1.500   2.000
+
+Table 0.010000: Z = 1.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.580  -0.150   0.000   0.270   0.290   0.310   0.330   0.700
+     num fCs =   5
+         fCs =  -1.000  -0.450   0.100   0.650   1.200
+     num fNs =   5
+         fNs =   0.000   0.420   0.850   1.270   1.700
+
+Table 0.020000: Z = 2.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.650  -0.300   0.050   0.270   0.290   0.310   0.330   0.400
+     num fCs =   5
+         fCs =  -1.000  -0.530  -0.050   0.420   0.900
+     num fNs =   5
+         fNs =   0.000   0.350   0.700   1.050   1.400
+
+Table 0.030000: Z = 3.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.690  -0.390  -0.080   0.220   0.270   0.290   0.310   0.330
+     num fCs =   5
+         fCs =  -1.000  -0.570  -0.140   0.290   0.720
+     num fNs =   5
+         fNs =   0.000   0.310   0.610   0.920   1.220
+
+Table 0.050000: Z = 5.000E-02
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.750  -0.500  -0.250   0.000   0.270   0.290   0.310   0.330
+     num fCs =   5
+         fCs =  -1.000  -0.620  -0.250   0.120   0.500
+     num fNs =   5
+         fNs =   0.000   0.250   0.500   0.750   1.000
+
+Table 0.100000: Z = 1.000E-01
+      num Xs =   5
+          Xs =   0.400   0.500   0.600   0.700   0.800
+    num fCOs =   9
+        fCOs =  -1.000  -0.830  -0.650  -0.480  -0.300   0.270   0.290   0.310   0.330
+     num fCs =   5
+         fCs =  -1.000  -0.700  -0.400  -0.100   0.200
+     num fNs =   5
+         fNs =   0.000   0.170   0.350   0.520   0.700
+
+ Finished reading AESOPUS tables
+
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0_x1.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0001_x0.9999.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.0003_x0.9997.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.001_x0.999.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.002_x0.998.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.004_x0.996.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.99.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.98.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.03_x0.97.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.95.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.04_x0.96.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.06_x0.94.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.9.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.08_x0.92.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.8.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.1_x0.9.data>
+ read inlist_common
+
+
+ The terminal output contains the following information
+
+      'step' is the number of steps since the start of the run,
+      'lg_dt' is log10 timestep in years,
+      'age_yr' is the simulated years since the start run,
+      'lg_Tcntr' is log10 center temperature (K),
+      'lg_Dcntr' is log10 center density (g/cm^3),
+      'lg_Tmax' is log10 max temperature (K),
+      'Teff' is the surface temperature (K),
+      'lg_R' is log10 surface radius (Rsun),
+      'lg_L' is log10 surface luminosity (Lsun),
+      'lg_LH' is log10 total PP and CNO hydrogen burning power (Lsun),
+      'lg_L3a' is log10 total triple-alpha helium burning power (Lsun),
+      'lg_gsurf' is log10 surface gravity,
+      'lg_LNuc' is log10 nuclear power (Lsun),
+      'lg_LNeu' is log10 total neutrino power (Lsun),
+      'lg_Lphoto' is log10 total photodisintegration (Lsun),
+      'Mass' is the total stellar baryonic mass (Msun),
+      'lg_Mdot' is log10 magnitude of rate of change of mass (Msun/year),
+      'lg_Dsurf' is log10 surface density (g/cm^3),
+      'H_env' is the amount of mass where H is dominant,
+      'He_core' is the largest mass where He is dominant.
+      'CO_core' is the largest mass where CO is dominant.
+      'H_cntr' is the center H1 mass fraction,
+      'He_cntr' is the center He4 mass fraction,
+      'C_cntr' is the center C12 mass fraction,
+      'N_cntr' is the center N14 mass fraction,
+      'O_cntr' is the center O16 mass fraction,
+      'Ne_cntr' is the center Ne20 mass fraction,
+      'gam_cntr' is the center plasma interaction parameter,
+      'eta_cntr' is the center electron degeneracy parameter,
+      'zones' is the number of zones in the current model,
+      'iters' is the number of solver iterations for the current step,
+      'retry' is the number of step retries required during the run,
+      'dt_limit' is an indication of what limited the timestep.
+
+ All this and more are saved in the LOGS directory during the run.
+load saved model start.mod
+
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.5.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.7.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.01_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.2.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.1.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.01_x0.03.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_z0.02_x0.35.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.0.data>
+ read filename </home/koen/mesa-r23.05.1//data/kap_data/a09_co_z0.02_x0.03.data>
+ read history_columns.list
+ read profile_columns.list
+                                        set_initial_age    0.0000000000000000D+00
+                                                set_age    0.0000000000000000D+00
+                                 set_initial_dt (years)    1.0000000000000000D+02
+                               set_initial_model_number           0
+                             set_initial_number_retries           0
+ new_v_flag F
+ net name c13.net
+                            set_cumulative_energy_error    0.0000000000000000D+00
+ kap_option a09
+ kap_CO_option a09_co
+ kap_lowT_option AESOPUS
+                                        OMP_NUM_THREADS          10
+
+
+
+
+
+                                                     m2    1.5989060781154874D+00
+                                                     m1    1.9986325976443591D+00
+                                 initial_period_in_days   -1.0000000000000000D+00
+                             initial_separation_in_Rsun    1.2701445253753930D+03
+                                        jdot_multiplier    1.0000000000000000D+00
+                                                     fr    1.0000000000000000D-02
+
+
+
+ The binary terminal output contains the following information
+
+      'step' is the number of steps since the start of the run,
+      'lg_dt' is log10 timestep in years,
+      'age_yr' is the simulated years since the start run,
+      'M1+M2' is the total mass of the system (Msun),
+      'M1' is the mass of the primary (Msun)
+      'M2' is the mass of the secondary (Msun)
+      'separ' is the semi-major axis of the orbit (Rsun),
+      'R1' is the radius of the primary (Rsun)
+      'R2' is the radius of the secondary (Rsun)
+      'Porb' is the orbital period (days),
+      'P1' is the rotation period of star 1 (days, zero if not modeling rotation),
+      'P2' is the rotation period of star 2 (days, zero if not modeling rotation),
+      'e' orbital eccentricity,
+      'dot_e' time derivative of e (1/yr),
+      'Eorb' orbital energy G*M1*M2/2*separation (ergs),
+      'M2/M1' mass ratio,
+      'vorb1' orbital velocity of star 1 (km/s),
+      'vorb2' orbital velocity of star 2 (km/s),
+      'pm_i' index of star evolved as point mass, zero if both stars are modeled,
+      'RL1' Roche lobe radius of star 1 (Rsun),
+      'Rl2' Roche lobe radius of star 2 (Rsun),
+      'donor_i' index of star taken as donor,
+      'RL_gap1' (R1-Rl1)/Rl1,
+      'RL_gap2' (R2-Rl2)/Rl2,
+      'dot_Mmt', mass transfer rate (Msun/yr),
+      'dot_M1', time derivative for the mass of star 1 (Msun/yr),
+      'dot_M2', time derivative for the mass of star 2 (Msun/yr),
+      'eff', mass transfer efficiency, computed as -dot_M2/dot_M1 (zero if dot_M1=0),
+      'dot_Medd', Eddington accretion rate (Msun/yr),
+      'L_acc', accretion luminosity when accreting to a point mass (ergs/s),
+      'Jorb', orbital angular momentum (g*cm^2/s)
+      'spin1', spin angular momentum of star 1 (g*cm^2/s),
+      'spin2', spin angular momentum of star 2 (g*cm^2/s),
+      'dot_J', time derivative of Jorb (g*cm^2/s^2),
+      'dot_Jgr', time derivative of Jorb due to gravitational waves (g*cm^2/s^2),
+      'dot_Jml', time derivative of Jorb due to mass loss (g*cm^2/s^2),
+      'dot_Jmb', time derivative of Jorb due to magnetic braking (g*cm^2/s^2),
+      'dot_Jls', time derivative of Jorb due to spin-orbit coupling (g*cm^2/s^2),
+      'rlo_iters', number of iterations for implicit calculation of mass transfer,
+
+ All this and more can be saved in binary_history.data during the run.
+__________________________________________________________________________________________________________________________________________________
+
+       step    lg_Tmax     Teff     lg_LH      lg_Lnuc     Mass       H_rich     H_cntr     N_cntr     Y_surf   eta_cntr   zones  retry
+  lg_dt_yrs    lg_Tcntr    lg_R     lg_L3a     lg_Lneu     lg_Mdot    He_core    He_cntr    O_cntr     Z_surf   gam_cntr   iters  
+    age_yrs    lg_Dcntr    lg_L     lg_LZ      lg_Lphoto   lg_Dsurf   CO_core    C_cntr     Ne_cntr    Z_cntr   v_div_cs       dt_limit
+__________________________________________________________________________________________________________________________________________________
+
+ v_w over v_orb =   0.68817320530535475     
+ beta =   0.19635000636581673     
+ eta  =   0.49181765914667303     
+  0.99915202053210050       0.29339479764797605     
+ found new q_max:
+  0.99915202053210050       0.29339479764797605       0.70575722288412446     
+ found M_conv:
+  0.70575722288412446      gives M_conv =    1.4104757191187003     
+ M_conv=   1.4104757191187003       Msun
+ R_conv=   362.46258930811911       Rsun
+ t_conv=   52232141.564626135       s
+ t_conv=   19.861640263375971       months
+ k_over_T   =   2.1093559102314853E-009  /s
+ Omega_star =   1.5846943720866399E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807311829921E+059  g cm^2
+ rg2   =   0.11957176122015375     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320699950102     
+ beta =   0.19635000542566511     
+ eta  =   0.49181765782062953     
+  0.99915202058041686       0.29339479766265497     
+ found new q_max:
+  0.99915202058041686       0.29339479766265497       0.70575722291776188     
+ found M_conv:
+  0.70575722291776188      gives M_conv =    1.4104757191153501     
+ M_conv=   1.4104757191153501       Msun
+ R_conv=   362.46258748104736       Rsun
+ t_conv=   52232141.373035036       s
+ t_conv=   19.861640190522110       months
+ k_over_T   =   2.1093559178531241E-009  /s
+ Omega_star =   3.0734620073298898E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645806971694526E+059  g cm^2
+ rg2   =   0.11957176108805302     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320629911261     
+ beta =   0.19635000583762316     
+ eta  =   0.49181765841258140     
+  0.99915202060457531       0.29339479766999699     
+ found new q_max:
+  0.99915202060457531       0.29339479766999699       0.70575722293457832     
+ found M_conv:
+  0.70575722293457832      gives M_conv =    1.4104757191136705     
+ M_conv=   1.4104757191136705       Msun
+ R_conv=   362.46258821233380       Rsun
+ t_conv=   52232141.448907100       s
+ t_conv=   19.861640219372994       months
+ k_over_T   =   2.1093559148642108E-009  /s
+ Omega_star =   4.4721096711737446E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807091584291E+059  g cm^2
+ rg2   =   0.11957176107783866     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320534436477     
+ beta =   0.19635000640093567     
+ eta  =   0.49181765922278831     
+  0.99915202064081243       0.29339479768100724     
+ found new q_max:
+  0.99915202064081243       0.29339479768100724       0.70575722295980525     
+ found M_conv:
+  0.70575722295980525      gives M_conv =    1.4104757191111550     
+ M_conv=   1.4104757191111550       Msun
+ R_conv=   362.46258922588538       Rsun
+ t_conv=   52232141.555602729       s
+ t_conv=   19.861640259944760       months
+ k_over_T   =   2.1093559108268142E-009  /s
+ Omega_star =   5.7860926344456960E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807286219094E+059  g cm^2
+ rg2   =   0.11957176118686931     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320357598244     
+ beta =   0.19635000743756847     
+ eta  =   0.49181766071080180     
+  0.99915202069516840       0.29339479769752486     
+ found new q_max:
+  0.99915202069516840       0.29339479769752486       0.70575722299764354     
+ found M_conv:
+  0.70575722299764354      gives M_conv =    1.4104757191073785     
+ M_conv=   1.4104757191073785       Msun
+ R_conv=   362.46259108694375       Rsun
+ t_conv=   52232141.749912769       s
+ t_conv=   19.861640333832522       months
+ k_over_T   =   2.1093559032650599E-009  /s
+ Omega_star =   7.0205359237526887E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807615153270E+059  g cm^2
+ rg2   =   0.11957176126100462     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320277362581     
+ beta =   0.19635000793791738     
+ eta  =   0.49181766144231764     
+  0.99915202077670218       0.29339479772229277     
+ found new q_max:
+  0.99915202077670218       0.29339479772229277       0.70575722305440936     
+ found M_conv:
+  0.70575722305440936      gives M_conv =    1.4104757191017299     
+ M_conv=   1.4104757191017299       Msun
+ R_conv=   362.46259191849845       Rsun
+ t_conv=   52232141.837296136       s
+ t_conv=   19.861640367060666       months
+ k_over_T   =   2.1093559000647461E-009  /s
+ Omega_star =   8.1802543735171703E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807772008274E+059  g cm^2
+ rg2   =   0.11957176134501284     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320523957315     
+ beta =   0.19635000651085027     
+ eta  =   0.49181765940205557     
+  0.99915202073593534       0.29339479770991173     
+ found new q_max:
+  0.99915202073593534       0.29339479770991173       0.70575722302602362     
+ found M_conv:
+  0.70575722302602362      gives M_conv =    1.4104757191045485     
+ M_conv=   1.4104757191045485       Msun
+ R_conv=   362.46258930819528       Rsun
+ t_conv=   52232141.564396173       s
+ t_conv=   19.861640263288528       months
+ k_over_T   =   2.1093559107452827E-009  /s
+ Omega_star =   9.2697714025312781E-009  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807302841704E+059  g cm^2
+ rg2   =   0.11957176121348372     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320533400317     
+ beta =   0.19635000644627254     
+ eta  =   0.49181765930527049     
+  0.99915202071555187       0.29339479770371535     
+ found new q_max:
+  0.99915202071555187       0.29339479770371535       0.70575722301183652     
+ found M_conv:
+  0.70575722301183652      gives M_conv =    1.4104757191059694     
+ M_conv=   1.4104757191059694       Msun
+ R_conv=   362.46258920819980       Rsun
+ t_conv=   52232141.553225473       s
+ t_conv=   19.861640259040790       months
+ k_over_T   =   2.1093559110787225E-009  /s
+ Omega_star =   1.0293336296806892E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807270742488E+059  g cm^2
+ rg2   =   0.11957176114645901     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320494921164     
+ beta =   0.19635000666271421     
+ eta  =   0.49181765961191282     
+  0.99915202071008458       0.29339479770205273     
+ found new q_max:
+  0.99915202071008458       0.29339479770205273       0.70575722300803179     
+ found M_conv:
+  0.70575722300803179      gives M_conv =    1.4104757191063519     
+ M_conv=   1.4104757191063519       Msun
+ R_conv=   362.46258962569107       Rsun
+ t_conv=   52232141.597106792       s
+ t_conv=   19.861640275726973       months
+ k_over_T   =   2.1093559093860529E-009  /s
+ Omega_star =   1.1254941439196058E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807351273254E+059  g cm^2
+ rg2   =   0.11957176119124674     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320574220797     
+ beta =   0.19635000620678150     
+ eta  =   0.49181765896140966     
+  0.99915202070262654       0.29339479769979099     
+ found new q_max:
+  0.99915202070262654       0.29339479769979099       0.70575722300283550     
+ found M_conv:
+  0.70575722300283550      gives M_conv =    1.4104757191068611     
+ M_conv=   1.4104757191068611       Msun
+ R_conv=   362.46258877730054       Rsun
+ t_conv=   52232141.508838221       s
+ t_conv=   19.861640242162228       months
+ k_over_T   =   2.1093559127915460E-009  /s
+ Omega_star =   1.2158337555663232E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807207035941E+059  g cm^2
+ rg2   =   0.11957176117689944     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320460353748     
+ beta =   0.19635000685802992     
+ eta  =   0.49181765988902992     
+  0.99915202070683506       0.29339479770106675     
+ found new q_max:
+  0.99915202070683506       0.29339479770106675       0.70575722300576826     
+ found M_conv:
+  0.70575722300576826      gives M_conv =    1.4104757191065747     
+ M_conv=   1.4104757191065747       Msun
+ R_conv=   362.46258998749175       Rsun
+ t_conv=   52232141.634980612       s
+ t_conv=   19.861640290128758       months
+ k_over_T   =   2.1093559078174468E-009  /s
+ Omega_star =   1.3007048037815997E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807418326198E+059  g cm^2
+ rg2   =   0.11957176121144081     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320428508533     
+ beta =   0.19635000703843353     
+ eta  =   0.49181766014520517     
+  0.99915202070473086       0.29339479770042720     
+ found new q_max:
+  0.99915202070473086       0.29339479770042720       0.70575722300430366     
+ found M_conv:
+  0.70575722300430366      gives M_conv =    1.4104757191067212     
+ M_conv=   1.4104757191067212       Msun
+ R_conv=   362.46259033204240       Rsun
+ t_conv=   52232141.671043016       s
+ t_conv=   19.861640303841746       months
+ k_over_T   =   2.1093559064315487E-009  /s
+ Omega_star =   1.3804383367975372E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807480265880E+059  g cm^2
+ rg2   =   0.11957176123102041     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320458577158     
+ beta =   0.19635000686672999     
+ eta  =   0.49181765990075826     
+  0.99915202070413167       0.29339479770024629     
+ found new q_max:
+  0.99915202070413167       0.29339479770024629       0.70575722300388533     
+ found M_conv:
+  0.70575722300388533      gives M_conv =    1.4104757191067601     
+ M_conv=   1.4104757191067601       Msun
+ R_conv=   362.46259001101333       Rsun
+ t_conv=   52232141.637615211       s
+ t_conv=   19.861640291130584       months
+ k_over_T   =   2.1093559077394825E-009  /s
+ Omega_star =   1.4553453437730926E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807425197013E+059  g cm^2
+ rg2   =   0.11957176122491851     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320477576871     
+ beta =   0.19635000675803699     
+ eta  =   0.49181765974592700     
+  0.99915202070337916       0.29339479770001675     
+ found new q_max:
+  0.99915202070337916       0.29339479770001675       0.70575722300336241     
+ found M_conv:
+  0.70575722300336241      gives M_conv =    1.4104757191068147     
+ M_conv=   1.4104757191068147       Msun
+ R_conv=   362.46258980295454       Rsun
+ t_conv=   52232141.615994684       s
+ t_conv=   19.861640282909228       months
+ k_over_T   =   2.1093559085369557E-009  /s
+ Omega_star =   1.5257179842436122E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807391395332E+059  g cm^2
+ rg2   =   0.11957176122480963     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320507222313     
+ beta =   0.19635000658899043     
+ eta  =   0.49181765950537193     
+  0.99915202070324405       0.29339479769997645     
+ found new q_max:
+  0.99915202070324405       0.29339479769997645       0.70575722300326760     
+ found M_conv:
+  0.70575722300326760      gives M_conv =    1.4104757191068222     
+ M_conv=   1.4104757191068222       Msun
+ R_conv=   362.46258950296215       Rsun
+ t_conv=   52232141.585033357       s
+ t_conv=   19.861640271135965       months
+ k_over_T   =   2.1093559098975975E-009  /s
+ Omega_star =   1.5918307397650661E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807343487475E+059  g cm^2
+ rg2   =   0.11957176124387547     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320549085070     
+ beta =   0.19635000635021499     
+ eta  =   0.49181765916556364     
+  0.99915202070293530       0.29339479769988314     
+ found new q_max:
+  0.99915202070293530       0.29339479769988314       0.70575722300305221     
+ found M_conv:
+  0.70575722300305221      gives M_conv =    1.4104757191068431     
+ M_conv=   1.4104757191068431       Msun
+ R_conv=   362.46258905364573       Rsun
+ t_conv=   52232141.537804268       s
+ t_conv=   19.861640253176770       months
+ k_over_T   =   2.1093559117279402E-009  /s
+ Omega_star =   1.6539414763088703E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807257662178E+059  g cm^2
+ rg2   =   0.11957176119984601     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320382231795     
+ beta =   0.19635000730120686     
+ eta  =   0.49181766051862885     
+  0.99915202070283859       0.29339479769985372     
+ found new q_max:
+  0.99915202070283859       0.29339479769985372       0.70575722300298493     
+ found M_conv:
+  0.70575722300298493      gives M_conv =    1.4104757191068493     
+ M_conv=   1.4104757191068493       Msun
+ R_conv=   362.46259082301742       Rsun
+ t_conv=   52232141.722779319       s
+ t_conv=   19.861640323514838       months
+ k_over_T   =   2.1093559043632803E-009  /s
+ Omega_star =   1.7122924271974546E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807577663144E+059  g cm^2
+ rg2   =   0.11957176128872279     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320397402282     
+ beta =   0.19635000721468102     
+ eta  =   0.49181766039549280     
+  0.99915202070273257       0.29339479769982213     
+ found new q_max:
+  0.99915202070273257       0.29339479769982213       0.70575722300291044     
+ found M_conv:
+  0.70575722300291044      gives M_conv =    1.4104757191068558     
+ M_conv=   1.4104757191068558       Msun
+ R_conv=   362.46259065814019       Rsun
+ t_conv=   52232141.704973891       s
+ t_conv=   19.861640316744197       months
+ k_over_T   =   2.1093559050359510E-009  /s
+ Omega_star =   1.7671112241634018E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807536438294E+059  g cm^2
+ rg2   =   0.11957176123327221     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320326591269     
+ beta =   0.19635000761827079     
+ eta  =   0.49181766096971635     
+  0.99915202070268638       0.29339479769980870     
+ found new q_max:
+  0.99915202070268638       0.29339479769980870       0.70575722300287769     
+ found M_conv:
+  0.70575722300287769      gives M_conv =    1.4104757191068575     
+ M_conv=   1.4104757191068575       Msun
+ R_conv=   362.46259141696117       Rsun
+ t_conv=   52232141.784772016       s
+ t_conv=   19.861640347087999       months
+ k_over_T   =   2.1093559019295694E-009  /s
+ Omega_star =   1.8186116503548390E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807682376467E+059  g cm^2
+ rg2   =   0.11957176131052388     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320231096668     
+ beta =   0.19635000816256215     
+ eta  =   0.49181766174413688     
+  0.99915202070265641       0.29339479769980076     
+ found new q_max:
+  0.99915202070265641       0.29339479769980076       0.70575722300285570     
+ found M_conv:
+  0.70575722300285570      gives M_conv =    1.4104757191068573     
+ M_conv=   1.4104757191068573       Msun
+ R_conv=   362.46259243593363       Rsun
+ t_conv=   52232141.891808629       s
+ t_conv=   19.861640387789425       months
+ k_over_T   =   2.1093558977244722E-009  /s
+ Omega_star =   1.8669945853491428E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807875813506E+059  g cm^2
+ rg2   =   0.11957176140155591     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320297925977     
+ beta =   0.19635000778163533     
+ eta  =   0.49181766120214332     
+  0.99915202070264075       0.29339479769979521     
+ found new q_max:
+  0.99915202070264075       0.29339479769979521       0.70575722300284549     
+ found M_conv:
+  0.70575722300284549      gives M_conv =    1.4104757191068598     
+ M_conv=   1.4104757191068598       Msun
+ R_conv=   362.46259172279593       Rsun
+ t_conv=   52232141.816701978       s
+ t_conv=   19.861640359229590       months
+ k_over_T   =   2.1093559006748311E-009  /s
+ Omega_star =   1.9124487629339050E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807736391918E+059  g cm^2
+ rg2   =   0.11957176132203468     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320478678834     
+ beta =   0.19635000675136269     
+ eta  =   0.49181765973625124     
+  0.99915202070263354       0.29339479769979382     
+ found new q_max:
+  0.99915202070263354       0.29339479769979382       0.70575722300283972     
+ found M_conv:
+  0.70575722300283972      gives M_conv =    1.4104757191068586     
+ M_conv=   1.4104757191068586       Msun
+ R_conv=   362.46258979443201       Rsun
+ t_conv=   52232141.615032189       s
+ t_conv=   19.861640282543231       months
+ k_over_T   =   2.1093559085995510E-009  /s
+ Omega_star =   1.9551514629361679E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807387911884E+059  g cm^2
+ rg2   =   0.11957176121860578     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320566653051     
+ beta =   0.19635000624991844     
+ eta  =   0.49181765902278635     
+  0.99915202070262943       0.29339479769979332     
+ found new q_max:
+  0.99915202070262943       0.29339479769979332       0.70575722300283616     
+ found M_conv:
+  0.70575722300283616      gives M_conv =    1.4104757191068578     
+ M_conv=   1.4104757191068578       Msun
+ R_conv=   362.46258886035127       Rsun
+ t_conv=   52232141.517173313       s
+ t_conv=   19.861640245331703       months
+ k_over_T   =   2.1093559124850441E-009  /s
+ Omega_star =   1.9952692180026660E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807215081207E+059  g cm^2
+ rg2   =   0.11957176115569443     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320475138954     
+ beta =   0.19635000677153655     
+ eta  =   0.49181765976495362     
+  0.99915202070262787       0.29339479769979265     
+ found new q_max:
+  0.99915202070262787       0.29339479769979265       0.70575722300283528     
+ found M_conv:
+  0.70575722300283528      gives M_conv =    1.4104757191068584     
+ M_conv=   1.4104757191068584       Msun
+ R_conv=   362.46258983220292       Rsun
+ t_conv=   52232141.618987024       s
+ t_conv=   19.861640284047084       months
+ k_over_T   =   2.1093559084441564E-009  /s
+ Omega_star =   2.0329584923467331E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807394842710E+059  g cm^2
+ rg2   =   0.11957176122104350     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320505887791     
+ beta =   0.19635000659627153     
+ eta  =   0.49181765951558321     
+  0.99915202070262710       0.29339479769979193     
+ found new q_max:
+  0.99915202070262710       0.29339479769979193       0.70575722300283517     
+ found M_conv:
+  0.70575722300283517      gives M_conv =    1.4104757191068593     
+ M_conv=   1.4104757191068593       Msun
+ R_conv=   362.46258950143783       Rsun
+ t_conv=   52232141.584224701       s
+ t_conv=   19.861640270828467       months
+ k_over_T   =   2.1093559097860833E-009  /s
+ Omega_star =   2.0683663277039745E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807332215567E+059  g cm^2
+ rg2   =   0.11957176119039610     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320494558087     
+ beta =   0.19635000666084929     
+ eta  =   0.49181765960746560     
+  0.99915202070262676       0.29339479769979149     
+ found new q_max:
+  0.99915202070262676       0.29339479769979149       0.70575722300283528     
+ found M_conv:
+  0.70575722300283528      gives M_conv =    1.4104757191068598     
+ M_conv=   1.4104757191068598       Msun
+ R_conv=   362.46258962211340       Rsun
+ t_conv=   52232141.596848637       s
+ t_conv=   19.861640275628808       months
+ k_over_T   =   2.1093559092882690E-009  /s
+ Omega_star =   2.1016308057610188E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807353998124E+059  g cm^2
+ rg2   =   0.11957176119664321     
+ 
+                           1st model retry log10(dt/yr)    2.0000000000000000D+00
+ v_w over v_orb =   0.68817320491251532     
+ beta =   0.19635000667969599     
+ eta  =   0.49181765963428092     
+  0.99915202070262665       0.29339479769979121     
+ found new q_max:
+  0.99915202070262665       0.29339479769979121       0.70575722300283550     
+ found M_conv:
+  0.70575722300283550      gives M_conv =    1.4104757191068611     
+ M_conv=   1.4104757191068611       Msun
+ R_conv=   362.46258965736047       Rsun
+ t_conv=   52232141.600544080       s
+ t_conv=   19.861640277034027       months
+ k_over_T   =   2.1093559091427841E-009  /s
+ Omega_star =   2.1328816775197899E-008  /s
+ Omega_orb  =   2.6305456132240788E-008  /s
+ J_orb =   3.6278764089364148E+053  g cm^2 / s
+ a     =   88363954630366.094       cm
+ dt    =   3155760000.0000000       s
+ I_eff =   3.0645807360621458E+059  g cm^2
+ rg2   =   0.11957176119950458     
+ 
+save LOGS/TPAGB/profile1.data for model 1
+ v_w over v_orb =   0.70328611106903482     
+ beta =   0.18795184348037183     
+ eta  =   0.47981383533077171     
+  0.99921768210863637       0.29343177705654516     
+ found new q_max:
+  0.99921768210863637       0.29343177705654516       0.70578590505209116     
+ found M_conv:
+  0.70578590505209116      gives M_conv =    1.4104929943181399     
+ M_conv=   1.4104929943181399       Msun
+ R_conv=   346.63683957514945       Rsun
+ t_conv=   51634029.645548150       s
+ t_conv=   19.634203987203648       months
+ k_over_T   =   2.1318031580084982E-009  /s
+ Omega_star =   2.3862075411059812E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089982971674E+059  g cm^2
+ rg2   =   0.11698324561386546     
+ 
+ v_w over v_orb =   0.70328611513728534     
+ beta =   0.18795184125021636     
+ eta  =   0.47981383211656370     
+  0.99921768210549244       0.29343177704272461     
+ found new q_max:
+  0.99921768210549244       0.29343177704272461       0.70578590506276784     
+ found M_conv:
+  0.70578590506276784      gives M_conv =    1.4104929944059030     
+ M_conv=   1.4104929944059030       Msun
+ R_conv=   346.63683563685521       Rsun
+ t_conv=   51634029.209729500       s
+ t_conv=   19.634203821480533       months
+ k_over_T   =   2.1318031765738139E-009  /s
+ Omega_star =   2.3952768843450231E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089344684272E+059  g cm^2
+ rg2   =   0.11698324558483202     
+ 
+ v_w over v_orb =   0.70328611151951526     
+ beta =   0.18795184319766275     
+ eta  =   0.47981383490643303     
+  0.99921768210339657       0.29343177703351664     
+ found new q_max:
+  0.99921768210339657       0.29343177703351664       0.70578590506987993     
+ found M_conv:
+  0.70578590506987993      gives M_conv =    1.4104929944644000     
+ M_conv=   1.4104929944644000       Msun
+ R_conv=   346.63683904057859       Rsun
+ t_conv=   51634029.583248496       s
+ t_conv=   19.634203963513766       months
+ k_over_T   =   2.1318031595236859E-009  /s
+ Omega_star =   2.4039967661849292E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089850239414E+059  g cm^2
+ rg2   =   0.11698324532107286     
+ 
+ v_w over v_orb =   0.70328610738146213     
+ beta =   0.18795184543248902     
+ eta  =   0.47981383811151157     
+  0.99921768210199946       0.29343177702737216     
+ found new q_max:
+  0.99921768210199946       0.29343177702737216       0.70578590507462735     
+ found M_conv:
+  0.70578590507462735      gives M_conv =    1.4104929945034099     
+ M_conv=   1.4104929945034099       Msun
+ R_conv=   346.63684293336308       Rsun
+ t_conv=   51634030.010193512       s
+ t_conv=   19.634204125862617       months
+ k_over_T   =   2.1318031400662207E-009  /s
+ Omega_star =   2.4123807413806670E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090428710049E+059  g cm^2
+ rg2   =   0.11698324502542229     
+ 
+ v_w over v_orb =   0.70328611512645989     
+ beta =   0.18795184122374103     
+ eta  =   0.47981383206310435     
+  0.99921768210106798       0.29343177702327844     
+ found new q_max:
+  0.99921768210106798       0.29343177702327844       0.70578590507778949     
+ found M_conv:
+  0.70578590507778949      gives M_conv =    1.4104929945294116     
+ M_conv=   1.4104929945294116       Msun
+ R_conv=   346.63683567638191       Rsun
+ t_conv=   51634029.216466151       s
+ t_conv=   19.634203824042189       months
+ k_over_T   =   2.1318031764080452E-009  /s
+ Omega_star =   2.4204418989707406E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089360084208E+059  g cm^2
+ rg2   =   0.11698324562047821     
+ 
+ v_w over v_orb =   0.70328610865164110     
+ beta =   0.18795184473202114     
+ eta  =   0.47981383709999270     
+  0.99921768210044681       0.29343177702054779     
+ found new q_max:
+  0.99921768210044681       0.29343177702054779       0.70578590507989902     
+ found M_conv:
+  0.70578590507989902      gives M_conv =    1.4104929945467484     
+ M_conv=   1.4104929945467484       Msun
+ R_conv=   346.63684180322076       Rsun
+ t_conv=   51634029.888966538       s
+ t_conv=   19.634204079765205       months
+ k_over_T   =   2.1318031461781437E-009  /s
+ Omega_star =   2.4281923565438869E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090280714485E+059  g cm^2
+ rg2   =   0.11698324523195631     
+ 
+ v_w over v_orb =   0.70328610981236539     
+ beta =   0.18795184409926005     
+ eta  =   0.47981383618969387     
+  0.99921768210003292       0.29343177701872614     
+ found new q_max:
+  0.99921768210003292       0.29343177701872614       0.70578590508130679     
+ found M_conv:
+  0.70578590508130679      gives M_conv =    1.4104929945583093     
+ M_conv=   1.4104929945583093       Msun
+ R_conv=   346.63684060335959       Rsun
+ t_conv=   51634029.753447376       s
+ t_conv=   19.634204028233089       months
+ k_over_T   =   2.1318031512267454E-009  /s
+ Omega_star =   2.4356443574498795E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090059736481E+059  g cm^2
+ rg2   =   0.11698324506055228     
+ 
+ v_w over v_orb =   0.70328611335796920     
+ beta =   0.18795184217362562     
+ eta  =   0.47981383342288136     
+  0.99921768209975681       0.29343177701751350     
+ found new q_max:
+  0.99921768209975681       0.29343177701751350       0.70578590508224326     
+ found M_conv:
+  0.70578590508224326      gives M_conv =    1.4104929945660123     
+ M_conv=   1.4104929945660123       Msun
+ R_conv=   346.63683734398984       Rsun
+ t_conv=   51634029.399379857       s
+ t_conv=   19.634203893596414       months
+ k_over_T   =   2.1318031680852066E-009  /s
+ Omega_star =   2.4428093183397868E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089605767990E+059  g cm^2
+ rg2   =   0.11698324548389559     
+ 
+ v_w over v_orb =   0.70328611072870850     
+ beta =   0.18795184359874811     
+ eta  =   0.47981383546918827     
+  0.99921768209957285       0.29343177701670586     
+ found new q_max:
+  0.99921768209957285       0.29343177701670586       0.70578590508286698     
+ found M_conv:
+  0.70578590508286698      gives M_conv =    1.4104929945711466     
+ M_conv=   1.4104929945711466       Msun
+ R_conv=   346.63683972889214       Rsun
+ t_conv=   51634029.657258093       s
+ t_conv=   19.634203991656435       months
+ k_over_T   =   2.1318031554563217E-009  /s
+ Omega_star =   2.4496982077149754E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089924724607E+059  g cm^2
+ rg2   =   0.11698324509260487     
+ 
+ v_w over v_orb =   0.70328610990351803     
+ beta =   0.18795184404554649     
+ eta  =   0.47981383611051120     
+  0.99921768209945006       0.29343177701616630     
+ found new q_max:
+  0.99921768209945006       0.29343177701616630       0.70578590508328376     
+ found M_conv:
+  0.70578590508328376      gives M_conv =    1.4104929945745717     
+ M_conv=   1.4104929945745717       Msun
+ R_conv=   346.63684059371099       Rsun
+ t_conv=   51634029.755493440       s
+ t_conv=   19.634204029011119       months
+ k_over_T   =   2.1318031518863719E-009  /s
+ Omega_star =   2.4563217420949209E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090091591914E+059  g cm^2
+ rg2   =   0.11698324525393523     
+ 
+ v_w over v_orb =   0.70328611191532975     
+ beta =   0.18795184295346909     
+ eta  =   0.47981383454164050     
+  0.99921768209936834       0.29343177701580780     
+ found new q_max:
+  0.99921768209936834       0.29343177701580780       0.70578590508356054     
+ found M_conv:
+  0.70578590508356054      gives M_conv =    1.4104929945768521     
+ M_conv=   1.4104929945768521       Msun
+ R_conv=   346.63683874480347       Rsun
+ t_conv=   51634029.554295398       s
+ t_conv=   19.634203952504144       months
+ k_over_T   =   2.1318031614717293E-009  /s
+ Omega_star =   2.4626901678752019E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455089829057858E+059  g cm^2
+ rg2   =   0.11698324547344795     
+ 
+ v_w over v_orb =   0.70328610956618853     
+ beta =   0.18795184422756350     
+ eta  =   0.47981383637147268     
+  0.99921768209931394       0.29343177701556539     
+ found new q_max:
+  0.99921768209931394       0.29343177701556539       0.70578590508374850     
+ found M_conv:
+  0.70578590508374850      gives M_conv =    1.4104929945783800     
+ M_conv=   1.4104929945783800       Msun
+ R_conv=   346.63684087466180       Rsun
+ t_conv=   51634029.784389496       s
+ t_conv=   19.634204039999048       months
+ k_over_T   =   2.1318031501960292E-009  /s
+ Omega_star =   2.4688132256497083E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090108982106E+059  g cm^2
+ rg2   =   0.11698324510288875     
+ 
+ v_w over v_orb =   0.70328610999035357     
+ beta =   0.18795184399763806     
+ eta  =   0.47981383604131844     
+  0.99921768209934114       0.29343177701568846     
+ found new q_max:
+  0.99921768209934114       0.29343177701568846       0.70578590508365269     
+ found M_conv:
+  0.70578590508365269      gives M_conv =    1.4104929945776128     
+ M_conv=   1.4104929945776128       Msun
+ R_conv=   346.63684054683296       Rsun
+ t_conv=   51634029.751251861       s
+ t_conv=   19.634204027398226       months
+ k_over_T   =   2.1318031524270701E-009  /s
+ Omega_star =   2.4747004425247248E-008  /s
+ Omega_orb  =   2.6327016666754581E-008  /s
+ J_orb =   3.6267314352343489E+053  g cm^2 / s
+ a     =   88314850002625.734       cm
+ dt    =   2524608000.0000000       s
+ I_eff =   2.7455090088688102E+059  g cm^2
+ rg2   =   0.11698324529877757     
+ 

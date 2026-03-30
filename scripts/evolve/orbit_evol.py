@@ -68,7 +68,7 @@ def evolve_orbit(
     if not hasattr(EvPars, "tide_model"):
         EvPars.tide_model = "BSE"
     if not hasattr(EvPars, "wind_model"):
-        EvPars.wind_model = "BHL"
+        EvPars.wind_model = "Saladino"
     if not hasattr(EvPars, "MB_scale_factor"):
         EvPars.MB_scale_factor = 1.0
     if not hasattr(EvPars, "tide_scale_factor"):
@@ -405,11 +405,14 @@ def wind_loss(a, e, spin, mcomp, SP, EvPars):
     """
     Q = SP.mass / mcomp
     vw_over_vorb = SP.vwind / v_orbit(SP.mass + mcomp, a)
+    print(f"{vw_over_vorb= }")
     if EvPars.wind_model == "Saladino":
         # Accretion and AM loss from SPH simulations by Saladino et al (2019).
         # (N.B. model results and fit are only for circular orbits...)
         eta = eta_Sal(Q, vw_over_vorb)
+        print(f"{eta = }")
         beta = beta_Sal(Q, vw_over_vorb)
+        print(f"{beta= }")
     elif EvPars.wind_model == "BHL":
         # Bondi-Hoyle-Lyttleton accretion, with AM loss from fast winds.
         eta = (1 + Q) ** (-2)

@@ -21,7 +21,7 @@ subroutine wind_loss(binary_id, ierr)
 
     ! --- compute q == m_accretor / m_donor and v
     q = b%m(b%a_i)/b%m(b%d_i)
-    vw_over_vorb = compute_vwind(b%d_i) / compute_vorbit(b% m(1) + b% m(2), b% separation) 
+    vw_over_vorb = compute_vwind(b%s_donor) / compute_vorbit(b% m(1) + b% m(2), b% separation) 
 
     ! --- get beta and eta from Saladino
     beta = compute_beta_Sal(q, vw_over_vorb)
@@ -51,7 +51,7 @@ subroutine tides(binary_id, ierr)
     real(dp) :: omega, omega_orb, domega_dt
     real(dp) :: I_eff, Jdot_tides, dt
     real(dp) :: I_old, dlnI_dt, rg2
-    real(dp) :: q, R
+    real(dp) :: q, R, dj_dt_rot
     real(dp) :: domega_dt_structure
     real(dp) :: domega_dt_wind
     real(dp) :: domega_dt_tides
@@ -136,7 +136,8 @@ real(dp) function compute_vwind(s) result(vwind)
     implicit none
 
     type(star_info), pointer :: s
-    real(dp) :: m, R, log_Teff, vw_factor
+    real(dp) :: m, R, log_Teff
+    real(dp) :: v_esc, vw_factor
 
     m = s% star_mass * Msun
     R = s%photosphere_r * Rsun
@@ -155,27 +156,13 @@ real(dp) function compute_vwind(s) result(vwind)
     vwind = vw_factor * v_esc
 end function compute_vwind
 
-def v_orbit(Mtot, a):
-    """
-    Relative orbital (circular) velocity [km/s].
-
-        Args:
-        Mtot = binary mass [Msun]
-        a = semi-major axis [Rsun]
-    """
-    vorb = np.sqrt(const.G * (Mtot * const.Msun) / (a * const.Rsun))
-    vorb_kms = vorb * 1e-5
-    return vorb_kms
-
 real(dp) function compute_vorbit(Mtot, a) result(vorbit)
     implicit none
 
     real(dp) :: Mtot, a
-    vorb = sqrt( standard_cgrav * Mtot / a)
+    vorbit = sqrt( standard_cgrav * Mtot / a)
 
 end function compute_vorbit
-
-
 
 real(dp) function compute_beta_Sal(q, v) result(beta)
     implicit none
@@ -187,7 +174,7 @@ real(dp) function compute_beta_Sal(q, v) result(beta)
     c1 = 1.7 + 0.3*1/q
     c2 = 0.5 + 0.2*1/q
     alpha = 1.0/(c1 + (c2*v)**5) + 0.75
-    beta_max = min(0.3, 1.4*q**2)
+    beta_max = min(0.3d0, 1.4*q**2)
     beta = min(compute_beta_BHL(q, v, alpha), beta_max)
 
 end function compute_beta_Sal
@@ -201,7 +188,7 @@ real(dp) function compute_beta_BHL(q, v, alpha) result(beta)
     vrel = sqrt(1 + v**2)
     beta = alpha/((1 + 1/q)**2*v/vrel**3)
 
-end function compute_beta_Sal
+end function compute_beta_BHL
 
 real(dp) function compute_eta_Sal(q, v) result(eta)
     implicit none
@@ -212,7 +199,7 @@ real(dp) function compute_eta_Sal(q, v) result(eta)
     eta_iso = (1 + 1/q)**(-2)
     c1 = max(1/q, 0.6*(1/q)**1.7)
     c2 = 1.5 + 0.3/q
-    eta = min(1.0/(c1 + (c2*v)**3) + eta_iso, 0.6)
+    eta = min(1.0/(c1 + (c2*v)**3) + eta_iso, 0.6d0)
 
 end function compute_eta_Sal
 

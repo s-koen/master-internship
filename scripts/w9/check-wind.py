@@ -25,6 +25,8 @@ no_wind = mr.MesaData(f"{MASTER}/wind/1/LOGS/TPAGB/history.data")
 # %%
 wind = mr.MesaData(f"{MASTER}/wind/2/LOGS/TPAGB/history.data")
 # %%
+wind_sal = mr.MesaData(f"{MASTER}/wind/3/LOGS/TPAGB/history.data")
+# %%
 
 
 fig, axs = plt.subplots(
@@ -113,8 +115,51 @@ plt.show()
 plt.close()
 # %%
 
-plt.plot(no_wind.age, no_wind.jdot_ls)
-plt.plot(wind.age, wind.jdot_ml)
+# plt.plot(no_wind.age, no_wind.jdot_ml)
+plt.plot(wind.age, -wind.jdot_ml)
+plt.plot(wind_sal.age, -wind_sal.jdot_ml)
 
+plt.yscale("log")
 plt.show()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+# plt.plot(hist1.age, hist1.R, c="C9")
+plt.plot(
+    wind.age,
+    wind.rl_1,
+    label="Fast isotropic wind momentum loss",
+    alpha=0.4,
+    linewidth=6,
+    zorder=-1,
+    c="C2",
+)
+plt.plot(
+    no_wind.age,
+    no_wind.rl_1,
+    label="No wind angular momentum loss",
+    linestyle=":",
+    linewidth=3,
+    c="C3",
+)
+plt.plot(
+    wind_sal.age,
+    wind_sal.rl_1,
+    label="Saladino (no accretion)",
+    linestyle="-",
+    c="C0",
+)
+plt.plot(no_wind.age, no_wind.R, c="C9", label="Star Radius")
+
+fig.legend(loc="outside upper center", ncols=2)
+plt.xlabel(r"Time (yr)")
+plt.ylabel(r"Radius ($R_\odot$)")
+plt.ylim(450, 750)
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-wind-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
 # %%
