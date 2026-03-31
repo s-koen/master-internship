@@ -25,7 +25,7 @@ no_wind = mr.MesaData(f"{MASTER}/wind/1/LOGS/TPAGB/history.data")
 # %%
 wind = mr.MesaData(f"{MASTER}/wind/2/LOGS/TPAGB/history.data")
 # %%
-wind_sal = mr.MesaData(f"{MASTER}/wind/3/LOGS/TPAGB/history.data")
+wind_sal = mr.MesaData(f"{MASTER}/wind/4/LOGS/TPAGB/history.data")
 # %%
 
 
@@ -132,8 +132,6 @@ plt.plot(
     wind.age,
     wind.rl_1,
     label="Fast isotropic wind momentum loss",
-    alpha=0.4,
-    linewidth=6,
     zorder=-1,
     c="C2",
 )
@@ -141,8 +139,6 @@ plt.plot(
     no_wind.age,
     no_wind.rl_1,
     label="No wind angular momentum loss",
-    linestyle=":",
-    linewidth=3,
     c="C3",
 )
 plt.plot(
@@ -152,14 +148,20 @@ plt.plot(
     linestyle="-",
     c="C0",
 )
-plt.plot(no_wind.age, no_wind.R, c="C9", label="Star Radius")
+plt.plot(no_wind.age, no_wind.R, c="C2", alpha=0.4, linewidth=6)
+plt.plot(wind_sal.age, wind_sal.R, c="C0", alpha=0.5, linewidth=6)
 
-fig.legend(loc="outside upper center", ncols=2)
+fig.legend(loc="outside upper center", ncols=3)
 plt.xlabel(r"Time (yr)")
 plt.ylabel(r"Radius ($R_\odot$)")
-plt.ylim(450, 750)
+plt.ylim(350, 750)
 plt.savefig("/home/koen/LaTeX-setup/plots/w9-wind-2.pgf", format="pgf")
 plt.show()
 plt.close()
 
+# %%
+
+plt.plot(wind_sal.age, wind_sal.Omega_star)
+plt.plot(wind_sal.age, wind_sal.Omega_orb)
+plt.show()
 # %%

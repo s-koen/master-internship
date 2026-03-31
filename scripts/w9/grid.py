@@ -243,3 +243,175 @@ plt.close()
 
 
 # %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(469.24)):
+    plt.plot(model.age, model.star.R, label=f"$q ={q}$", c=f"C{i}", zorder=-i)
+    plt.plot(model.age, model.star.rl_1, c=f"C{i}", alpha=0.3, zorder=-i, linewidth=3)
+plt.plot(
+    grid.ref_tpagb.star_age,
+    grid.ref_tpagb.R,
+    c="C9",
+    alpha=0.5,
+    linewidth=5,
+    zorder=-1000,
+)
+plt.xlim(1.6e6, 1.97e6)
+plt.ylim(120)
+fig.legend(loc="outside upper center", ncols=7)
+
+plt.xlabel("Time (yr)")
+plt.ylabel(r"Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(469.24)):
+    plt.plot(model.env_mass, model.star.R, label=f"$q ={q}$", c=f"C{i}", zorder=-i)
+    plt.plot(
+        model.env_mass, model.star.rl_1, c=f"C{i}", alpha=0.3, zorder=-i, linewidth=3
+    )
+fig.legend(loc="outside upper center", ncols=7)
+
+plt.gca().invert_xaxis()
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel(r"Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-4.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(469.24)):
+    plt.plot(
+        model.env_mass,
+        model.star.R / rol(model.star),
+        label=f"$q ={q}$",
+        c=f"C{i}",
+        zorder=-i,
+    )
+fig.legend(loc="outside upper center", ncols=7)
+
+plt.xlim(plt.gca().get_xlim())
+plt.ylim(plt.gca().get_ylim())
+plt.fill_between([0, 1000], [1, 1], [3, 3], color="C9", zorder=-10, alpha=0.3)
+plt.gca().invert_xaxis()
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel(r"$R_\textrm{star} / R_\textrm{ROL}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-5.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(469.24)):
+    plt.plot(
+        model.env_mass,
+        model.star.star_2_mass,
+        label=f"$q ={q}$",
+        c=f"C{i}",
+        zorder=-i,
+    )
+fig.legend(loc="outside upper center", ncols=4)
+
+plt.gca().invert_xaxis()
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel(r"Companion mass ($M_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-6.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(552.27)):
+    plt.plot(model.age, model.star.R, label=f"$q ={q}$", c=f"C{i}", zorder=-i)
+    plt.plot(model.age, model.star.rl_1, c=f"C{i}", alpha=0.3, zorder=-i, linewidth=3)
+plt.plot(
+    grid.ref_tpagb.star_age,
+    grid.ref_tpagb.R,
+    c="C9",
+    alpha=0.5,
+    linewidth=5,
+    zorder=-1000,
+)
+plt.xlim(1.67e6, 1.97e6)
+plt.ylim(120)
+fig.legend(loc="outside upper center", ncols=7)
+
+plt.xlabel("Time (yr)")
+plt.ylabel(r"Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-7.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+for R, q, model in grid.iter_models():
+    print(R)
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(650)):
+    plt.plot(model.age, model.star.R, label=f"$q ={q}$", c=f"C{i}", zorder=-i)
+    plt.plot(model.age, model.star.rl_1, c=f"C{i}", alpha=0.3, zorder=-i, linewidth=3)
+plt.plot(
+    grid.ref_tpagb.star_age,
+    grid.ref_tpagb.R,
+    c="C9",
+    alpha=0.5,
+    linewidth=5,
+    zorder=-1000,
+)
+plt.xlim(1.75e6, 1.97e6)
+plt.ylim(120)
+fig.legend(loc="outside upper center", ncols=7)
+
+plt.xlabel("Time (yr)")
+plt.ylabel(r"Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-8.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+for i, (q, model) in enumerate(grid.get_R1_slice(552.27)):
+    plt.plot(
+        model.env_mass,
+        model.star.star_2_mass,
+        label=f"$q ={q}$",
+        c=f"C{i}",
+        zorder=-i,
+    )
+fig.legend(loc="outside upper center", ncols=4)
+
+plt.gca().invert_xaxis()
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel(r"Companion mass ($M_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w9-grid-9.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%

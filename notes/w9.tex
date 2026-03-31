@@ -235,21 +235,85 @@ And these are typical values at the end of the evolution:
 I think (?) these values look alright. The change in convective envelope mass makes sense due to the mass loss from RLOF and wind. With similar radii, this decreases the convective turnover timescale as well. Due to RLOF, the orbit expands drastically which decreases the orbital frequency and increases \(a\). To me it also makes sense that the moment of inertia decreases, as is lost from the system while maintaining similar radii. This also describes why the gyration radius decreases.
 
 
+\newsection{Investigating Curiosities TPAGB-grid}
 
+Last week, we saw some models that did not follow the general trends of the rest of the models. Specifically, there were some models that took on smaller ratios of \(R_\text{star} / R_\text{RL}\) then expected. 
 
-\newsection{Analytical Period, Mass-Ratio, Roche-Lobe Radius Relations}
-
+To reproduce this in another way, we can plot all models, and show the maximum fraction of the Roche lobe radius.
 \begin{figure}[ht]
+    \marginfignote{0}{There is some structure visible here, but I find it difficult to clearly distinguish the structure. It might be better to categorize the systems instead.}
     \centering
     \incplot{w9-grid-1}
 \end{figure}
 
+Below, I show a categorized version of the plot above.
+
 \begin{figure}[ht]
+    \marginfignote{2}{Now the structure is apparent. Most interestingly, there seem to be two systems with \(R_\text{RL} \approx 500\) that have a lower ratio \(R_\text{star}/R_\text{RL}\). These are exactly the two systems we saw last week. Then, the last two columns all have low \(R_\text{star}/R_\text{RL}\) ratios. We should investigate this too.}
     \centering
     \incplot{w9-grid-2}
 \end{figure}
 
-\newsection{Investigating Curiosities TPAGB-grid}
+First I look into the two peculiar systems with \(R_\text{RL} \approx 500\):
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-3}
+\end{figure}
+It seems like the systems with \(q=0.5\) and \(0.6\) actually fill their Roche lobes just enough on during a previous pulse to alter their evolution afterwards. Most importantly, their next "pulse" occurs sooner and seems to be much less violent / abrupt.
+
+The system with \(q=0.4\) actually loses all of its mass during the first pulse. That is why this system fills its outer lobe, just like the other ones.
+\nextpage
+
+The figure below shows this more clearly.
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-4}
+\end{figure}
+
+Below, I show the ratio between the star radius and the outer lobe.
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-5}
+\end{figure}
+I am really not too sure what is happening with the orange and green systems. It almost looks like they keep losing mass due to wind but I don't think that is actually the case.
+
+The plot below shows the mass of the companion star.
+
+\begin{figure}[ht]
+    \marginfignote{4}{If the mass was actually lost due to wind, the companion would not gain significant amounts of mass.}
+    \centering
+    \incplot{w9-grid-6}
+\end{figure}
+
+\nextpage
+
+Now, I turn my attention to the last two columns of the grid figures. These models experience significant amounts of wind mass loss, and in the fast wind loss mode, this results in expanded orbits (and thus Roche lobes).
+
+Below, the effects of this can clearly be seen for the models starting with \(R_\text{RL} \approx 550R_\odot \).
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-7}
+\end{figure}
+
+The models graze, or barely miss the second to last thermal pulse. They then continue and the evolution seems to be slightly altered for the models, depending on how much mass was transferred during the previous pulse.
+
+Below, I show the mass of the companion star as a function of envelope mass again.
+
+\begin{figure}[ht]
+    \marginfignote{4}{I think it is interesting to see that a non-negligible amount of mass is transferred during the interpulse period, where the ratio \(R_\text{star} / R_\text{RL}\) is close to 1. For the models with more extreme mass ratios, much less mass is transferred during this interpulse.}
+    \centering
+    \incplot{w9-grid-9}
+\end{figure}
+
+Then, lastly, I look at the evolution of the last column (\(R_\text{RL} = 650R_\odot \)).
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-grid-8}
+\end{figure}
+
+Here, the wind manages to influence the orbits enough to avoid significant mass transfer in all cases.
+
+
 
 \newsection{Wind Loss}
 
@@ -515,21 +579,95 @@ subroutine tides(binary_id, ierr)
     ...
 end subroutine tides
 \end{minted}
-Below, I plot the results from a star using this prescription.
+Below, I plot the results from a star using this prescription, Saladino (no accretion).
 \begin{figure}[ht]
     \centering
     \incplot{w9-wind-2}
 \end{figure}
 
-
-
+Interestingly, the Saladino prescription actually forces the star to fill its Roche lobe during the thermal pulse. Without the wind angular momentum loss, a \(2M_\odot \) star will \emph{only} fill its Roche lobe during a thermal pulse. 
 
 \nextpage
+
+I also compare these results with the \texttt{MIST} models used in the \lstinline[style=output, breaklines=true]|evolve.py|. For this comparison, I chose \(q=1.25, a=1400M_\odot, e=0\)\sidenote{This code assumes \(q=M_\text{d} / M_\text{a}\), while I use the other definition.}.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-compare-mesa}
+\end{figure}
+
+I think\sidenote{But I am not sure, maybe I could use my single star TPAGB models as input in the python code.} the differences in the changes in orbit between the python code and the MESA routines can be explained by the differences in the single star model. Since the MIST models used in the python code tend to have significantly smaller radii, the bumps in the orbital separation (and thus Roche lobe) will be less pronounced in the MIST models. Since the MIST models use the Bl\"ocker wind, which ramps up much more smoothly than the \citet{vassiliadis1993} winds used for the MESA models, the mass loss is also less extreme in and more gradual in the MIST models then in the MESA models. In the MESA models, the onset of significant wind mass loss can actually quite clearly be seen in both the stellar radius evolution, as well as in the Roche lobe evolution.
+
+
 Right now, I am assuming wind is lost from the system, while I am using the angular momentum prescription from \citet{saladino2019}. This prescription assumes a fraction \(\beta \) of the wind mass is accreted onto the accretor.
 Obviously, to accurately model the tidal evolution, it is quite important to take this effect into account.
 
-MESA has a built in \emph{wind accretion} prescription based on the Bondi-Hoyle approximation as described in \citet{hurley1902}.
+MESA has a built in \emph{wind accretion} prescription based on the Bondi-Hoyle approximation as described in \citet{hurley1902}. 
 
+\begin{minted}[fontsize=\small]{fortran}
+! $MESA_DIR/binary/private/binary_wind.f90 
+subroutine Bondi_Hoyle_wind_transfer(binary_id, s_i, ierr)
+   integer, intent(in) :: binary_id, s_i ! s_i is index of the wind mass losing star
+   integer, intent(out) :: ierr
+
+   ! wind transfer fraction based on Bondi-Hoyle mechanism as described in
+   ! Hurley et al. 2002, MNRAS, 329, 897-928
+
+   type(binary_info), pointer :: b
+   type (star_info), pointer :: s
+   real(dp) :: v_orb, v_wind
+   real(dp) :: alpha, beta  ! Bondi-Hoyle alpha, beta for that star
+   real(dp) :: max_xfer  ! Maximum transfer fraction
+
+   call binary_ptr(binary_id, b, ierr)
+   if (ierr /= 0) then
+      write(*,*) 'failed in binary_ptr'
+      return
+   end if
+   
+   if (s_i == 1) then
+      s => b% s1
+      alpha = b% wind_BH_alpha_1
+      beta = b% wind_BH_beta_1
+      max_xfer = b% max_wind_transfer_fraction_1
+   else
+      s => b% s2
+      alpha = b% wind_BH_alpha_2
+      beta = b% wind_BH_beta_2
+      max_xfer = b% max_wind_transfer_fraction_2
+   end if
+   
+   ! orbital speed Hurley et al 2002 eq. 8
+   v_orb = sqrt(standard_cgrav * (b% m(1) + b% m(2)) / b% separation) !cm/s
+   
+   ! windspeed from Hurley et al 2002 eq. 9
+   v_wind = sqrt(2d0 * beta *  standard_cgrav * b% m(s_i) / b% r(s_i))
+   
+   ! Bondi-Hoyle transfer fraction Hurley et al. 2002 eq. 6
+   b% wind_xfer_fraction(s_i) = alpha / pow2(b% separation) /&
+               (2d0 * sqrt(1d0 - pow2(b% eccentricity))) *&
+               pow2(standard_cgrav * b% m(3-s_i) / pow2(v_wind)) *&
+               pow(1d0 + pow2(v_orb/v_wind),-1.5d0)
+               
+   ! limit to provided maximum
+   b% wind_xfer_fraction(s_i) = min(max_xfer, b% wind_xfer_fraction(s_i))
+   
+end subroutine Bondi_Hoyle_wind_transfer
+\end{minted}
+
+
+This built in prescription can however quite easily be swapped with a user defined model using the \lstinline[style=output, breaklines=true]|use_other_binary_wind_transfer| option. I think this prescription should be pretty straightforward using the functions I have already defined for the wind angular momentum loss\sidenote{But I have not had time to properly implement and test this yet.}.
+
+To test the impact of this change, we can use the python code and simply choose to account for the change in mass of the companion due to winds or ignore it, just like in my MESA code. The differences are shown below.
+
+\begin{figure}[ht]
+    \marginfignote{3}{The differences are quite small, but not negligible. It is still important to take this effect into account and implement a solid wind mass transfer mechanism based on the results from \citet{saladino2019}.}
+    \centering
+    \incplot{w9-compare-accretion}
+\end{figure}
+
+\newsection{Analytical Period, Mass-Ratio, Roche-Lobe Radius Relations}
+I have not looked at this yet, as the debugging of the tides prescription and the implementation of the wind mass transfer took more time than expected.
 
 
 
@@ -549,7 +687,7 @@ real(dp) function compute_vwind(s) result(vwind)
     R = s%photosphere_r * Rsun
     log_Teff = log10(s% Teff)
 
-    v_esc = sqrt(2.0 * standard_cgrav * m * R)
+    v_esc = sqrt(2.0 * standard_cgrav * m / R)
     if (log_Teff < 3.5d0) then
         vw_factor = 0.35d0
     else if (log_Teff <= 4.0d0) then
@@ -577,9 +715,9 @@ real(dp) function compute_beta_Sal(q, v) result(beta)
     real(dp) :: c1, c2
     real(dp) :: alpha, beta_max
 
-    c1 = 1.7 + 0.3*1/q
-    c2 = 0.5 + 0.2*1/q
-    alpha = 1.0/(c1 + (c2*v)**5) + 0.75
+    c1 = 1.7 + 0.3/q
+    c2 = 0.5 + 0.2/q
+    alpha = 1.0/(c1 + (c2*v)**5.0) + 0.75
     beta_max = min(0.3d0, 1.4*q**2)
     beta = min(compute_beta_BHL(q, v, alpha), beta_max)
 
@@ -592,7 +730,7 @@ real(dp) function compute_beta_BHL(q, v, alpha) result(beta)
     real(dp) :: vrel
 
     vrel = sqrt(1 + v**2)
-    beta = alpha/((1 + 1/q)**2*v/vrel**3)
+    beta = alpha/((1 + 1/q)**2*v * vrel**3)
 
 end function compute_beta_BHL
 
@@ -607,6 +745,7 @@ real(dp) function compute_eta_Sal(q, v) result(eta)
     c2 = 1.5 + 0.3/q
     eta = min(1.0/(c1 + (c2*v)**3) + eta_iso, 0.6d0)
 
-end function compute_eta_Sal\end{minted}
+end function compute_eta_Sal
+\end{minted}
 
 \end{document}
