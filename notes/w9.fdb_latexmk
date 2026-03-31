@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w9"] 1774953707.68385 "w9.aux" "w9.bbl" "w9" 1774953769.4064 0
+["bibtex w9"] 1774953707.68385 "w9.aux" "w9.bbl" "w9" 1774954201.77216 0
   "./master.bib" 1774827757.46934 24008 352adb2d072c73e99a640f98106f7887 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w9.aux" 1774953768.89695 2433 4dbf3d54f5e3d797063c4588e63bfab1 "pdflatex"
+  "w9.aux" 1774954201.25132 2433 4dbf3d54f5e3d797063c4588e63bfab1 "pdflatex"
   (generated)
   "w9.bbl"
   "w9.blg"
   (rewritten before read)
-["pdflatex"] 1774953763.87632 "w9.tex" "w9.pdf" "w9" 1774953769.40659 0
+["pdflatex"] 1774954195.21794 "w9.tex" "w9.pdf" "w9" 1774954201.77236 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
@@ -440,10 +440,10 @@
   "_minted/EDFEEB4E60E920FC222A4BEDDE288C53.highlight.minted" 1774706459.80772 854 9d4dbb22a6c3431a7bd52a6c312585df ""
   "_minted/_EF33778F5CCE7C2968078D241A7DA154.index.minted" 1774948841.83024 1172 b4a4aca24e3acf8a2cc834a0acb44a8f ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w9.aux" 1774953768.89695 2433 4dbf3d54f5e3d797063c4588e63bfab1 "pdflatex"
+  "w9.aux" 1774954201.25132 2433 4dbf3d54f5e3d797063c4588e63bfab1 "pdflatex"
   "w9.bbl" 1774953707.81406 2592 3e6dafbde971fb4b561654dba4b7fa1e "bibtex w9"
-  "w9.out" 1774953768.89842 1003 c89e7d09b07da70566ebb2375d9bc7ea "pdflatex"
-  "w9.tex" 1774953709.29108 34958 6b4b783b5528a559d7bbf18fcf3f7a29 ""
+  "w9.out" 1774954201.25312 1003 c89e7d09b07da70566ebb2375d9bc7ea "pdflatex"
+  "w9.tex" 1774954192.87118 34960 ee8288806eed078c7050e05f251cf889 ""
   (generated)
   "w9.aux"
   "w9.log"
