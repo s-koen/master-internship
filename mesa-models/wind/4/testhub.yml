@@ -121,3 +121,14 @@
     - inlist: inlist
     - inlist: inlist
     - inlist: inlist
+      runtime_minutes: ******
+      model_number:        33724
+      star_age:     3.6561380340359139E+05
+      num_retries:            8
+      log_rel_run_E_err:        -2.8630730442392034
+      steps:       122299
+      retries:            8
+      redos:            0
+      solver_calls_made:       122307
+      solver_calls_failed:            8
+      solver_iterations:       605969
