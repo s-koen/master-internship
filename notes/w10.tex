@@ -23,12 +23,35 @@
     \centering
     \incplot{w10-stellar-evolution-meeting}
 \end{figure}
-\newsection{Radiation Corrected Transfer Rate}
-As described by \citet{temmink2025}, the MESA setting \lstinline[style=output, breaklines=true]|use_radiation_corrected_transfer_rate| is indeed on by default. From now on, I disable this in the binary inlist.
-\newsection{\texorpdfstring{\texttt{evolve.py}}{evolve.py}-script with Rees Single Star TPAGB Models}
-In order to 
+\section{Radiation Corrected Transfer Rate}
+As described by \citet{temmink2025}, the MESA setting \lstinline[style=output, breaklines=true]|use_radiation _corrected_transfer_rate| is indeed on by default\sidenote{When I looked at this before, I checked the MESA wiki for the latest stable release. Here, it mentioned that this option is \emph{disabled} by default, but this has only changed with the latest release.}
+. From now on, I disable this in the binary inlist.
 
-\newsection{Wind accretion}
+I check the overall mass transfer efficiency for the models from the last grid.
+\begin{figure}[ht]
+    \marginfignote{4}{There is quite a strong dependence on the mass ratio. The efficiency is determined by \begin{equation*}
+            1 - \eta = \sqrt{1-\l(\frac{M_\text{BH}}{3M_\text{BH,0}}\r) ^2}.
+    \end{equation*} For lower \(q\), this will generally result in lower efficiencies. If mass transfer is nearly completely avoided, the initial and final black hole mass will roughly be equal and the whole expression reduces to \(1 - \eta = 2 \sqrt{2}/3\) \(\approx 0.943\), which we can see for large Roche lobe radii where mass transfer is avoided.}
+    \centering
+    \incplot{w10-efficiency}
+\end{figure}
+
+
+\section{\texorpdfstring{\texttt{evolve.py}}{evolve.py}-script with Rees Single Star TPAGB Models}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w10-compare-mesa}
+\end{figure}
+\nextpage
+Below I show the comparison figure from last week as well.
+\begin{figure}[ht]
+    \centering
+    \incplot{w9-compare-mesa}
+\end{figure}
+It is clear that, when using the same star as input, the results are a lot more consistent. Obviously there are still some differences, especially during the initialization of the MESA model, which starts synchronized\sidenote{Which is generally not a bad assumption, but if a model starts during a thermal pulse, which most do, the star would usually be out of tidal synchronization.}. I imagine the other differences can be explained by the way the two models compute the convective regions and other relevant properties.
+
+\section{Wind accretion}
 % implement the wind accretion
 As mentioned last week, we need to take accretion of the secondary into account when we use the wind prescription by \citet{saladino2019}. In this prescription, \(\beta\) describes how much of the wind mass lost from the donor gets accreted by the accretor. Since we already have a nice way to compute this \(\beta \), we can simply use the same methods to find \(\beta \) for the change in mass, and hook this method into the routine \lstinline[style=output, breaklines=true]|other_binary_wind_transfer|. Below, I write the full routine:
 \begin{minted}[fontsize=\small]{fortran}
@@ -72,13 +95,22 @@ MESA still does not automatically actually use the wind mass transfer routine. F
 do_wind_mass_transfer_1 = .true.
 \end{minted}
 
+Below, I show the results of a run with, and without wind mass accretion.
 
-
-
-
+\begin{figure}[ht]
+    \marginfignote{0}{There is very little difference between the Roche Lobe radii of both models. It only becomes slightly noticeable when the wind starts to ramp up just before RLOF.}
+    \centering
+    \incplot{w10-accretion-1}
+\end{figure}
+More interestingly maybe, let's look at the mass of the secondary.
+\begin{figure}[ht]
+    \marginfignote{0}{The accretor clearly accretes mass expelled as wind from the donor!}
+    \centering
+    \incplot{w10-accretion-2}
+\end{figure}
 
 \newsection{Validating Tides + Wind Prescription}
-
+\subsection{Tides}
 In order to ensure the custom tides and wind prescriptions are working as expected, I try to thoroughly check every component of the implementation. I start with the computation of the ratio \(k/T\)\sidenote{Which is used in the tidal prescription by \citet{hut1981} and encodes the structure of the star.}. I use the prescription by \citet{preece2022} which uses a power law of the form
 \begin{equation*}
     \l(\frac{k}{T}\r)_\text{c} = \l(\frac{R_\text{conv}}{R} \r)^{a} \l(\frac{M_\text{conv}}{M}\r)^{b} \frac{c}{t_\text{conv}}.
@@ -135,19 +167,97 @@ Next, the tides depend on the gyration radius \(r_{g}\) and the moment of inerti
     \centering
     \incplot{w10-checks-10}
 \end{figure}
+\nextpage
+All other variables required for the \citet{hut1981} tides formalism can directly be obtained from the MESA star and binary objects. Let's look at the spin-orbit coupling.
+\begin{figure}[ht]
+    \marginfignote{1}{Clearly the angular frequency of the star's rotation approaches the rotation of the orbit during the interpulse period. During the thermal pulses however, the changes in moment of inertia are to fast to keep the star and orbit tidally synchronized. Interestingly as well, when RLOF starts, both the orbit and the star spin down quickly. This happens because now, both the star \emph{and} the orbit grow significantly in size.}
+    \centering
+    \incplot{w10-checks-11}
+\end{figure}
+
+Without looking at the angular momentum, I think the tides look okay and seem to behave as I would expect.
+
+\subsection{Wind}
+Then, let`s look at the angular momentum loss due to winds, for which I follow the prescription by \citet{saladino2019}. The prescription depends only on the current mass loss rate due to winds and two efficiency parameters \(\beta \) and \(\eta \), which are dependent on \(q\) and the ratio of the wind velocity to the orbital velocity \(v_\text{wind} / v_\text{orbit}\).
 
 
 \begin{figure}[ht]
+    \marginfignote{4}{This plot shows 4 relevant parameters for angular momentum loss due to winds. Both \(\eta \) and \(\beta \) reach their maximum value roughly at the start of significant wind mass loss while this pairs with a decrease in the ratio \(v_\text{wind} / v_\text{orbit}\).}
     \centering
     \incplot{w10-checks-1}
 \end{figure}
+It is also interesting to look at the wind mass loss rate again, since this is a parameter in the equation for the change in angular momentum.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Interestingly, the wind mass loss depends on the stellar wind expansion velocity far from the central star \(v_\text{exp}\). Now, this is obviously related to the wind velocity that I use when computing the ratio \(v_\text{wind} / v_\text{orbit}\), but the prescription by \citet{vassiliadis1993} depends entirely on the pulsation period, which is dependent on the surface mass and radius, while the prescription for \(v_\text{wind} / v_\text{orbit}\) depends only on the effective temperature. I want to compute both values and compare them, because I think it would be better to use a consistent wind velocity prescription.}
+    \centering
+    \incplot{w10-checks-20}
+\end{figure}
+
+The escape velocity \(v_\text{exp}\) from \citet{vassiliadis1993} is defined as
+\begin{align*}
+    v_\text{exp} (\text{km s}^{-1}) = -13.5 + 0.056P \qq{with} \log P =& -2.07+1.94 \log(R / R_\odot )\\
+                                                    &-0.9\log(M / M_\odot ).
+\end{align*}
+However, they limit \(v_\text{exp}\) between 3 and 15.
+We define the escape velocity from \citet{lamers1995} as
+\begin{equation*}
+    v_{\infty }  = \begin{cases}
+        0.35 v_\text{esc}&\qq{if} \log T_\text{eff} < 3.5,\\
+        1.3 v_\text{esc}&\qq{if} 4.0 \leq \log(T_\text{eff}) < 4.35,\\
+        2.6 v_\text{esc}&\qq{if} \log(T_\text{eff}) \geq 4.35,\\
+        0.7 v_\text{esc}+ 0.7 (\log T_\text{eff} - 4.0) v_\text{esc}&\qq{else.}
+\end{cases}
+\end{equation*}
+\nextpage
+Let me plot both for the comparison star that I have been using:
+\begin{figure}[ht]
+    \marginfignote{3}{Clearly, the wind velocities are quite different. I think it is interesting to see how much this effects the values of \(\beta \) and \(\eta \) that I am using. Below, I plot \(\beta \) and \(\eta \) if I would use the wind velocity from \citet{vassiliadis1993}.}
+    \centering
+    \incplot{w10-check-vwind}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{5}{These results make sense. Since \(v_\text{exp} < v_\text{wind}\), the ratio of \(v_\text{wind} / v_\text{orbit}\) will also be smaller, which in the formalism by \citet{saladino2019} results in lager \(\beta \) and \(\eta\). It is important to note that the simulation is being performed with the original \(\beta \) and \(\eta \), so the results are not entirely accurate.}
+    \marginfignote{18}{I a similar manner, we can compute the wind mass loss rate with the wind velocity of \citet{lamers1995}. Below, I plot this result.}
+    \centering
+    \incplot{w10-compare-wind}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{3}{Apparently, the mass loss prescription by \citet{vassiliadis1993} is limited by their \(\dot{M}_{1}\) expression for a \(2 M_\odot \) star, which is not dependent on the wind velocity. In this case, it really does not seem to matter which wind velocity prescription we use, expect for maybe after the mass transfer. We know however, that most of the mass is lost either before the first episode of RLOF, or during the first episode of RLOF.}
+    \centering
+    \incplot{w10-checks-40}
+\end{figure}
 
 
+I am not sure what to with this. To me, it seems wrong to use two \emph{different} wind velocities, but I am not sure which one to choose either.
+
+For now though, I do stick with the two prescriptions.
+
+\newsubsection{Angular Momentum Conservation}
+
+If my implementation is correct, the total angular momentum + angular momentum loss terms should be constant over time. To test this, I start by looking at the angular momentum of the star and the orbit and add them.
+
+\begin{figure}[ht]
+    \marginfignote{3}{The top panel shows the angular momentum of the system split into the orbit and star components. As expected, the bulk of the angular momentum is stored in the orbit, while only a small portion is stored in the donor star. Since we assume mass is transferred onto a point mass, this star has \emph{no} angular momentum. The angular momentum of the system decreases over time. This is hardly surprising; Angular momentum is lost through winds.}
+    \marginfignote{21}{The bottom panel only shows the angular momentum of the system so the decreases is more clearly visible.}
+    \centering
+    \incplot{w10-checks-5}
+\end{figure}
+
+We can include the loss terms, after which, the total system angular momentum should be constant. By far the most important effect is the wind angular momentum loss from the orbit. Then, the angular momentum loss from wind mass loss at the surface of the star, and angular momentum loss due to gravitation waves play a minor role.
+
+\begin{figure}[ht]
+    \marginfignote{0}{By including the losses, the system angular momentum is \emph{almost} conserved. However, it is not \emph{exactly} conserved and there seems to be a pattern. The drops line up perfectly with the start of the radius increase directly following the initial shrinking during a thermal pulse. Maybe this could be caused by the linear nature of the MESA code, where mass loss and angular momentum are treated with different values? Either way, I do not know for sure where the missing angular momentum is.}
+    \centering
+    \incplot{w10-checks-50}
+\end{figure}
 
 
-
-\newsection{Grid}
+\section{Grid}
 % run a grid with same initial parameters, but with wind and tides
+Do the results above look okay? If so, I can start a grid with these subroutines.
 
 \newsection{Analytical expressions of grid results}
 
@@ -206,16 +316,81 @@ In the case of conservative mass transfer in a circular orbit and no angular mom
     \ln \l(\frac{a_\text{f}}{a_\text{i}}\r)  &= 2 \ln \l(\frac{M_\text{d,i}}{M_\text{d,f}}\r) + 2\ln \l(\frac{M_\text{tot} - M_\text{d,i}}{M_\text{tot}-M_\text{d,f}}\r)\\
     \frac{a_\text{f}}{a_\text{i}} &= \l(\frac{M_\text{d,i}\l(M_\text{tot} - M_\text{d,i}\r) }{M_\text{d,f}\l(M_\text{tot} - M_\text{d,f}\r) }\r)^{2}.
 \end{align*}
-Cool, Let's show this relation in a couple of different ways:
+Cool, Let's show this relation in a couple of different ways starting with an intuitive one, the ratio between the initial and final orbit as a function of the donor mass.
 \begin{figure}[ht]
+    \marginfignote{0}{The minimum in separation happens nicely at the point where \(q = 1\), exactly as I would expect.}
     \centering
     \incplot{w10-analytical1}
 \end{figure}
 
+Next, we can plot the same thing, but now as a function of the Roche lobe radius.
+
 \begin{figure}[ht]
+    \marginfignote{0}{When evaluating Roche Lobe radii instead of separations, the minimum does not happen exactly when \(q = 1\).}
     \centering
     \incplot{w10-analytical2}
 \end{figure}
+\nextpage
+
+We can also start the evolution at a specific Roche lobe radius, similar to what we do in the MESA models:
+\begin{figure}[ht]
+    \centering
+    \incplot{w10-analytical3}
+\end{figure}
+
+If we apply this model of fully conservative mass transfer\sidenote{With the assumption of \emph{no} wind mass loss.} to the initial and final conditions of the MESA models, we get the following results:
+\begin{figure}[ht]
+    \marginfignote{4}{Except for maybe the very low mass ratios, the fully conservative model overestimates the periods a lot.}
+    \marginfignote{9}{It is important to note that the mass transfer efficiency is actually not 1 for these models due to the radiation corrected mass transfer rate.}
+    \centering
+    \incplot{w10-grid-3}
+\end{figure}
+
+We \emph{could} actually just numerically solve the full \(\dot{J}  / J \) differential equation:
+\begin{equation*}
+    \frac{2}{J}\dv{J}{t} = \frac{2 \dot{M}_\text{1}}{M_{1}} + \frac{2 \dot{M}_\text{2}}{M_{2}} - \frac{\dot{M}_{1} + \dot{M}_{2}}{M_{1} + M_{2}} + \frac{\dot{a}}{a} -\frac{2 e\dot{e}}{1-e^{2}}.
+\end{equation*}
+Rearranging assuming \(e = 0\) gives
+\begin{equation*}
+     \frac{\dot{a}}{a} = \frac{2\dot{J}}{J} - \frac{2 \dot{M}_\text{1}}{M_{1}} - \frac{2 \dot{M}_\text{2}}{M_{2}} + \frac{\dot{M}_{1} + \dot{M}_{2}}{M_{1} + M_{2}}.
+\end{equation*}
+If we have fine samples of these terms, the orbital evolution comes out of this equation quite naturally. Below I show a simple piece of python code that numerically solves for the final separation:
+
+\begin{minted}[fontsize=\small]{py}
+def integrate_a(a_i, Md, Ma, Mdot_d, Mdot_a, t, Jdot_over_J):
+    ln_a = np.log(a_i)
+
+    for i in range(len(t) - 1):
+        dt = t[i + 1] - t[i]
+
+        Md_mid = 0.5 * (Md[i] + Md[i + 1])
+        Ma_mid = 0.5 * (Ma[i] + Ma[i + 1])
+        Ma_mid = 0.5 * (Ma[i] + Ma[i + 1])
+        Mtot_mid = Md_mid + Ma_mid
+        Mdot_d_mid = 0.5 * (Mdot_d[i] + Mdot_d[i + 1])
+        Mdot_a_mid = 0.5 * (Mdot_a[i] + Mdot_a[i + 1])
+        Jdot_over_J_mid = 0.5 * (Jdot_over_J[i] + Jdot_over_J[i+1])
+
+        dlnadt = (
+            2 * Jdot_over_J_mid 
+            - 2 * Mdot_d_mid / Md_mid
+            - 2 * Mdot_a_mid / Ma_mid
+            + (Mdot_d_mid + Mdot_a_mid) / Mtot_mid
+        )
+
+        ln_a += dlnadt * dt
+
+    return np.exp(ln_a)
+\end{minted}
+The MESA history files actually contain \emph{all} of the required values to compute the expected final separation. Below I plot them and the actual results from MESA.
+
+\begin{figure}[ht]
+    \marginfignote{5}{The \emph{dots} are the MESA values, the lines are the integrated values using the differential equation.}
+    \marginfignote{20}{Here, I plot the residuals. They are very small and well within the expected error, especially taking into account that the history data for these models only contains data for 1 in every 10 model steps.}
+    \centering
+    \incplot{w10-grid-4}
+\end{figure}
+
 
 
 
