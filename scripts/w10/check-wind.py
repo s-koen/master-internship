@@ -205,9 +205,8 @@ plt.plot(wind_sal2.age, wind_sal2.Omega_star)
 plt.plot(wind_sal3.age, wind_sal3.Omega_star)
 plt.show()
 # %%
-plt.plot(wind_sal.age, wind_sal.rl_1)
-plt.plot(wind_sal2.age, wind_sal2.rl_1)
-plt.plot(wind_sal3.age, wind_sal3.rl_1)
+plt.plot(wind_sal5.age, wind_sal5.rl_1)
+plt.plot(wind_sal7.age, wind_sal7.rl_1)
 plt.show()
 
 # %%
@@ -469,6 +468,8 @@ fig, axs = plt.subplots(
     2, 1, sharex=True, figsize=set_size(column, height=0.75), constrained_layout=True
 )
 
+
+index = np.argwhere(wind_sal5.R / wind_sal5.rl_1 > 1)[0][0]
 plt.xlabel("Time (yr)")
 axs[0].set_ylabel("$M_\\textrm{conv}$ ($M_\odot$)")
 axs[1].set_ylabel("$M_\\textrm{star} -M_\\textrm{conv}$ ($M_\odot$)")
@@ -1100,7 +1101,7 @@ fig, axs = plt.subplots(
     2, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-for i, model in enumerate([wind_sal7]):
+for i, model in enumerate([wind_sal5]):
     J_loss_ml = -np.cumsum((model.jdot_ml) * model.dt * 365.25 * 24 * 3600)
     J_loss_gr = -np.cumsum((model.jdot_gr) * model.dt * 365.25 * 24 * 3600)
     J_loss_star = np.cumsum(
@@ -1116,27 +1117,165 @@ for i, model in enumerate([wind_sal7]):
 
     axs[0].plot(
         model.star_age,
-        J_loss_gr,
-        c=f"C0",
-        label=r"$\beta_\textrm{Saladino}$",
-    )
-    axs[0].plot(
-        model.star_age,
         J_loss_ml,
-        c=f"C1",
-        label=r"$\beta_\textrm{Saladino}$",
+        c=f"C0",
+        label=r"Orbit wind loss",
     )
     axs[0].plot(
         model.star_age,
         J_loss_star,
+        c=f"C1",
+        label=r"Star wind loss",
+    )
+    axs[0].plot(
+        model.star_age,
+        J_loss_gr,
         c=f"C2",
-        label=r"$\beta_\textrm{Saladino}$",
+        label=r"GR",
     )
 
-plt.yscale("log")
-plt.xlabel("")
-plt.ylabel("")
+    axs[1].plot(
+        model.star_age,
+        model.angular_momentum_j_orbit
+        + model.I_eff * model.Omega_star
+        + J_loss_star
+        + J_loss_ml
+        + J_loss_gr,
+    )
+
+
+axs[0].legend(ncols=3)
+axs[0].set_yscale("log")
+axs[1].set_xlabel("Time (yr)")
+axs[0].set_ylabel(r"$J_\textrm{losses}$ (g cm$^2$ s$^{-1}$)")
+axs[1].set_ylabel(r"$J_\textrm{system}$ (g cm$^2$ s$^{-1}$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w10-checks-50.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for i, model in enumerate([wind_sal7]):
+    J_loss_ml = -np.cumsum((model.jdot_ml) * model.dt * 365.25 * 24 * 3600)
+    J_loss_gr = -np.cumsum((model.jdot_gr) * model.dt * 365.25 * 24 * 3600)
+    J_loss_star = np.cumsum(
+        (
+            10**model.lg_wind_mdot_1
+            * Msun
+            * (model.R * Rsun) ** 2
+            * model.Omega_star
+            / 1.5
+        )
+        * model.dt
+    )
+
+    axs[0].plot(
+        model.star_age[1:],
+        np.diff(model.lg_wind_mdot_1) / model.dt[1:],
+        c=f"C2",
+    )
+
+    axs[1].plot(
+        model.star_age,
+        model.angular_momentum_j_orbit
+        + model.I_eff * model.Omega_star
+        + J_loss_star
+        + J_loss_ml
+        + J_loss_gr,
+    )
+
+
+axs[0].legend(ncols=3)
+axs[1].set_xlabel("Time (yr)")
+axs[0].set_ylabel(r"$J_\textrm{losses}$ (g cm$^2$ s$^{-1}$)")
+axs[1].set_ylabel(r"$J_\textrm{system}$ (g cm$^2$ s$^{-1}$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w10-checks-51.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+axs[0].plot(
+    wind_sal5.star_age,
+    wind_sal5.rl_1,
+    alpha=0.8,
+    linewidth=4,
+    c="C9",
+    label="No accretion",
+)
+axs[0].plot(wind_sal7.star_age, wind_sal7.rl_1, label="Accretion")
+axs[0].set_ylim(420, 530)
+
+
+# interpolate second onto first
+age_ref = wind_sal5.star_age
+RL_ref = wind_sal5.rl_1
+
+# second model
+age_other = wind_sal7.star_age
+RL_other = wind_sal7.rl_1
+
+RL_other_interp = np.interp(age_ref, age_other, RL_other)
+
+# difference
+diff = RL_other_interp - RL_ref
+
+axs[1].plot(age_ref, np.log10(np.abs(diff)), c="k")
+
+
+axs[0].legend()
+axs[1].set_xlabel("Time (yr)")
+axs[0].set_ylabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+axs[1].set_ylabel(r"$\log|$residual $(R_\odot)|$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w10-accretion-1.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+axs[0].plot(
+    wind_sal5.star_age,
+    wind_sal5.star_2_mass,
+    alpha=0.8,
+    linewidth=4,
+    c="C9",
+    label="No accretion",
+)
+axs[0].plot(wind_sal7.star_age, wind_sal7.star_2_mass, label="Accretion")
+
+axs[1].plot(
+    wind_sal5.star_age,
+    wind_sal5.star_2_mass - wind_sal5.star_2_mass[0],
+    alpha=0.8,
+    linewidth=4,
+    c="C9",
+    label="No accretion",
+)
+axs[1].plot(
+    wind_sal7.star_age,
+    wind_sal7.star_2_mass - wind_sal7.star_2_mass[0],
+    label="Accretion",
+)
+
+
+axs[1].set_yscale("log")
+
+axs[0].legend()
+axs[1].set_xlabel("Time (yr)")
+axs[0].set_ylabel(r"$M_\textrm{a}$ ($M_\odot$)")
+axs[1].set_ylabel(r"$M_\textrm{a} - M_\textrm{a,i}$ ($M_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w10-accretion-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
 # %%

@@ -9,72 +9,90 @@ from mrenv import *
 import mesa_reader as mr
 
 
-def read_stellar_models(masses, mist_dir):
+def read_stellar_models():
     """
     using the same input arguments as before, I simply just insert the MESA history data.
     """
-    Stars = [
-        StellarModel(
-            mr.MesaData(
-                "/home/koen/master-internship/mesa-models/standard-2msun/LOGS/TPAGB/history.data"
-            )
+    n = [0]
+    for phase in ["MS", "GB", "CHeB", "EAGB", "TPAGB"]:
+        data = mr.MesaData(
+            f"/home/koen/master-internship/mesa-models/standard-2msun-v2/LOGS/{phase}/history.data"
         )
-    ]
+        n.append(n[-1] + len(data.model_number[1:]))
+
+    combined_star = {}
+    for bulk_name in data.bulk_names:
+        combined_star[bulk_name] = np.empty(n[-1])
+    combined_star["phase"] = np.empty(n[-1])
+
+    for i, phase in enumerate(["MS", "GB", "CHeB", "EAGB", "TPAGB"]):
+        data = mr.MesaData(
+            f"/home/koen/master-internship/mesa-models/standard-2msun-v2/LOGS/{phase}/history.data"
+        )
+        for bulk_name in data.bulk_names:
+            if bulk_name in ["model_number", "star_age"] and i != 0:
+                combined_star[bulk_name][n[i] : n[i + 1]] = (
+                    data.data(bulk_name)[1:] + combined_star[bulk_name][n[i] - 1]
+                )
+            else:
+                combined_star[bulk_name][n[i] : n[i + 1]] = data.data(bulk_name)[1:]
+        combined_star["phase"][n[i] : n[i + 1]] = i * np.ones(n[i + 1] - n[i])
+
+    Stars = [StellarModel(combined_star, n)]
     return Stars
 
 
 class StellarModel:
 
-    global nzams, ntams, nrgbt, nzacheb, ntacheb, ntpagb, npagb, nwd
     global XHc_exh, XHec_exh
-
-    nzams, ntams, nrgbt, nzacheb, ntacheb, ntpagb, npagb, nwd = (
-        201,
-        453,
-        604,
-        630,
-        706,
-        807,
-        1408,
-        1709,
-    )
     XHc_exh, XHec_exh = 1.0e-4, 1.0e-4
 
-    def __init__(self, track):
-        self.m_init = track.star_mass[0]
-        print(self.m_init)
+    def __init__(self, track, n):
+        self.nzams = np.where(track["center_h1"] / track["center_h1"][0] < 0.997)[0][0]
+        self.ntams = n[1]
+        self.nzacheb = n[2]
+        self.ntacheb = n[3]
+        self.ntpagb = n[4]
+        self.npagb = n[5] - 1
+        self.nwd = n[5] - 1
+
+        self.m_init = track["star_mass"][0]
         self.Z_init = 0.014
         self.Y_init = 0.24 + 2 * self.Z_init
 
-        self.age = track.star_age
+        self.age = track["star_age"]
         self.n_models = len(self.age)
         self.model = np.array(range(self.n_models))
-        self.phase = 5 * np.ones(self.n_models)
+        self.phase = track["phase"]
 
-        self.mass = track.star_mass
-        self.m_core = track.he_core_mass
-        self.m_core_CO = track.co_core_mass
-        self.log_R = track.log_R
-        self.log_L = track.log_L
-        self.log_Teff = track.log_Teff
-        self.XH_center = track.center_h1
-        self.XHe_center = track.center_he4
-        self.log_LH = track.log_LH
-        self.log_LHe = track.log_LHe
-        self.log_rhoc = track.log_cntr_Rho
-        self.log_Tc = track.log_cntr_T
-        self.Mdot = 10**track.log_abs_mdot
+        self.mass = track["star_mass"]
+        self.m_core = track["he_core_mass"]
+        self.m_core_CO = track["co_core_mass"]
+        self.log_R = track["log_R"]
+        self.log_L = track["log_L"]
+        self.log_Teff = track["log_Teff"]
+        self.XH_center = track["center_h1"]
+        self.XHe_center = track["center_he4"]
+        self.log_LH = track["log_LH"]
+        self.log_LHe = track["log_LHe"]
+        self.log_rhoc = track["log_cntr_Rho"]
+        self.log_Tc = track["log_cntr_T"]
+        self.Mdot = 10 ** track["log_abs_mdot"]
 
         self.m_env = self.mass - self.m_core
         self.radius = 10**self.log_R
         self.lum = 10**self.log_L
 
         # find critical points along track:
-        self.model_ZAMS = 0
-        self.model_TAMS = 0
-        self.model_Rmax_HSB = np.argmax(self.log_R[ntams : nzacheb + 1]) + ntams
-        self.model_Rmax = np.argmax(self.log_R[nzams:]) + nzams
-        self.model_BGB = 0
+        self.model_ZAMS = self.nzams
+        self.model_Rmin_ZAMS = self.find_Rmin_ZAMS()
+        self.model_TAMS = self.ntams
+        self.model_Rmax_MS = self.find_Rmax_MS()
+        self.model_Rmax_HSB = (
+            np.argmax(self.log_R[self.ntams : self.nzacheb + 1]) + self.ntams
+        )
+        self.model_Rmax = np.argmax(self.log_R[self.nzams :]) + self.nzams
+        self.model_BGB = self.find_BGB()
         self.model_first_TP = self.find_first_TP()
         self.model_Rmax_EAGB = self.find_Rmax_EAGB()
 
@@ -82,40 +100,21 @@ class StellarModel:
         self.type = np.array(self.n_models * [0])
         self.type[self.model_ZAMS : self.model_TAMS] = 1
         self.type[self.model_TAMS : self.model_BGB] = 2
-        self.type[self.model_BGB : nzacheb + 1] = 3
-        self.type[nzacheb + 1 : ntacheb] = 4
-        self.type[ntacheb : self.model_first_TP] = 5
-        self.type[self.model_first_TP : npagb] = 6
-        self.type[npagb:nwd] = 9
-        self.type[nwd:] = 10
+        self.type[self.model_BGB : self.nzacheb + 1] = 3
+        self.type[self.nzacheb + 1 : self.ntacheb] = 4
+        self.type[self.ntacheb : self.model_first_TP] = 5
+        self.type[self.model_first_TP : self.npagb] = 6
+        self.type[self.npagb : self.nwd] = 9
+        self.type[self.nwd :] = 10
 
         """ quantities needed for winds and tidal interaction """
-        self.vwind = wind_velocity(self.mass, self.radius, self.log_Teff)
-        self.r_core = self.core_radius_polytropic()
-        self.m_cenv, self.r_cenv = conv_envelope_size(
-            self.mass,
-            self.m_core,
-            self.radius,
-            self.r_core,
-            self.lum,
-            self.log_Teff,
-            self.age,
-            self.model_TAMS,
-            self.model_BGB,
-            self.model_Rmax_HSB,
-        )
+        self.vwind = wind_velocity(self.mass, self.radius, self.log_Teff, self.phase)
+        self.r_core = track["he_core_radius"]
+        self.m_cenv = track["M_conv"]
+        self.r_cenv = track["R_conv"]
         self.tconv = conv_turnover_time(self.m_cenv, self.r_cenv, self.radius, self.lum)
         # gyration radius; k2g and k2r below are not needed but useful for testing
-        self.rg2, self.k2g, self.k2r = gyration_radius(
-            self.mass,
-            self.m_core,
-            self.radius,
-            self.r_core,
-            self.lum,
-            self.log_Teff,
-            self.age,
-            self.Z_init,
-        )
+        self.rg2 = track["rg2"]
         # viscous tidal dissipation rate for convective envelopes
         self.k_over_T_conv = conv_dissipation_rate(
             self.m_cenv, self.r_cenv, self.mass, self.radius, self.lum, self.Z_init
@@ -142,11 +141,11 @@ class StellarModel:
 
     def find_Rmax_MS(self):
         mod_TAMS = self.model_TAMS
-        mod_Rmax_MS = np.argmax(self.log_R[nzams : mod_TAMS + 1]) + nzams
+        mod_Rmax_MS = np.argmax(self.log_R[self.nzams : mod_TAMS + 1]) + self.nzams
         return mod_Rmax_MS
 
     #    def find_Rmax_HSB (self):
-    #        mod_Rmax_HSB = np.argmax(self.log_R[ntams:nzacheb+1]) + ntams
+    #        mod_Rmax_HSB = np.argmax(self.log_R[self.ntams:self.nzacheb+1]) + ntams
     #        return mod_Rmax_HSB
 
     def find_BGB(self):
@@ -155,18 +154,22 @@ class StellarModel:
         (the latter based on SSE fit formula).
         """
         log_Teff_BGB = np.log10(Teff_at_BGB(self.mass[0], self.Z_init))
-        log_Teff_min = self.log_Teff[np.argmin(self.log_Teff[nzams:]) + nzams]
+        log_Teff_min = self.log_Teff[
+            np.argmin(self.log_Teff[self.nzams :]) + self.nzams
+        ]
         if log_Teff_min < log_Teff_BGB:
-            mod_BGB = np.where(self.log_Teff[ntams:] < log_Teff_BGB)[0][0] + ntams
+            mod_BGB = (
+                np.where(self.log_Teff[self.ntams :] < log_Teff_BGB)[0][0] + self.ntams
+            )
         else:
             mod_BGB = self.model_Rmax
         # print( self.m_init, log_Teff_min, log_Teff_BGB, mod_BGB )
         return mod_BGB
 
     def find_first_TP(self):
-        if self.n_models > ntpagb + 1:
+        if self.n_models > self.ntpagb + 1:
             dblsh = np.where(
-                (self.age >= self.age[ntpagb]) & (self.log_LH > self.log_LHe + 0.5)
+                (self.age >= self.age[self.ntpagb]) & (self.log_LH > self.log_LHe + 0.5)
             )[0]
             if len(dblsh) > 0:
                 mod_dblsh = dblsh[0]
@@ -185,10 +188,12 @@ class StellarModel:
         return mod_TPone
 
     def find_Rmax_EAGB(self):
-        #        mod_Rmax_EAGB = np.argmax(self.log_R[ntacheb:mod_TP1+1]) + ntacheb
-        if self.n_models > ntpagb + 1:
+        #        mod_Rmax_EAGB = np.argmax(self.log_R[self.ntacheb:mod_TP1+1]) + ntacheb
+        if self.n_models > self.ntpagb + 1:
             mod_TP1 = self.model_first_TP
-            mod_Rmax_EAGB = np.argmax(self.log_R[ntpagb : mod_TP1 + 1]) + ntpagb
+            mod_Rmax_EAGB = (
+                np.argmax(self.log_R[self.ntpagb : mod_TP1 + 1]) + self.ntpagb
+            )
         else:
             mod_Rmax_EAGB = self.model_Rmax
         return mod_Rmax_EAGB
@@ -217,7 +222,7 @@ def gas_pressure_scale_height(mass, radius, log_Teff, mmw):
     return H_P / const.Rsun
 
 
-def wind_velocity(mass, radius, log_Teff):
+def wind_velocity(mass, radius, log_Teff, phase):
     """
     Stellar wind terminal velocity [km/s], based loosely on Lamers et al 1995.
         mass = stellar mass [Msun]
@@ -231,6 +236,8 @@ def wind_velocity(mass, radius, log_Teff):
     vw_factor[np.where(log_Teff > 4.35)] = 2.6
     v_wind = vw_factor * v_esc
     v_wind_kms = v_wind / const.km
+
+    v_wind_kms[np.argwhere(phase == 4)] = 15
     return v_wind_kms
 
 
@@ -242,9 +249,7 @@ def conv_turnover_time(m_env, r_env, radius, lum):
         radius = stellar radius [Rsun]
         lum = stellar luminosity [Lsun]
     """
-    t_conv_yr = 0.4311 * (m_env * r_env * (radius - 0.5 * r_env) / (3 * lum)) ** (
-        1.0 / 3.0
-    )
+    t_conv_yr = 0.4311 * (3 * m_env * r_env**2 / lum) ** (1.0 / 3.0)
     return t_conv_yr
 
 
@@ -333,9 +338,9 @@ def gyration_radius(mass, m_core, radius, r_core, lum, log_Teff, age, Z):
     k2c = 0.21
 
     # below could be improved...
-    nzams, ntams = 201, 453
-    Rzams = radius[nzams]
-    MS_age = age[ntams]
+    self.nzams, self.ntams = 201, 453
+    Rzams = radius[self.nzams]
+    MS_age = age[self.ntams]
 
     # Envelope rg^2 for giants with convective envelopes
     F = 0.208 + 0.125 * log_m - 0.035 * log_m**2
@@ -367,3 +372,6 @@ def gyration_radius(mass, m_core, radius, r_core, lum, log_Teff, age, Z):
     )
 
     return rg2, k2g, k2r
+
+
+# %%

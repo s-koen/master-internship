@@ -39,20 +39,18 @@ with open("/home/koen/master-internship/scripts/evolve_mesa/rees.pkl", "rb") as 
 
 
 # %%
-hist = mr.MesaData(f"{MASTER}/wind/6/LOGS/TPAGB/history.data")
-# %%
-hist2 = mr.MesaData(f"{MASTER}/wind/4/LOGS/TPAGB/history.data")
+hist = mr.MesaData(f"{MASTER}/wind/9/LOGS/TPAGB/history.data")
 # %%
 hist3 = mr.MesaData(f"{MASTER}/standard-2msun/LOGS/TPAGB/history.data")
 # %%
 
 fig, axs = plt.subplots(
-    1, 1, sharex=False, figsize=set_size(full, height=1), constrained_layout=True
+    1, 1, sharex=False, figsize=set_size(full), constrained_layout=True
 )
 
 axs = [axs]
 model_names = [
-    r"Pols \texttt{evolve} - Saladino (no accretion)",
+    r"Pols \texttt{evolve}",
     r"Pols \texttt{evolve} - Jeans mode",
 ]
 ls = []
@@ -73,25 +71,22 @@ for i, model in enumerate([rees]):
     ls.append(l)
 
 (l,) = axs[0].plot(
-    hist2.age + 1.495e6,
-    hist2.rl_1,
-    label=r"\texttt{MESA} - Saladino (no accretion)",
+    hist.age + 1.495e6,
+    hist.rl_1,
+    label=r"\texttt{MESA}",
     c="C1",
 )
+axs[0].plot(hist.age + 1.495e6, hist.R, c="C9", zorder=-1, alpha=0.4, linewidth=3)
 ls.append(l)
-(l,) = axs[0].plot(
-    hist.age + 1.495e6, hist.rl_1, label=r"\texttt{MESA} - Jeans mode", c="C3"
-)
-ls.append(l)
-axs[0].set_xlim(1.3e6, 2e6)
+axs[0].set_xlim(1.3e6, 1.9e6)
 axs[0].set_xlabel(r"Age, shifted to match (yr)")
 axs[0].set_ylabel(r"Roche lobe radius ($R_\odot$)")
 axs[0].set_xlabel(r"TPAGB age (yr)")
-axs[0].set_ylim(400)
+axs[0].set_ylim(300, 550)
 
 fig.legend(loc="outside upper center", ncols=2, handles=ls)
 
-plt.savefig("/home/koen/LaTeX-setup/plots/w9-compare-mesa.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w10-compare-mesa.pgf", format="pgf")
 plt.show()
 plt.close()
 
@@ -107,7 +102,7 @@ model_names = [
 ages = []
 RL_0s = []
 TPAGBs = []
-for i, model in enumerate([no_accretion, saladino]):
+for i, model in enumerate([rees]):
 
     bin = model[-1][0]
     star = model[0]

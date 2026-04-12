@@ -42,7 +42,7 @@ plt.show()
 plt.close()
 # %%
 
-fig, axs = plt.subplots(
+fmodelig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 

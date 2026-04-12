@@ -1,0 +1,217 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 11}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{New Wind Velocity}
+I updated the wind velocity in both the \emph{wind angular momentum loss} prescription, as well as in the \emph{wind mass loss} prescription. Both prescriptions now use a constant wind velocity of \(15\) km s\(^{-1}\).
+\section{Updated Reference Single Star with Updated Wind and History Data}
+\subsection{Updated Wind and History Data}
+The single star now saves \lstinline[style=output, breaklines=true]|I_eff|, \lstinline[style=output, breaklines=true]|rg2|, \lstinline[style=output, breaklines=true]|M_conv| and \lstinline[style=output, breaklines=true]|R_conv| to give \lstinline[style=output, breaklines=true]|evolve.py| everything it needs to accurately compute the orbital evolution.
+\subsection{Updated Model saving procedure}
+
+\section{Comparing with evolve.py}
+Before, I only loaded the TPAGB data from the Rees models into the Star class from \lstinline[style=output, breaklines=true]|evolve.py|. To accurately predict starting Roche Lobe radii, \(q\)-values and stellar spin parameters, it is important to model the previous evolutionary phases as well. To do this, I modify the \lstinline[style=output, breaklines=true]|read_stellar_models| function to read the complete standard star data:
+\begin{minted}[fontsize=\small]{py}
+def read_stellar_models():
+    n = [0]
+    for phase in ["MS", "GB", "CHeB", "EAGB", "TPAGB"]:
+        data = mr.MesaData(
+            f"""/home/koen/master-internship/mesa-models/
+            standard-2msun-v2/LOGS/{phase}/history.data"""
+        )
+        n.append(n[-1] + len(data.model_number[1:]))
+
+    combined_star = {}
+    for bulk_name in data.bulk_names:
+        combined_star[bulk_name] = np.empty(n[-1])
+    combined_star["phase"] = np.empty(n[-1])
+
+    for i, phase in enumerate(["MS", "GB", "CHeB", "EAGB", "TPAGB"]):
+        data = mr.MesaData(
+            f"""/home/koen/master-internship/mesa-models/
+            standard-2msun-v2/LOGS/{phase}/history.data"""
+        )
+        for bulk_name in data.bulk_names:
+            if bulk_name in ["model_number", "star_age"] and i != 0:
+                combined_star[bulk_name][n[i] : n[i + 1]] = (
+                    data.data(bulk_name)[1:] + combined_star[bulk_name][n[i] - 1]
+                )
+            else:
+                combined_star[bulk_name][n[i] : n[i + 1]] = data.data(bulk_name)[1:]
+        combined_star["phase"][n[i] : n[i + 1]] = i * np.ones(n[i + 1] - n[i])
+
+    Stars = [StellarModel(combined_star, n)]
+    return Stars
+\end{minted}
+
+Below, I show that this ensures the \lstinline[style=output, breaklines=true]|Star| class from \lstinline[style=output, breaklines=true]|evolve.py| has the same \lstinline[style=output, breaklines=true]|M_conv|, \lstinline[style=output, breaklines=true]|R_conv|, \lstinline[style=output, breaklines=true]|t_conv| and \lstinline[style=output, breaklines=true]|rg2| values as the MESA reference star. It also has access to all other properties required for computing the tides and wind.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-mesa-evolve-conv}
+\end{figure}
+
+Now for \(r_\text{g}^{2}\)
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-mesa-evolve-inertia}
+\end{figure}
+
+If we use these values to compute the wind and tides, we can see the effects of all phases on the separation and Roche lobe radius for arbitrary staring radii and mass ratios.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-mesa-evolve-orbit}
+\end{figure}
+\nextpage
+Now, we can compare the Roche lobe radius from \lstinline[style=output, breaklines=true]|evolve.py| with the radius from \lstinline[style=output, breaklines=true]|MESA|. If everything is correct, it \emph{should} be nearly identical.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Clearly, it is \emph{not} nearly identical. The \lstinline[style=output, breaklines=true]|evolve.py| model seems to show a much sharper decline in Roche lobe radius. My suspicion was that this is due to the stellar wind prescription, since it does not seem to affect the first and second pulse as much as it affects the third and final pulse.}
+    \centering
+    \incplot{w11-compare-mesa-evolve-radius}
+\end{figure}
+
+Below, I show the code that I use that is responsible for the angular momentum loss due to winds:
+\begin{minted}[fontsize=\small]{fortran}
+! src/bin/additional_routines.inc
+subroutine wind_loss(binary_id, ierr)
+    integer, intent(in) :: binary_id
+    integer, intent(out) :: ierr
+    type(binary_info), pointer :: b
+    real(dp) :: q, vw_over_vorb
+    real(dp) :: beta, eta
+    real(dp) :: omega, I_eff
+    real(dp) :: domega_dt_wind
+
+    ierr = 0
+    call binary_ptr(binary_id, b, ierr)
+    if (ierr /= 0) then
+        write (*, *) 'failed in binary_ptr'
+        return
+    end if
+
+    ! --- compute q == m_accretor / m_donor and v
+    q = b%m(b%a_i)/b%m(b%d_i)
+    vw_over_vorb = compute_vwind(b%s_donor)/compute_vorbit(b%m(1) + b%m(2), b%separation)
+    b%s_donor%xtra(x_vw_over_vorb) = vw_over_vorb
+
+    ! --- get beta and eta from Saladino
+    beta = compute_beta_Sal(q, vw_over_vorb)/sqrt(1 - pow2(b%eccentricity))
+    b%s_donor%xtra(x_beta) = beta
+    eta = compute_eta_Sal(q, vw_over_vorb)
+    b%s_donor%xtra(x_eta) = eta
+
+    ! --- star angular momentum loss due to winds
+    ! compute the change in spin frequency. this
+    ! gets used in extra_binary_finish_step.
+    omega = b%s_donor%xtra(x_omega)
+    I_eff = b%s_donor%xtra(x_I_eff)
+    domega_dt_wind = (b%mdot_system_wind(b%d_i) & 
+                    *(b%s_donor%photosphere_r*Rsun)**2*omega/1.5)/I_eff
+    b%s_donor%xtra(x_domega_dt_wind) = domega_dt_wind
+
+    ! --- mass lost from vicinity of donor
+    b%jdot_ml = b%mdot_system_wind(b%d_i) &
+                *(1 - beta) &
+                *eta &
+                *(b%separation)**2 &
+                *sqrt(1 - pow2(b%eccentricity)) &
+                *2*pi/b%period
+
+end subroutine wind_loss
+\end{minted}
+
+The important flaw here is the use of the variable \lstinline[style=output, breaklines=true]|b%mdot_system_wind(b%d_i)| in combination with the term \lstinline[style=output, breaklines=true]|(1-beta)|.
+
+If we look at how \lstinline[style=output, breaklines=true]|b%mdot_system_wind(b%d_i)| is defined in the MESA source code:
+\begin{minted}[fontsize=\small]{fortran}
+b% mdot_system_wind(b% d_i) = b% s_donor% mstar_dot - b% mtransfer_rate &
+            + b% mdot_wind_transfer(b% a_i) - b% mdot_wind_transfer(b% d_i)
+\end{minted}
+we can see that it uses the total \(\dot{M} \) for the donor star, subtracts the mass transfer term due to RLOF \lstinline[style=output, breaklines=true]|b% mtransfer_rate|, adds the wind mass transfer from the accretor \lstinline[style=output, breaklines=true]|b% mdot_wind_transfer(b% a_i)|, which is always zero if the accretor is a point mass, and subtracts the wind mass transfer from the donor \lstinline[style=output, breaklines=true]|b% mdot_wind_transfer(b% d_i)|. Effectively, this means
+\begin{equation*}
+    \dot{M}_\text{wind,sys} = \dot{M}_\text{d,wind} - \dot{M}_\text{d,wind-transfer},
+\end{equation*}
+and the problem is already becoming clear. Below, I show the definition of \lstinline[style=output, breaklines=true]|b% mdot_wind_transfer(b% d_i)|:
+\begin{minted}[fontsize=\small]{fortran}
+! $MESA_DIR/binary/private/binary_mdot.f90
+! solve wind mass transfer
+    ! b% mdot_wind_transfer(b% d_i) is a negative number that gives the
+    ! amount of mass transferred by unit time from the donor to the
+    ! accretor.
+    call eval_wind_xfer_fractions(b% binary_id, ierr)
+    if (ierr/=0) then
+        write(*,*) "Error in eval_wind_xfer_fractions"
+        return
+    end if
+    b% mdot_wind_transfer(b% d_i) = b% s_donor% mstar_dot * &
+        b% wind_xfer_fraction(b% d_i)
+\end{minted}
+Here, \lstinline[style=output, breaklines=true]|b% wind_xfer_fraction(b% d_i)| is exactly \lstinline[style=output, breaklines=true]|beta|, so really,
+\begin{equation*}
+    \dot{M}_\text{wind,sys} = \dot{M}_\text{d,wind} (1 - \beta ),
+\end{equation*}
+and my subroutine above is effectively computing
+\begin{equation*}
+    \dot{J}  = \dot{M}_\text{wind} (1 - \beta )^{2}\eta a^{2} \Omega_\text{orb}    .
+\end{equation*}
+which is \emph{wrong}! To check whether this truly is the cause of the discrepancy, I decide to modify the \lstinline[style=output, breaklines=true]|evolve.py| script to also use and extra factor of \(1-\beta \) in the \(\dot{a}  / a \) computation, since this is \emph{much} quicker than simulating the possibly correct result in MESA. To see how the extra factor of \(1-\beta \) affects the separation, I derived the following expression using \citet{saladino2018}:
+\begin{align*}
+    \l( \frac{\dot{a}}{a}\r)_\text{wind} &= 2 \l(\frac{\dot{J}}{J}\r)_\text{wind} - 2 \frac{\dot{M}_\text{1,wind} }{M_{1} } - 2 \frac{\dot{M}_\text{2,wind} }{M_{2} } + \frac{\dot{M}_\text{1,wind} - \dot{M}_\text{2,wind}   }{M_{1} + M_{2}}\\
+&= 2 \l(\frac{\dot{J}}{J}\r)_\text{wind} - 2 \frac{\dot{M}_\text{d,wind} }{M_\text{d} } + 2 \frac{\beta \dot{M}_\text{d,wind} }{M_\text{a} } + \frac{\dot{M}_\text{d,wind} - \beta \dot{M}_\text{d,wind}   }{M_\text{d} + M_\text{a}}\\
+\intertext{From the expression above, and \(J= \mu a^{2} \Omega_\text{orb}\), we can deduce that}
+    \frac{\dot{J}}{J} &= \frac{\dot{M}_\text{d,wind} (1 - \beta )^{2}\eta (M_\text{d} + M_{a})}{M_\text{d}M_\text{a}} \qq{and thus}\\
+    \l( \frac{\dot{a}}{a}\r)_\text{wind} &= 2 \frac{\dot{M}_\text{d,wind}}{M_\text{d}}\l[\frac{(1 - \beta )^{2}\eta (M_\text{d} + M_{a})}{M_\text{a}} - 1 + \frac{\beta M_\text{d}}{M_\text{a} } + \frac{M_\text{d}(1 - \beta) }{2(M_\text{d} + M_\text{a}) }\r]\\
+    \intertext{With \(\bar{q} = M_\text{d} / M_\text{a}\):}
+    \frac{\dot{J}}{J}&= 2 \frac{\dot{M}_\text{d,wind}}{M_\text{d}}\l[(1 - \beta )^{2}\eta (1 + \bar{q} ) - 1 + \bar{q} \beta  +  \frac{\bar{q} (1 - \beta )}{2(1+ \bar{q} )}\r].
+\end{align*}
+This expression differs only in the in the \((1-\beta )^{2} \) term. The correct equation only has \((1-\beta )\).
+
+If we use this expression in \lstinline[style=output, breaklines=true]|evolve.py|, we see the following:
+
+\begin{figure}[ht]
+    \marginfignote{0}{Excellent agreement! This makes me optimistic that the accidental double \((1-\beta )\) factor is the only (significant) discrepancy between the two codes. Next, I fix the mistake and run a new MESA model.}
+    \centering
+    \incplot{w11-compare-mesa-evolve-radius-2}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The \texttt{evolve.py} and MESA implementation agree very well \emph{but} after the second pulse, the \texttt{evolve.py} implementation seems to predict slightly higher Roche lobe radii. This is more apparent in the bottom panel, where I plot the residuals.}
+    \marginfignote{12}{I predict this is due to non-negligible amounts of RLOF mass transfer during the thermal pulses. To confirm this, we can plot \(\dot{M}\) for both methods, as well as \(q\) for both methods. This can also explain the slight variations in TPAGB interpulse durations.}
+    \centering
+    \incplot{w11-compare-mesa-evolve-radius-3}
+\end{figure}
+\nextpage
+\begin{figure}[ht]
+    \marginfignote{0}{These plots clearly show that RLOF affects the mass ratio, and thus also the Roche lobe radius.}
+    \centering
+    \incplot{w11-compare-mesa-evolve-mdot}
+\end{figure}
+
+
+
+\section{Grid}
+\section{Analytic Solutions}
+\subsection{Predicting Beta Values}
+
+
+\bibliography{master.bib}
+\end{document}

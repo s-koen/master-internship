@@ -290,7 +290,7 @@ def integrate_mass(mdot, t):
 
         # midpoint values (important for stability)
         Mdot_mid = 0.5 * (mdot[i] + mdot[i + 1])
-        M += Mdot_dot * dt
+        M += Mdot_mid * dt
 
     return M
 
@@ -358,24 +358,34 @@ plt.close()
 # %%
 
 fig, axs = plt.subplots(
-    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+    1, 1, sharex=True, figsize=set_size(column, height=0.75), constrained_layout=True
 )
 
 for i, qs in enumerate(np.round(np.linspace(0.4, 1, 7), 2)):
-    periods = []
-    integrated_periods = []
-    computed_periods = []
+    betas = []
     Rs = []
 
     for R, model in grid.get_q_slice(qs):
         if model.env_mass[-1] > 0.01:
             continue
 
+        Rs.append(R)
         dMstar2 = model.star.star_2_mass[-1] - model.star.star_2_mass[0]
         t = model.star.star_age
         mdot = 10**model.star.lg_mtransfer_rate
         dMstar1 = integrate_mass(mdot, t)
 
-        print(dMstar2)
-        print(dMstar1)
+        beta = dMstar2 / dMstar1
+        betas.append(beta)
+
+    plt.plot(Rs, betas, label=f"$q={qs}$")
+fig.legend(loc="outside upper center", ncols=4)
+plt.xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+plt.ylabel(r"$\langle \beta \rangle$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w10-efficiency.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+model.star.bulk_names
 # %%

@@ -206,7 +206,7 @@ for q in [0.5, 0.75, 1, 1.25]:
         size=8,
     )
 
-plt.text(1.95, 425, r"$a_\textrm{i} = 1000 R_\odot$")
+plt.text(1.95, 1000, r"$a_\textrm{i} = 1000 R_\odot$")
 plt.xlim(0.35, 2.01)
 axs.invert_xaxis()
 plt.xlabel(r"$M_\textrm{d}$ ($M_\odot$)")
@@ -265,7 +265,6 @@ for q in [0.5, 0.75, 1, 1.25]:
         size=8,
     )
 
-plt.text(1.98, 450, r"$a_\textrm{i} = 1000 R_\odot$")
 plt.xlim(1.28, 2.01)
 axs.invert_xaxis()
 plt.xlabel(r"$M_\textrm{d}$ ($M_\odot$)")
@@ -321,21 +320,23 @@ fig, axs = plt.subplots(
 M_initial = 2
 M_final = 0.6
 
-R_initials = np.linspace(150, 700, 100)
+R_initials = np.linspace(150, 500, 100)
 for q in np.linspace(0.4, 1, 7):
     a_fs = []
     for R_i in R_initials:
         a_initial = get_separation(R_i, q)
         q_f = evolve_q(q, M_initial, M_final)
-        a_f = a_final(a_initial, M_initial, M_final, q_f)
+        a_f = a_final(a_initial, M_initial, M_final, q)
         a_fs.append(a_f)
     a_fs = np.array(a_fs)
-    plt.plot(R_initials, get_period(a_fs, M_initial, q), label=f"$q={q:.1f}$")
+    plt.plot(R_initials, get_period(a_fs, M_final, q_f), label=f"$q={q:.1f}$")
 
 
+plt.xlim(150, 650)
+plt.ylim(1800, 15000)
 fig.legend(loc="outside upper center", ncols=4)
 plt.xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
-plt.ylabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+plt.ylabel(r"Period (days)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w10-analytical4.pgf", format="pgf")
 plt.show()
 plt.close()

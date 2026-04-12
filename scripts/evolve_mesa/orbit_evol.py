@@ -134,6 +134,9 @@ def evolve_orbit(
     Bin.m1 = [Star.mass[nstart]]
     Bin.m2 = [mcomp]
     Bin.amloss = [amloss]
+    Bin.beta = [0]
+    Bin.eta = [0]
+    Bin.vw_over_vorb = [0]
 
     RL_0 = roche_lobe(Star.mass[nstart] / mcomp) * sma * (1 - ecc)
     if Star.radius[nstart] > RL_0:
@@ -167,8 +170,8 @@ def evolve_orbit(
         SP.vwind = 0.5 * (Star.vwind[i] + Star.vwind[i + 1])
 
         # Compute approximate changes over stellar model timestep.
-        dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt = orbit_evol_eqs(
-            sma, ecc, spin, mcomp, SP, EvPars
+        dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb = (
+            orbit_evol_eqs(sma, ecc, spin, mcomp, SP, EvPars)
         )
         sma_next = max(1e-30, sma * (1 + dln_a_dt * dt[i]))
         ecc_next = ecc + de_dt * dt[i]
@@ -187,7 +190,7 @@ def evolve_orbit(
             del_tide = dt[i] / min(tsync, tcirc)
 
         # Decide whether approximate changes are small enough.
-        slowly_changing = max(del_mass, del_orbit, del_tide) < 0.01
+        slowly_changing = max(del_mass, del_orbit, del_tide) < 100
 
         # Check for Roche-lobe filling at periastron at end of timestep.
         # If so, then do proper integration.
@@ -229,6 +232,9 @@ def evolve_orbit(
             Bin.m1.append(Star.mass[i + 1])
             Bin.m2.append(mcomp)
             Bin.amloss.append(amloss)
+            Bin.beta.append(beta)
+            Bin.eta.append(eta)
+            Bin.vw_over_vorb.append(vw_over_vorb)
 
             track_int_simple.append(i)
 
@@ -267,6 +273,9 @@ def evolve_orbit(
             Bin.m1.extend(M_func(sol.t))
             Bin.m2.extend(sol.y[3,])
             Bin.amloss.extend(sol.y[4,])
+            Bin.beta.append(0)
+            Bin.eta.append(0)
+            Bin.vw_over_vorb.append(0)
 
             track_int_solve.append(i)
             solve_steps += len(sol.t)
@@ -351,8 +360,8 @@ def derivs(t, y, M_func, logR_func, SP, EvPars):
     SP.mass = M_func(t)
     SP.radius = 10 ** logR_func(t)
 
-    dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt = orbit_evol_eqs(
-        a, e, spin, mcomp, SP, EvPars
+    dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb = (
+        orbit_evol_eqs(a, e, spin, mcomp, SP, EvPars)
     )
 
     return [dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt]
@@ -363,7 +372,7 @@ def orbit_evol_eqs(a, e, spin, mcomp, SP, EvPars):
     Differential equations for orbital evolution.
     """
     # Effects of wind mass loss.
-    dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt = wind_loss(
+    dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb = wind_loss(
         a, e, spin, mcomp, SP, EvPars
     )
 
@@ -377,7 +386,7 @@ def orbit_evol_eqs(a, e, spin, mcomp, SP, EvPars):
         de_dt += de_dt_tid
         dspin_dt += dspin_dt_tid
 
-    return dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt
+    return dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb
 
 
 def wind_loss(a, e, spin, mcomp, SP, EvPars):
@@ -405,14 +414,11 @@ def wind_loss(a, e, spin, mcomp, SP, EvPars):
     """
     Q = SP.mass / mcomp
     vw_over_vorb = SP.vwind / v_orbit(SP.mass + mcomp, a)
-    print(f"{vw_over_vorb= }")
     if EvPars.wind_model == "Saladino":
         # Accretion and AM loss from SPH simulations by Saladino et al (2019).
         # (N.B. model results and fit are only for circular orbits...)
         eta = eta_Sal(Q, vw_over_vorb)
-        print(f"{eta = }")
         beta = beta_Sal(Q, vw_over_vorb)
-        print(f"{beta= }")
     elif EvPars.wind_model == "BHL":
         # Bondi-Hoyle-Lyttleton accretion, with AM loss from fast winds.
         eta = (1 + Q) ** (-2)
@@ -432,10 +438,14 @@ def wind_loss(a, e, spin, mcomp, SP, EvPars):
 
     # Change in semi-major axis, from angular momentum conservation.
     dln_a_dt = (
-        -2
-        * SP.dM_dt
+        SP.dM_dt
         / SP.mass
-        * (1 - beta * Q - (1 - beta) * (eta * (1 + Q) + 0.5 * Q / (1 + Q)))
+        * (
+            2 * (1 - beta) ** 1 * eta * (1 + Q)
+            - 2
+            + 2 * beta * Q
+            + (Q * (1 - beta)) / (1 + Q)
+        )
         + 2 * e / (1 - e**2) * de_dt
     )
 
@@ -463,7 +473,7 @@ def wind_loss(a, e, spin, mcomp, SP, EvPars):
     )
     dj_dt = dj_dt_rot + dj_dt_orb
 
-    return dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt
+    return dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb
 
 
 def beta_BHL(q, v, alpha=0.75):

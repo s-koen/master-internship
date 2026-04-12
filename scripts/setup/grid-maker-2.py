@@ -123,7 +123,7 @@ def change_inlist(R, q, mass, inlist_path):
 
 
 proj_dir = "/home/koen/master-internship"
-grid_dir = f"{proj_dir}/mesa-models/binary-tpagb-grid-test"
+grid_dir = f"{proj_dir}/mesa-models/tides-grid"
 
 models_dict = get_model_dict()
 
