@@ -32,3 +32,5 @@
 **/models/
 **/terminal_output.txt
 **/output.txt
+**/*.o
+**/reference-histories/
