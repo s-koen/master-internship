@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w11"] 1775950357.72515 "w11.aux" "w11.bbl" "w11" 1775950361.38295 0
+["bibtex w11"] 1776107000.37397 "w11.aux" "w11.bbl" "w11" 1776115587.35712 0
   "./master.bib" 1775916502.84377 25561 02ba226e6afaad9bb07eb9388cb5eae1 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w11.aux" 1775950360.9995 1902 8fb2117864bd025952c4e752ea7fcf2b "pdflatex"
+  "w11.aux" 1776115586.74179 2152 f6f6a2b02606916f36d807af92e20f2c "pdflatex"
   (generated)
   "w11.bbl"
   "w11.blg"
   (rewritten before read)
-["pdflatex"] 1775950357.82853 "w11.tex" "w11.pdf" "w11" 1775950361.3831 0
+["pdflatex"] 1776115581.33676 "w11.tex" "w11.pdf" "w11" 1776115587.35738 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
@@ -20,6 +20,11 @@
   "/home/koen/LaTeX-setup//plots/w11-compare-mesa-evolve-radius-2.pgf" 1775944442.07836 36532 6353226ea670be98e340c83733a2c1e2 ""
   "/home/koen/LaTeX-setup//plots/w11-compare-mesa-evolve-radius-3.pgf" 1775945656.71082 57046 060162e34adb8ea9814818878589f556 ""
   "/home/koen/LaTeX-setup//plots/w11-compare-mesa-evolve-radius.pgf" 1775944430.96818 36584 8ab6d41e5a809dc77123a8b5c61c1030 ""
+  "/home/koen/LaTeX-setup//plots/w11-compare-simple-scipy-1.pgf" 1776092427.96646 167798 ea3645a9fed504c526d185187aff8f3b ""
+  "/home/koen/LaTeX-setup//plots/w11-compare-simple-scipy-2.pgf" 1776091898.1712 165672 da4bb38cd803a2549f39276ee785efef ""
+  "/home/koen/LaTeX-setup//plots/w11-compare-simple-scipy-3.pgf" 1776090899.91695 182100 f3c1e45a35027800acd31e50769219b2 ""
+  "/home/koen/LaTeX-setup//plots/w11-compare-simple-scipy-4.pgf" 1776091486.12267 201279 983733190b378b68e7059e8b5c955d23 ""
+  "/home/koen/LaTeX-setup//plots/w11-compare-simple-scipy-6.pgf" 1776115580.08567 31087 e3230ac1e623935bd9347685cc3f32fc ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1276641224 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/sourcecodepro/a_bzs6pp.enc" 1558300257 3266 2f15100c4cfc2de73c77a2f047b9e902 ""
@@ -69,6 +74,7 @@
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr7t.pfb" 1377991452 7182 30fbf4d976bdd2f8e5e608bba0e9a74d ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr7v.pfb" 1377991452 33357 275501d693c4e1260cf31ec6e7949f38 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr7y.pfb" 1377991452 26162 bd4b2cdc5229167b72fc13a07768bc17 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chr8t.pfb" 1377991452 9243 502d35497cb43eb13fdc05aa0b9f0ab4 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/mathdesign/mdbch/md-chri7m.pfb" 1377991452 14327 a0ec94d7b5c34b2f2717eb600de09ee9 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/vf/adobe/sourcecodepro/SourceCodePro-Bold-tlf-t1.vf" 1558300257 1736 5603f8ba1dbc07ee6238d06359e81071 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/vf/adobe/sourcecodepro/SourceCodePro-Bold-tlf-ts1.vf" 1558300257 560 e8ab6330ae20a2aa4ea710661638730a ""
@@ -411,10 +417,10 @@
   "_minted/E89C7B8CC494A426DD5624D994EBD9B9.highlight.minted" 1775859856.56914 5088 a90adf84cbbdaea7fcf23da6692ef883 ""
   "_minted/_3BCBA9C4C9A88F16FCABA0EEA9287AFD.index.minted" 1775914037.02506 432 114e92814abd18b11cc1d4d38d14441d ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w11.aux" 1775950360.9995 1902 8fb2117864bd025952c4e752ea7fcf2b "pdflatex"
-  "w11.bbl" 1775950357.82045 661 62cc4c096a97e7dac2117ce3d92728e1 "bibtex w11"
-  "w11.out" 1775950361.00051 1495 1494081b2ec915e10f781a734f5dffcc "pdflatex"
-  "w11.tex" 1775950354.07139 11895 711ce38fe9aa823f608a2d70359b946d ""
+  "w11.aux" 1776115586.74179 2152 f6f6a2b02606916f36d807af92e20f2c "pdflatex"
+  "w11.bbl" 1776107000.50806 661 62cc4c096a97e7dac2117ce3d92728e1 "bibtex w11"
+  "w11.out" 1776115586.74279 1799 3a8f4fab95e8d840802fba5163d4a867 "pdflatex"
+  "w11.tex" 1776106994.16796 14346 42dd0b0771204e45f6b37efa75812073 ""
   (generated)
   "w11.aux"
   "w11.log"

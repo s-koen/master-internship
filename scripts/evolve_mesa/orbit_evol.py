@@ -190,7 +190,9 @@ def evolve_orbit(
             del_tide = dt[i] / min(tsync, tcirc)
 
         # Decide whether approximate changes are small enough.
-        slowly_changing = max(del_mass, del_orbit, del_tide) < 100
+        slowly_changing = (
+            max(del_mass, del_orbit, del_tide) < 0.01 or EvPars.simple_only
+        )
 
         # Check for Roche-lobe filling at periastron at end of timestep.
         # If so, then do proper integration.
@@ -629,6 +631,7 @@ def dissipation_rate(a, q, spin, o_orb, SP, EvPars):
         # BSE method, following Goldreich & Nicholson (1977).
         f_conv = min(1.0, (0.5 * p_tid / SP.tconv) ** 2)
     f_conv = min(f_conv, EvPars.tide_max_fconv)
+
     k_over_T_conv *= f_conv
 
     # Radiative damping of dynamical tide, for stars with radiative envelopes,

@@ -209,6 +209,51 @@ If we use this expression in \lstinline[style=output, breaklines=true]|evolve.py
 
 
 \section{Grid}
+\subsection{Problem with Tides}
+After debugging for \emph{way} too long, I finally traced the issue back to the fast tides factor \(f_\text{conv}\), which was still using the old (now static) stellar rotation instead of the updating new value.
+
+\subsection{Simple integration}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-simple-scipy-3}
+\end{figure}
+
+This is quite concerning, since our MESA implementation uses the simple integration scheme. However, the \texttt{evolve.py} script uses MESA history files, which in this case, only contain 1/10 of the model steps. We \emph{could} simulate the reference star again, this time saving \emph{every} model step. This results in large file sizes and considerably slows down the \texttt{evolve.py} code. However, I think it is an important test.
+\nextpage
+I simulate another single star, this time saving all model steps and input this into the \texttt{evolve.py} script. The results are shown below:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-simple-scipy-1}
+\end{figure}
+
+This time, luckily for us, the simple and direct integration agree much better. They are, however, still not completely in agreement. In order to resolve this, the MESA binary models should take smaller timesteps, or a sophisticated ODE solver should be used inside MESA.
+
+Below, I plot the residuals.
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-simple-scipy-2}
+\end{figure}
+
+I think it is also interesting to look at the differences between the sophisticated solver using the smaller stellar model and the two methods using the complete stellar model.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-simple-scipy-4}
+\end{figure}
+
+The simple integration with the reduced star model agrees well when it is able to survive to the TPAGB branch. Especially for large Roche lobe Radii, the agreement is great, but I think for simplicity and consistency, it is best to use the simple integration with the full model. This way, we use the same integration scheme in both MESA and the \lstinline[style=output, breaklines=true]|evolve.py| code, which should result in the smoothest transition from \lstinline[style=output, breaklines=true]|evolve.py| to MESA.
+
+\nextpage
+I do however want to make sure the full star with just simple integration reaches the TPAGB phase without much trouble.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-compare-simple-scipy-6}
+\end{figure}
+
+
 \section{Analytic Solutions}
 \subsection{Predicting Beta Values}
 

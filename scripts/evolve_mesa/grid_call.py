@@ -2,10 +2,7 @@ from star_model import read_stellar_models
 from orbit_evol import *
 
 
-def call_evolution(q, a_init):
-    # Directory from which to read the MIST stellar evolution tracks
-    Star = read_stellar_models()[0]
-
+def call_evolution(Star, q, a_init, simple_only=False):
     # Initial values of the mass ratio, semi-major axis and eccentricity
     # for which the evolution is to be computed
 
@@ -22,6 +19,7 @@ def call_evolution(q, a_init):
     Options.tidal_freq_scaling = "BSE"  # "BSE" / "Zahn" / "Duguid"
     Options.tide_max_fconv = 1e6
     Options.tide_scale_factor = 1.0
+    Options.simple_only = simple_only
 
     Bins = []
     # Compute and save the orbital evolution for the above system(s)

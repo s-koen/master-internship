@@ -9,15 +9,14 @@ from mrenv import *
 import mesa_reader as mr
 
 
-def read_stellar_models():
+def read_stellar_models(path):
     """
     using the same input arguments as before, I simply just insert the MESA history data.
     """
+    print("loading star! this takes a while...")
     n = [0]
     for phase in ["MS", "GB", "CHeB", "EAGB", "TPAGB"]:
-        data = mr.MesaData(
-            f"/home/koen/master-internship/mesa-models/standard-2msun-v2/LOGS/{phase}/history.data"
-        )
+        data = mr.MesaData(f"{path}/LOGS/{phase}/history.data")
         n.append(n[-1] + len(data.model_number[1:]))
 
     combined_star = {}
@@ -26,9 +25,8 @@ def read_stellar_models():
     combined_star["phase"] = np.empty(n[-1])
 
     for i, phase in enumerate(["MS", "GB", "CHeB", "EAGB", "TPAGB"]):
-        data = mr.MesaData(
-            f"/home/koen/master-internship/mesa-models/standard-2msun-v2/LOGS/{phase}/history.data"
-        )
+        data = mr.MesaData(f"{path}/LOGS/{phase}/history.data")
+        n.append(n[-1] + len(data.model_number[1:]))
         for bulk_name in data.bulk_names:
             if bulk_name in ["model_number", "star_age"] and i != 0:
                 combined_star[bulk_name][n[i] : n[i + 1]] = (
@@ -64,6 +62,7 @@ class StellarModel:
         self.n_models = len(self.age)
         self.model = np.array(range(self.n_models))
         self.phase = track["phase"]
+        self.varcontrol = track["varcontrol"]
 
         self.mass = track["star_mass"]
         self.m_core = track["he_core_mass"]
