@@ -122,9 +122,9 @@
 	use_other_wind = .true. ! Vassilliadis & Wood 1993 
 
 	photo_interval = 5000
-	profile_interval = 1
-	history_interval = 1
-	terminal_interval = 10
+	profile_interval = 5000
+	history_interval = 10
+	terminal_interval = 100
 
 	write_header_frequency = 1
 

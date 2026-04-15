@@ -63,7 +63,7 @@
 
 	x_logical_ctrl(3) = .false. !save photos at grid points
 
-	max_num_profile_models = 30 
+	max_num_profile_models = 60
 
 	!report_why_dt_limits = .true.
 	!report_solver_progress = .true. ! set true to see info about solver iterations

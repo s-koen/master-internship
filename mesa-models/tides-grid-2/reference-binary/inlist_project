@@ -51,7 +51,7 @@
     fr_dt_limit = 1d0    
 
 	history_interval = 1
-    terminal_interval = 10
+    terminal_interval = 100
     report_rlo_solver_progress = .false.
 
 	write_header_frequency = 1

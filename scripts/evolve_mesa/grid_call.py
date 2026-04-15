@@ -2,7 +2,7 @@ from star_model import read_stellar_models
 from orbit_evol import *
 
 
-def call_evolution(Star, q, a_init, simple_only=False):
+def call_evolution(Star, q, a_init, simple_only=False, eps=0.01, f_conv="BSE"):
     # Initial values of the mass ratio, semi-major axis and eccentricity
     # for which the evolution is to be computed
 
@@ -20,6 +20,8 @@ def call_evolution(Star, q, a_init, simple_only=False):
     Options.tide_max_fconv = 1e6
     Options.tide_scale_factor = 1.0
     Options.simple_only = simple_only
+    Options.eps = eps
+    Options.tidal_freq_scaling = f_conv
 
     Bins = []
     # Compute and save the orbital evolution for the above system(s)

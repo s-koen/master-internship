@@ -137,6 +137,7 @@ def evolve_orbit(
     Bin.beta = [0]
     Bin.eta = [0]
     Bin.vw_over_vorb = [0]
+    Bin.fconv = []
 
     RL_0 = roche_lobe(Star.mass[nstart] / mcomp) * sma * (1 - ecc)
     if Star.radius[nstart] > RL_0:
@@ -170,7 +171,7 @@ def evolve_orbit(
         SP.vwind = 0.5 * (Star.vwind[i] + Star.vwind[i + 1])
 
         # Compute approximate changes over stellar model timestep.
-        dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb = (
+        dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb, f_conv = (
             orbit_evol_eqs(sma, ecc, spin, mcomp, SP, EvPars)
         )
         sma_next = max(1e-30, sma * (1 + dln_a_dt * dt[i]))
@@ -186,12 +187,12 @@ def evolve_orbit(
         if EvPars.tide_model == None:
             del_tide = 0
         else:
-            tsync, tcirc = tidal_timescale(sma, ecc, spin, mcomp, SP, EvPars)
+            tsync, tcirc, f_conv = tidal_timescale(sma, ecc, spin, mcomp, SP, EvPars)
             del_tide = dt[i] / min(tsync, tcirc)
 
         # Decide whether approximate changes are small enough.
         slowly_changing = (
-            max(del_mass, del_orbit, del_tide) < 0.01 or EvPars.simple_only
+            max(del_mass, del_orbit, del_tide) < EvPars.eps or EvPars.simple_only
         )
 
         # Check for Roche-lobe filling at periastron at end of timestep.
@@ -237,6 +238,7 @@ def evolve_orbit(
             Bin.beta.append(beta)
             Bin.eta.append(eta)
             Bin.vw_over_vorb.append(vw_over_vorb)
+            Bin.fconv.append(f_conv)
 
             track_int_simple.append(i)
 
@@ -278,6 +280,7 @@ def evolve_orbit(
             Bin.beta.append(0)
             Bin.eta.append(0)
             Bin.vw_over_vorb.append(0)
+            Bin.fconv.append(0)
 
             track_int_solve.append(i)
             solve_steps += len(sol.t)
@@ -362,7 +365,7 @@ def derivs(t, y, M_func, logR_func, SP, EvPars):
     SP.mass = M_func(t)
     SP.radius = 10 ** logR_func(t)
 
-    dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb = (
+    dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb, f_conv = (
         orbit_evol_eqs(a, e, spin, mcomp, SP, EvPars)
     )
 
@@ -381,14 +384,17 @@ def orbit_evol_eqs(a, e, spin, mcomp, SP, EvPars):
     # Effects of evolutionary expansion.
     dspin_dt -= SP.dln_Rg2_dt * spin
 
+    f_conv = 1
     if EvPars.tide_model != None:
         # Effects of tides.
-        dln_a_dt_tid, de_dt_tid, dspin_dt_tid = tides(a, e, spin, mcomp, SP, EvPars)
+        dln_a_dt_tid, de_dt_tid, dspin_dt_tid, f_conv = tides(
+            a, e, spin, mcomp, SP, EvPars
+        )
         dln_a_dt += dln_a_dt_tid
         de_dt += de_dt_tid
         dspin_dt += dspin_dt_tid
 
-    return dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb
+    return dln_a_dt, de_dt, dspin_dt, dmcomp_dt, dj_dt, beta, eta, vw_over_vorb, f_conv
 
 
 def wind_loss(a, e, spin, mcomp, SP, EvPars):
@@ -567,7 +573,7 @@ def tides(a, e, spin, mcomp, SP, EvPars):
     o_orb = omega_Kep(SP.mass + mcomp, a)
 
     # The factor k/T, describing the rate of dissipation:
-    k_over_T = dissipation_rate(a, q, spin, o_orb, SP, EvPars)
+    k_over_T, f_conv = dissipation_rate(a, q, spin, o_orb, SP, EvPars)
     tide_factor = k_over_T * (1 + q) * q * (R_over_a) ** 8
 
     # Change in semi-major axis, Hut's eq. (9)
@@ -583,7 +589,7 @@ def tides(a, e, spin, mcomp, SP, EvPars):
         3 * k_over_T * q**2 / SP.rg2 * (R_over_a) ** 6 * (ge[2] * o_orb - ge[5] * spin)
     )
 
-    return dln_a_dt, de_dt, dspin_dt
+    return dln_a_dt, de_dt, dspin_dt, f_conv
 
 
 def dissipation_rate(a, q, spin, o_orb, SP, EvPars):
@@ -627,6 +633,9 @@ def dissipation_rate(a, q, spin, o_orb, SP, EvPars):
     elif EvPars.tidal_freq_scaling == "Zahn":
         # Fast tide reduction from Zahn (1966).
         f_conv = min(1.0, 0.5 * p_tid / SP.tconv)
+
+    elif EvPars.tidal_freq_scaling == "None":
+        f_conv = 1
     else:
         # BSE method, following Goldreich & Nicholson (1977).
         f_conv = min(1.0, (0.5 * p_tid / SP.tconv) ** 2)
@@ -655,18 +664,18 @@ def dissipation_rate(a, q, spin, o_orb, SP, EvPars):
     # Scale dissipation rate by an (ad hoc) overall factor
     k_over_T *= EvPars.tide_scale_factor
 
-    return k_over_T
+    return k_over_T, f_conv
 
 
 def tidal_timescale(a, e, spin, mcomp, SP, EvPars):
     """
     Tidal synchronisation and circularisation timescales [yr].
     """
-    dln_a_dt, de_dt, dspin_dt = tides(a, e, spin, mcomp, SP, EvPars)
+    dln_a_dt, de_dt, dspin_dt, f_conv = tides(a, e, spin, mcomp, SP, EvPars)
     o_orb = omega_Kep(SP.mass + mcomp, a)
     tsync = abs((spin - o_orb) / dspin_dt)
     tcirc = 1e12
     if e > 1e-7:
         tcirc = abs(e / de_dt)
 
-    return tsync, tcirc
+    return tsync, tcirc, f_conv

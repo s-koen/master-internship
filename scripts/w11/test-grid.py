@@ -37,6 +37,7 @@ from scripts.evolve_mesa.grid_call import *
 Star3 = read_stellar_models(
     f"/home/koen/master-internship/mesa-models/standard-2msun-v3/"
 )[0]
+# %%
 Star2 = read_stellar_models(
     f"/home/koen/master-internship/mesa-models/standard-2msun-v2/"
 )[0]
@@ -266,8 +267,322 @@ for q, model4 in grid.get_R1_slice(303):
 for q, model5 in grid.get_R1_slice(304):
     print(q)
 
+for q, model6 in grid.get_R1_slice(305):
+    print(q)
+
 
 # %%
+
+# plt.plot(model1.age + grid.tpagb_age, model1.star.binary_separation)
+# plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
+# plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
+# plt.plot(model5.age + grid.tpagb_age, model5.star.binary_separation)
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel("Roche lobe radius ($R_\\odot$)")
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for boool in [False]:
+        for q in qs:
+            print(R, q)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star, q, a_init, simple_only=boool, eps=0.001
+            )
+            bin = Bins[0]
+            index = np.argwhere(bin.age > model_age)[0][0] - 1
+            q_evolve = bin.m1 / bin.m2
+            m2 = bin.m2[index]
+            rl1 = roche_lobe(q_evolve) * bin.a
+            plt.plot(bin.age, rl1, label=r"\texttt{evolve.py}")
+
+plt.plot(model2.age + grid.tpagb_age, model2.star.rl_1, label=r"\texttt{MESA}")
+plt.legend()
+plt.xlim(grid.tpagb_age, grid.tpagb_age + 1.1 * model2.age[-1])
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-no-fconv.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+from scipy.interpolate import interp1d
+
+# plt.plot(model1.age + grid.tpagb_age, model1.star.binary_separation)
+# plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
+# plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
+# plt.plot(model5.age + grid.tpagb_age, model5.star.binary_separation)
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel(r"$f_\textrm{conv}$")
+
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for boool in [False]:
+        for q in qs:
+            print(R, q)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star, q, a_init, simple_only=boool, eps=0.001
+            )
+            bin = Bins[0]
+            index = np.argwhere(bin.age > model_age)[0][0] - 1
+            q_evolve = bin.m1 / bin.m2
+            m2 = bin.m2[index]
+            rl1 = roche_lobe(q_evolve) * bin.a
+
+o_orb = omega_Kep(bin.m1 + bin.m2, bin.a)
+
+o_tid = const.yr * abs(o_orb - bin.spin1)
+p_tid = 2 * np.pi / o_tid
+print(o_tid)
+
+
+f = interp1d(Star.age, Star.tconv, bounds_error=False, fill_value="extrapolate")
+
+bin.tconv = f(bin.age)
+
+f_conv = (0.5 * p_tid / bin.tconv) ** 2
+f_conv[np.where(f_conv > 1)] = 1
+
+
+plt.plot(bin.age, f_conv, label=r"\texttt{evolve.py}")
+plt.plot(
+    model2.age[1:] + grid.tpagb_age, model2.star.f_conv[1:], label=r"\texttt{MESA}"
+)
+plt.legend()
+plt.xlim(grid.tpagb_age, grid.tpagb_age + 1.1 * model2.age[-1])
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-no-fconv-show.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+from scipy.interpolate import interp1d
+
+# plt.plot(model1.age + grid.tpagb_age, model1.star.binary_separation)
+# plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
+# plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
+# plt.plot(model5.age + grid.tpagb_age, model5.star.binary_separation)
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel(r"$f_\textrm{conv}$")
+
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for boool in [False]:
+        for q in qs:
+            print(R, q)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star2, q, a_init, simple_only=boool, eps=0.001
+            )
+            bin = Bins[0]
+            index = np.argwhere(bin.age > model_age)[0][0] - 1
+            q_evolve = bin.m1 / bin.m2
+            m2 = bin.m2[index]
+            rl1 = roche_lobe(q_evolve) * bin.a
+
+o_orb = omega_Kep(bin.m1 + bin.m2, bin.a)
+
+o_tid = const.yr * abs(o_orb - bin.spin1)
+p_tid = 2 * np.pi / o_tid
+print(o_tid)
+
+
+f = interp1d(Star.age, Star.tconv, bounds_error=False, fill_value="extrapolate")
+
+bin.tconv = f(bin.age)
+
+f_conv = (0.5 * p_tid / bin.tconv) ** 2
+f_conv[np.where(f_conv > 1)] = 1
+
+
+axs[0].plot(bin.age, rl1, label=r"\texttt{evolve.py}")
+axs[0].plot(
+    model4.age[1:] + grid.tpagb_age, model4.star.rl_1[1:], label=r"\texttt{MESA}"
+)
+axs[1].plot(bin.age, f_conv, label=r"\texttt{evolve.py}")
+axs[1].plot(
+    model4.age[1:] + grid.tpagb_age,
+    model4.star.f_conv[1:],
+    label=r"\texttt{MESA}",
+    alpha=0.6,
+    linewidth=5,
+    zorder=-1,
+)
+plt.legend()
+plt.xlim(grid.tpagb_age, grid.tpagb_age + 1.1 * model2.age[-1])
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-no-fconv-correct.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel(r"$f_\textrm{conv}$")
+axs[0].set_ylabel(r"Roche lobe radius ($R_\odot$)")
+
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for f_conv in ["BSE", "Zahn", "Duguid"][::-1]:
+        for q in qs:
+            print(R, q)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star3, q, a_init, simple_only=True, eps=0.001, f_conv=f_conv
+            )
+            bin = Bins[0]
+            index = np.argwhere(bin.age > model_age)[0][0] - 1
+            q_evolve = bin.m1 / bin.m2
+            m2 = bin.m2[index]
+            rl1 = roche_lobe(q_evolve) * bin.a
+            axs[0].plot(bin.age, rl1, label=f"{f_conv}")
+            try:
+                axs[1].plot(bin.age[2:], bin.fconv, label=f"{f_conv}")
+            except:
+                axs[1].plot(bin.age[3:], bin.fconv, label=f"{f_conv}")
+
+axs[0].legend(ncols=3)
+axs[1].set_yscale("log")
+axs[1].set_ylim(0.1, 20)
+plt.xlim(grid.tpagb_age, grid.tpagb_age + 1.3 * model2.age[-1])
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-no-fconv-compare.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+axs[1].set_xlabel("Star age (yr)")
+axs[1].set_ylabel(r"$q = M_\textrm{a} / M_\textrm{d}$")
+axs[0].set_ylabel("Stellar rotation (s$^{-1}$)")
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for boool in [False]:
+        for q in qs:
+            print(R, q)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star, q, a_init, simple_only=boool, eps=0.001
+            )
+            bin = Bins[0]
+            index = np.argwhere(bin.age > model_age)[0][0] - 1
+            q_evolve = bin.m1 / bin.m2
+            m2 = bin.m2[index]
+            rl1 = roche_lobe(q_evolve) * bin.a
+            axs[0].plot(bin.age, bin.spin1, label=r"\texttt{evolve.py}")
+            axs[1].plot(bin.age, 1 / q_evolve, label=r"\texttt{evolve.py}")
+
+axs[0].plot(model2.age + grid.tpagb_age, model2.star.Omega_star, label=r"\texttt{MESA}")
+axs[1].plot(
+    model2.age + grid.tpagb_age,
+    model2.star.star_2_mass / model2.star.star_1_mass,
+    label=r"\texttt{MESA}",
+)
+axs[0].set_ylim(0, 0.3e-6)
+axs[0].legend()
+axs[0].set_xlim(grid.tpagb_age, grid.tpagb_age + 1.1 * model2.age[-1])
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-no-fconv-q-omega.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+axs[1].set_xlabel("Star age (yr)")
+axs[1].set_ylabel(r"\texttt{MESA varcontrol} target")
+axs[0].set_ylabel(r"Roche lobe radius ($R_\odot$)")
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for boool in [False]:
+        for q in qs:
+            print(R, q)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star, q, a_init, simple_only=boool, eps=0.001, f_conv="None"
+            )
+            bin = Bins[0]
+            index = np.argwhere(bin.age > model_age)[0][0] - 1
+            q_evolve = bin.m1 / bin.m2
+            m2 = bin.m2[index]
+            rl1 = roche_lobe(q_evolve) * bin.a
+            axs[0].plot(bin.age, rl1, label=r"\texttt{evolve.py}")
+            axs[1].plot(Star.age, Star.varcontrol, label=r"\texttt{evolve.py}")
+
+axs[0].plot(model6.age + grid.tpagb_age, model6.star.rl_1, label=r"\texttt{MESA}")
+axs[1].plot(
+    model6.age + grid.tpagb_age,
+    model6.star.varcontrol,
+    label=r"\texttt{MESA}",
+)
+axs[0].legend()
+axs[1].set_ylim(0.000008, 0.00012)
+axs[0].set_xlim(
+    grid.tpagb_age + 0.9 * model6.age[0], grid.tpagb_age + 1.1 * model6.age[-1]
+)
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-varcontrol-fix.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
 
 # plt.plot(model1.age + grid.tpagb_age, model1.star.binary_separation)
 # plt.plot(model2.age + grid.tpagb_age, model2.star.binary_separation)
@@ -365,16 +680,27 @@ plt.show()
 
 # %%
 
-plt.plot(Star.age, Star.varcontrol)
-plt.plot(model.age + grid.tpagb_age, model.star.varcontrol)
-plt.xlim(grid.tpagb_age, bin.age[-1])
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel(r"\texttt{MESA varcontrol} target")
+plt.plot(Star.age, Star.varcontrol, label="Reference single star")
+plt.plot(model4.age + grid.tpagb_age, model4.star.varcontrol, label="Binary star")
+plt.legend(ncols=2)
+plt.xlim(grid.tpagb_age + 0.8 * model4.age[0], bin.age[-1])
+plt.ylim(0.000008, 0.00012)
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-varcontrol.pgf", format="pgf")
 plt.show()
+plt.close()
 # %%
 
 fig, axs = plt.subplots(2, 2, figsize=set_size(full, height=1), constrained_layout=True)
 axs = axs.flatten()
 
 labels = ["Simple integration only", r"Simple + \texttt{solve\_ivp}"]
+styles = [{"alpha": 1}, {"linewidth": 5, "alpha": 0.6, "zorder": -1}]
 
 for i, R in enumerate([150, 300, 450, 600]):
     model = find_model(R)
@@ -399,7 +725,7 @@ for i, R in enumerate([150, 300, 450, 600]):
             q_evolve = bin.m1 / bin.m2
             m2 = bin.m2[index]
             rl1 = roche_lobe(q_evolve) * bin.a
-            (l,) = axs[i].plot(bin.age, rl1, c=f"C{j}", label=labels[j])
+            (l,) = axs[i].plot(bin.age, rl1, c=f"C{j}", label=labels[j], **styles[j])
             ls.append(l)
     print(ls)
 
@@ -595,6 +921,8 @@ labels = [
     r"Complete - Simple + \texttt{solve\_ivp}",
 ]
 
+styles = [{"alpha": 1}, {"linewidth": 5, "alpha": 0.6, "zorder": -1}]
+
 for i, R in enumerate([150, 300, 450, 600]):
     model = find_model(R)
     mass = model["M"]
@@ -714,9 +1042,7 @@ plt.show()
 plt.close()
 # %%
 
-fig, axs = plt.subplots(
-    1, 1, figsize=set_size(full, height=0.96), constrained_layout=True
-)
+fig, axs = plt.subplots(1, 1, figsize=set_size(column), constrained_layout=True)
 
 labels = ["Simple integration only", r"Simple + \texttt{solve\_ivp}"]
 
@@ -775,10 +1101,107 @@ grid = MesaGrid(f"{MASTER}/tides-grid")
 for q, model1 in grid.get_R1_slice(300):
     print(q)
 
-
 # %%
 
-# plt.plot(model1.age + grid.tpagb_age, model1.star.binary_separation)
+# plt.plot(model2.age + grid.tpagb_age, model2.star.binary_separation)
+# plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
+# plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
+# plt.plot(model5.age + grid.tpagb_age, model5.star.binary_separation)
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for q in [0.5]:
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+            Star3,
+            q,
+            a_init,
+            simple_only=True,
+        )
+        bin = Bins[0]
+        index = np.argwhere(bin.age > model_age)[0][0] - 1
+        q_evolve = bin.m1 / bin.m2
+        m2 = bin.m2[index]
+        rl1 = roche_lobe(q_evolve) * bin.a
+        plt.plot(bin.age, rl1, c="C9", linewidth=5)
+
+plt.plot(Star.age, Star.radius, c="C9", linewidth=5, label="Reference star")
+plt.plot(model1.age + grid.tpagb_age, model1.star.rl_1, label="Roche lobe radius")
+plt.plot(model1.age + grid.tpagb_age, model1.star.R, label="Star radius")
+
+plt.xlim(grid.tpagb_age + 0.8 * model1.age[0], grid.tpagb_age + 1.1 * model1.age[-1])
+fig.legend(loc="outside upper center", ncols=3)
+plt.ylim(75, 450)
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-money1.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+# plt.plot(model2.age + grid.tpagb_age, model2.star.binary_separation)
+# plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
+# plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
+# plt.plot(model5.age + grid.tpagb_age, model5.star.binary_separation)
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+plt.xlabel("Star age (yr)")
+axs[0].set_ylabel("Roche lobe radius ($R_\\odot$)")
+axs[1].set_ylabel(r"$q = M_\textrm{a} / M_\textrm{d}$")
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for q in [0.5]:
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+            Star3,
+            q,
+            a_init,
+            simple_only=True,
+        )
+        bin = Bins[0]
+        index = np.argwhere(bin.age > model_age)[0][0] - 1
+        q_evolve = bin.m1 / bin.m2
+        m2 = bin.m2[index]
+        rl1 = roche_lobe(q_evolve) * bin.a
+        axs[0].plot(bin.age, rl1, c="C9", linewidth=5)
+        axs[1].plot(bin.age, bin.m2 / bin.m1, c="C9", linewidth=5)
+
+axs[0].plot(model1.age + grid.tpagb_age, model1.star.rl_1, label="Roche lobe radius")
+axs[1].plot(
+    model1.age + grid.tpagb_age,
+    model1.star.star_2_mass / model1.star.star_1_mass,
+    label="Roche lobe radius",
+)
+
+plt.xlim(grid.tpagb_age + 0.8 * model1.age[0], grid.tpagb_age + 1.1 * model1.age[-1])
+axs[0].set_ylim(270, 295)
+axs[1].set_ylim(0.4996, 0.5004)
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w11-money2.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+plt.plot(model1.age + grid.tpagb_age, model1.star.star_1_mass / model1.star.star_2_mass)
 # plt.plot(model2.age + grid.tpagb_age, model2.star.binary_separation)
 # plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
 # plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
@@ -804,7 +1227,62 @@ for R in [300]:
         q_evolve = bin.m1 / bin.m2
         m2 = bin.m2[index]
         rl1 = roche_lobe(q_evolve) * bin.a
-        plt.plot(bin.age, rl1)
+        plt.plot(bin.age, q_evolve)
 
-plt.plot(Star.age, Star.radius)
+# plt.plot(Star.age, Star.radius)
 plt.show()
+
+# %%
+from scipy.interpolate import interp1d
+
+plt.plot(model1.age + grid.tpagb_age, model1.star.R / model1.star.rl_1)
+# plt.plot(model2.age + grid.tpagb_age, model2.star.binary_separation)
+# plt.plot(model3.age + grid.tpagb_age, model3.star.binary_separation)
+# plt.plot(model4.age + grid.tpagb_age, model4.star.binary_separation)
+# plt.plot(model5.age + grid.tpagb_age, model5.star.binary_separation)
+
+for R in [300]:
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for q in [0.5]:
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+            Star3,
+            q,
+            a_init,
+            simple_only=True,
+        )
+        bin = Bins[0]
+        index = np.argwhere(bin.age > model_age)[0][0] - 1
+        q_evolve = bin.m1 / bin.m2
+        m2 = bin.m2[index]
+        rl1 = roche_lobe(q_evolve) * bin.a
+
+        f = interp1d(
+            Star.age,
+            Star.log_R,
+            kind="linear",
+            bounds_error=False,
+            fill_value="extrapolate",  # or np.nan if you prefer
+        )
+
+        bin_log_R = f(bin.age)
+        plt.plot(bin.age, 10**bin_log_R / rl1)
+
+# plt.plot(Star.age, Star.radius)
+plt.show()
+
+
+# %%
+plt.plot(model1.age + grid.tpagb_age, model1.star.f_conv)
+plt.show()
+
+# %%
+
+plt.plot(model1.env_mass, model1.star.R / model1.star.rl_1)
+plt.show()
+# %%

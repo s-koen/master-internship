@@ -20,12 +20,111 @@
 \setuplayout
 \section{New Wind Velocity}
 I updated the wind velocity in both the \emph{wind angular momentum loss} prescription, as well as in the \emph{wind mass loss} prescription. Both prescriptions now use a constant wind velocity of \(15\) km s\(^{-1}\).
-\section{Updated Reference Single Star with Updated Wind and History Data}
+\section{Updated Reference Single Star}
+Due to the changes to the wind prescription, it is important to generate a new standard single star model that gets used to start the binary simulations from. This new model is different in a couple of ways, which I describe below.
 \subsection{Updated Wind and History Data}
-The single star now saves \lstinline[style=output, breaklines=true]|I_eff|, \lstinline[style=output, breaklines=true]|rg2|, \lstinline[style=output, breaklines=true]|M_conv| and \lstinline[style=output, breaklines=true]|R_conv| to give \lstinline[style=output, breaklines=true]|evolve.py| everything it needs to accurately compute the orbital evolution.
-\subsection{Updated Model saving procedure}
+The single star now saves \lstinline[style=output, breaklines=true]|I_eff|, \lstinline[style=output, breaklines=true]|rg2|, \lstinline[style=output, breaklines=true]|M_conv| and \lstinline[style=output, breaklines=true]|R_conv| to give \lstinline[style=output, breaklines=true]|evolve.py| everything it needs to accurately compute the orbital evolution. It is now simulated with the updated wind velocity prescriptions and a constant wind velocity of \(15\) km s\(^{-1}\).
 
-\section{Comparing with evolve.py}
+The star only experiences wind mass loss on the EAGB and TPAGB phase, so I \emph{think} it is no problem that the wind velocity is set at \(15\) km s\(^{-1}\) throughout the evolution. The wind angular momentum loss will be \(0\) during the earlier phases anyway.
+
+\subsection{Updated Model saving procedure}
+The changes in the stellar structure and the orbital evolution are much less drastic during the interpulse region. This makes starting models during this phase easier and more accurate to align to predicted parameters than starting during a thermal pulse.
+
+I devised a new method to save models during the interpulse, but keep track of the largest radius that the star reached during the previous pulse.
+
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+subroutine save_model_on_radius_increase(id, s, ierr)
+
+    integer, intent(in) :: id
+    type(star_info), pointer :: s
+    integer, intent(inout) :: ierr
+
+    character(len=200) :: fname
+    real(dp) :: R_now, R_last
+    real(dp) :: R_max_since_last_save
+    real(dp) :: R_max
+    integer :: evol_phase
+    logical :: needs_save
+
+    needs_save = s% lxtra(lx_needs_save)
+    evol_phase = s%x_integer_ctrl(1)
+
+    ! the subroutine uses the current stellar radius 
+    ! and the last saved stellar radius to determine
+    ! if a model should be saved.
+    R_now = s% photosphere_R
+    R_last = s% xtra(x_last_saved_R)
+    R_max_since_last_save = s% xtra(x_max_R_since_last_save)
+
+    ! if true: save a model
+
+    ! this criterion produces many models, 
+    ! but using this routine is only required once
+    ! for every mass star!
+    
+    if (((R_now - R_last > 10d0) .or. (R_now > 1.25d0 * R_last)) .and. (evol_phase > 1) .and. (evol_phase /= 5)) then
+        write(fname, fmt="(a7,f0.3,a7,i0,a4)") 'models/', R_now, 'Rsun_TP', s% ixtra(ix_TP_count), '.mod'
+
+        call star_write_model(id, fname, ierr)
+
+        s% need_to_update_history_now = .true.
+        s% need_to_save_profiles_now = .true.
+
+        open(1, file="last_saved_R.dat", status="replace")
+        write(1,*) R_now
+        close(1)
+
+        if (ierr /= 0) then
+            write(*,*) 'error writing model'
+            ierr = 0
+        end if
+
+        s% xtra(x_last_saved_R) = R_now
+        s% xtra(x_max_R_since_last_save) = R_now
+    end if
+
+    if ((R_now - R_max_since_last_save > 0d0) .and. (evol_phase == 5) .and. (s% power_h_burn / s% power_nuc_burn < 0.7)) then
+        s% xtra(x_max_R_since_last_save) = R_now
+        s% lxtra(lx_needs_save) = .true.
+    end if
+
+    if ((s% power_h_burn / s% power_nuc_burn > 0.7) .and. (s% lxtra(lx_needs_save)) .and. (evol_phase == 5)) then
+
+        write(fname, fmt="(a7,f0.3,a7,i0,a4)") 'models/', R_max_since_last_save, 'Rsun_TP', s% ixtra(ix_TP_count), '.mod'
+
+        call star_write_model(id, fname, ierr)
+
+        s% need_to_update_history_now = .true.
+        s% need_to_save_profiles_now = .true.
+
+        open(1, file="last_saved_R.dat", status="replace")
+        write(1,*) R_now
+        close(1)
+
+        if (ierr /= 0) then
+            write(*,*) 'error writing model'
+            ierr = 0
+        end if
+
+        s% xtra(x_last_saved_R) = R_max_since_last_save
+        s% lxtra(lx_needs_save) = .false.
+    end if
+
+
+end subroutine save_model_on_radius_increase
+\end{minted}
+I think this is quite a big improvement compared to the last method. Now, we always get the \emph{maximum} radius during a thermal pulse, so we can more accurately infer the maximum ratio of \(R_\text{star} / R_\text{RL}\) during the thermal pulses and select a better starting model.\sidenote{However, see section \ref{sec:improvements}}
+
+\begin{questionbox}{}{}
+    \textbf{\textcolor{keywordscolor}{NOTE:}} This new method will \emph{not} work as expected for heavier stars! As we have seen, heavier stars can have radii that are larger during the interpulse than the previous thermal pulse. An altered method has to be created.
+\end{questionbox}
+
+\newsection{Comparing with evolve.py}
+
+\begin{questionbox}{}{}
+    \textbf{\textcolor{keywordscolor}{NOTE:}} This section still uses the original solar model to evolve the starting binary from. This means that the star \emph{up to the point of the start of the binary evolution} still used the \citet{vassiliadis1993} wind velocity, but as we have seen last week, this does \emph{not} alter the mass lost in any meaningful way. This also means the model still starts during a thermal pulse. Later experiments \emph{do} use the new standard star as \emph{input}.
+\end{questionbox}
+
 Before, I only loaded the TPAGB data from the Rees models into the Star class from \lstinline[style=output, breaklines=true]|evolve.py|. To accurately predict starting Roche Lobe radii, \(q\)-values and stellar spin parameters, it is important to model the previous evolutionary phases as well. To do this, I modify the \lstinline[style=output, breaklines=true]|read_stellar_models| function to read the complete standard star data:
 \begin{minted}[fontsize=\small]{py}
 def read_stellar_models():
@@ -63,6 +162,7 @@ def read_stellar_models():
 Below, I show that this ensures the \lstinline[style=output, breaklines=true]|Star| class from \lstinline[style=output, breaklines=true]|evolve.py| has the same \lstinline[style=output, breaklines=true]|M_conv|, \lstinline[style=output, breaklines=true]|R_conv|, \lstinline[style=output, breaklines=true]|t_conv| and \lstinline[style=output, breaklines=true]|rg2| values as the MESA reference star. It also has access to all other properties required for computing the tides and wind.
 
 \begin{figure}[ht]
+    \marginfignote{0}{The \lstinline[style=output, breaklines=true]|evolve.py| values are identical to the history values, is that great!}
     \centering
     \incplot{w11-compare-mesa-evolve-conv}
 \end{figure}
@@ -74,7 +174,7 @@ Now for \(r_\text{g}^{2}\)
     \incplot{w11-compare-mesa-evolve-inertia}
 \end{figure}
 
-If we use these values to compute the wind and tides, we can see the effects of all phases on the separation and Roche lobe radius for arbitrary staring radii and mass ratios.
+If we use these values to compute the wind and tides, we can see the effects of all phases on the separation and Roche lobe radius for arbitrary starting radii and mass ratios.
 
 \begin{figure}[ht]
     \centering
@@ -208,11 +308,161 @@ If we use this expression in \lstinline[style=output, breaklines=true]|evolve.py
 
 
 
-\section{Grid}
-\subsection{Problem with Tides}
+\section{Starting Conditions}
+Now that the MESA models align well with the \lstinline[style=output, breaklines=true]|evolve.py| models, at least for the single model that I tested, I want to use this \lstinline[style=output, breaklines=true]|evolve.py| script to find starting conditions for the MESA models.
+
+This way, it is no longer required to guess the inputs values for \lstinline[style=output, breaklines=true]|evolve.py| to compare with the MESA models, \emph{and} the \lstinline[style=output, breaklines=true]|evolve.py| script can actually be used to find ZAMS values for the orbital properties, evolve the star, and find the equivalent starting binary orbital parameters.
+
+\subsection{Code}
+\begin{minted}[fontsize=\small]{py}
+models_dict = get_model_dict()
+tpagb_age = _get_tpagb_age()
+ref_eagb_age = mr.MesaData(f"{ref_dir}/eagb.data").star_age[-1]
+
+Star = read_stellar_models(standard_dir)[0]
+
+for R in Rs:
+
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for q in qs:
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+            Star, q, a_init, simple_only=True
+        )
+
+        bin = Bins[0]
+        index = np.argwhere(bin.age > model_age)[0][0] - 1
+        index_star = np.argwhere(Star.age > model_age)[0][0] - 1
+
+        m1 = bin.m1[index]
+        m2 = bin.m2[index]
+        a = bin.a[index]
+        omega = bin.spin1[index]
+
+        varcontrol = Star.varcontrol[index_star]
+
+        print(f"\nR = {R:.0f}, q = {q:.2f}")
+        run_subdir = f"runs/R{R:05.2f}_q{q:.3f}"
+        run_dir = f"{grid_dir}/{run_subdir}"
+        print(f"copying reference binary to {run_subdir}...")
+        shutil.copytree(f"{grid_dir}/reference-binary", run_dir)
+        inlist_bin = f"{run_dir}/inlist_project"
+        inlist_star = f"{run_dir}/inlist1"
+        print(f"copying {model["name"]} to {run_subdir}...")
+        shutil.copyfile(model_path, f"{run_dir}/start.mod")
+        print(f"changing inlist...")
+        change_inlist_bin(a, m1, m2, inlist_bin)
+        change_inlist_star(omega, varcontrol, inlist_star)
+\end{minted}
+Below, I show the functions \lstinline[style=output, breaklines=true]|changea_inlist_bin| and \lstinline[style=output, breaklines=true]|change_inlist_star|. These are responsible for actually making sure the binaries are evolved with the correct starting values!
+\begin{minted}[fontsize=\small]{py}
+def change_inlist_bin(a, m1, m2, inlist_path):
+
+    with open(inlist_path, "r") as f:
+        lines = f.readlines()
+
+        new = []
+        for line in lines:
+            if "m1" in line:
+                new.append(f"\tm1 = {m1}d0  ! donor mass in Msun\n")
+            elif "m2" in line:
+                new.append(f"\tm2 = {m2}d0  ! donor mass in Msun\n")
+            elif "initial_separation_in_Rsuns" in line:
+                new.append(f"\tinitial_separation_in_Rsuns = {a}d0 ! in Rsun units\n")
+            else:
+                new.append(line)
+
+    with open(inlist_path, "w") as f:
+        f.writelines(new)
+
+
+def change_inlist_star(omega, varcontrol, inlist_path):
+
+    with open(inlist_path, "r") as f:
+        lines = f.readlines()
+
+        new = []
+        for line in lines:
+            if "x_ctrl(3)" in line:
+                val = f"{omega:.16e}".replace("e", "d")
+                new.append(f"\tx_ctrl(3) = {val}  ! initial rotation rate\n")
+            elif "x_ctrl(4)" in line:
+                val = f"{varcontrol:.3e}".replace("e", "d")
+                new.append(f"\tx_ctrl(4) = {val}  ! initial varcontrol\n")
+            else:
+                new.append(line)
+
+    with open(inlist_path, "w") as f:
+        f.writelines(new)
+
+
+\end{minted}
+
+
+\subsection{First Test}
+Below, I show the first test. In this case, it is a model starting with an initial Roche lobe radius of \(R_\text{RL} = 300\;R_\odot \) and \(q=0.5\)
+\begin{figure}[ht]
+    \marginfignote{0}{It is clearly wrong, but the starting Roche lobe radius is correct. This means the separation finding mechanism is working as intended. Below, I check if \(q\) and \(\Omega_\text{star}\) are also working correctly.}
+    \centering
+    \incplot{w11-no-fconv}
+\end{figure}
+\begin{figure}[ht]
+    \marginfignote{1}{It seems like these are working as intended as well!}
+    \centering
+    \incplot{w11-no-fconv-q-omega}
+\end{figure}
+
+
+\newsubsection{Problem with Tides}
 After debugging for \emph{way} too long, I finally traced the issue back to the fast tides factor \(f_\text{conv}\), which was still using the old (now static) stellar rotation instead of the updating new value.
 
+Below, I show \(f_\text{conv}\) for both the \lstinline[style=output, breaklines=true]|evolve.py| and the \lstinline[style=output, breaklines=true]|MESA| model.
+\begin{figure}[ht]
+    \marginfignote{0}{Not only is it important that I noticed this issue, it also shows that \(f_\text{conv}\) really is not \(1\) throughout the TPAGB evolution. During the third dredge up, it will decrease quite significantly, \emph{and} as the plot above shows, it also has an important effect on the evolution of the tides.}
+    \centering
+    \incplot{w11-no-fconv-show}
+\end{figure}
+
+After fixing the mistake, we get the following plot.
+\begin{figure}[ht]
+    \marginfignote{0}{During the first interpulse, \lstinline[style=output, breaklines=true]|MESA| and \lstinline[style=output, breaklines=true]|evolve.py| agree quite well with eachother. \emph{However}, during and after the first pulse that \lstinline[style=output, breaklines=true]|MESA| evolves, the models diverge quite drastically. Something is clearly still wrong.}
+    \centering
+    \incplot{w11-no-fconv-correct}
+\end{figure}
+
+Before going into the remaining problem, I first want to investigate how much the different \(f_\text{conv}\) prescriptions affect the overall tides. The figure below shows the differences for the star with an initial Roche lobe radius of \(R_\text{RL} = 300\;R_\odot \).
+\begin{figure}[ht]
+    \marginfignote{0}{Luckily, for physically motivated prescriptions, the differences are not nearly as significant on the TPAGB. I will continue to use the BSE prescription.}
+    \marginfignote{10}{Note: These plots are made with a star model with a better temporal resolution. I will come back to this later. Duguid is pretty unstable when using the lower resolution model.}
+    \centering
+    \incplot{w11-no-fconv-compare}
+\end{figure}
+
+\newsubsection{Problem with varcontrol}
+The \citet{rees2024b} \lstinline[style=output, breaklines=true]|MESA| models use a varying \lstinline[style=output, breaklines=true]|varcontrol| prescription to completely resolve the third dredge up. Most of my models start in the third dredge up, and thus the reference single star has a lower \lstinline[style=output, breaklines=true]|varcontrol| value at the time of the model. MESA does not however save this in the \lstinline[style=output, breaklines=true]|models.mod| files. This results in the following behaviour:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w11-varcontrol}
+\end{figure}
+
+An easy fix for this is to simply set the binary star with the same varcontrol target as the single star when it is initiated.\sidenote{This behaviour is already shown in the grid generator code above.} After the fix, we obtain the following
+\begin{figure}[ht]
+    \marginfignote{0}{Seems like it did not significantly affect the tides, but it is still an important change, since this ensures the dredge up is correctly resolved and thus the abundances can more accurately be predicted.}
+    \marginfignote{10}{I might have stopped the simulation a bit early, but at this point I was already certain the differences between the \lstinline[style=output, breaklines=true]|evolve.py| script and the \lstinline[style=output, breaklines=true]|MESA| code we not caused by the different varcontrol target.}
+    \centering
+    \incplot{w11-varcontrol-fix}
+\end{figure}
+
+
+
 \subsection{Simple integration}
+The actual differences are probably due to the differences in integration scheme between \lstinline[style=output, breaklines=true]|MESA| and the \lstinline[style=output, breaklines=true]|evolve.py| script. Below, I plot the output of the \lstinline[style=output, breaklines=true]|evolve.py| script for two different integration schemes. In one case, I \lstinline[style=output, breaklines=true]|only| integrate using the simple integration scheme which is just \(\Delta x / \Delta t \cdot  \Delta t\). The other case uses an \(\varepsilon \)-parameter to change between the simple integration, and a sophisticated ODE solver from scipy.
 
 \begin{figure}[ht]
     \centering
@@ -249,14 +499,41 @@ The simple integration with the reduced star model agrees well when it is able t
 I do however want to make sure the full star with just simple integration reaches the TPAGB phase without much trouble.
 
 \begin{figure}[ht]
+    \marginfignote{0}{As long as we dont start with radii smaller than about \(R_\text{RL} \approx 150\;R_\odot  \), we \emph{should} be fine.}
     \centering
     \incplot{w11-compare-simple-scipy-6}
 \end{figure}
 
+\subsection{Results with Complete Reference Star}
+When we use the complete stellar model with simple integration only as a starting point, we obtain the following:
+\begin{figure}[ht]
+    \marginfignote{0}{The curves follow eachother beautifully!}
+    \centering
+    \incplot{w11-money1}
+\end{figure}
+Below I plot a zoom
+\begin{figure}[ht]
+    \marginfignote{0}{The Roche lobe radius is slightly smaller after the pulse, due to RLOF mass transfer.}
+    \centering
+    \incplot{w11-money2}
+\end{figure}
+
+\section{Grid}
+Once I fixed all the problems, I felt like it was \emph{finally} time to simulate multiple star on the cluster in a grid. \emph{However}, the cluster was down when I wanted to transfer all my data and run the grid. 
+
+I notified the postmaster and Erik gave the cluster a power cycle and now it is up and running and my models are being simulated at this moment.
+
 
 \section{Analytic Solutions}
+I have not had time yet
 \subsection{Predicting Beta Values}
 
+\newsection{Improvements}\label{sec:improvements}
+\begin{enumd}
+    \item For determining a correct starting model, I check the fraction \(R_\text{star} / R_\text{RL}\) using the radius of star at the point of the radius peak and the initial Roche Lobe radius. Using the peak radius is good, but the Roche lobe radius can vary quite a bit, so it would be better to use the \lstinline[style=output, breaklines=true]|evolve.py| script to find the Roche lobe radius at the point of the radius peak. This would require some searching but should still be quite easy to implement.
+    \item The model saving procedure could be updated in a smart way to also work for stars where the maximum radius during a pulse-interpulse cycle is achieved during the interpulse.
+    \item Change the \lstinline[style=output, breaklines=true]|MesaGrid| class to use the \lstinline[style=output, breaklines=true]|Star| object from \lstinline[style=output, breaklines=true]|evolve.py| instead of the reference history files. This would cut down on loading times since at this point \emph{both} \lstinline[style=output, breaklines=true]|MesaGrid| as well as \lstinline[style=output, breaklines=true]|evolve.py| need to load the reference star data, which for the complete model takes a while\sidenote{A while being approximately 1 minute.}.
+\end{enumd}
 
 \bibliography{master.bib}
 \end{document}
