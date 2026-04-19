@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 677.92
+      model_number:        15713
+      star_age:     1.9002018061354654E+05
+      num_retries:           87
+      log_rel_run_E_err:        -3.0046582545905758
+      steps:        51617
+      retries:           87
+      redos:            0
+      solver_calls_made:        51704
+      solver_calls_failed:           87
+      solver_iterations:       253372

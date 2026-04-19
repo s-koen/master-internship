@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 949.90
+      model_number:        18650
+      star_age:     3.1511804863507324E+05
+      num_retries:          399
+      log_rel_run_E_err:        -2.9061282073623240
+      steps:        59979
+      retries:          399
+      redos:            0
+      solver_calls_made:        60378
+      solver_calls_failed:          399
+      solver_iterations:       294820

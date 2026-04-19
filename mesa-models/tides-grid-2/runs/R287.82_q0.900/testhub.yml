@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 885.36
+      model_number:        28271
+      star_age:     6.1855383002952917E+05
+      num_retries:         1759
+      log_rel_run_E_err:        -2.8395986975161356
+      steps:        51777
+      retries:         1759
+      redos:            0
+      solver_calls_made:        53536
+      solver_calls_failed:         1759
+      solver_iterations:       268107

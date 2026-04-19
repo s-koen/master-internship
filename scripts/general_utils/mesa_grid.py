@@ -172,7 +172,9 @@ class MesaGrid:
         return self.models.get((R1, q))
 
     def iter_models(self):
-        """iterate in sorted order: R1 ascending, then q ascending"""
+        """iterate in sorted order: R1 ascending, then q ascending.
+        yields R1, q, self.models[(R1, q)]
+        """
         for R1, q in self.sorted_keys:
             yield R1, q, self.models[(R1, q)]
 
@@ -183,6 +185,21 @@ class MesaGrid:
         """
         return [
             (q, self.models[(R1, q)]) for q in self.q_vals if (R1, q) in self.models
+        ]
+
+    def get_R1_index(self, i):
+        """
+        return all models with the i-th R1 (sorted by q)
+
+        i: index in sorted R1_vals (supports negative indexing)
+        """
+        try:
+            R1 = list(self.R1_vals)[i]
+        except IndexError:
+            raise IndexError(f"RL index {i} out of range (0..{len(self.R1_vals)-1})")
+
+        return [
+            (R1, q, self.models[(R1, q)]) for q in self.q_vals if (R1, q) in self.models
         ]
 
     def get_q_slice(self, q):

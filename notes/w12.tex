@@ -1,0 +1,88 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 12}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Analytic}\label{sec:1}
+I am basing my implementation on the results from \citet{soberman1997}.
+\begin{figure}[ht]
+    \marginfignote{4}{The plot shows four different evolutions. The green and blue lines show a binary system where mass is lost via isotropic winds, while the orange and red lines show a binary system where mass is transferred.}
+    \marginfignote{12}{In the case of conservative mass transfer, the lines for the donor and accretor are symmetric, which makes sense. In the case of isotropic winds, the accretor does not change, which also makes sense.}
+    \marginfignote{20}{The effect of the mass ratio $q \equiv M_\text{a} / M_\text{d}$ is inverted for the two mass loss mechanisms.}
+    \centering
+    \incplot{w12-analytic-1}
+\end{figure}
+
+\newsection{Grid}
+
+In this section, I analyze the grid that I simulated with starting Roche lobe Radii from \(150\;R_\odot \) to \(650\;R_\odot \) in \(10\) logarithmically spaced steps and 7 \(q=M_\text{a}/M_\text{d}\) values from \(0.4\) to \(1\).
+
+\subsection{General properties}
+I start with some general properties of the models displayed in a 2d grid.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here, I plot the maximum ratio of the star radius over the Roche lobe radius for every model. Initial \(q-\)values close to 1 seem to result in less extreme ratios. This makes sense, as for approximately conservative mass transfer, the orbit will reach its minimum separation when \(q \approx 1\). For initial \(q < 1\), this means the orbit will first shrink as the mass ratio approaches unity. This effect becomes less pronounced the closer the initial mass ratio is to unity. Once the winds become important, This relation becomes less clear. In the case of winds, the orbit will generally grow less for mass ratios close to unity than it will for mass ratios far from unity.}
+    \centering
+    \incplot{w12-grid-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Similarly, we can plot the maximum ratio of the stellar radius over the volume equivalent outer Roche lobe radius using the analytical approximation from \citet{temmink2022}. The plot shows the same features but I use a divergent color map to show models where the ratio is greater and smaller than unity. Since the MESA models do not take outer lobe overflow into account, and the assumption of spherical symmetry can no longer be trusted when the stellar radius is larger than the outer Roche lobe, this is an important plot.}
+    \centering
+    \incplot{w12-grid-10}
+\end{figure}
+
+I think the third to last column has some surprising results. I investigate this in more detail in subsection \ref{ssec:g2}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This plot shows the ratio of mass gained by the accretor and mass lost from the donor. A \emph{higher} value means \emph{more} of the mass that is lost from the donor successfully accretes on the accretor. The general trend of the plot seems to be: Larger initial Roche lobe radii lead to a smaller fraction of accreted mass. This makes sense since wind mass loss, which has a maximum accretion efficiency of about \(30\%\) becomes more important at larger radii.}
+    \centering
+    \incplot{w12-grid-2}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{I think the results from this figure can be understood by combining the results section \ref{sec:1} and the plot above. We see that the fraction of mass that is being accreted decreases with Roche lobe radius, and that the ratio of initial to final separation increases with \(q\) for conservative mass transfer. In general, a significant amount of mass is accreted, even when wind becomes imporatant, but when this is the case, the relation between \(q\) and \(a_\text{f} / a_\text{i}\) becomes less pronounced.}
+    \centering
+    \incplot{w12-grid-3}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This plot relates the amount of mass lost from the system, the plot above, and the initial periods. Systems with larger \(q\) tend to have larger initial separations. Systems with larger initial Roche lobe radii also tend to have larger initial separations. Combining this with mass lost due to winds, the largest periods occur for systems in the top right.}
+    \centering
+    \incplot{w12-grid-4}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This the amount of thermal pulses the donor star experienced before becoming a post-AGB star. Perhaps the result is unsurprising. Stars starting with lower initial Roche lobe radii tend to lose their envelope quicker and thus experience less pulses. I guess the most interesting thing here is that stars with the same initial Roche lobe radius can experience a different number of thermal pulses depending on the mass of their companion.}
+    \centering
+    \incplot{w12-grid-5}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This figure shows the number ratio of C/O at the time of the maximum mass transfer rate. Since most of the mass is transferred during a single mass transfer episode during a thermal pulse, this is a good first approximation for the C/O-ratio of the material that gets accreted onto the accretor. It follows the plot above nicely, which is very much expected. There is quite a sudden jump though in the C/O-ratio. I \emph{think} this is quite typical of TPAGB stars (at least \(2\;M_\odot \) TPAGB stars). }
+    \centering
+    \incplot{w12-grid-6}
+\end{figure}
+
+I think these plots, in particular the plot showing the C/O-ratio and the plot showing the final period, highlight that it is difficult to predict the orbital properties of short period barium stars when assuming conservative RLOF mass transfer. Some mass probably has to be lost at the accretor to shrink the orbit sufficiently to achieve short period binaries.
+
+
+\newsubsection{\texorpdfstring{$R_\text{RL} = 469.24\;R_\odot $}{R\_RL = 469.24 Rsun}}\label{ssec:g2}
+
+\bibliography{master.bib}
+\end{document}

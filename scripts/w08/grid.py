@@ -159,6 +159,7 @@ for i, qs in enumerate(np.round(np.linspace(0.4, 1, 7), 2)):
     Rs = []
 
     for R, model in grid.get_q_slice(qs):
+        print(R)
         if model.env_mass[-1] > 0.01:
             continue
         else:

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 782.77
+      model_number:        16738
+      star_age:     4.6649105523319752E+05
+      num_retries:          558
+      log_rel_run_E_err:        -2.9616577802145190
+      steps:        53562
+      retries:          558
+      redos:            0
+      solver_calls_made:        54120
+      solver_calls_failed:          558
+      solver_iterations:       270538
