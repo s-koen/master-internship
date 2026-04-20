@@ -20,6 +20,94 @@
 \setuplayout
 \section{Analytic}\label{sec:1}
 I am basing my implementation on the results from \citet{soberman1997}.
+
+The code below shows my implementation.
+\begin{minted}[fontsize=\small]{py}
+class CombineEvolve:
+    def __init__(self, alpha, beta, delta, gamma, qs, A=1, M_1_i=2):
+        self.alpha = alpha  # fraction lost from donor as wind
+        self.beta = beta  # fraction lost from accretor as wind
+        self.delta = delta  # fraction transferred to CCT
+        self.gamma = gamma  # measure for CCT distance
+        self.epsilon = 1 - self.alpha - self.beta - self.delta
+        self.qs = 1 / qs # note that soberman1997 uses q = m_d / m_a
+        self.q0 = 1 / qs[0]
+
+        self.A = A  # enhancement factor
+        self.M_1_i = M_1_i  # initial mass of donor
+
+        self.curA = self._comp_curA()
+        self.curB = self._comp_curB()
+        self.curC = self._comp_curC()
+
+    def _comp_curA(self):
+        # equation B8 soberman1997
+        return self.A * self.alpha + self.gamma * self.delta
+
+    def _comp_curB(self):
+        # equation B9 soberman1997
+        return (self.A * self.alpha + self.beta) / (1 - self.epsilon)
+
+    def _comp_curC(self):
+        # equation B10 soberman1997
+        term_1 = (self.gamma * self.delta * (1 - self.epsilon)) / self.epsilon
+        term_2 = (self.A * self.alpha * self.epsilon) / (1 - self.epsilon)
+        term_3 = (self.beta) / (self.epsilon * (1 - self.epsilon))
+        return term_1 + term_2 + term_3
+
+    @property
+    def a_over_a0(self):
+        # table 5 soberman1997
+        term_1 = (self.qs / self.q0) ** (2 * self.curA - 2)
+        term_2 = ((1 + self.qs) / (1 + self.q0)) ** (1 - 2 * self.curB)
+        term_3 = ((1 + self.epsilon * self.qs) / (1 + self.epsilon * self.q0)) ** (
+            2 * self.curC + 3
+        )
+        return term_1 * term_2 * term_3
+
+    @property
+    def M_tot_over_M_tot0(self):
+        # table 5 soberman1997
+        term_1 = (1 + self.qs) / (1 + self.q0)
+        term_2 = ((1 + self.epsilon * self.qs) / (1 + self.epsilon * self.q0)) ** (-1)
+        return term_1 * term_2
+
+    @property
+    def P_over_P0(self):
+        # table 5 soberman1997
+        term_1 = (self.qs / self.q0) ** (3 * self.curA - 3)
+        term_2 = ((1 + self.qs) / (1 + self.q0)) ** (1 - 3 * self.curB)
+        term_3 = ((1 + self.epsilon * self.qs) / (1 + self.epsilon * self.q0)) ** (
+            3 * self.curC + 5
+        )
+        return term_1 * term_2 * term_3
+
+    @property
+    def M_tot(self):
+        return self.M_1_i * (1 + 1 / self.q0) * self.M_tot_over_M_tot0
+
+    @property
+    def M_d(self):
+        return self.M_tot / (1 + 1 / self.qs)
+
+    @property
+    def M_a(self):
+        return 1 / self.qs * self.M_d
+
+
+\end{minted}
+
+
+First, I want to compare my implementation of the equations from \citet{soberman1997} with my results from week 10, which are specifically derived for the case of conservative mass transfer. This aligns with \(\varepsilon = 1\) and \(\alpha ,\beta \) and \(\delta =0\).
+
+Plugging these values into my \citet{soberman1997} implementation for a given starting \(q\), we arrive at the following plot:
+
+\begin{figure}[ht]
+    \marginfignote{0}{The curves align, and show the expected behaviour. The ratio of \(a_\text{f}/a_\text{i}\) has a minimum at \(q=1\).}
+    \centering
+    \incplot{w12-analytic-test}
+\end{figure}
+
 \begin{figure}[ht]
     \marginfignote{4}{The plot shows four different evolutions. The green and blue lines show a binary system where mass is lost via isotropic winds, while the orange and red lines show a binary system where mass is transferred.}
     \marginfignote{12}{In the case of conservative mass transfer, the lines for the donor and accretor are symmetric, which makes sense. In the case of isotropic winds, the accretor does not change, which also makes sense.}
@@ -27,6 +115,62 @@ I am basing my implementation on the results from \citet{soberman1997}.
     \centering
     \incplot{w12-analytic-1}
 \end{figure}
+
+We can analytically compute a grid of models, similar to the grid of models that we simulate using MESA.
+
+\newsubsection{Grids}
+\begin{figure}[ht]
+    \marginfignote{0}{For example, here I show the final orbital period for models that undergo exclusively conservative mass transfer (\(\alpha, \beta, \delta = 0\)). I make sure the evolution proceeds until the donor star has a mass of \(0.6\;M_\odot\), which is just the core. I think the results make perfect sense.}
+    \centering
+    \incplot{w12-analytic-grid1}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Similarly, we can plot the final orbital periods in the case of only wind mass loss and no accretion, corresponding to \(\alpha =1, \beta = \delta = 0\).}
+    \marginfignote{7}{Again, I think these results make sense. We have already seen that wind mass loss has an inverse \(q\) dependence on the initial to final period, with lower \(q\) generating a greater \(\frac{P}{P_\text{i}}\). Logically, the largest periods are now found for low \(q\) and high initial \(R_\text{RL}\). Overall the periods are smaller, which is also expected.}
+    \centering
+    \incplot{w12-analytic-grid2}
+\end{figure}
+
+We can also look at the effects of \(\alpha \) and \(\beta \) on the orbits.
+The first plot here shows how period changes with respect to the initial period. I made 9 different plots for increasing initial mass ratios. Every point corresponds with a binary system where the donor initially has a mass of \(2\;M_\odot \) and ends up with a mass of \(0.6\;M_\odot \). The plots are in the shape of triangles as the following condition \emph{needs} to be true: \(\alpha + \beta < 1 \). 
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid4}
+\end{figure}
+
+As can be seen, the initial mass ratio quite significantly alters the effects of \(\alpha \) and \(\beta \). For relatively low initial mass ratios, the orbits will shrink in response to very high \(\beta \) and grow in response to very high \(\alpha \). The inverse is true for mass ratios close to unity.
+
+A very similar picture arises when we look at the final separation over the initial separation.
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid5}
+\end{figure}
+
+The qualitative behaviour is the same, but the actual differences in ratios are much smaller. Interestingly as well, for low \(q\), the orbits can actually shrink with respect to the initial orbital separation.
+
+\nextpage
+These results were not really what I expected. I thought the orbits would \emph{always} shrink when a significant fraction of the mass is lost when accreted onto the accretor. However, this does not seem to be the case. To get a better intuition for the cases where the orbit does shrink with respect to the \(\beta = 0\) case, I plot the final and average mass ratios of the binary evolution below. These plots are very structured, which makes sense. The plots also \emph{share} a diverging colorscale. The divergence point lies at \(\log q = 0\), which aligns with the case where the stars are equally heavy. 
+
+I start by plotting the final mass ratios.
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid6}
+\end{figure}
+
+Interestingly, \sidenote{But after a little bit of thought, very unsurprisingly!} nearly all systems, except for the initially very unequal ones with nearly no accretion, reach a final \(q\) that is greater than unity. I \emph{think}, at this point, losing mass at the donor causes the system to lose more angular momentum than losing mass at the accretor.
+
+Below I plot the same figure, now for the average \(q\) during the evolution.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid7}
+\end{figure}
+
+Now, we see that the systems where \(q < 1\) align with the systems where the change in period for \(\beta > 0\) is less than for \(\beta =0\).
+
+
+
 
 \newsection{Grid}
 
@@ -79,7 +223,7 @@ I think the third to last column has some surprising results. I investigate this
     \incplot{w12-grid-6}
 \end{figure}
 
-I think these plots, in particular the plot showing the C/O-ratio and the plot showing the final period, highlight that it is difficult to predict the orbital properties of short period barium stars when assuming conservative RLOF mass transfer. Some mass probably has to be lost at the accretor to shrink the orbit sufficiently to achieve short period binaries.
+I think these plots, in particular the plot showing the C/O-ratio and the plot showing the final period, highlight that it is difficult to create the orbital properties of short period barium stars when assuming conservative RLOF mass transfer. Some mass probably has to be lost at the accretor to shrink the orbit sufficiently to achieve short period binaries.
 
 
 \newsubsection{\texorpdfstring{$R_\text{RL} = 469.24\;R_\odot $}{R\_RL = 469.24 Rsun}}\label{ssec:g2}
