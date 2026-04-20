@@ -104,6 +104,24 @@ def period_from_roche_lobe(RL, q, M_d):
 
 grid = MesaGrid(f"{MASTER}/tides-grid-2")
 
+grid_fine = MesaGrid(f"{MASTER}/tides-grid-3")
+
+# %%
+
+grid.merge(grid_fine)
+
+# %%
+
+for i in range(5, 15):
+    for R, q, model in grid.get_R1_index(i):
+        if q != 0.5:
+            continue
+        plt.plot(model.env_mass, model.star.rl_1, alpha=0.8, c=f"C{i-5}")
+        print(R)
+        plt.plot(model.env_mass, model.star.R, alpha=0.3, c=f"C{i-5}")
+
+plt.show()
+
 # %%
 
 for i, (R, q, model) in enumerate(grid.get_R1_index(4)):
@@ -112,6 +130,7 @@ for i, (R, q, model) in enumerate(grid.get_R1_index(4)):
     plt.plot(model.env_mass, model.star.R, alpha=0.3, c=f"C{i}")
 
 plt.show()
+
 
 # %%
 import numpy as np
@@ -761,4 +780,677 @@ for i, (R, q, model) in enumerate(grid.get_R1_index(7)):
     )
 
 plt.show()
+# %%
+
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid_fine.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid_fine.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid_fine.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+        continue
+
+    if model.age[0] < 0:
+        ref_TP_count = 0
+    else:
+        index = np.argwhere(np.abs(grid.ref_tpagb.star_age - model.age[0]) < 1000)[0][0]
+        ref_TP_count = grid.ref_tpagb.TP_count[index]
+    Z[i, j] = model.star.TP_count[-1] + ref_TP_count
+
+
+dR = np.diff(R_vals)
+
+print(R_vals)
+R_edges = np.concatenate(
+    [[R_vals[0] - dR[0] / 2], R_vals[:-1] + dR / 2, [R_vals[-1] + dR[-1] / 2]]
+)
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+
+print(R_edges)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+mesh = ax.pcolormesh(
+    R_edges,
+    q_edges,
+    Z,
+    cmap="viridis",
+    shading="auto",
+)
+
+
+plt.colorbar(mesh, label=r"Final TP count")
+
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+fig, axs = plt.subplots(
+    3,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+axs[-1].axis("off")
+axs[-2].axis("off")
+
+axs[-3].set_xlabel("Star age (yr)")
+axs[-4].set_xlabel("Star age (yr)")
+axs[-5].set_xlabel("Star age (yr)")
+axs[0].set_ylabel("Roche lobe radius ($R_\\odot$)")
+axs[3].set_ylabel("Roche lobe radius ($R_\\odot$)")
+axs[6].set_ylabel("Roche lobe radius ($R_\\odot$)")
+
+for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.age,
+                model.star.rl_1,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.1,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="left",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[-2].legend(ncols=1, handles=ls, loc="upper left")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid_fine.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid_fine.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid_fine.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+        continue
+
+    if model.age[0] < 0:
+        ref_TP_count = 0
+    else:
+        index = np.argwhere(np.abs(grid.ref_tpagb.star_age - model.age[0]) < 1000)[0][0]
+        ref_TP_count = grid.ref_tpagb.TP_count[index]
+    Z[i, j] = model.star.period_days[-1]
+
+
+dR = np.diff(R_vals)
+
+print(R_vals)
+R_edges = np.concatenate(
+    [[R_vals[0] - dR[0] / 2], R_vals[:-1] + dR / 2, [R_vals[-1] + dR[-1] / 2]]
+)
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+
+print(R_edges)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+mesh = ax.pcolormesh(
+    R_edges,
+    q_edges,
+    Z,
+    cmap="viridis",
+    shading="auto",
+)
+
+
+plt.colorbar(mesh, label=r"Period (days)")
+
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    3,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+axs[-1].axis("off")
+axs[-2].axis("off")
+
+# for axis in axs:
+#     axis.invert_xaxis()
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.star.star_2_mass / model.star.star_1_mass,
+                model.star.binary_separation,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.1,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="left",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[-3].set_xlabel("$q$")
+axs[-4].set_xlabel("$q$")
+axs[-5].set_xlabel("$q$")
+axs[0].set_ylabel("Orbital separation ($R_\\odot$)")
+axs[3].set_ylabel("Orbital separation ($R_\\odot$)")
+axs[6].set_ylabel("Orbital separation ($R_\\odot$)")
+
+
+axs[-2].legend(ncols=1, handles=ls, loc="upper left")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-4.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid_fine.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid_fine.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid_fine.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+        continue
+
+    if model.age[0] < 0:
+        ref_TP_count = 0
+    else:
+        index = np.argwhere(np.abs(grid.ref_tpagb.star_age - model.age[0]) < 1000)[0][0]
+        ref_TP_count = grid.ref_tpagb.TP_count[index]
+    Z[i, j] = model.star.TP_count[-1] + ref_TP_count
+
+
+dR = np.diff(R_vals)
+
+print(R_vals)
+R_edges = np.concatenate(
+    [[R_vals[0] - dR[0] / 2], R_vals[:-1] + dR / 2, [R_vals[-1] + dR[-1] / 2]]
+)
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+
+print(R_edges)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+mesh = ax.pcolormesh(
+    R_edges,
+    q_edges,
+    Z,
+    cmap="viridis",
+    shading="auto",
+)
+
+
+plt.colorbar(mesh, label=r"Final TP count")
+
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+fig, axs = plt.subplots(
+    3,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+axs[-1].axis("off")
+axs[-2].axis("off")
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.age,
+                model.star.rl_1,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.1,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="left",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[-2].legend(ncols=1, handles=ls, loc="upper left")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid_fine.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid_fine.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid_fine.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+        continue
+
+    if model.age[0] < 0:
+        ref_TP_count = 0
+    else:
+        index = np.argwhere(np.abs(grid.ref_tpagb.star_age - model.age[0]) < 1000)[0][0]
+        ref_TP_count = grid.ref_tpagb.TP_count[index]
+    Z[i, j] = model.star.period_days[-1]
+
+
+dR = np.diff(R_vals)
+
+print(R_vals)
+R_edges = np.concatenate(
+    [[R_vals[0] - dR[0] / 2], R_vals[:-1] + dR / 2, [R_vals[-1] + dR[-1] / 2]]
+)
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+
+print(R_edges)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+mesh = ax.pcolormesh(
+    R_edges,
+    q_edges,
+    Z,
+    cmap="viridis",
+    shading="auto",
+)
+
+
+plt.colorbar(mesh, label=r"Period (days)")
+
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    3,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+axs[-1].axis("off")
+axs[-2].axis("off")
+
+# for axis in axs:
+#     axis.invert_xaxis()
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.star.star_2_mass / model.star.star_1_mass,
+                model.star.binary_separation,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.1,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="left",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[-2].legend(ncols=1, handles=ls, loc="upper left")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-4.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+
+fig, axs = plt.subplots(
+    3,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+axs[-1].axis("off")
+axs[-2].axis("off")
+
+# for axis in axs:
+#     axis.invert_xaxis()
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.star.star_2_mass / model.star.star_1_mass,
+                model.star.R / model.star.rl_1,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.9,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="right",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[-2].legend(ncols=1, handles=ls, loc="upper left")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-5.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+fig, axs = plt.subplots(
+    1,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=0.45),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.6, 0.7, 0.9]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.age,
+                model.star.rl_1,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R:.0f}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.1,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="left",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[0].set_xlim(859700, 860600)
+axs[0].set_ylim(240, 450)
+
+axs[1].set_xlim(859700, 860600)
+axs[1].set_ylim(265, 420)
+
+axs[2].set_xlim(977500, 978450)
+axs[2].set_ylim(295, 445)
+
+fig.legend(ncols=5, handles=ls, loc="outside upper center")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-6.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=0.45),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.6, 0.7, 0.9]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.age,
+                model.star.R / model.star.rl_1,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R:.0f}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.1,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="left",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[0].set_xlim(859700, 860600)
+# axs[0].set_ylim(240,450)
+
+axs[1].set_xlim(859700, 860600)
+# axs[1].set_ylim(265,420)
+
+axs[2].set_xlim(977500, 978450)
+# axs[2].set_ylim(295,445)
+
+for ax in axs:
+    ax.hlines(
+        y=1, xmin=ax.get_xlim()[0], xmax=ax.get_xlim()[1], color="C9", linewidth=0.75
+    )
+
+
+fig.legend(ncols=5, handles=ls, loc="outside upper center")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-7.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
 # %%

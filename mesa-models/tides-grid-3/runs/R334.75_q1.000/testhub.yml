@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 755.26
+      model_number:        20923
+      star_age:     5.4340689706581377E+05
+      num_retries:          680
+      log_rel_run_E_err:        -2.8575087563907444
+      steps:        45853
+      retries:          680
+      redos:            0
+      solver_calls_made:        46533
+      solver_calls_failed:          680
+      solver_iterations:       230176

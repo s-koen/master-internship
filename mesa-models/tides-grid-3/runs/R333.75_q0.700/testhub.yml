@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 625.04
+      model_number:        21743
+      star_age:     3.3566857809128368E+05
+      num_retries:         1272
+      log_rel_run_E_err:        -2.9187273404463268
+      steps:        46136
+      retries:         1272
+      redos:            0
+      solver_calls_made:        47408
+      solver_calls_failed:         1272
+      solver_iterations:       237615

@@ -132,6 +132,18 @@ We can analytically compute a grid of models, similar to the grid of models that
     \incplot{w12-analytic-grid2}
 \end{figure}
 
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid-beta-only}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid-beta-only-2}
+\end{figure}
+
+
 We can also look at the effects of \(\alpha \) and \(\beta \) on the orbits.
 The first plot here shows how period changes with respect to the initial period. I made 9 different plots for increasing initial mass ratios. Every point corresponds with a binary system where the donor initially has a mass of \(2\;M_\odot \) and ends up with a mass of \(0.6\;M_\odot \). The plots are in the shape of triangles as the following condition \emph{needs} to be true: \(\alpha + \beta < 1 \). 
 \begin{figure}[ht]
@@ -168,6 +180,19 @@ Below I plot the same figure, now for the average \(q\) during the evolution.
 \end{figure}
 
 Now, we see that the systems where \(q < 1\) align with the systems where the change in period for \(\beta > 0\) is less than for \(\beta =0\).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid15}
+\end{figure}
+
+
+Another way to visualize this, is by tracing cross sections through the plots above for a much finer \(q\) spacing. We then obtain the following plots.
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid12}
+\end{figure}
+
 
 
 
@@ -227,6 +252,80 @@ I think these plots, in particular the plot showing the C/O-ratio and the plot s
 
 
 \newsubsection{\texorpdfstring{$R_\text{RL} = 469.24\;R_\odot $}{R\_RL = 469.24 Rsun}}\label{ssec:g2}
+
+\newsubsection{Fine Grid}
+
+In order to see how stable the results are to small variations in initial Roche lobe radius, I decided to simulate another grid. To test this, I decided to take a Roche lobe radius that I had already simulated and simulate 10 additional radii each differing by \(1\;R_\odot \). 
+
+I chose the reference radius as \(R_\text{RL} \approx 338.75\;R_\odot \). This is because for this radius, the binary systems with different \(q\) interacted during three different pulses, with some systems barely avoiding significant mass transfer. The systems also interact nicely during the middle to end of the TPAGB, so wind can have some effects while not overpowering the evolution.
+
+I was particularly interested in seeing how much the periods change with small perturbations in the initial Roche lobe radius. The plot below shows this.
+\begin{figure}[ht]
+    \marginfignote{0}{In some cases, the differences are quite drastic. Nearly identical starting orbits can end with very different separations. I think it is important to try to understand where these differences come from.}
+    \marginfignote{11}{Also, one of the models failed. It is interesting to look what caused this.}
+    \centering
+    \incplot{w12-grid-fine-2}
+\end{figure}
+
+Presumably, this is due to interactions during a different thermal pulse. To check, we can look at the final TP count of the binary systems.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Although not a perfect match (for example, \(q=0.9\) shows nearly all systems experiencing the same number of pulses while clear differences in final periods exist) there does seem to be some relation between the thermal pulse count and the jumps in final period.}
+    \centering
+    \incplot{w12-grid-fine-1}
+\end{figure}
+
+The plots below show the evolution of \emph{all} models of this fine grid. They are split by \(q\) values. This makes it easier to compare. These are thus able to show the time evolution of the models of a single column in the plots above.
+
+I start with a plot that shows the Roche lobe radius as a function of time.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-grid-fine-3}
+\end{figure}
+
+The first two plots are not very interesting, all models seem to interact during the same pulse. The models stay order, meaning initially tighter orbits remain tighter after the evolution and overall, the differences between the models do not seem to diverge \sidenote{except for maybe the gray model in the \(q=0.5\) plot.}. We see that the failing model in the \(q= 0.5\) plot failed very early on in the evolution, without a clear reason.
+
+From \(q=0.6\) onwards \sidenote{except for the \(q=0.8\) models}, we see some clear divergence in behaviour for some of the models.
+The divergence arises due to the tighter binaries just reaching the required conditions for significant RLOF while the more extended ones barely miss these conditions.
+
+Another behaviour starts to appear from \(q=0.6\) onwards. That is the reversal of the Roche lobe radii after mass transfer. While the order remains intact for the low \(q\) models, after \(q=0.6\), the initially tighter binaries end up at larger radii and the initially looser binaries. I really do not know what causes this.
+
+Below i plot the evolution of the binary separation as a function of \(q\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-grid-fine-4}
+\end{figure}
+
+In this plot, it very easy to spot mass transfer due to winds\sidenote{Straighter lines} and the regions of RLOF. It is clear that for greater \(q\), winds become more important. This must be because the smaller \(q\) models are able to sustain RLOF for longer before their orbits become too wide.
+
+Actually, for these radii, the cut-off for RLOF seems to lie at about \(q=3\). I am not entirely sure why this is and it probably has to do with the ability of the star to expand in response to mass loss.
+
+The plot below shows the ratio of the star radius over the Roche lobe radius again as a function of the mass ratio.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-grid-fine-5} 
+\end{figure}
+
+The same features are visible here. The last subplots get very messy, because the amount of mass transferred during the pulses is apparently very variable in these cases.
+
+\nextpage
+
+Lastly, we can zoom in a bit so hopefully see the separation between models that just barely start a RLOF mass transfer episodes and models that barely miss it. I look at the \(q=0.6, q=0.7\) and \(q=0.9\) models because as seen in the figures above, there are clear separations visible here.
+
+The upper panels show the Roche lobe radius, while the lower panels show the ratio. Unsurprisingly\sidenote{But still kind of cool to see!}
+, we see that models that fail to reach \(R_\text{star}/ R_\text{RL} > 1\) do not start their mass trasnfer episode. In this case, the Roche lobe radius shrinks in response to a narrow avoidance. Obviously, in response to the mass transfer episode, the Roche lobe radius increases significantly and a clear divide originates.
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-grid-fine-6}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-grid-fine-7}
+\end{figure}
+
 
 \bibliography{master.bib}
 \end{document}

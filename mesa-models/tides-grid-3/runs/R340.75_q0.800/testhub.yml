@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 546.23
+      model_number:        18135
+      star_age:     3.2120128110460524E+05
+      num_retries:          807
+      log_rel_run_E_err:        -2.9365492451647066
+      steps:        40792
+      retries:          807
+      redos:            0
+      solver_calls_made:        41599
+      solver_calls_failed:          807
+      solver_iterations:       206981

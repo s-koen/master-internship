@@ -211,5 +211,23 @@ class MesaGrid:
             (R1, self.models[(R1, q)]) for R1 in self.R1_vals if (R1, q) in self.models
         ]
 
+    def _rebuild_axes(self):
+        """recompute R1_vals and q_vals from models"""
+        self.R1_vals = {R1 for (R1, _) in self.models.keys()}
+        self.q_vals = {q for (_, q) in self.models.keys()}
+
+    def merge(self, other, overwrite=False):
+
+        for (R1, q), model in other.models.items():
+
+            if (R1, q) in self.models and not overwrite:
+                continue
+
+            self.models[(R1, q)] = model
+
+        # rebuild axes from keys
+        self._rebuild_axes()
+        self._finalize_grid()
+
 
 # %%

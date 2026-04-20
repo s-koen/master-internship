@@ -38,7 +38,7 @@ class CombineEvolve:
         self.gamma = gamma  # measure for CCT distance
         self.epsilon = 1 - self.alpha - self.beta - self.delta
         self.qs = 1 / qs
-        self.q0 = qs[0]
+        self.q0 = 1 / qs[0]
 
         self.A = A  # enhancement factor
         self.M_1_i = M_1_i  # initial mass of donor
@@ -480,6 +480,158 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
+plt.xlabel("Roche lobe radius ($R_\\odot$)")
+plt.ylabel("$q$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+alpha_test = 0
+beta_test = 1 - 1e-10
+delta_test = 0
+
+RLs = np.logspace(np.log10(150), np.log10(650), 150)
+qs = np.linspace(0.4, 1, 150)
+
+logR = np.log10(RLs)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(RLs)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, RL in enumerate(RLs):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        qs = np.linspace(q, q_f(q, 2, 0.6, alpha_test, beta_test, delta_test), 100)
+        orbit = CombineEvolve(alpha_test, beta_test, delta_test, 0, qs)
+
+        # Z[i, j] = get_separation(RL, q) * orbit.a_over_a0[-1]
+        Z[i, j] = get_period(
+            get_separation(RL, q) * orbit.a_over_a0[-1], orbit.M_tot[-1]
+        )
+
+mesh = plt.pcolormesh(
+    R_edges, q_edges, Z, cmap="viridis", shading="auto", rasterized=True
+)
+
+plt.colorbar(mesh, label="Period (days)")
+plt.xscale("log")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w12-analytic-grid-beta-only.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Roche lobe radius ($R_\\odot$)")
+plt.ylabel("$q$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+alpha_test = 0
+beta_test = 1 - 1e-10
+delta_test = 0
+
+RLs = np.logspace(np.log10(150), np.log10(650), 150)
+qs = np.linspace(0.4, 1, 150)
+
+logR = np.log10(RLs)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(RLs)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, RL in enumerate(RLs):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        qs = np.linspace(q, q_f(q, 2, 0.6, alpha_test, beta_test, delta_test), 100)
+        ref_qs = np.linspace(q, q_f(q, 2, 0.6, 1e-10, 1e-10, delta_test), 100)
+
+        orbit = CombineEvolve(alpha_test, beta_test, delta_test, 0, qs)
+        ref_orbit = CombineEvolve(1e-10, 1e-10, delta_test, 0, ref_qs)
+
+        # Z[i, j] = get_separation(RL, q) * orbit.a_over_a0[-1]
+        Z[i, j] = np.log10(
+            get_period(get_separation(RL, q) * orbit.a_over_a0[-1], orbit.M_tot[-1])
+            / get_period(
+                get_separation(RL, q) * ref_orbit.a_over_a0[-1], ref_orbit.M_tot[-1]
+            )
+        )
+
+
+mesh = plt.pcolormesh(
+    R_edges,
+    q_edges,
+    Z,
+    cmap="RdBu_r",
+    shading="auto",
+    rasterized=True,
+    vmin=-np.nanmax([-np.nanmin(Z), np.nanmax(Z)]),
+    vmax=np.nanmax([-np.nanmin(Z), np.nanmax(Z)]),
+)
+
+cbar = plt.colorbar(
+    mesh,
+    label="$P_{\\textrm{f}, \\beta = 1} / P_{\\textrm{f}, \\beta = 0}$",
+)
+cbar.set_ticks(
+    ticks=[-0.3, -0.15, 0, 0.15, 0.3],
+    labels=[
+        f"{10**-0.3:.2f}",
+        f"{10**-0.15:.2f}",
+        "1",
+        f"{10**0.15:.2f}",
+        f"{10**0.3:.2f}",
+    ],
+)
+plt.xscale("log")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w12-analytic-grid-beta-only-2.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
 plt.xlabel(r"$\alpha$")
 plt.ylabel(r"$\beta$")
 
@@ -718,7 +870,7 @@ fig, axs = plt.subplots(
     3,
     sharex=True,
     sharey=True,
-    figsize=set_size(full, height=1),
+    figsize=set_size(full, height=0.9),
     constrained_layout=True,
 )
 axs = axs.flatten()
@@ -824,7 +976,7 @@ fig, axs = plt.subplots(
     3,
     sharex=True,
     sharey=True,
-    figsize=set_size(full, height=1),
+    figsize=set_size(full, height=0.9),
     constrained_layout=True,
 )
 axs = axs.flatten()
@@ -890,8 +1042,8 @@ for a, q in enumerate(qss):
         cmap="RdBu_r",
         shading="auto",
         rasterized=True,
-        vmin=-0.7,
-        vmax=0.7,
+        vmin=-0.6,
+        vmax=0.6,
     )
 
 plt.colorbar(mesh, label=r"$\log\langle q\rangle$", ax=axs[5])
@@ -915,7 +1067,543 @@ axs[3].set_ylabel(r"$\beta$")
 axs[6].set_ylabel(r"$\beta$")
 
 plt.savefig(
-    "/home/koen/LaTeX-setup/plots/w12-analytic-grid6.pgf", format="pgf", dpi=600
+    "/home/koen/LaTeX-setup/plots/w12-analytic-grid7.pgf", format="pgf", dpi=600
 )
 plt.show()
 plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.75), constrained_layout=True
+)
+
+plt.xlabel("Star mass $M_\\odot$")
+plt.ylabel("$P / P_i$")
+
+
+for q_i in np.linspace(0.125, 1.125, 3):
+    alpha = 1e-10
+    beta = 1e-10
+    qs = np.linspace(q_i, q_f(q_i, 2, 0.6, alpha, beta, 0), 100)
+    wind = CombineEvolve(alpha=alpha, beta=beta, delta=0, gamma=0, qs=qs)
+    plt.plot(
+        wind.M_d,
+        wind.P_over_P0,
+        label=f"$\\alpha={alpha:.2f}$, $\\beta = {beta:.2f}$,  $q_i={q_i}$",
+    )
+
+    alpha = 0.25
+    beta = 0.25
+    qs = np.linspace(q_i, q_f(q_i, 2, 0.6, alpha, beta, 0), 100)
+    wind = CombineEvolve(alpha=alpha, beta=beta, delta=0, gamma=0, qs=qs)
+    plt.plot(
+        wind.M_d,
+        wind.P_over_P0,
+        label=f"$\\alpha={alpha:.2f}$, $\\beta = {beta:.2f}$,  $q_i={q_i}$",
+    )
+
+    alpha = 0.5
+    beta = 0.5 - 1e-10
+    qs = np.linspace(q_i, q_f(q_i, 2, 0.6, alpha, beta, 0), 100)
+    wind = CombineEvolve(alpha=alpha, beta=beta, delta=0, gamma=0, qs=qs)
+    plt.plot(
+        wind.M_d,
+        wind.P_over_P0,
+        label=f"$\\alpha={alpha:.2f}$, $\\beta = {beta:.2f}$,  $q_i={q_i}$",
+    )
+
+
+fig.legend(loc="outside upper center", ncols=2)
+axs.set_yscale("log")
+axs.invert_xaxis()
+
+axs.tick_params(axis="y", which="minor", length=0)
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-analytic-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+import matplotlib as mpl
+
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
+plt.xlabel(r"$\log(q)$")
+plt.ylabel("$\\alpha$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+alpha_test = 0 + 1e-10
+beta_test = 0.0
+delta_test = 0
+
+alphas = np.linspace(1e-10, 1 - 1e-10, 150)
+qs = np.linspace(-1.5, 1.5, 150)
+
+dalpha = np.diff(alphas)
+alpha_edges = np.concatenate(
+    [
+        [alphas[0] - dalpha[0] / 2],
+        alphas[:-1] + dalpha / 2,
+        [alphas[-1] + dalpha[-1] / 2],
+    ]
+)
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(alphas)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, alpha in enumerate(alphas):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        qs = np.linspace(10**q, q_f(10**q, 2, 0.6, alpha, beta_test, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta_test, delta_test, 0, qs)
+        qs_ref = np.linspace(10**q, q_f(10**q, 2, 0.6, 1e-10, 0, 0), 100)
+        orbit_ref = CombineEvolve(1e-10, beta_test, delta_test, 0, qs_ref)
+        val = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+        Z[i, j] = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+
+
+mesh = plt.pcolormesh(
+    q_edges,
+    alpha_edges,
+    Z.T,
+    cmap=cmap,
+    shading="auto",
+    rasterized=True,
+    norm=mpl.colors.LogNorm(vmin=0.05, vmax=20),
+)
+
+plt.colorbar(mesh, label="$a_{\\textrm{f},\\alpha} / a_{\\textrm{f},0}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-analytic-grid11.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+import matplotlib as mpl
+
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel(r"$\log(q)$")
+plt.ylabel("$\\alpha$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+alpha_test = 0 + 1e-10
+beta_test = 0.0
+delta_test = 0
+
+alphas = np.linspace(1e-10, 0.5 - 1e-10, 200)
+qs = np.linspace(-1.5, 1.5, 200)
+
+dalpha = np.diff(alphas)
+alpha_edges = np.concatenate(
+    [
+        [alphas[0] - dalpha[0] / 2],
+        alphas[:-1] + dalpha / 2,
+        [alphas[-1] + dalpha[-1] / 2],
+    ]
+)
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(alphas)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, alpha in enumerate(alphas):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        beta = alpha
+        qs = np.linspace(10**q, q_f(10**q, 2, 0.6, alpha, beta, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+        qs_ref = np.linspace(10**q, q_f(10**q, 2, 0.6, 1e-10, 0, 0), 100)
+        orbit_ref = CombineEvolve(1e-10, 0, delta_test, 0, qs_ref)
+        val = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+        if val < 0.05:
+            Z[i, j] = np.nan
+            continue
+        Z[i, j] = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+
+
+mesh = plt.pcolormesh(
+    q_edges,
+    alpha_edges,
+    Z.T,
+    cmap=cmap,
+    shading="auto",
+    rasterized=True,
+    norm=mpl.colors.LogNorm(vmin=0.05, vmax=20),
+)
+
+plt.colorbar(mesh, label="$a_{\\textrm{f},\\alpha} / a_{\\textrm{f},0}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-analytic-grid12.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+import matplotlib as mpl
+
+qmin = -1
+qmax = 0.5
+num = 500
+
+vmin = 0.333333
+vmax = 3
+
+cmap = "RdBu_r"
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 3, sharex=True, figsize=set_size(full, height=0.38), constrained_layout=True
+)
+
+axs[0].set_xlabel(r"$\log(q_\textrm{i})$")
+axs[1].set_xlabel(r"$\log(q_\textrm{i})$")
+axs[2].set_xlabel(r"$\log(q_\textrm{i})$")
+axs[0].set_ylabel("$\\alpha$")
+axs[1].set_ylabel("$\\alpha = \\beta$")
+axs[2].set_ylabel("$\\beta$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+alpha_test = 0 + 1e-10
+beta_test = 0.0
+delta_test = 0
+
+alphas = np.linspace(1e-10, 1 - 1e-10, num)
+qs = np.linspace(qmin, qmax, num)
+
+dalpha = np.diff(alphas)
+alpha_edges = np.concatenate(
+    [
+        [alphas[0] - dalpha[0] / 2],
+        alphas[:-1] + dalpha / 2,
+        [alphas[-1] + dalpha[-1] / 2],
+    ]
+)
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+# ---
+
+Z = np.full((len(qs), len(alphas)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, alpha in enumerate(alphas):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        beta = 0
+        qs = np.linspace(10**q, q_f(10**q, 2, 0.6, alpha, beta, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+        qs_ref = np.linspace(10**q, q_f(10**q, 2, 0.6, 1e-10, 0, 0), 100)
+        orbit_ref = CombineEvolve(1e-10, 0, delta_test, 0, qs_ref)
+        val = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+        if val < 0.05:
+            Z[i, j] = np.nan
+            continue
+        Z[i, j] = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+
+
+mesh = axs[0].pcolormesh(
+    q_edges,
+    alpha_edges,
+    Z.T,
+    cmap=cmap,
+    shading="auto",
+    rasterized=True,
+    norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax),
+)
+
+# ---
+
+alpha_test = 0 + 1e-10
+beta_test = 0.0
+delta_test = 0
+
+alphas = np.linspace(1e-10, 1 - 1e-10, num)
+qs = np.linspace(qmin, qmax, num)
+
+dalpha = np.diff(alphas)
+alpha_edges = np.concatenate(
+    [
+        [alphas[0] - dalpha[0] / 2],
+        alphas[:-1] + dalpha / 2,
+        [alphas[-1] + dalpha[-1] / 2],
+    ]
+)
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(alphas)), 10.0)
+
+mesh = axs[1].pcolormesh(
+    q_edges,
+    alpha_edges,
+    Z.T,
+    cmap="Greys",
+    shading="auto",
+    rasterized=True,
+    vmin=0,
+    vmax=40,
+)
+
+for i, q in enumerate(qs):
+    for j, alpha in enumerate(alphas):
+        if alpha > 0.5 - 1e-10:
+            Z[i, j] = np.nan
+            continue
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        beta = alpha
+        qs = np.linspace(10**q, q_f(10**q, 2, 0.6, alpha, beta, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+        qs_ref = np.linspace(10**q, q_f(10**q, 2, 0.6, 1e-10, 0, 0), 100)
+        orbit_ref = CombineEvolve(1e-10, 0, delta_test, 0, qs_ref)
+        val = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+        # if val < vmin:
+        #     Z[i, j] = np.nan
+        #     continue
+        Z[i, j] = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+
+
+mesh = axs[1].pcolormesh(
+    q_edges,
+    alpha_edges,
+    Z.T,
+    cmap=cmap,
+    shading="auto",
+    rasterized=True,
+    norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax),
+)
+
+# ---
+
+alpha_test = 0 + 1e-10
+beta_test = 0.0
+delta_test = 0
+
+alphas = np.linspace(1e-10, 1 - 1e-10, num)
+qs = np.linspace(qmin, qmax, num)
+
+dalpha = np.diff(alphas)
+alpha_edges = np.concatenate(
+    [
+        [alphas[0] - dalpha[0] / 2],
+        alphas[:-1] + dalpha / 2,
+        [alphas[-1] + dalpha[-1] / 2],
+    ]
+)
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(alphas)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, alpha in enumerate(alphas):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        beta = alpha
+        alpha = 0
+        qs = np.linspace(10**q, q_f(10**q, 2, 0.6, alpha, beta, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+        qs_ref = np.linspace(10**q, q_f(10**q, 2, 0.6, 1e-10, 0, 0), 100)
+        orbit_ref = CombineEvolve(1e-10, 0, delta_test, 0, qs_ref)
+        val = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+        # if val < vmin:
+        #     Z[i, j] = np.nan
+        #     continue
+        Z[i, j] = orbit.a_over_a0[-1] / orbit_ref.a_over_a0[-1]
+
+
+mesh = axs[2].pcolormesh(
+    q_edges,
+    alpha_edges,
+    Z.T,
+    cmap=cmap,
+    shading="auto",
+    rasterized=True,
+    norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax),
+)
+
+norm = mpl.colors.Normalize(vmin=np.log10(vmin), vmax=np.log10(vmax))
+
+plt.colorbar(
+    mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+    label="$\log(a_{\\textrm{f},\\alpha} / a_{\\textrm{f},0})$",
+    ax=axs[1],
+    orientation="horizontal",
+    location="top",
+    extend="both",
+)
+
+cmap = mpl.cm.bwr
+bounds = [-1, 15]
+norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+cb = plt.colorbar(
+    mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+    label="$\\beta = 0$",
+    ax=axs[0],
+    orientation="horizontal",
+    location="top",
+    ticks=[],
+    aspect=100,
+    pad=0.05,
+    shrink=0,
+)
+cb.outline.set_visible(False)
+cb.ax.tick_params(size=0)
+
+cb = plt.colorbar(
+    mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+    label="$\\alpha = 0$",
+    ax=axs[2],
+    orientation="horizontal",
+    location="top",
+    ticks=[],
+    aspect=100,
+    pad=0.05,
+    shrink=0,
+)
+cb.outline.set_visible(False)
+cb.ax.tick_params(size=0)
+
+axs[1].text((qmin + qmax) / 2, 0.75, r"$\alpha = \beta$", ha="center", va="center")
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-analytic-grid12.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+# reproduce the grid like figures using q and RL.
+
+qss = np.linspace(0.125, 1.125, 9)
+
+fig, axs = plt.subplots(
+    3,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+axs = axs.flatten()
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+delta_test = 0
+
+alphas = np.linspace(1e-10, 1 - 1e-10, 1000)
+betas = np.linspace(1e-10, 1 - 1e-10, 1000)
+
+dalpha = np.diff(alphas)
+alpha_edges = np.concatenate(
+    [
+        [alphas[0] - dalpha[0] / 2],
+        alphas[:-1] + dalpha / 2,
+        [alphas[-1] + dalpha[-1] / 2],
+    ]
+)
+
+
+dbeta = np.diff(betas)
+beta_edges = np.concatenate(
+    [[betas[0] - dbeta[0] / 2], betas[:-1] + dbeta / 2, [betas[-1] + dbeta[-1] / 2]]
+)
+
+RL = 500
+
+
+for a, q in enumerate(qss):
+    Z = np.full((len(alphas), len(betas)), np.nan)
+    for i, beta in enumerate(betas):
+        for j, alpha in enumerate(alphas):
+
+            if alpha + beta >= 1 - 1e-9:
+                continue
+
+            qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta_test), 100)
+            orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+
+            ref_qs = np.linspace(q, q_f(q, 2, 0.6, 1e-10, 1e-10, delta_test), 100)
+
+            ref_orbit = CombineEvolve(1e-10, 1e-10, delta_test, 0, ref_qs)
+
+            # Z[i, j] = get_separation(RL, q) * orbit.a_over_a0[-1]
+            Z[i, j] = np.log10(orbit.a_over_a0[-1] / ref_orbit.a_over_a0[-1])
+
+    mesh = axs[a].pcolormesh(
+        alpha_edges,
+        beta_edges,
+        Z,
+        cmap="RdBu_r",
+        shading="auto",
+        rasterized=True,
+        vmin=-0.95 * np.nanmax([-np.nanmin(Z), np.nanmax(Z)]),
+        vmax=0.95 * np.nanmax([-np.nanmin(Z), np.nanmax(Z)]),
+    )
+
+    plt.colorbar(
+        mesh,
+        label=r"$a_{\textrm{f,}\alpha,\beta}/a_\textrm{f, cons}$",
+        ax=axs[a],
+        orientation="horizontal",
+        extend="both",
+        format=lambda x, _: f"{10**x:.2f}",
+    )
+
+for i, ax in enumerate(axs):
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.text(0.9, 0.9, f"$q_\\textrm{{i}} = {qss[i]}$", va="top", ha="right")
+
+
+axs[-1].set_xlabel(r"$\alpha$")
+axs[-2].set_xlabel(r"$\alpha$")
+axs[-3].set_xlabel(r"$\alpha$")
+axs[0].set_ylabel(r"$\beta$")
+axs[3].set_ylabel(r"$\beta$")
+axs[6].set_ylabel(r"$\beta$")
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w12-analytic-grid15.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
