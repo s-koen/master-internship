@@ -97,6 +97,7 @@ class CombineEvolve:
 
 \end{minted}
 
+\subsection{Exploring Effects of \texorpdfstring{\(\alpha \) and \(\beta \)}{alpha and beta}}
 
 First, I want to compare my implementation of the equations from \citet{soberman1997} with my results from week 10, which are specifically derived for the case of conservative mass transfer. This aligns with \(\varepsilon = 1\) and \(\alpha ,\beta \) and \(\delta =0\).
 
@@ -118,7 +119,7 @@ Plugging these values into my \citet{soberman1997} implementation for a given st
 
 We can analytically compute a grid of models, similar to the grid of models that we simulate using MESA.
 
-\newsubsection{Grids}
+\nextpage
 \begin{figure}[ht]
     \marginfignote{0}{For example, here I show the final orbital period for models that undergo exclusively conservative mass transfer (\(\alpha, \beta, \delta = 0\)). I make sure the evolution proceeds until the donor star has a mass of \(0.6\;M_\odot\), which is just the core. I think the results make perfect sense.}
     \centering
@@ -134,11 +135,14 @@ We can analytically compute a grid of models, similar to the grid of models that
 
 
 \begin{figure}[ht]
+    \marginfignote{0}{This plot shows the final periods for models with \(\alpha = \delta = 0\) and \(\beta = 1\), corresponding to the case of pure isotropic re-emission from the accretor.}
+    \marginfignote{8}{Since this plot looks very similar to the first plot, I think it is instructive to divide the values from this plot by the values from the first plot, and show these separately.}
     \centering
     \incplot{w12-analytic-grid-beta-only}
 \end{figure}
 
 \begin{figure}[ht]
+    \marginfignote{0}{The division is shown here. Clearly, the orbital periods do not get scaled by some constant factor but are quite strongly dependent on the (initial) mass ratio. For relatively low \(q\), the final orbit turns out to be smaller than it would be for conservative mass transfer. For relatively high \(q\), the final orbit is \emph{larger} in the case of isotropic re-emission.}
     \centering
     \incplot{w12-analytic-grid-beta-only-2}
 \end{figure}
@@ -194,12 +198,44 @@ Another way to visualize this, is by tracing cross sections through the plots ab
 \end{figure}
 
 
+\newsubsection{Exploring Effects of a Circumbinary Corotating Toroid}
 
+We have seen that winds and isotropic re-emission can have important effects on the properties of the binary orbits. \citet{soberman1997} however, describe another mechanisms that, according to their paper, can be very important for angular momentum loss from an orbit. This is the Circumbinary Corotating Toroid or CCT. It is described by two parameters, \(\delta \) and \(\gamma \). The efficiency of mass transport to the CCT is described by \(\beta \). It is the analogue to \(\alpha \) and \(\beta \) for winds and inefficient accretion. The second parameter, \(\gamma \) is a parameter that encodes the specific angular momentum of the ejected material and the specific angular momentum of the binary. In the case of the CCT, this is closely related to the ratio of the CCT and the binary such that as a good first approximation, one can take \(\gamma = \sqrt{a_\text{ring} / a_\text{bin}} \). The difficultly then is in taking a realistic value for \(a_\text{ring}\). \citet{soberman1997} propose a modest value of \(2.25 a_\text{bin}\), which corresponds to \(\gamma = 1.5\).
+
+With these values, we find the following effects on the orbit for varying strengths of \(\delta \) and a constant \(\gamma = 1.5\):
+
+\begin{figure}[ht]
+    \marginfignote{0}{I think these results are quite promising. The orbits are able to shrink \emph{significantly}, even for quite modest \(\delta \)-values. }
+    \marginfignote{5.5}{To me, it also makes quite a bit of sense for the binaries to develop a CCT. We already see that the donor star gets close to, and sometimes even exceeds the volume equivalent outer Roche lobe radius. Mass that is lost through this point would likely end up in a CCT.}
+    \marginfignote{16}{The difficult part in describing this effect is in the determination of the efficiency parameters. Maybe a constant \(\delta \) value makes some sense because the star will only really lose a lot of mass either through winds at the end of its evolution (by which this mechanism should be unaffected) and through RLOF which only happens during thermal pulses where \(R_\text{star} / R_\text{ROL}\) does not vary that much and is close to order unity throughout the mass transfer episode.}
+    \marginfignote{33}{Still, I am not sure \emph{what} \(\delta \) should be. Maybe this needs to be tuned to observations.}
+    \centering
+    \incplot{w12-analytic-ring}
+\end{figure}
+
+Below, I show the effects of the varying \(\delta \) for a grid of models with varying Roche lobe radii \(R_\text{RL}\) and mass ratios \(q\). I draw contour lines as well to make it easier to intepret the results. These systems do \emph{not} include any \(\alpha \) or \(\beta \), so this is strictly mass escaping to the CCT where the remainder of the mass is accreted. 
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-analytic-grid-delta}
+\end{figure}
+
+The observed barium binaries have periods anywhere from a couple hundred days up to tens of thousands of days. The short period binaries\sidenote{Say less than 1000 days} are hard to explain with WRLOF only, while having orbital periods that are too \emph{long} to be explained by a common envelope event. We should thus look for \(\delta \)-values that produce these short period systems, which we find for \(\delta \)-values as low as 0.2.
 
 
 \newsection{Grid}
 
 In this section, I analyze the grid that I simulated with starting Roche lobe Radii from \(150\;R_\odot \) to \(650\;R_\odot \) in \(10\) logarithmically spaced steps and 7 \(q=M_\text{a}/M_\text{d}\) values from \(0.4\) to \(1\).
+
+\subsection{Validation}
+
+The first thing i want to do is make sure the models are actually starting where and how they are supposed too. To this end, I plot the \lstinline[style=output, breaklines=true]|evolve.py| models from which the models are supposed to start, together with the MESA models for a couple of Roche lobe radii and the different \(q\) values. The plot below shows this.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w12-compare-with-evolve}
+\end{figure}
+I think this looks good! The models all start where I expect them to start and they, at least initially, follow the predictions from \lstinline[style=output, breaklines=true]|evolve.py| very closely.
 
 \subsection{General properties}
 I start with some general properties of the models displayed in a 2d grid.
@@ -251,7 +287,22 @@ I think the third to last column has some surprising results. I investigate this
 I think these plots, in particular the plot showing the C/O-ratio and the plot showing the final period, highlight that it is difficult to create the orbital properties of short period barium stars when assuming conservative RLOF mass transfer. Some mass probably has to be lost at the accretor to shrink the orbit sufficiently to achieve short period binaries.
 
 
-\newsubsection{\texorpdfstring{$R_\text{RL} = 469.24\;R_\odot $}{R\_RL = 469.24 Rsun}}\label{ssec:g2}
+\subsection{\texorpdfstring{$R_\text{RL} = 469.24\;R_\odot $}{R\_RL = 469.24 Rsun}}\label{ssec:g2}
+
+Below I plot the time evolution of the third to last column of the grid.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The plot immediately shows that there is quite some difference between the pulse at which the most significant mass transfer episode starts. The peculiar plot from the section above showed a clear break in the trend for the maximum ratio of the star radius over the Roche lobe radius for the two largest initial \(q\)-values. We see that these systems transfer mass in a later pulse. I think it makes sense that these systems then experience a larger ratio during the next pulse since they reach it at an earlier point in the next pulse. The star is then able to expand more.}
+    \centering
+    \incplot{w12-R400-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This plot more clearly shows that the radius of the stars becomes quite a bit larger for the two models that experience mass transfer during the later pulse. The stellar radius for the lowest mass ratio model is significantly smaller than that of the other models. This also makes sense as this model terminates during an earlier thermal pulse. The discontinuity thus is really just due to barely missing or barely hitting mass transfer during a pulse and if we sample a grid more finely, we should expect to see more of these discontinuities.}
+    \centering
+    \incplot{w12-R400-2}
+\end{figure}
+
 
 \newsubsection{Fine Grid}
 
@@ -324,6 +375,82 @@ The upper panels show the Roche lobe radius, while the lower panels show the rat
 \begin{figure}[ht]
     \centering
     \incplot{w12-grid-fine-7}
+\end{figure}
+
+Lastly, let's look at the model that failed to evolve. Looking at the terminal output, we see the following error message:
+\begin{minted}[fontsize=\small,breaklines]{text}
+ reduced varcontrol_target =    2.6000000000000100E-005
+ reduced varcontrol_target =    2.5000000000000099E-005
+ reduced varcontrol_target =    2.4000000000000099E-005
+ reduced varcontrol_target =    2.3000000000000098E-005
+ reduced varcontrol_target =    2.2000000000000098E-005
+ reduced varcontrol_target =    2.1000000000000097E-005
+ failed in do_saves_for_binaryphotos/b_x050
+DATE: 2026-04-19
+TIME: 00:01:51
+finished 
+\end{minted}
+
+This is the code that is responsible for error message:
+\begin{minted}[fontsize=\small]{fortran}
+! $MESA_DIR/binary/private/binary_photos.f90
+subroutine do_saves_for_binary(b, ierr)
+      type(binary_info), pointer :: b
+      integer, intent(out) :: ierr
+      integer :: iounit, id
+      character (len = strlen) :: str_photo, filename, iomsg, report_str
+
+      call string_for_model_number('x', b% model_number, b% photo_digits, str_photo)
+
+      filename = trim(trim(b% photo_directory) // '/b_' // str_photo)
+      report_str = trim('save ' // filename)
+      open(newunit = iounit, file = trim(filename), action = 'write', &
+         status = 'replace', iostat = ierr, iomsg = iomsg, form = 'unformatted')
+      if (ierr /= 0) then
+         write(*, *) 'failed in do_saves_for_binary', trim(filename)
+         return
+      end if
+      call binary_photo_write(b% binary_id, iounit)
+      close(iounit)
+
+      if (b% have_star_1) then
+         filename = trim(trim(b% s1% photo_directory) // '/1_' // str_photo)
+         call star_save_for_restart(b% s1% id, filename, ierr)
+         report_str = trim(trim(report_str) // ', ' // filename)
+      end if
+      if (b% have_star_2) then
+         filename = trim(trim(b% s2% photo_directory) // '/2_' // str_photo)
+         call star_save_for_restart(b% s2% id, filename, ierr)
+         report_str = trim(trim(report_str) // ', ' // filename)
+      end if
+      if (ierr /= 0) then
+         write(*, *) 'failed in do_saves_for_binary'
+         return
+      end if
+
+      write(*, *) trim(trim(report_str) // ' for model'), b% model_number
+\end{minted}
+
+It terminates at the first \lstinline[style=output, breaklines=true]|write(*,*)| call. I think it correctly gets the filename. I am not sure why the model actually fails, especially because all other ones did not fail.
+
+I was not able to reproduce the error locally on my desktop. The model ran without any trouble past the first few model save steps.
+
+\section{Choosing Wind and Accretion from the MESA models}
+
+As a sort of first attempt to reproduce the orbital periods from MESA, I try to chose some informed values for \(\alpha \) and \(\beta \) to hopefully find periods that are similar to the MESA models.
+
+I start by trying to recreate the mass accretion efficiency plot from the MESA models
+\begin{figure}[ht]
+    \marginfignote{0}{It is not perfect, but it matches the MESA models at least decently well. Here I model \(\alpha \) based on some uninformed \(q\) and \(R_\text{RL}\) formulas. I then set \(\beta = 0.3 \alpha \) to account for the accretion due to \citet{saladino2019} winds.}
+    \centering
+    \incplot{w12-match-mesa-2}
+\end{figure}
+
+Next, I plot the orbital periods
+\begin{figure}[ht]
+    \marginfignote{0}{The \citet{soberman1997} prescription overestimates the periods. I think this is due to the differences between the \citet{saladino2019} wind and the fast winds that \citet{soberman1997} assumes for this star. We have previously already seen that fast winds tend to increase the orbit, while \citet{saladino2018} winds can first make the orbit significantly shrink before undergoing mass transfer due to RLOF. After a mass ratio reversal, the orbit can increase.}
+    \centering
+    \incplot{w12-match-mesa-1}
 \end{figure}
 
 

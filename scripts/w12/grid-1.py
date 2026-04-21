@@ -104,6 +104,7 @@ def period_from_roche_lobe(RL, q, M_d):
 
 grid = MesaGrid(f"{MASTER}/tides-grid-2")
 
+# %%
 grid_fine = MesaGrid(f"{MASTER}/tides-grid-3")
 
 # %%
@@ -1115,53 +1116,6 @@ plt.close()
 
 
 # %%
-fig, axs = plt.subplots(
-    3,
-    3,
-    # sharex=True,
-    # sharey=True,
-    figsize=set_size(full, height=1),
-    constrained_layout=True,
-)
-
-axs = axs.flatten()
-axs[-1].axis("off")
-axs[-2].axis("off")
-
-plt.xlabel("")
-plt.ylabel("")
-
-for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
-    ls = []
-    for i in range(5, 15):
-        for R, q, model in grid.get_R1_index(i):
-            if q != q_ref:
-                continue
-            (l,) = axs[c].plot(
-                model.age,
-                model.star.rl_1,
-                c=f"C{i-5}",
-                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
-                linewidth=0.5,
-            )
-            ls.append(l)
-            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
-    axs[c].text(
-        0.1,
-        0.9,
-        f"$q = {q_ref}$",
-        ha="left",
-        va="top",
-        transform=axs[c].transAxes,
-    )
-
-axs[-2].legend(ncols=1, handles=ls, loc="upper left")
-plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-3.pgf", format="pgf")
-plt.show()
-plt.close()
-
-
-# %%
 
 
 R_vals = np.array(sorted(set(R for R, q, _ in grid_fine.iter_models())))
@@ -1235,57 +1189,6 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-2.pgf", format="pgf")
 plt.show()
 plt.close()
 
-
-# %%
-
-fig, axs = plt.subplots(
-    3,
-    3,
-    # sharex=True,
-    # sharey=True,
-    figsize=set_size(full, height=1),
-    constrained_layout=True,
-)
-
-axs = axs.flatten()
-axs[-1].axis("off")
-axs[-2].axis("off")
-
-# for axis in axs:
-#     axis.invert_xaxis()
-
-plt.xlabel("")
-plt.ylabel("")
-
-for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
-    ls = []
-    for i in range(5, 15):
-        for R, q, model in grid.get_R1_index(i):
-            if q != q_ref:
-                continue
-            (l,) = axs[c].plot(
-                model.star.star_2_mass / model.star.star_1_mass,
-                model.star.binary_separation,
-                c=f"C{i-5}",
-                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
-                linewidth=0.5,
-            )
-            ls.append(l)
-            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
-    axs[c].text(
-        0.1,
-        0.9,
-        f"$q = {q_ref}$",
-        ha="left",
-        va="top",
-        transform=axs[c].transAxes,
-    )
-
-axs[-2].legend(ncols=1, handles=ls, loc="upper left")
-plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-4.pgf", format="pgf")
-plt.show()
-plt.close()
-
 # %%
 
 
@@ -1331,6 +1234,14 @@ for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
         va="top",
         transform=axs[c].transAxes,
     )
+
+axs[-3].set_xlabel("$q$")
+axs[-4].set_xlabel("$q$")
+axs[-5].set_xlabel("$q$")
+axs[0].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+axs[3].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+axs[6].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+
 
 axs[-2].legend(ncols=1, handles=ls, loc="upper left")
 plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-5.pgf", format="pgf")
@@ -1386,6 +1297,13 @@ axs[1].set_ylim(265, 420)
 axs[2].set_xlim(977500, 978450)
 axs[2].set_ylim(295, 445)
 
+
+axs[0].set_xlabel("Star age (yr)")
+axs[1].set_xlabel("Star age (yr)")
+axs[2].set_xlabel("Star age (yr)")
+axs[0].set_ylabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+
+
 fig.legend(ncols=5, handles=ls, loc="outside upper center")
 plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-6.pgf", format="pgf")
 plt.show()
@@ -1424,11 +1342,11 @@ for c, q_ref in enumerate([0.6, 0.7, 0.9]):
             ls.append(l)
             # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
     axs[c].text(
-        0.1,
         0.9,
+        0.1,
         f"$q = {q_ref}$",
-        ha="left",
-        va="top",
+        ha="right",
+        va="bottom",
         transform=axs[c].transAxes,
     )
 
@@ -1446,9 +1364,385 @@ for ax in axs:
         y=1, xmin=ax.get_xlim()[0], xmax=ax.get_xlim()[1], color="C9", linewidth=0.75
     )
 
+axs[0].set_xlabel("Star age (yr)")
+axs[1].set_xlabel("Star age (yr)")
+axs[2].set_xlabel("Star age (yr)")
+axs[0].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+
 
 fig.legend(ncols=5, handles=ls, loc="outside upper center")
 plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-7.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    3,
+    3,
+    # sharex=True,
+    # sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+axs[-1].axis("off")
+axs[-2].axis("off")
+
+# for axis in axs:
+#     axis.invert_xaxis()
+
+plt.xlabel("")
+plt.ylabel("")
+
+for c, q_ref in enumerate([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    ls = []
+    for i in range(5, 15):
+        for R, q, model in grid.get_R1_index(i):
+            if q != q_ref:
+                continue
+            (l,) = axs[c].plot(
+                model.star.star_2_mass / model.star.star_1_mass,
+                model.star.eta_accretion,
+                c=f"C{i-5}",
+                label=f"$R_\\textrm{{RL}} = {R}\\;R_\\odot$",
+                linewidth=0.5,
+            )
+            ls.append(l)
+            # axs[c].plot(model.age, model.star.R, alpha=0.3, c=f"C{i-5}")
+    axs[c].text(
+        0.9,
+        0.9,
+        f"$q = {q_ref}$",
+        ha="right",
+        va="top",
+        transform=axs[c].transAxes,
+    )
+
+axs[-3].set_xlabel("$q$")
+axs[-4].set_xlabel("$q$")
+axs[-5].set_xlabel("$q$")
+axs[0].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+axs[3].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+axs[6].set_ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+
+
+axs[-2].legend(ncols=1, handles=ls, loc="upper left")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-fine-8.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+import mesa_reader as mr
+from scripts.general_utils.mesa_grid import MesaGrid
+import os
+import re
+import numpy as np
+
+import mesa_reader as mr
+
+sys.path.insert(1, "/home/koen/master-internship/scripts/evolve_mesa/")
+from scripts.evolve_mesa.constants import *
+from scripts.evolve_mesa.bin_input import *
+from scripts.evolve_mesa.read_mist_models import *
+from scripts.evolve_mesa.mrenv import *
+from scripts.evolve_mesa.orbit_evol import *
+from scripts.evolve_mesa.rgbf import *
+from scripts.evolve_mesa.star_model import *
+from scripts.evolve_mesa.grid_call import *
+
+# %%
+Star3 = read_stellar_models(
+    f"/home/koen/master-internship/mesa-models/standard-2msun-v3/"
+)[0]
+
+
+# %%
+#
+# def find_model(R):
+#     req_TP = 0
+#     lowering_R = True
+#     for key in list(models_dict.keys())[::-1]:
+#         model = models_dict[key]
+#         if model["R"] < (0.8 * R) and model["TP"] <= req_TP:
+#             print(model["R"])
+#             return model
+#         elif lowering_R:
+#             if model["R"] < (0.8 * R):
+#                 req_TP = model["TP"] - 1
+#                 lowering_R = False
+#
+def find_model(R):
+    searching_TP = True
+    for key in list(models_dict.keys())[::-1]:
+        model = models_dict[key]
+
+        # searching for the thermal pulse count
+        # for the first presumable RLOF
+        if searching_TP:
+            if model["R"] < 0.95 * R:
+                TP_collision = model["TP"]
+                searching_TP = False
+
+        # after finding the thermal pulse count,
+        # finding a model 2 thermal pulses earlier
+        if not searching_TP:
+            if model["TP"] <= (np.max([TP_collision - 2, 0])):
+                if model["TP"] == 0 and model["R"] < 0.95 * R:
+                    return model
+                if model["R"] < 0.9 * R:
+                    return model
+
+
+def get_model_dict():
+
+    models = [os.path.basename(f) for f in os.scandir(f"{grid_dir}/models")]
+    print(f"\nloading reference histories and models: {len(models)}\n")
+    pattern = re.compile(r"([0-9.]+)Rsun_TP([0-9]+)")
+
+    ms_history = mr.MesaData(f"{grid_dir}/reference-histories/ms.data")
+    gb_history = mr.MesaData(f"{grid_dir}/reference-histories/gb.data")
+    cheb_history = mr.MesaData(f"{grid_dir}/reference-histories/cheb.data")
+    eagb_history = mr.MesaData(f"{grid_dir}/reference-histories/eagb.data")
+    tpagb_history = mr.MesaData(f"{grid_dir}/reference-histories/tpagb.data")
+    histories = [ms_history, gb_history, cheb_history, eagb_history, tpagb_history]
+
+    models_R = []
+    models_TP = []
+    for model in models:
+        match = pattern.search(model)
+        R = float(match.group(1))
+        TP = int(match.group(2))
+        models_R.append(R)
+        models_TP.append(TP)
+
+    models_dict = {}
+    index = 0
+
+    while len(models_R) > 0:
+        arg = np.argmin(models_R)
+        models_dict[f"model {index}"] = {
+            "name": models.pop(arg),
+            "R": models_R.pop(arg),
+            "TP": models_TP.pop(arg),
+        }
+        index += 1
+
+    for key in models_dict.keys():
+        R = models_dict[key]["R"]
+        for history in histories:
+            try:
+                arg = np.where(history.R >= R - 1e-3)[0][0]
+                M = history.star_mass[arg]
+                R = history.R[arg]
+                break
+            except:
+                continue
+
+        models_dict[key]["M"] = M
+        models_dict[key]["R"] = R
+    return models_dict
+
+
+def get_separation(R, q):
+    return (
+        (0.6 * (q) ** (-2 / 3) + np.log(1 + (q) ** (-1 / 3)))
+        / (0.49 * (q) ** (-2 / 3))
+        * R
+    )
+
+
+def change_inlist(R, q, mass, inlist_path):
+
+    with open(inlist_path, "r") as f:
+        lines = f.readlines()
+
+        new = []
+        for line in lines:
+            if "m1" in line:
+                new.append(f"\tm1 = {mass}d0  ! donor mass in Msun\n")
+            elif "m2" in line:
+                new.append(f"\tm2 = {2*q}d0  ! donor mass in Msun\n")
+            elif "initial_separation_in_Rsuns" in line:
+                new.append(
+                    f"\tinitial_separation_in_Rsuns = {get_separation(R, q)}d0 ! in Rsun units\n"
+                )
+            else:
+                new.append(line)
+
+    with open(inlist_path, "w") as f:
+        f.writelines(new)
+
+
+proj_dir = "/home/koen/master-internship"
+grid_dir = f"{proj_dir}/mesa-models/tides-grid"
+
+ref_dir = f"{grid_dir}/reference-histories"
+
+
+def _get_tpagb_age():
+
+    tpagb_age = 0
+    for history in ["ms.data", "gb.data", "cheb.data", "eagb.data"]:
+        history = mr.MesaData(f"{ref_dir}/{history}")
+        tpagb_age += history.star_age[-1]
+    return tpagb_age
+
+
+def _find_initial_age(model):
+    if model.header("net_name") == "c13.net":
+        return model.header("star_age")
+    else:
+        return model.header("star_age") - ref_eagb_age
+
+
+models_dict = get_model_dict()
+tpagb_age = _get_tpagb_age()
+ref_eagb_age = mr.MesaData(f"{ref_dir}/eagb.data").star_age[-1]
+
+Rs = np.linspace(150, 675, 1)
+qs = np.linspace(0.5, 1, 1)
+
+
+for R in Rs:
+
+    model = find_model(R)
+    mass = model["M"]
+    model_path = f"{grid_dir}/models/{model["name"]}"
+    mod_data = mr.MesaData(model_path)
+    model_age = _find_initial_age(mod_data) + tpagb_age
+
+    for q in qs:
+        print(R, q)
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(Star3, q, a_init)
+        bin = Bins[0]
+        index = np.argwhere(bin.age > model_age)[0][0] - 1
+        q_evolve = bin.m1 / bin.m2
+        m2 = bin.m2[index]
+
+
+# %%
+
+fig, axss = plt.subplots(
+    1, 3, sharex=False, figsize=set_size(full, height=0.4), constrained_layout=True
+)
+
+xlims = [
+    [1000 + 1.2458e9, 60000 + 1.2458e9],
+    [450000 + 1.246e9, 860000 + 1.246e9],
+    [525000 + 1.247e9, 725000 + 1.247e9],
+]
+
+ylims = [
+    [130, 153],
+    [297, 338],
+    [550, 655],
+]
+
+
+for j, c in enumerate([0, 5, -1]):
+    max_age = -1
+    min_age = 1e99
+    axs = axss[j]
+    ls = []
+    for i, (R, q, model) in enumerate(grid.get_R1_index(c)):
+
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(Star3, q, a_init)
+        bin = Bins[0]
+        q_evolve = bin.m1 / bin.m2
+        rl1 = roche_lobe(q_evolve) * bin.a
+
+        (l,) = axs.plot(
+            model.age + grid.tpagb_age,
+            model.star.rl_1,
+            c=f"C{i}",
+            linewidth=1,
+            label=f"$q_i = {q:.1f}$",
+        )
+        ls.append(l)
+        axs.plot(bin.age, rl1, c=f"C{i}", alpha=0.4, linewidth=3)
+        if bin.age[-1] > max_age:
+            max_age = bin.age[-1]
+        if model.age[0] < max_age:
+            min_age = model.age[0]
+
+    axs.text(
+        0.1,
+        0.925,
+        rf"$R_\textrm{{RL,i}} = {R}$",
+        transform=axs.transAxes,
+        ha="left",
+        va="top",
+    )
+    axs.set_xlim(*xlims[j])
+    axs.set_ylim(*ylims[j])
+
+
+axss[0].set_ylabel("Roche lobe radius ($R_\\odot$)")
+fig.supxlabel("Star age (yr)", size=11)
+fig.legend(ncols=7, loc="outside upper center", handles=ls)
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-compare-with-evolve.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(7)):
+    plt.plot(
+        model.age,
+        model.star.rl_1,
+        alpha=1,
+        c=f"C{i}",
+        linewidth=1,
+        label=rf"$q_\textrm{{i}} = {q:.1f}$",
+    )
+    print(R)
+    plt.plot(model.age, model.star.R, alpha=0.3, c=f"C{i}", linewidth=3)
+
+fig.legend(loc="outside upper center", ncols=7)
+plt.xlabel("Star age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-R400-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(7)):
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.rl_1,
+        alpha=1,
+        c=f"C{i}",
+        linewidth=1,
+        label=rf"$q_\textrm{{i}} = {q:.1f}$",
+    )
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.R,
+        alpha=0.3,
+        c=f"C{i}",
+        linewidth=3,
+    )
+
+fig.legend(loc="outside upper center", ncols=4)
+plt.xlabel("Star age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-R400-2.pgf", format="pgf")
 plt.show()
 plt.close()
 

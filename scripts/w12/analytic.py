@@ -1607,3 +1607,385 @@ plt.savefig(
 plt.show()
 plt.close()
 # %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+axs[1].set_xlabel("Star mass $M_\\odot$")
+axs[0].set_ylabel("Roche lobe radius ($R_\\odot$)")
+axs[1].set_ylabel("$P/ P_\\textrm{i}$")
+
+alpha = 0
+beta = 0
+delta = 1 - 1e-10
+q = 0.5
+
+for delta in [1e-10, 0.2, 0.4, 0.6, 0.8, 1 - 1e-10]:
+    qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
+    ring = CombineEvolve(
+        alpha=0,
+        beta=0.0,
+        delta=delta,
+        gamma=1.5,
+        qs=qs,
+    )
+    axs[0].plot(ring.M_d, rl(get_separation(450, 0.5) * ring.a_over_a0, qs))
+    axs[0].text(
+        ring.M_d[-1] - 0.05,
+        rl(get_separation(450, 0.5) * ring.a_over_a0, qs)[-1],
+        rf"$\delta = {delta:.1f}$",
+        ha="left",
+        va="center",
+    )
+    axs[1].plot(ring.M_d, ring.P_over_P0)
+    axs[1].text(
+        ring.M_d[-1] - 0.05,
+        ring.P_over_P0[-1],
+        rf"$\delta = {delta:.1f}$",
+        ha="left",
+        va="center",
+    )
+
+
+axs[-1].invert_xaxis()
+axs[0].invert_xaxis()
+axs[0].set_xlim(2.05, 0.3)
+axs[0].set_ylim(0.4, 1000)
+axs[1].set_ylim(7e-5, 6)
+axs[0].set_yscale("log")
+axs[1].set_yscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-analytic-ring.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+def tellme(s):
+    print(s)
+    plt.title(s, fontsize=16)
+    plt.draw()
+
+
+positions = [
+    [
+        (np.float64(428.06901989756756), np.float64(0.7085373579340621)),
+        (np.float64(269.1736876696436), np.float64(0.5432892764895114)),
+        (np.float64(170.49890575413892), np.float64(0.42594204439488637)),
+    ],
+    [
+        (np.float64(485.0383783711634), np.float64(0.7745059724950553)),
+        (np.float64(317.47443473844396), np.float64(0.5997727186811518)),
+        (np.float64(216.71515712060773), np.float64(0.4658965605264783)),
+    ],
+    [
+        (np.float64(542.5558387269865), np.float64(0.8503847536269648)),
+        (np.float64(383.62762833015165), np.float64(0.6508319539606479)),
+        (np.float64(281.69665536959235), np.float64(0.5064695039927067)),
+        (np.float64(173.09440481685044), np.float64(0.4409670308748386)),
+    ],
+    [
+        (np.float64(607.2153810699735), np.float64(0.9275658613078355)),
+        (np.float64(422.91634322922437), np.float64(0.7406391229950012)),
+        (np.float64(311.09207151109104), np.float64(0.5947977554374118)),
+        (np.float64(232.34058402309154), np.float64(0.4878628821254416)),
+        (np.float64(167.85899909449566), np.float64(0.4135071755609904)),
+    ],
+    [
+        (np.float64(464.6829960167138), np.float64(0.8335984695972181)),
+        (np.float64(361.4229744382027), np.float64(0.6732436729425755)),
+        (np.float64(291.15845969402733), np.float64(0.554110570631264)),
+        (np.float64(235.1783093390419), np.float64(0.4671688214825733)),
+        (np.float64(163.54760493738547), np.float64(0.41748706831971727)),
+    ],
+    [
+        (np.float64(530.0680458489131), np.float64(0.9145815910758792)),
+        (np.float64(414.46357270834403), np.float64(0.7582880834085093)),
+        (np.float64(351.6202120483639), np.float64(0.6319406662275726)),
+        (np.float64(290.8237282502163), np.float64(0.5441887970816868)),
+        (np.float64(248.04565970509668), np.float64(0.4742432519292394)),
+        (np.float64(197.0578152488714), np.float64(0.42558876506338283)),
+    ],
+]
+
+# reproduce the grid like figures using q and RL.
+
+plt.rcParams["contour.negative_linestyle"] = "solid"
+fig, axss = plt.subplots(
+    2, 3, sharex=True, sharey=True, figsize=set_size(full), constrained_layout=True
+)
+
+axs = axss.flatten()
+fig.supxlabel("Roche lobe radius ($R_\\odot$)", size=11)
+fig.supylabel("$q$", size=11)
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+Zmin = 1e99
+Zmax = -1e-99
+for c, delta_test in enumerate([1e-10, 0.2, 0.4, 0.6, 0.8, 1 - 1e-10]):
+    alpha_test = 0
+    beta_test = 0.0
+    gamma = 1.5
+
+    RLs = np.logspace(np.log10(150), np.log10(650), 150)
+    qs = np.linspace(0.4, 1, 150)
+
+    logR = np.log10(RLs)
+    dlogR = np.diff(logR)
+
+    logR_edges = np.concatenate(
+        [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+    )
+    R_edges = 10**logR_edges
+
+    dq = np.diff(qs)
+    q_edges = np.concatenate(
+        [[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]]
+    )
+
+    Z = np.full((len(qs), len(RLs)), 10.0)
+
+    for i, q in enumerate(qs):
+        for j, RL in enumerate(RLs):
+
+            # alpha_test = RL / RLs[-1] * 0.45
+            qs = np.linspace(q, q_f(q, 2, 0.6, alpha_test, beta_test, delta_test), 100)
+            orbit = CombineEvolve(alpha_test, beta_test, delta_test, gamma, qs)
+
+            # Z[i, j] = get_separation(RL, q) * orbit.a_over_a0[-1]
+            Z[i, j] = np.log10(
+                get_period(get_separation(RL, q) * orbit.a_over_a0[-1], orbit.M_tot[-1])
+            )
+    if np.nanmin(Z) < Zmin:
+        Zmin = np.nanmin(Z)
+
+    if np.nanmax(Z) > Zmax:
+        Zmax = np.nanmax(Z)
+
+for c, delta_test in enumerate([1e-10, 0.2, 0.4, 0.6, 0.8, 1 - 1e-10]):
+    alpha_test = 0
+    beta_test = 0.0
+    gamma = 1.5
+
+    RLs = np.logspace(np.log10(150), np.log10(650), 150)
+    qs = np.linspace(0.4, 1, 150)
+    Q = np.linspace(0.4, 1, 150)
+
+    logR = np.log10(RLs)
+    dlogR = np.diff(logR)
+
+    logR_edges = np.concatenate(
+        [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+    )
+    R_edges = 10**logR_edges
+
+    dq = np.diff(qs)
+    q_edges = np.concatenate(
+        [[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]]
+    )
+
+    Z = np.full((len(qs), len(RLs)), 10.0)
+
+    for i, q in enumerate(qs):
+        for j, RL in enumerate(RLs):
+
+            # alpha_test = RL / RLs[-1] * 0.45
+            qs = np.linspace(q, q_f(q, 2, 0.6, alpha_test, beta_test, delta_test), 100)
+            orbit = CombineEvolve(alpha_test, beta_test, delta_test, gamma, qs)
+
+            # Z[i, j] = get_separation(RL, q) * orbit.a_over_a0[-1]
+            Z[i, j] = np.log10(
+                get_period(get_separation(RL, q) * orbit.a_over_a0[-1], orbit.M_tot[-1])
+            )
+    mesh = axs[c].pcolormesh(
+        R_edges,
+        q_edges,
+        Z,
+        cmap="viridis",
+        shading="auto",
+        rasterized=True,
+        vmin=Zmin,
+        vmax=Zmax,
+    )
+
+    X, Y = np.meshgrid(RLs, Q)
+
+    if c < 3:
+        axs[c].text(
+            0.1,
+            0.9,
+            f"$\\delta= {delta_test:.1f}$",
+            transform=axs[c].transAxes,
+            ha="left",
+            va="top",
+            color="k",
+        )
+        CS = axs[c].contour(
+            X,
+            Y,
+            Z,
+            levels=[-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5],
+            colors="k",
+            alpha=0.2,
+        )
+
+        # Define a nice function of distance from individual pts
+        def f(x, y, pts):
+            z = np.zeros_like(x)
+            for p in pts:
+                z = z + 1 / (np.sqrt((x - p[0]) ** 2 + (y - p[1]) ** 2))
+            return 1 / z
+
+        CL = plt.clabel(CS, manual=positions[c], fontsize=9)
+
+    else:
+        axs[c].text(
+            0.1,
+            0.9,
+            f"$\\delta= {delta_test:.1f}$",
+            transform=axs[c].transAxes,
+            ha="left",
+            va="top",
+            color="w",
+        )
+        CS = axs[c].contour(
+            X,
+            Y,
+            Z,
+            levels=[-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5],
+            colors="w",
+            alpha=0.2,
+        )
+        CL = plt.clabel(CS, manual=positions[c], fontsize=9)
+
+
+plt.colorbar(mesh, label="$\log(\\textrm{Period / days})$ ", ax=axss[:, 2])
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-analytic-grid-delta.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Roche lobe radius ($R_\\odot$)")
+plt.ylabel("$q$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+RLs = np.logspace(np.log10(150), np.log10(650), 150)
+qs = np.linspace(0.4, 1, 150)
+QS = np.linspace(0.4, 1, 150)
+
+logR = np.log10(RLs)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(RLs)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, RL in enumerate(RLs):
+        term1 = np.min([(q / QS[-1]) ** 1, 1])
+        term2 = np.min([(RL / RLs[-3]), 1]) ** 1.3
+        alpha = term1 * term2**2 * 0.3 + 1e-10 + 0.1
+        beta = alpha * 0.3
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+
+        # Z[i, j] = orbit.a_over_a0[-1]
+        Z[i, j] = get_period(
+            get_separation(RL, q) * orbit.a_over_a0[-1], orbit.M_tot[-1]
+        )
+
+mesh = plt.pcolormesh(
+    R_edges, q_edges, Z, cmap="viridis", shading="auto", rasterized=True
+)
+
+plt.colorbar(mesh, label="Period (days)")
+plt.xscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-match-mesa-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+
+# reproduce the grid like figures using q and RL.
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Roche lobe radius ($R_\\odot$)")
+plt.ylabel("$q$")
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+RLs = np.logspace(np.log10(150), np.log10(650), 150)
+qs = np.linspace(0.4, 1, 150)
+QS = np.linspace(0.4, 1, 150)
+
+logR = np.log10(RLs)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+
+Z = np.full((len(qs), len(RLs)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, RL in enumerate(RLs):
+        term1 = np.min([(q / QS[-1]) ** 1, 1])
+        term2 = np.min([(RL / RLs[-3]), 1]) ** 1.3
+        alpha = term1 * term2**2 * 0.3 + 1e-10 + 0.1
+        beta = alpha * 0.3
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta_test), 100)
+        orbit = CombineEvolve(alpha, beta, delta_test, 0, qs)
+
+        # Z[i, j] = orbit.a_over_a0[-1]
+        Z[i, j] = (orbit.M_a[-1] - orbit.M_a[0]) / (orbit.M_d[0] - orbit.M_d[-1])
+
+mesh = plt.pcolormesh(
+    R_edges, q_edges, Z, cmap="viridis", shading="auto", rasterized=True
+)
+
+plt.colorbar(mesh, label=r"$- \Delta M_\textrm{a} / \delta M_\textrm{d}$")
+plt.xscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/w12-match-mesa-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
