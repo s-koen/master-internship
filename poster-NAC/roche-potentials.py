@@ -52,9 +52,38 @@ def grad_roche(x, y, a=1, M1=2, q=0.5):
 
 
 # %%
+from scipy.optimize import root
 
+
+def find_lagrange(initial_guess, a, M1, q):
+    def f(vec):
+        return grad_roche(vec[0], vec[1], a, M1, q)
+
+    sol = root(f, initial_guess)
+    return sol.x
+
+
+M1 = 1 * 0.2
+q = 1 / 0.2
+a = 1
+
+L1 = find_lagrange([0.0, 0.0], a, M1, q)
+L2 = find_lagrange([1.2, 0.0], a, M1, q)
+L3 = find_lagrange([-1.2, 0.0], a, M1, q)
+
+# triangular points
+L4 = find_lagrange([0.5, 0.8], a, M1, q)
+L5 = find_lagrange([0.5, -0.8], a, M1, q)
+
+print("L1:", L1)
+print("L2:", L2)
+print("L3:", L3)
+print("L4:", L4)
+print("L5:", L5)
+
+# %%
 # grid
-x = np.linspace(-1, 1, 500)
+x = np.linspace(-2, 2, 500)
 y = np.linspace(-1, 1, 500)
 X, Y = np.meshgrid(x, y)
 
@@ -65,10 +94,7 @@ a = 1
 Phi = roche_potential(X, Y, a=a, M1=M1, q=q)
 
 plt.figure(figsize=(6, 6))
-levels = np.linspace(0.5, 1.5, 20)
-print(levels)
 
-plt.contourf(X, Y, np.log10(-Phi), levels=levels, cmap="Blues", extend="both")
 
 # plot masses
 M2 = q * M1
@@ -82,9 +108,74 @@ x1 = -M2 / (M1 + M2) * a
 x2 = M1 / (M1 + M2) * a
 # plt.plot([x1, x2], [0, 0], "ro")
 
-plt.xlim(-0.85, 0.2)
-plt.ylim(-0.2, 0.85)
+for L in [L1, L2, L3, L4, L5]:
+    plt.plot(L[0], L[1], "kx")
+
+Phi_L1 = np.log10(-roche_potential(L1[0], L1[1], a, M1, q))
+Phi_L5 = np.log10(-roche_potential(L5[0], L5[1], a, M1, q))
+
+levels = np.logspace(-0.3, 0.3, 21)
+print(levels)
+plt.contourf(
+    X,
+    Y,
+    np.log10(-Phi),
+    levels=Phi_L1 * levels,
+    cmap="Blues",
+    extend="both",
+    vmin=Phi_L5,
+)
+plt.contour(
+    X,
+    Y,
+    np.log10(-Phi),
+    levels=Phi_L1 * levels,
+    cmap="Blues",
+    extend="both",
+    vmin=Phi_L5,
+)
+
 plt.gca().set_aspect("equal")
-plt.savefig("roche_potential.svg", format="svg", bbox_inches="tight")
+# plt.savefig("roche_potential.svg", format="svg", bbox_inches="tight")
+plt.show()
+# %%
+
+x = np.linspace(-2, 2, 500)
+y = np.linspace(-2, 2, 500)
+X, Y = np.meshgrid(x, y)
+
+M1 = 2 * 0.2
+q = 1 / 0.2
+a = 1
+
+Phi = roche_potential(X, Y, a=a, M1=M1, q=q)
+
+L1 = find_lagrange([0.0, 0.0], a, M1, q)
+L2 = find_lagrange([1.2, 0.0], a, M1, q)
+L3 = find_lagrange([-1.2, 0.0], a, M1, q)
+
+# triangular points
+L4 = find_lagrange([0.5, 0.8], a, M1, q)
+L5 = find_lagrange([0.5, -0.8], a, M1, q)
+
+print("L1:", L1)
+print("L2:", L2)
+print("L3:", L3)
+print("L4:", L4)
+print("L5:", L5)
+
+
+plt.figure(figsize=(6, 6))
+
+
+Phi_L1 = np.log10(-roche_potential(L1[0], L1[1], a, M1, q))
+Phi_L5 = np.log10(-roche_potential(L5[0], L5[1], a, M1, q))
+
+plt.contour(
+    X, Y, np.log10(-Phi), levels=[Phi_L1], cmap="Blues", extend="both", vmin=Phi_L5
+)
+
+plt.gca().set_aspect("equal")
+plt.savefig("roche_lobe.svg", format="svg", bbox_inches="tight")
 plt.show()
 # %%

@@ -1,5 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from matplotlib.style import context
+import sys
+
+sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
+from plot_size import set_size
+
+column = 312.98032
+full = 483.69684
+plt.style.use("default")
+plt.style.use("tex rm")
 
 # %%
 
@@ -180,7 +191,6 @@ jorissen_id = [
     "2420-173",
 ]
 
-print(len(jorissen_id), len(jorissen_eccentricities))
 
 star_id = [
     "HD 2454",
@@ -391,6 +401,7 @@ for i, id in enumerate(star_id):
     if id in jorissen_id:
         continue
 
+    print(id)
     total_ids.append(star_id[i])
     total_ecc.append(eccentricity[i])
     total_per.append(period_days[i])
@@ -399,6 +410,21 @@ total_ids += jorissen_id
 total_ecc += jorissen_eccentricities
 total_per += jorissen_periods
 
-plt.scatter(np.log10(periods), eccentricities)
+print(len(total_ecc))
+
+plt.scatter(np.log10(total_per), np.zeros(len(total_per)))
+plt.show()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
+bins = np.arange(1.5, 5.0, 1 / 3)
+print(bins)
+plt.hist(np.log10(total_per), orientation="horizontal", bins=bins, edgecolor="k")
+plt.yticks([2, 3, 4], ["100", "1000", "10 000"])
+plt.gca().set_ylabel("Period (days)", rotation=0, ha="right")
+# plt.savefig("ba-hist.svg", format="svg", bbox_inches="tight")
 plt.show()
 # %%
