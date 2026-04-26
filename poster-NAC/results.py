@@ -5,9 +5,6 @@ from matplotlib.style import context
 import os
 import re
 import sys
-import matplotlib
-
-matplotlib.use("TkAgg")
 
 sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 from plot_size import set_size
@@ -209,6 +206,7 @@ for R in Rs:
 grid = MesaGrid(f"{MASTER}/tides-grid-2")
 # %%
 
+deltat = 1.2474427e9 + 83 - 94400
 
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
@@ -220,8 +218,8 @@ fig, axs = plt.subplots(
 #     plt.plot(model.age, model.star.R, c="C9")
 #     plt.plot(model.age, model.star.rl_1)
 #
-for i, (R, q, model) in enumerate(grid.get_R1_index(-1)):
-    if q != 0.7:
+for i, (R, q, model) in enumerate(grid.get_R1_index(-3)):
+    if q != 0.4:
         continue
 
     a_init = inv_roche_lobe(R, q)
@@ -231,29 +229,191 @@ for i, (R, q, model) in enumerate(grid.get_R1_index(-1)):
     rl1 = roche_lobe(q_evolve) * bin.a
 
     (l,) = axs.plot(
-        model.age + grid.tpagb_age,
+        model.age + grid.tpagb_age - deltat,
         model.star.rl_1,
         c=f"C{i}",
         linewidth=1,
         label=f"$q_i = {q:.1f}$",
     )
     (l,) = axs.plot(
-        model.age + grid.tpagb_age,
+        model.age + grid.tpagb_age - deltat,
         model.star.R,
         c=f"C{i}",
         linewidth=1,
         label=f"$q_i = {q:.1f}$",
     )
 
-    axs.plot(bin.age, rl1, c=f"C{i}", alpha=0.4, linewidth=3)
-    axs.plot(Star.age, 10**Star.log_R, c=f"C{i}", alpha=0.4, linewidth=3)
+    axs.plot(bin.age - deltat, rl1, c=f"C{i}", alpha=0.4, linewidth=3)
+    axs.plot(Star.age - deltat, 10**Star.log_R, c=f"C{i}", alpha=0.4, linewidth=3)
 
 
-plt.xlim(250000 + 1.247e9, 700000 + 1.247e9)
-plt.ylim(150, 650)
+plt.ylim(150, 800)
+plt.xlim(0, 400000)
 plt.xlabel("Time (yr)")
 plt.ylabel("Radius ($R_\\odot$)")
-plt.savefig("results1.svg", format="svg")
+# plt.savefig("results1.svg", format="svg")
+plt.show()
+plt.close()
+
+# %%
+
+model = grid.get(469.24, 0.9)
+
+model.star.bulk_names
+# %%
+
+new_model = mr.MesaData(f"{MASTER}/tides/R469.24_q0.900/LOGS/TPAGB/history.data")
+# %%
+
+plt.plot(model.star.age, model.star.rl_1)
+plt.plot(model.star.age, model.star.R)
+plt.plot(new_model.age, new_model.rl_1)
+plt.plot(new_model.age, new_model.R)
+plt.show()
+
+# %%
+
+plt.plot(model.star.model_number, model.star.rl_1)
+plt.plot(model.star.model_number, model.star.R)
+plt.plot(new_model.model_number, new_model.rl_1)
+plt.plot(new_model.model_number, new_model.R)
+plt.show()
+
+# %%
+
+plt.plot(model.star.age, model.star.Omega_star)
+plt.plot(new_model.age, new_model.Omega_star)
+plt.plot(model.star.age, model.star.Omega_orb)
+plt.plot(new_model.age, new_model.Omega_orb)
+plt.show()
+
+# %%
+
+
+plt.plot(model.star.model_number, model.star.quasi_adiabatic_Mdot)
+plt.plot(model.star.model_number, model.star.log_abs_mdot)
+plt.plot(new_model.model_number, new_model.quasi_adiabatic_Mdot)
+plt.plot(new_model.model_number, new_model.log_abs_mdot)
+plt.show()
+
+# %%
+
+plt.plot(model.star.age, model.star.quasi_adiabatic_Mdot)
+plt.plot(model.star.age, model.star.log_abs_mdot)
+plt.plot(new_model.age, new_model.quasi_adiabatic_Mdot)
+plt.plot(new_model.age, new_model.log_abs_mdot)
+plt.show()
+
+# %%
+
+plt.plot(model.star.star_2_mass / model.star.star_1_mass, model.star.rl_1)
+plt.plot(model.star.star_2_mass / model.star.star_1_mass, model.star.R)
+plt.plot(new_model.star_2_mass / new_model.star_1_mass, new_model.rl_1)
+plt.plot(new_model.star_2_mass / new_model.star_1_mass, new_model.R)
+plt.show()
+
+# %%
+
+plt.plot(model.star.star_2_mass / model.star.star_1_mass, -model.star.jdot_ls)
+plt.plot(model.star.star_2_mass / model.star.star_1_mass, -model.star.jdot_ml)
+plt.plot(new_model.star_2_mass / new_model.star_1_mass, -new_model.jdot_ls)
+plt.plot(new_model.star_2_mass / new_model.star_1_mass, -new_model.jdot_ml)
+plt.show()
+
+# %%
+
+plt.plot(model.star.model_number, -model.star.jdot_ls)
+plt.plot(model.star.model_number, -model.star.jdot_ml)
+plt.plot(new_model.model_number, -new_model.jdot_ls)
+plt.plot(new_model.model_number, -new_model.jdot_ml)
+plt.show()
+
+# %%
+
+plt.plot(model.star.age, -model.star.jdot_ls)
+plt.plot(model.star.age, -model.star.jdot_ml)
+plt.plot(new_model.age, -new_model.jdot_ls)
+plt.plot(new_model.age, -new_model.jdot_ml)
+plt.show()
+
+# %%
+
+model = grid.get(650, 0.7)
+
+model.star.bulk_names
+
+# %%
+
+plt.plot(
+    model.star.star_2_mass / model.star.star_1_mass, model.star.quasi_adiabatic_Mdot
+)
+plt.plot(model.star.star_2_mass / model.star.star_1_mass, model.star.log_abs_mdot)
+plt.show()
+
+# %%
+
+plt.plot(model.star.star_age, model.star.quasi_adiabatic_Mdot)
+plt.plot(model.star.star_age, model.star.log_abs_mdot)
+plt.show()
+
+
+# %%
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] = model.star.period_days[-1]
+
+logR = np.log10(R_vals)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+ax.pcolormesh(
+    R_edges, q_edges, overlay, shading="auto", cmap="Greys", alpha=0.3, rasterized=True
+)
+mesh = ax.pcolormesh(
+    R_edges, q_edges, Z, cmap="Blues_r", shading="auto", rasterized=True
+)
+
+
+plt.colorbar(mesh, label=r"Orbital period (days)")
+
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+ax.set_xscale("log")
+
+plt.savefig("results2.svg", format="svg", dpi=600)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w12-grid-4.pgf", format="pgf")
 plt.show()
 plt.close()
 

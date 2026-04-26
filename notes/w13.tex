@@ -1,0 +1,132 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 13}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Poster}
+
+\section{Mistake}
+Even though I looked at the corrigendum from \citet{temmink2025}, and I explicitly set \lstinline[style=output, breaklines=true]|use_radiation_corrected_transfer_rate| in my models, I very stupidly set it to \lstinline[style=output, breaklines=true]|.true.| instead of \lstinline[style=output, breaklines=true]|.false.|. This is fixed from now on.
+\section{Circumbinary toroid}
+I looked through MESA's source code for its implementation of the circumbinary coplanar toroid. It is based on the same 2 parameters as \citet{soberman1997}, where \(\delta \) determines how much of the \emph{transferred} mass is lost to a toroid. Specifically, they define \lstinline[style=output, breaklines=true]|mdot_system_cct = b% mtransfer_rate * b% mass_transfer_delta|. This is set as follows:
+\begin{minted}[fontsize=\small, breaklines]{fortran}
+! $MESA_DIR/binary/private/binary_private_def.f90
+! subroutine adjust_mdots
+
+! mdot_system_transfer is mass lost from the vicinity of each star
+! due to inefficient rlof mass transfer, mdot_system_cct is mass lost
+! from a circumbinary coplanar toroid.
+if (b% mtransfer_rate+b% mdot_wind_transfer(b% d_i) >= 0 .or. b% CE_flag) then
+    b% mdot_system_transfer(b% d_i) = 0d0
+    b% mdot_system_transfer(b% a_i) = 0d0
+    b% mdot_system_cct = 0d0
+else 
+    b% mdot_system_transfer(b% d_i) = b% mtransfer_rate * b% mass_transfer_alpha
+    b% mdot_system_cct = b% mtransfer_rate * b% mass_transfer_delta
+    if (b% point_mass_i == 0 .or. b% model_twins_flag) then
+        b% mdot_system_transfer(b% a_i) = b% mtransfer_rate * b% mass_transfer_beta
+    else
+        ! do not compute mass lost from the vicinity using just mass_transfer_beta, as
+        ! mass transfer can be stopped also by going past the Eddington limit
+        b% mdot_system_transfer(b% a_i) = (actual_mtransfer_rate + b% component_mdot(b% a_i)) &
+            + b% mtransfer_rate * b% mass_transfer_beta
+    end if
+end if
+\end{minted}
+This is then used to compute the change in angular momentum in the default routine as:
+\begin{minted}[fontsize=\small]{fortran}
+! $MESA_DIR/binary/private/binary_jdot.f90
+! subroutine default_jdot_ml
+
+!mass lost from circumbinary coplanar toroid
+b% jdot_ml = b% jdot_ml + b% mdot_system_cct * b% mass_transfer_gamma * &
+     sqrt(standard_cgrav * (b% m(1) + b% m(2)) * b% separation)
+\end{minted}
+
+I think just copying this line into my \lstinline[style=output, breaklines=true]|wind_loss| subroutine should be all that is necessary to simulate mass loss from a coplanar circumbinary toroid. The new \lstinline[style=output, breaklines=true]|wind_loss| subroutine is now:
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+! $RUN_DIR/src/bin/additional_routines.inc
+
+subroutine wind_loss(binary_id, ierr)
+    integer, intent(in) :: binary_id
+    integer, intent(out) :: ierr
+    type(binary_info), pointer :: b
+    real(dp) :: q, vw_over_vorb
+    real(dp) :: beta, eta
+    real(dp) :: omega, I_eff
+    real(dp) :: domega_dt_wind
+
+    ierr = 0
+    call binary_ptr(binary_id, b, ierr)
+    if (ierr /= 0) then
+        write (*, *) 'failed in binary_ptr'
+        return
+    end if
+
+    ! --- compute q == m_accretor / m_donor and v
+    q = b%m(b%a_i)/b%m(b%d_i)
+    vw_over_vorb = compute_vwind(b%s_donor)/compute_vorbit(b%m(1) + b%m(2), b%separation)
+    b%s_donor%xtra(x_vw_over_vorb) = vw_over_vorb
+
+    ! --- get beta and eta from Saladino
+    beta = compute_beta_Sal(q, vw_over_vorb)/sqrt(1 - pow2(b%eccentricity))
+    b%s_donor%xtra(x_beta) = beta
+    eta = compute_eta_Sal(q, vw_over_vorb)
+    b%s_donor%xtra(x_eta) = eta
+
+    ! --- star angular momentum loss due to winds
+    ! compute the change in spin frequency. this
+    ! gets used in extra_binary_finish_step.
+    omega = b%s_donor%xtra(x_omega)
+    I_eff = b%s_donor%xtra(x_I_eff)
+    domega_dt_wind = (b%mdot_system_wind(b%d_i) / (1 - beta) *(b%s_donor%photosphere_r*Rsun)**2*omega/1.5)/I_eff
+    b%s_donor%xtra(x_domega_dt_wind) = domega_dt_wind
+
+    ! --- mass lost from vicinity of donor
+    b%jdot_ml = b%mdot_system_wind(b%d_i) &
+                *eta &
+                *(b%separation)**2 &
+                *sqrt(1 - pow2(b%eccentricity)) &
+                *2*pi/b%period
+
+    ! --- mass lost from circumbinary coplanar toroid
+    b% jdot_ml = b% jdot_ml + b% mdot_system_cct * b% mass_transfer_gamma * &
+                 sqrt(standard_cgrav * (b% m(1) + b% m(2)) * b% separation)
+
+end subroutine wind_loss
+\end{minted}
+
+I simulate an analytic grid again using the same code I used last week to find a nice balance for predicted orbital periods on the MESA grid parameter space. I find that \(\delta =0.2\), \(\gamma =1.25\) gives the following set of predicted orbits:
+
+\begin{figure}[ht]
+    \marginfignote{0}{These values give a very broad region in the parameter space that generates periods between 1000 and 5000 days, with a few smaller and larger periods. I think this aligns well with the observed period distribution of barium stars as well, and hopefully should not be \emph{too} challenging for mesa, since we are not trying to create extremely short periods.}
+    \centering
+    \incplot{w13-analytic-grid-delta}
+\end{figure}
+
+\citet{temmink2022}
+\citet{escorza2023}
+\citet{jorissen2019}
+\citet{rees2024b}
+\citet{preece2022}
+\citet{saladino2018}
+\citet{kolb1990}
+
+
+\bibliography{master.bib}
+\end{document}

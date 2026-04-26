@@ -48,6 +48,10 @@ subroutine wind_loss(binary_id, ierr)
                 *sqrt(1 - pow2(b%eccentricity)) &
                 *2*pi/b%period
 
+    ! --- mass lost from circumbinary coplanar toroid
+    b% jdot_ml = b% jdot_ml + b% mdot_system_cct * b% mass_transfer_gamma * &
+                 sqrt(standard_cgrav * (b% m(1) + b% m(2)) * b% separation)
+
 end subroutine wind_loss
 
 subroutine wind_accretion(binary_id, s_i, ierr)
