@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 258.87
+      model_number:         6919
+      star_age:     1.0129100095712794E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.9767665396073353
+      steps:        21229
+      retries:            0
+      redos:            0
+      solver_calls_made:        21229
+      solver_calls_failed:            0
+      solver_iterations:       104055

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 120.99
+      model_number:         3853
+      star_age:     1.0122527857195119E+05
+      num_retries:            0
+      log_rel_run_E_err:        -3.2441240491194971
+      steps:         9975
+      retries:            0
+      redos:            0
+      solver_calls_made:         9975
+      solver_calls_failed:            0
+      solver_iterations:        48323

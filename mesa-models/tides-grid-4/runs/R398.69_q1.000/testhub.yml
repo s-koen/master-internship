@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 797.94
+      model_number:        19705
+      star_age:     3.0700687916485226E+05
+      num_retries:          328
+      log_rel_run_E_err:        -2.9124745733493480
+      steps:        59832
+      retries:          328
+      redos:            0
+      solver_calls_made:        60160
+      solver_calls_failed:          328
+      solver_iterations:       291786

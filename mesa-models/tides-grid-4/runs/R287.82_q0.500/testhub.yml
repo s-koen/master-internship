@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 347.72
+      model_number:         8501
+      star_age:     2.2685933540364160E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.9189852687693221
+      steps:        25018
+      retries:            0
+      redos:            0
+      solver_calls_made:        25018
+      solver_calls_failed:            0
+      solver_iterations:       120590

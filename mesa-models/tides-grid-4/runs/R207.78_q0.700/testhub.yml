@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 316.85
+      model_number:         9229
+      star_age:     2.5663582528773026E+05
+      num_retries:            3
+      log_rel_run_E_err:        -3.0227959695659372
+      steps:        26485
+      retries:            3
+      redos:            0
+      solver_calls_made:        26488
+      solver_calls_failed:            3
+      solver_iterations:       125998

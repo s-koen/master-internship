@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 301.06
+      model_number:         9782
+      star_age:     3.5858946823772311E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.8733143678695141
+      steps:        26123
+      retries:            0
+      redos:            0
+      solver_calls_made:        26123
+      solver_calls_failed:            0
+      solver_iterations:       126777

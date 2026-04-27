@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 415.64
+      model_number:        10793
+      star_age:     1.8820412039462558E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.9540912606776843
+      steps:        33071
+      retries:            0
+      redos:            0
+      solver_calls_made:        33071
+      solver_calls_failed:            0
+      solver_iterations:       156691

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 298.91
+      model_number:         5754
+      star_age:     8.3707307095543161E+04
+      num_retries:            0
+      log_rel_run_E_err:        -3.3255202663309142
+      steps:        20669
+      retries:            0
+      redos:            0
+      solver_calls_made:        20669
+      solver_calls_failed:            0
+      solver_iterations:       101416

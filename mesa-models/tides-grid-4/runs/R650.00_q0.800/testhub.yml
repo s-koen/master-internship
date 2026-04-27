@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 557.49
+      model_number:        15906
+      star_age:     1.7330977365064734E+05
+      num_retries:           20
+      log_rel_run_E_err:        -3.0416761772364289
+      steps:        39507
+      retries:           20
+      redos:            0
+      solver_calls_made:        39527
+      solver_calls_failed:           20
+      solver_iterations:       193469

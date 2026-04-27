@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 703.45
+      model_number:        15396
+      star_age:     2.3011063145361151E+05
+      num_retries:            0
+      log_rel_run_E_err:        -3.0141855060572680
+      steps:        51320
+      retries:            0
+      redos:            0
+      solver_calls_made:        51320
+      solver_calls_failed:            0
+      solver_iterations:       254383

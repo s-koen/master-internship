@@ -19,10 +19,66 @@
 \begin{document}
 \setuplayout
 \section{Poster}
+I spent the majority of this week on designing the poster for the NAC.
 
 \section{Mistake}
 Even though I looked at the corrigendum from \citet{temmink2025}, and I explicitly set \lstinline[style=output, breaklines=true]|use_radiation_corrected_transfer_rate| in my models, I very stupidly set it to \lstinline[style=output, breaklines=true]|.true.| instead of \lstinline[style=output, breaklines=true]|.false.|. This is fixed from now on.
-\section{Circumbinary toroid}
+
+
+\section{Carbon transfer}
+
+I am interested in seeing how much carbon gets transferred to the accretor.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot shows the mass of \(\text{C}_{12}\) that is transferred at the end of the evolution of the binary. I compare it with the total amount of \(\text{C}_\text{12}\) available in the star as a function of time. The binary models all transfer a significant part of the available \(C_\text{12}\) to the companion, but not the total amount. This must be due to wind mass loss, and also for these models, the radiation corrected transfer.}
+    \centering
+    \incplot{w13-transfer-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This plot shows the amount of \(\text{C}_{12}\) that is left in the star for the various models. It clearly drops significantly when mass transfer occurs, which is what we would expect.}
+    \centering
+    \incplot{w13-transfer-2}
+\end{figure}
+
+By assuming the carbon enriched mass that gets accretor onto the accretor is effectively mixed before the observations, we can quite easily compute the carbon abundance of the accretor after mass transfer.
+
+We use that
+\begin{align*}
+    m (\text{C}_{12})_\text{final} &= m (\text{C}_{12})_\text{initial} + m (\text{C}_{12})_\text{transferred}\\
+    X(\text{C}_{12}) &= \frac{m (\text{C}_{12})_\text{final}}{M_\text{star}}\\
+\end{align*}
+
+I also assume that the mass fraction of \(\text{C}_{12}\) in the accretor star is constant and does not change with the mass of the initial accretor\sidenote{Such that \(X(\text{C}_{12})_\text{heavy star} = X(\text{C}_{12})_\text{light star}\)}. 
+
+The plot below shows the approximate carbon 12 abundance of the accretor during the evolution.
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-transfer-3}
+\end{figure}
+
+For models that interact early on during the TPAGB, the abundance drops, but once the carbon abundance in the TPAGB star exceeds the abundance of the accretor, the carbon abundance of the accretor will grow after mass transfer. The thick lines show the carbon abundance of the donor.
+
+To compute the C/O-number ratio, we need to compute the mass ratio of \(\text{O}_\text{16}\) as well. Unfortunately, this element changes in abundance during the TPAGB:
+
+\begin{figure}[ht]
+    \marginfignote{0}{The \(\text{O}_{16}\) mass fraction evolves quite similar to that of \(\text{C}_{12}\), just a little less extreme, which causes the CO-number ratio to shift for single TPAGB stars.}
+    \centering
+    \incplot{w13-o16}
+\end{figure}
+
+This means we cannot assume it to remain constant and we must use the same procedure to compute the mass fraction of \(\text{O}_{16}\) for the accretor.
+
+If we do this, and divide the two and multiply by the numerical factor \(16 / 12\) to turn the faction into a number ratio, we obtain:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-transfer-4}
+\end{figure}
+
+Under these assumptions it seems like only if a star interacts quite late in the evolution, and with a significantly low mass ratio, it can appear as a carbon enhanced star. The assumptions are on one hand quite conservative. We assume the star mixes the accreted material throughout the \emph{whole} star, which significantly reduces the effect of the accretion on the surface abundance compared to assuming no mixing. On the other hand, we assume \sidenote{nearly, because of the radiation losses} all of the mass is accreted, which is very probably an overestimation of the amount of total transferred mass.
+
+
+\newsection{Circumbinary toroid}
 I looked through MESA's source code for its implementation of the circumbinary coplanar toroid. It is based on the same 2 parameters as \citet{soberman1997}, where \(\delta \) determines how much of the \emph{transferred} mass is lost to a toroid. Specifically, they define \lstinline[style=output, breaklines=true]|mdot_system_cct = b% mtransfer_rate * b% mass_transfer_delta|. This is set as follows:
 \begin{minted}[fontsize=\small, breaklines]{fortran}
 ! $MESA_DIR/binary/private/binary_private_def.f90
@@ -119,13 +175,61 @@ I simulate an analytic grid again using the same code I used last week to find a
     \incplot{w13-analytic-grid-delta}
 \end{figure}
 
-\citet{temmink2022}
-\citet{escorza2023}
-\citet{jorissen2019}
-\citet{rees2024b}
-\citet{preece2022}
-\citet{saladino2018}
-\citet{kolb1990}
+\section{Grid}
+
+I ran a grid with the same starting conditions as before, but now using \(\delta =0.2\) and \(\gamma  = 1.25\).
+
+I start by showing the minimum orbit that is achieved during the binary evolution, because this shows a peculiar edge case that I had to account for.
+\begin{figure}[ht]
+    \marginfignote{0}{Two things should be noted here. \begin{enumd}
+    \item  The are significantly more systems that \emph{fail} due to a MESA error, even for large \(q\). 
+    \item  There are some systems that reach extremely small periods.
+\end{enumd}
+}
+    \centering
+    \incplot{w13-grid-1}
+\end{figure}
+
+MESA should prevent systems from evolving past a certain point to stop spending resources on hopeless models. I actually implemented this in the grid already, which is why all models that experience this \emph{issue} have the same minimum period of \(50\) days.
+
+I prevented further evolution by implementing a very simple stopping condition in the \lstinline[style=output, breaklines=true]|extra_binary_finish_step|.
+
+From now on, I quantify these models as unstable as well. The period distribution of the new models looks like this:
+
+\begin{figure}[ht]
+    \marginfignote{0}{The periods that we find using with mass loss through the circumbinary ring are \emph{significantly} lower than the periods we find without it. This is obviously what we would expect, but it is nice to see that MESA can, in many cases resolve the RLOF mass transfer, even with this extra mass loss.}
+    \centering
+    \incplot{w13-grid-2}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This figure compares the orbits from the previous grid with the orbits from the new grid. Clearly, In many cases, the orbits are a lot smaller.}
+    \centering
+    \incplot{w13-grid-3}
+\end{figure}
+\nextpage
+It is also interesting to look at the maximum ratio of the star radius to the Roche lobe radius.
+\begin{figure}[ht]
+    \marginfignote{0}{We see two systems with very high ratios, the other systems look more or less like the previous grid. It is easier to again compare the models directly.}
+    \centering
+    \incplot{w13-grid-4}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \marginfignote{0}{Now we see that all models extend past their Roche lobe a bit more when mass is lost from the CCT.}
+    \centering
+    \incplot{w13-grid-5}
+\end{figure}
+
+Now, let's look at the outer Roche lobe radius:
+\begin{figure}[ht]
+    \marginfignote{0}{All models reach their outer Roche lobe. This is a bit worrying, but it is also how mass is supposed to escape to the CCT.}
+    \centering
+    \incplot{w13-grid-6}
+\end{figure}
+
+
 
 
 \bibliography{master.bib}

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 252.12
+      model_number:         6884
+      star_age:     1.0136526622533312E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.9790407250127924
+      steps:        21025
+      retries:            0
+      redos:            0
+      solver_calls_made:        21025
+      solver_calls_failed:            0
+      solver_iterations:       102980

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 364.54
+      model_number:        10588
+      star_age:     3.8397117176062183E+05
+      num_retries:            3
+      log_rel_run_E_err:        -2.9165721346742961
+      steps:        27141
+      retries:            3
+      redos:            0
+      solver_calls_made:        27144
+      solver_calls_failed:            3
+      solver_iterations:       129815
