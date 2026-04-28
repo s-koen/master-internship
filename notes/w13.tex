@@ -77,6 +77,15 @@ If we do this, and divide the two and multiply by the numerical factor \(16 / 12
 
 Under these assumptions it seems like only if a star interacts quite late in the evolution, and with a significantly low mass ratio, it can appear as a carbon enhanced star. The assumptions are on one hand quite conservative. We assume the star mixes the accreted material throughout the \emph{whole} star, which significantly reduces the effect of the accretion on the surface abundance compared to assuming no mixing. On the other hand, we assume \sidenote{nearly, because of the radiation losses} all of the mass is accreted, which is very probably an overestimation of the amount of total transferred mass.
 
+As a final plot, I show the final C/O-number ratio for the accretor for the whole grid:
+
+\begin{figure}[ht]
+    \marginfignote{0}{This plot nicely shows where the models lie that achieve a C/O-number ratio greater than 1, and where the model lie that achieve ratios lower than 1. It aligns well with what a wrote above.}
+    \centering
+    \incplot{w13-co-1}
+\end{figure}
+
+
 
 \newsection{Circumbinary toroid}
 I looked through MESA's source code for its implementation of the circumbinary coplanar toroid. It is based on the same 2 parameters as \citet{soberman1997}, where \(\delta \) determines how much of the \emph{transferred} mass is lost to a toroid. Specifically, they define \lstinline[style=output, breaklines=true]|mdot_system_cct = b% mtransfer_rate * b% mass_transfer_delta|. This is set as follows:
@@ -228,6 +237,71 @@ Now, let's look at the outer Roche lobe radius:
     \centering
     \incplot{w13-grid-6}
 \end{figure}
+
+Below, I show the models in the fourth column, including the failed model and the very extreme model. This first figure shows the radius of the star and the radius of the Roche lobe as a function of \(q\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-extreme1}
+\end{figure}
+
+It seems like both the star radius increases with lower initial \(q\), and the Roche lobe radius decreases. That the Roche lobe radius decreases makes sense to me, but I do not know why the star radius increases too.
+
+Another thing to note, is that the orange, green and red model terminate due to low envelope mass, but they are at that point still larger than their Roche lobe. 
+
+In any case, the plot below shows the same plot as above, but now as a fraction.
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-extreme2}
+\end{figure}
+
+Now it is very clear that the orange model reaches a much higher maximum than the other models. For comparison, here is the same plot for the fourth column:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-no-extreme}
+\end{figure}
+
+The blue model is one of the models that reached a period smaller than 50 days. It's fraction of \(R_\text{star}/R_\text{RL}\) goes all the way up to about 8 before terminating and has no signs of slowing down.
+
+\nextpage
+Lastly, Let's look at the eighth column:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-extreme4}
+\end{figure}
+
+We see a similar effect as in the first set of plots.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w13-extreme3}
+\end{figure}
+
+Again here. I think the "extreme" points I saw in the 2d grid are look exaggerated due to plotting them on a linear scale and just barely, or just barely not going into the regime where the periods start to drop significantly.
+
+The last thing I want to do is apply the same procedure of finding the final mass ratio to this new set of models.
+
+\begin{figure}[ht]
+    \marginfignote{0}{It looks very similar to the plot I showed earlier, meaning the effect of losing some mass to the CCT does not significantly impact the C/O-number ratio.}
+    \centering
+    \incplot{w13-co-2}
+\end{figure}
+
+The plot below shows this more clearly:
+\begin{figure}[ht]
+    \marginfignote{0}{Here, the two values are divided and what remains looks more or less like noise to me. I think the effects are not super important because the original grid still had some non-conservative mass transfer due to the radiation. This is probably roughly equal in amount to the mass lost to the CCT.}
+    \centering
+    \incplot{w13-co-3}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This figure shows the differences in mass. Again, they are quite small. Significantly less that 0.8 in any case.}
+    \centering
+    \incplot{w13-m2}
+\end{figure}
+
+
 
 
 

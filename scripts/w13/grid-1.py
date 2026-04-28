@@ -611,7 +611,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.nanmax(model.star.R / model.star.rl_1)
+        Z[i, j] = np.nanmax(model.star.R / rol(model.star))
 
 
 logR = np.log10(R_vals)
@@ -653,13 +653,476 @@ mesh = ax.pcolormesh(
 )
 
 
-plt.colorbar(mesh, label=r"$\max(R_\textrm{star} / R_\textrm{RL})$")
+plt.colorbar(mesh, label=r"$\max(R_\textrm{star} / R_\textrm{ROL})$")
 
 ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
 ax.set_ylabel("$q$")
 
 ax.set_xscale("log")
 
-plt.savefig("/home/koen/LaTeX-setup/plots/w13-grid-4.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-grid-6.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(3)):
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.rl_1,
+        c=f"C{i}",
+        linewidth=3,
+        alpha=0.5,
+    )
+    plt.plot(model.star.star_2_mass / model.star.star_1_mass, model.star.R, c=f"C{i}")
+
+plt.xlabel("$q$")
+plt.ylabel("Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-extreme1.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(3)):
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.R / model.star.rl_1,
+        c=f"C{i}",
+    )
+
+plt.xlabel("$q$")
+plt.ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-extreme2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(4)):
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.R / model.star.rl_1,
+        c=f"C{i}",
+    )
+
+plt.xlabel("$q$")
+plt.ylim(0.2, 3.1)
+plt.ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-no-extreme.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(7)):
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.R / model.star.rl_1,
+        c=f"C{i}",
+    )
+
+plt.xlabel("$q$")
+plt.yscale("log")
+plt.ylabel(r"$R_\textrm{star} / R_\textrm{RL}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-extreme3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(7)):
+    plt.plot(
+        model.star.star_2_mass / model.star.star_1_mass,
+        model.star.rl_1,
+        c=f"C{i}",
+        linewidth=3,
+        alpha=0.5,
+    )
+    plt.plot(model.star.star_2_mass / model.star.star_1_mass, model.star.R, c=f"C{i}")
+
+plt.xlabel("$q$")
+plt.ylabel("Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-extreme4.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid_cons.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        m_initial = q * 2
+        m_C_initial = m_initial * grid.ref_ms.surface_c12[-1]
+        m_O_initial = m_initial * grid.ref_ms.surface_o16[-1]
+
+        dt = np.diff(model.star.star_age)
+        dm = np.diff(model.star.star_2_mass)
+
+        Xc = 0.5 * (model.star.surface_c12[:-1] + model.star.surface_c12[1:])
+        Xo = 0.5 * (model.star.surface_o16[:-1] + model.star.surface_o16[1:])
+        M_c_transfer = np.cumsum(Xc * dm)
+        M_o_transfer = np.cumsum(Xo * dm)
+        M_c = m_C_initial + M_c_transfer
+        M_o = m_O_initial + M_o_transfer
+        Xc_final = M_c / model.star.star_2_mass[1:]
+        Xo_final = M_o / model.star.star_2_mass[1:]
+
+        Z[i, j] = Xc_final[-1] / Xo_final[-1] * 16 / 12
+
+
+logR = np.log10(R_vals)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+
+Zmax = np.nanmax(Z)
+print(Zmax)
+
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+mesh = ax.pcolormesh(
+    R_edges, q_edges, Z, cmap="coolwarm", shading="auto", vmin=1 - (Zmax - 1), vmax=Zmax
+)
+
+
+plt.colorbar(mesh, label=r"C/O-number ratio", extend="min")
+
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+ax.set_xscale("log")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-co-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        m_initial = q * 2
+        m_C_initial = m_initial * grid.ref_ms.surface_c12[-1]
+        m_O_initial = m_initial * grid.ref_ms.surface_o16[-1]
+
+        dt = np.diff(model.star.star_age)
+        dm = np.diff(model.star.star_2_mass)
+
+        Xc = 0.5 * (model.star.surface_c12[:-1] + model.star.surface_c12[1:])
+        Xo = 0.5 * (model.star.surface_o16[:-1] + model.star.surface_o16[1:])
+        M_c_transfer = np.cumsum(Xc * dm)
+        M_o_transfer = np.cumsum(Xo * dm)
+        M_c = m_C_initial + M_c_transfer
+        M_o = m_O_initial + M_o_transfer
+        Xc_final = M_c / model.star.star_2_mass[1:]
+        Xo_final = M_o / model.star.star_2_mass[1:]
+
+        Z[i, j] = Xc_final[-1] / Xo_final[-1] * 16 / 12
+
+
+logR = np.log10(R_vals)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+Zmax = np.nanmax(Z)
+mesh = ax.pcolormesh(
+    R_edges, q_edges, Z, cmap="coolwarm", shading="auto", vmin=1 - (Zmax - 1), vmax=Zmax
+)
+
+
+plt.colorbar(mesh, label=r"C/O-number ratio", extend="min")
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+ax.set_xscale("log")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-co-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        m_initial = q * 2
+        m_C_initial = m_initial * grid.ref_ms.surface_c12[-1]
+        m_O_initial = m_initial * grid.ref_ms.surface_o16[-1]
+
+        dt = np.diff(model.star.star_age)
+        dm = np.diff(model.star.star_2_mass)
+
+        Xc = 0.5 * (model.star.surface_c12[:-1] + model.star.surface_c12[1:])
+        Xo = 0.5 * (model.star.surface_o16[:-1] + model.star.surface_o16[1:])
+        M_c_transfer = np.cumsum(Xc * dm)
+        M_o_transfer = np.cumsum(Xo * dm)
+        M_c = m_C_initial + M_c_transfer
+        M_o = m_O_initial + M_o_transfer
+        Xc_final = M_c / model.star.star_2_mass[1:]
+        Xo_final = M_o / model.star.star_2_mass[1:]
+
+        Z[i, j] = Xc_final[-1] / Xo_final[-1] * 16 / 12
+
+for R, q, model in grid_cons.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        m_initial = q * 2
+        m_C_initial = m_initial * grid.ref_ms.surface_c12[-1]
+        m_O_initial = m_initial * grid.ref_ms.surface_o16[-1]
+
+        dt = np.diff(model.star.star_age)
+        dm = np.diff(model.star.star_2_mass)
+
+        Xc = 0.5 * (model.star.surface_c12[:-1] + model.star.surface_c12[1:])
+        Xo = 0.5 * (model.star.surface_o16[:-1] + model.star.surface_o16[1:])
+        M_c_transfer = np.cumsum(Xc * dm)
+        M_o_transfer = np.cumsum(Xo * dm)
+        M_c = m_C_initial + M_c_transfer
+        M_o = m_O_initial + M_o_transfer
+        Xc_final = M_c / model.star.star_2_mass[1:]
+        Xo_final = M_o / model.star.star_2_mass[1:]
+
+        Z[i, j] /= Xc_final[-1] / Xo_final[-1] * 16 / 12
+
+
+logR = np.log10(R_vals)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+Zmax = 1 - np.nanmax(Z)
+Zmin = 1 - np.nanmax(Z)
+mesh = ax.pcolormesh(
+    R_edges, q_edges, Z, cmap="coolwarm", shading="auto", vmin=1 - (Zmax - 1), vmax=Zmax
+)
+
+
+plt.colorbar(
+    mesh,
+    label=r"$($C/O-number ratio$)_\textrm{CCT} / ($C/O-number ratio$)_\textrm{cons}$",
+    extend="min",
+)
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+ax.set_xscale("log")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-co-3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] = model.star.star_2_mass[-1]
+
+for R, q, model in grid_cons.iter_models():
+    print(R)
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] /= model.star.star_2_mass[-1]
+
+
+logR = np.log10(R_vals)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(q_vals)
+q_edges = np.concatenate(
+    [[q_vals[0] - dq[0] / 2], q_vals[:-1] + dq / 2, [q_vals[-1] + dq[-1] / 2]]
+)
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+overlay = np.where(
+    mask_bad,
+    1,
+    0,
+)
+ax.pcolormesh(
+    R_edges,
+    q_edges,
+    overlay,
+    shading="auto",
+    cmap="Greys",
+    alpha=0.3,
+)
+Zmax = np.nanmax(Z)
+mesh = ax.pcolormesh(
+    R_edges, q_edges, Z, cmap="coolwarm", shading="auto", vmin=1 - (Zmax - 1), vmax=Zmax
+)
+
+
+plt.colorbar(
+    mesh,
+    label=r"$M_\textrm{a, CCT} / M_\textrm{a, cons}$",
+    extend="min",
+)
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
+
+ax.set_xscale("log")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w13-m2.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%

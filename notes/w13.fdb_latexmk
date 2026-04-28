@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w13"] 1777330307.53402 "w13.aux" "w13.bbl" "w13" 1777330311.59333 0
+["bibtex w13"] 1777363091.35057 "w13.aux" "w13.bbl" "w13" 1777363103.16863 0
   "./master.bib" 1777164400.92989 28551 5ce2e0c0bbc879e97a43f6120f453496 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w13.aux" 1777330311.24203 1825 7c6571e8b036c3f70d72c1fe5e23c550 "pdflatex"
+  "w13.aux" 1777363102.79707 1993 9c12a868d421879d793d865187c6f673 "pdflatex"
   (generated)
   "w13.bbl"
   "w13.blg"
   (rewritten before read)
-["pdflatex"] 1777330307.63019 "w13.tex" "w13.pdf" "w13" 1777330311.59349 0
+["pdflatex"] 1777363098.34289 "w13.tex" "w13.pdf" "w13" 1777363103.16879 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1771860317.25999 1615 69ad1e0a0b399b6e79ac1601fc603587 ""
@@ -16,6 +16,16 @@
   "/home/koen/LaTeX-setup//plots/w13-analytic-grid-delta-img0.png" 1777302148.41193 16505 2c4fc01e545e1a51a5a7b4f45adcf668 ""
   "/home/koen/LaTeX-setup//plots/w13-analytic-grid-delta-img1.png" 1777302148.42303 402 b42b6dac960b42c0f5be73c7f0c94208 ""
   "/home/koen/LaTeX-setup//plots/w13-analytic-grid-delta.pgf" 1777302148.42693 36317 39653b5413baa396a7b971270f6f6feb ""
+  "/home/koen/LaTeX-setup//plots/w13-co-1-img0.png" 1777362460.68986 405 1710e1e7e6e20c8baa4f1ed252fb145d ""
+  "/home/koen/LaTeX-setup//plots/w13-co-1.pgf" 1777362460.69404 123598 b7f5f4694b1cc0f0caf250b1c816bca2 ""
+  "/home/koen/LaTeX-setup//plots/w13-co-2-img0.png" 1777362482.35138 405 1710e1e7e6e20c8baa4f1ed252fb145d ""
+  "/home/koen/LaTeX-setup//plots/w13-co-2.pgf" 1777362482.35538 122363 42418983e9c7eeb549fb0566600f7586 ""
+  "/home/koen/LaTeX-setup//plots/w13-co-3-img0.png" 1777362641.78787 424 abadb4cd8df643468cbedef4dcb5554d ""
+  "/home/koen/LaTeX-setup//plots/w13-co-3.pgf" 1777362641.79387 126556 0a90af40f07d5508275bc7319bdd196c ""
+  "/home/koen/LaTeX-setup//plots/w13-extreme1.pgf" 1777361068.55716 130738 66a7f206b627270d936ccd1464ecfdeb ""
+  "/home/koen/LaTeX-setup//plots/w13-extreme2.pgf" 1777361079.96934 90512 a5a102cef717e67eddf89003c8502069 ""
+  "/home/koen/LaTeX-setup//plots/w13-extreme3.pgf" 1777361652.19238 57298 1d6be2b8f2abf6348eeb07b72c3758e6 ""
+  "/home/koen/LaTeX-setup//plots/w13-extreme4.pgf" 1777361600.86757 82889 95c841cf75a3d2f5433950bc4a791333 ""
   "/home/koen/LaTeX-setup//plots/w13-grid-1-img0.png" 1777328356.33885 409 a616d04243289efdee20274491f90066 ""
   "/home/koen/LaTeX-setup//plots/w13-grid-1.pgf" 1777328356.3448 125385 ba4b7c8e667b1ada4fdcc6a91c5acd7e ""
   "/home/koen/LaTeX-setup//plots/w13-grid-2-img0.png" 1777329447.95815 414 b915c61a503ea6f9c25579ac2581ba6e ""
@@ -28,6 +38,9 @@
   "/home/koen/LaTeX-setup//plots/w13-grid-5.pgf" 1777330197.96022 120942 e1794e1490e35bfad5f437ef3994cc70 ""
   "/home/koen/LaTeX-setup//plots/w13-grid-6-img0.png" 1777330194.0688 414 b915c61a503ea6f9c25579ac2581ba6e ""
   "/home/koen/LaTeX-setup//plots/w13-grid-6.pgf" 1777330194.07316 123972 e26da1b57886be7b4e2d610627da80aa ""
+  "/home/koen/LaTeX-setup//plots/w13-m2-img0.png" 1777362978.14455 420 ffd821ffb81fd4041f9ebedc694b0f81 ""
+  "/home/koen/LaTeX-setup//plots/w13-m2.pgf" 1777362978.14913 124456 eccb70953eb4929de70087b40340009d ""
+  "/home/koen/LaTeX-setup//plots/w13-no-extreme.pgf" 1777361318.87313 84948 9677bc314a34d1abff114af6e943cc47 ""
   "/home/koen/LaTeX-setup//plots/w13-o16.pgf" 1777319500.19277 27622 7fda0a06f77f403e1e04980d2874c997 ""
   "/home/koen/LaTeX-setup//plots/w13-transfer-1.pgf" 1777310011.51713 173047 a2ee7f224f7fddf6fcd910c6923cb2cf ""
   "/home/koen/LaTeX-setup//plots/w13-transfer-2.pgf" 1777329253.78295 193788 f89d2023a30c055c0c6b83beef011a5f ""
@@ -421,10 +434,10 @@
   "_minted/EB21ABD39EA076DE02685AE92B75DE2B.highlight.minted" 1777126091.91301 7630 79055a8e6ce16b6647c02e5b35f81ad5 ""
   "_minted/_BE6BE3B7888C71400AB82AB4F73B6444.index.minted" 1777126092.35563 375 78fb1ba58501395c344ad3d587390725 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w13.aux" 1777330311.24203 1825 7c6571e8b036c3f70d72c1fe5e23c550 "pdflatex"
-  "w13.bbl" 1777330307.62097 1077 e8e6d24080d351cf3cba5fcb34381eb1 "bibtex w13"
-  "w13.out" 1777330311.24303 476 6bb41ce4fa065ae0bb0e5513ca70e297 "pdflatex"
-  "w13.tex" 1777330302.69689 11904 ad34d20eae31e424677aa14f5a6843ce ""
+  "w13.aux" 1777363102.79707 1993 9c12a868d421879d793d865187c6f673 "pdflatex"
+  "w13.bbl" 1777363091.4429 1077 e8e6d24080d351cf3cba5fcb34381eb1 "bibtex w13"
+  "w13.out" 1777363102.79861 476 6bb41ce4fa065ae0bb0e5513ca70e297 "pdflatex"
+  "w13.tex" 1777363097.75 15029 c6f0d106d31a8c4799d060fb0d92ef9d ""
   (generated)
   "w13.aux"
   "w13.log"
