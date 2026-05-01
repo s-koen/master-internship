@@ -428,3 +428,5 @@ plt.gca().set_ylabel("Period (days)", rotation=0, ha="right")
 # plt.savefig("ba-hist.svg", format="svg", bbox_inches="tight")
 plt.show()
 # %%
+
+data = np.genfromtxt("Ba_star_orbits.csv")
