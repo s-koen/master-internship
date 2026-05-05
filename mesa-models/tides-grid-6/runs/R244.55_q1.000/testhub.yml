@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: ******
+      model_number:        38928
+      star_age:     7.9762493413042673E+05
+      num_retries:         2428
+      log_rel_run_E_err:        -2.7612893117183410
+      steps:        66248
+      retries:         2428
+      redos:            0
+      solver_calls_made:        68676
+      solver_calls_failed:         2428
+      solver_iterations:       342542

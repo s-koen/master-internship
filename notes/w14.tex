@@ -1,0 +1,201 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 14}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Roche geometry}
+
+Below, I plot the Roche geometry for a system with \(q=0.4\). Specifically, I plot the 5 Lagrange points, as well as the equipotential lines going through\sidenote{In the case of L4 and L5, there is no equipotential line because these are potential maxima instead of saddle points.} these points. I also plot the streamlines of test particles in the Roche geometry. 
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-roche-2}
+\end{figure}
+There is a clear \emph{inside} and \emph{outside} region where it is energetically favourable for mass to escape the system, or fall onto either of the two stars. The boundary between these regions goes through the L2, L3, L4 and L5 points.
+
+I have a couple of questions about this.
+\begin{enumd}
+    \item  I think I know what what volume is used to determine the volume equivalent Roche lobe radius, but what volume do you use when you compute the outer lobe of the star? This time there is no clear boundary between the two stars anymore.
+    \item How quickly does mass actually take to travel through these Roche equipotentials.\sidenote{For example, say the star has a radius equal to the radius equivalent outer lobe, does the mass spread through the lower potential region in roughly the same time the star responds radially to the thermal pulses?}
+    \item If a star quickly expands significantly past the outer lobe during a thermal pulse, a lot of the mass will be unbounded. Is it realistic to assume this temporarily unbounded mass can still shrink back to the donor star after the thermal pulse when its radius decreases again?
+    \item In similar vein, the plot above shows that, for some pretty extended radii, a lot of mass should fall to the accretor instead of to the donor. Is this something that would really happen? 
+    \item How long does it take for a common envelope to develop?\sidenote{With this I mean: How long does it take for an expanding giant to fill the Roche lobe of the companion and then fill the envelope around both stars?} I see that the RLOF episodes for TPAGB stars last a couple hundred years. I think (?) this is much longer than it would take for a common envelope to develop.
+\end{enumd}
+
+    Also, I was re-reading the paper by \citet{temmink2022}. They find that the EAGB systems experience OLOF for even very modest initial mass ratios. I guess it makes sense that this trend continues to the TPAGB-phase. \citet{temmink2022} seems to not be too "worried" about the OLOF simply using it as another method to qualify stability. I was wondering what your / \citeauthor{temmink2022}'s thoughts were on the quite different predictions of the quasi-adiabtic definition and the OLOF definition.
+
+\section{Mass Transfer Efficiency in Barium Star Binaries}
+
+I thought this thesis was interesting. There are a couple of questions / notes that I had while reading it that relate to this project:
+\begin{enumd}
+\item Figure 4.15, The implied AGB donor mass "only" goes up to four, and the higher mass donors seem pretty rare. Why is this? \sidenote{I know, from the IMF one would expect more lower mass stars than higher mass ones, but binary stars are more likely to exist around heavy stars. Is the IMF so strong that this effect completely overpowers the binary preference for higher masses?} Also, since the IFMR is quite shallow, would the errors not be huge for these initial TPAGB masses, even for quite well determined WD masses?
+    \item  If I understand the methods correctly, models get identified as RLOF models if the period of the current barium star + WD companion has a Roche lobe radius smaller than the maximum radius of the TPAGB progenitor. It seems to me like this assumes the period of the binary does not change due to mass loss / mass transfer. I feel like there is overlap of systems that could have ended up with large periods due to RLOF but were initially smaller, and systems that we always wide and just avoided RLOF entirely. This would also better explain the divide into two regimes in figure 4.13, where the low efficiencies are very much in line with the results from \citet{saladino2019}.
+    \item  In the discussion, Freya writes
+\begin{shadequote}[l]{Freya Winters}
+Finally, there is an unexpected correlation between the initial mass ratio \(q\) and the implied mass
+transfer efficiency, which appears to originate from the relation between \(M_\text{Ba,ini}\) and the implied
+mass transfer efficiency. Fig. 4.17 shows that a lower initial mass of the Ba star appears to result in a
+higher mass transfer efficiency. Models of RLOF predict the opposite relation. It is expected that the
+mass transfer efficiency is higher if the accreting star can readjust itself during the mass transfer.
+This readjustment happens on the thermal timescale, which is smaller for more massive stars. When
+the star cannot adjust itself rapidly enough, it expands to fill its own Roche lobe which decreases the
+mass transfer efficiency (Kippenhahn and Meyer-Hofmeister,\\1977). The found correlation clearly
+contradicts this idea. Since this correlation between the initial Ba star mass and the implied mass
+transfer efficiency is present for systems that do as well as for those that do not experience RLOF,
+it does not appear that it can be explained by a hidden correlation between the orbital period
+and initial mass of the Ba star. This profound difference between theory and results derived from
+observations ought to be the subject of future research.
+\end{shadequote}
+This is really surprising to me. Is this something we should take into consideration in some way and how certain is this result?
+\end{enumd}
+
+I wanted to test the IFMR myself. I used the IFMR from \citet{el2018} together with the data from \lstinline[style=output, breaklines=true]|Ba_star_orbits.csv| dataset which is largely based on data by \citet{jorissen2019} and \citet{escorza2023}.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The data does genuinely seem to predict more low mass stars. Since the core mass of TPAGB stars also does not change significantly during their TPAGB evolution. It cannot be an effect of predicting lower masses because mass transfer happened earlier on in the TPAGB evolution.}
+    \centering
+    \incplot{w14-IFMR}
+\end{figure}
+
+The reason I am so interested in the masses has to do with the radial behaviour of the TPAGB stars. 
+The plot below shows a \(2\;M_\odot \) star and a \(4\;M_\odot \) star.
+\begin{figure}[ht]
+    \marginfignote{0}{I suspect the ratio between the TPAGB star radius and the Roche lobe radius might remain smaller for stars that interact during the interpulse. As this figure shows, higher mass stars reach their maximum radii during the interpulse periods instead of during the thermal pulses.}
+    \centering
+    \incplot{w14-radius}
+\end{figure}
+
+Maybe a 3 solar mass model could be interesting to compare to. There seem to be many predicted TPAGB donors around the \(3\;M_\odot \) mass range.
+
+I am also wondering if a very simplified model of OLOF could be interesting to implement. My idea would be to couple it to \(\delta \) in some way. For example:
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here, my idea is to scale \(\delta \) to the fraction \(R_\text{star} / R_\text{RL}\). Maybe this scaling to to aggressive, or it should start later, but I think at least intuitively it makes some sense to let more mass escape if the star expands far beyond its Roche lobe radius.}
+    \centering
+    \incplot{w14-delta}
+\end{figure}
+\begin{figure}[ht]
+    \marginfignote{0}{Applying this, to our previous models, it sort of makes it clear that maybe this approach would be too aggressive. A constant \(\delta \) also does not feel fair though, since some models are clearly much more expanded than others.}
+    \centering
+    \incplot{w14-delta-2}
+\end{figure}
+
+
+
+\nextpage
+\section{Darwin Instability}
+
+The Darwin instability occurs in the models that I stop once they reach periods below 50 days. I am not sure if this is the \emph{driving} force for the inspiral, or if this is an effect of the already inspiraling star. 
+\begin{figure}[ht]
+    \marginfignote{30}{The dotted lines is angular momentum loss due to tides, the dashed lines is angular momentum loss due to mass loss.}
+    \centering
+    \incplot{w14-darwin}
+\end{figure}
+
+\section{Actually conservative RLOF}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-grid-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{To me, it makes a lot of sense that most models show a slightly larger ratio between the star and the Roche lobe. The accretors are accreting more and losing less mass which should make the orbit tighter.}
+    \centering
+    \incplot{w14-grid-2}
+\end{figure}
+
+One system significantly stands out though. I plot it below in more detail.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-compare-1}
+\end{figure}
+
+The figure clearly shows why. Due to a slightly quicker approach of the RLOF to the star radius, the fully conservative system interacts during the interpulse period, where the donor star does not swell up as much. The other system interacts during its thermal pulse.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-grid-3}
+\end{figure}
+
+\begin{figure}[ht]
+\marginfignote{0}{Mostly, the systems have shorter periods, but the results are not too drastically different from the radiation case.}
+    \centering
+    \incplot{w14-grid-4}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-grid-5}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+    \marginfignote{0}{The donor stars all clearly gained more mass. This is the expected result.}
+    \centering
+    \incplot{w14-grid-6}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-grid-7}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-grid-8}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-grid-9}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The effects on the implied C/O-number ratio is negligible.}
+    \centering
+    \incplot{w14-grid-10}
+\end{figure}
+
+
+
+\newsection{Additional Material}
+
+Plot for \(q=0.2\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-roche}
+\end{figure}
+
+Plot for \(q=1\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w14-roche-3}
+\end{figure}
+\nextpage
+
+
+
+
+
+
+
+
+\bibliography{master.bib}
+\end{document}

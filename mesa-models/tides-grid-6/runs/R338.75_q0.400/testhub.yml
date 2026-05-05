@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 338.47
+      model_number:         9498
+      star_age:     1.2780906261980455E+05
+      num_retries:            8
+      log_rel_run_E_err:        -2.9803116845629165
+      steps:        27570
+      retries:            8
+      redos:            0
+      solver_calls_made:        27578
+      solver_calls_failed:            8
+      solver_iterations:       135298

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 974.11
+      model_number:        17422
+      star_age:     2.1519739648157096E+05
+      num_retries:          496
+      log_rel_run_E_err:        -2.9644980927625975
+      steps:        63020
+      retries:          496
+      redos:            0
+      solver_calls_made:        63516
+      solver_calls_failed:          496
+      solver_iterations:       310380

@@ -106,8 +106,16 @@ grid = MesaGrid(f"{MASTER}/tides-grid-2")
 
 # %%
 
+min = 1e99
+max = -1
 for R, q, model in grid.iter_models():
-    print(model)
+    if model.star.period_days[0] < min:
+        min = model.star.period_days[0]
+    if model.star.period_days[0] > max:
+        max = model.star.period_days[0]
+
+print(min)
+print(max)
 # %%
 
 model.star.bulk_names

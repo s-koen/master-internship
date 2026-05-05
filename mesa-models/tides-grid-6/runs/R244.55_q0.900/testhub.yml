@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 920.85
+      model_number:        31034
+      star_age:     7.4834874257561937E+05
+      num_retries:         1741
+      log_rel_run_E_err:        -2.8286195412779231
+      steps:        57390
+      retries:         1741
+      redos:            0
+      solver_calls_made:        59131
+      solver_calls_failed:         1741
+      solver_iterations:       293815

@@ -1,0 +1,12 @@
+    - inlist: inlist
+      runtime_minutes: 341.98
+      model_number:         8190
+      star_age:     2.2692858483791118E+05
+      num_retries:            0
+      log_rel_run_E_err:        -2.9144624151596226
+      steps:        24607
+      retries:            0
+      redos:            0
+      solver_calls_made:        24607
+      solver_calls_failed:            0
+      solver_iterations:       119204

@@ -1050,14 +1050,14 @@ for i, (R, q, model) in enumerate(grid.get_R1_index(-1)):
 
     axs.plot(
         Star.age - deltat,
-        Star.surf_c12 / Star.surf_o16,
+        Star.surf_c12 / Star.surf_o16 * 16 / 12,
         c=f"C{i}",
         alpha=0.4,
         linewidth=3,
     )
 
 
-# plt.ylim(150, 800)
+plt.ylim(0.5, 2)
 plt.xlim(0, 400000)
 # plt.ylim(-12, 0)
 plt.xlabel("Time (yr)")
