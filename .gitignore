@@ -34,3 +34,4 @@
 **/output.txt
 **/*.o
 **/reference-histories/
+mesa-models/
