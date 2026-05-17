@@ -617,3 +617,105 @@ plt.show()
 plt.close()
 
 # %%
+
+plt.rcParams["contour.negative_linestyle"] = "solid"
+fig, axss = plt.subplots(
+    1, 1, sharex=True, sharey=True, figsize=set_size(column), constrained_layout=True
+)
+
+fig.supxlabel("Roche lobe radius ($R_\\odot$)", size=11)
+fig.supylabel("$q$", size=11)
+
+
+def get_period(a, M):
+    return np.sqrt(4 * np.pi**2 * (a * Rsun) ** 3 / (G * M * (Msun))) / 3600 / 24
+
+
+Zmin = 1e99
+Zmax = -1e-99
+delta_test = 0.5
+alpha_test = 0
+beta_test = 0.0
+gamma = 1.0
+
+RLs = np.logspace(np.log10(150), np.log10(650), 150)
+qs = np.linspace(0.4, 1, 150)
+
+logR = np.log10(RLs)
+dlogR = np.diff(logR)
+
+logR_edges = np.concatenate(
+    [[logR[0] - dlogR[0] / 2], logR[:-1] + dlogR / 2, [logR[-1] + dlogR[-1] / 2]]
+)
+R_edges = 10**logR_edges
+
+dq = np.diff(qs)
+q_edges = np.concatenate([[qs[0] - dq[0] / 2], qs[:-1] + dq / 2, [qs[-1] + dq[-1] / 2]])
+
+Z = np.full((len(qs), len(RLs)), 10.0)
+
+for i, q in enumerate(qs):
+    for j, RL in enumerate(RLs):
+
+        # alpha_test = RL / RLs[-1] * 0.45
+        qs = np.linspace(q, q_f(q, 2, 0.6, alpha_test, beta_test, delta_test), 100)
+        orbit = CombineEvolve(alpha_test, beta_test, delta_test, gamma, qs)
+
+        # Z[i, j] = get_separation(RL, q) * orbit.a_over_a0[-1]
+        Z[i, j] = np.log10(
+            get_period(get_separation(RL, q) * orbit.a_over_a0[-1], orbit.M_tot[-1])
+        )
+if np.nanmin(Z) < Zmin:
+    Zmin = np.nanmin(Z)
+
+if np.nanmax(Z) > Zmax:
+    Zmax = np.nanmax(Z)
+
+mesh = plt.pcolormesh(
+    R_edges,
+    q_edges,
+    Z,
+    cmap="viridis",
+    shading="auto",
+    rasterized=True,
+    vmin=Zmin,
+    vmax=Zmax,
+)
+
+X, Y = np.meshgrid(RLs, Q)
+CS = plt.contour(
+    X,
+    Y,
+    Z,
+    levels=[
+        np.log10(250),
+        np.log10(500),
+        np.log10(1000),
+        np.log10(2500),
+        np.log10(5000),
+        np.log10(9500),
+    ],
+    colors="w",
+    alpha=0.2,
+)
+
+plt.colorbar(
+    mesh,
+    label="$\log(\\textrm{Period / days})$ ",
+    format=lambda x, _: f"{10**x:.0f}",
+    ticks=[
+        np.log10(100),
+        np.log10(250),
+        np.log10(500),
+        np.log10(1000),
+        np.log10(2500),
+        np.log10(5000),
+        np.log10(9500),
+    ],
+)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w13-analytic-grid-delta.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%

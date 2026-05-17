@@ -172,18 +172,57 @@ Star = read_stellar_models(standard_dir)[0]
 
 for R in Rs:
 
-    model = find_model(R)
-    mass = model["M"]
-    model_path = f"{grid_dir}/models/{model["name"]}"
-    mod_data = mr.MesaData(model_path)
-    model_age = _find_initial_age(mod_data) + tpagb_age
-
     for q in qs:
         a_init = inv_roche_lobe(R, q)
         [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
             Star, q, a_init, simple_only=True
         )
+
+        R_star = Star.R
+        ages_star = Star.age
         bin = Bins[0]
+
+        q_evolve = bin.m2 / bin.m1
+        RL = roche_lobe(1 / q_evolve) * bin.a
+
+        # interpolate stellar radius onto binary ages
+        R_interp = np.interp(bin.age, ages_star, R_star)
+
+        # find first near-contact point
+        inds = np.where(R_interp > 0.9 * RL)[0]
+
+        if len(inds) == 0:
+            print("system never approaches RLOF -> skipping")
+            continue
+
+        contact_index = inds[0]
+        contact_age = bin.age[contact_index]
+
+        candidate = None
+
+        for key in list(models_dict.keys())[::-1]:
+
+            model = models_dict[key]
+
+            model_path = f"{grid_dir}/models/{model['name']}"
+            mod_data = mr.MesaData(model_path)
+
+            model_age = _find_initial_age(mod_data) + tpagb_age
+
+            if model_age < contact_age:
+                candidate = model
+                break
+
+        if candidate is None:
+            print("no suitable stellar model before contact -> skipping")
+            continue
+
+        model = candidate
+        mass = model["M"]
+        model_path = f"{grid_dir}/models/{model["name"]}"
+        mod_data = mr.MesaData(model_path)
+        model_age = _find_initial_age(mod_data) + tpagb_age
+
         index = np.argwhere(bin.age > model_age)[0][0] - 1
         index_star = np.argwhere(Star.age > model_age)[0][0] - 1
         q_evolve = bin.m1 / bin.m2

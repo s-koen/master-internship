@@ -1,0 +1,301 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 15 + 16}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+
+\section{Non-conservative Mass Transfer (\texorpdfstring{\(\delta = 0.5\)}{delta = 0.5})}\label{sec:ncmt}
+
+To start, let me see what the analytic expressions from \citet{soberman1997} predict for the final periods of the our grid.
+
+This is for \(\delta =0.5\) and \(\gamma =1\).
+\begin{figure}[ht]
+    \marginfignote{0}{If our MESA models align well with the analytical expression, we should obtain periods towards the lower end of the observed barium star distribution. Of course, the MESA models also have non-conservative wind mass losses, which should alter the results a little bit.}
+    \centering
+    \incplot{w15-analytic-grid-delta}
+\end{figure}
+
+This is the actual grid.
+\begin{figure}[ht]
+    \marginfignote{0}{The first thing to notice is that the region of systems that do not finish their evolution has grown substantially, even with respect to the already large region of unstable systems that we saw when we modelled the evolution with \(\delta =0.2\) and \(\gamma = 1.25\). See Figures \ref{fig:compare}}
+    \marginfignote{13}{Then, it is also nice to see that we \emph{can} produce these pretty short period systems with \emph{MESA}. The question is obviously: How accurate are these results?}
+    \centering
+    \incplot{w15-grid-1}
+\end{figure}
+
+The pink regions are models that failed due to convergence problems. The green regions are models that failed because the binary reached an orbit smaller than 50 days, after which the simulation gets halted.
+
+The single white model had a problem with saving a photo, similar to what we saw for a model in another grid.
+
+One other thing to note: I accidentally simulated models with slightly different \(q\) values, this time from \(0.3\) to \(1\) in \(7\) steps, which is slightly awkward, but not necessarily bad.
+
+
+\newsection{Different Masses}
+\subsection{Model Saving Code}
+I created yet another version of my model saving code. Now, it saves 1 model per thermal pulse + interpulse cycle with the maximum radius that was reached during this pulse. The model is saved at the start of a new pulse.\sidenote{The code can be seen in appendix \ref{app:model}}
+
+\subsection{Results}
+This figure shows the radius, C/O-ratio and the envelope fraction. Crosses indicate that the models crashed with terminal messages indicating that no opacity values can be found. Dots indicate that the models did not finish after 40 core days.
+\begin{figure}[ht]
+    \centering
+    \incplot{w15-masses-1}
+\end{figure}
+
+I tried my best to look into the issue, but surprisingly, I am not able to reproduce it on my own desktop. When I restart the model from the last photo, it is able to continue without any complaints.
+
+I really do not know how this is possible. I checked that I modified the MESA source code to prevent the Fe-peak instability in both installations and this is indeed the case.
+
+I am also pretty surprised by the sudden jumps to C/O-ratio for some of the models. This actually non-trivially changes the radius as well. I tried to show this in the plot below
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w15-masses-2}
+\end{figure}
+
+The jumps also do not really align with where I would expect dredge up to occur. 
+
+I tried to match the sudden increase with other changes in the star but I really couldn't find anything. The convection zones also do not change at the points where the ratio changes suddenly.
+
+Unfortunately I was not able to get any profile data for the sudden jump because MESA was being really annoying and not allowing me to change the profile interval after a restart.
+
+I was however able to reproduce the exact same jump after a restart on my local desktop, so unlike the crashes, this does not seem to change with the MESA version.
+
+\citet{rees2024b} and \citet{rees2024a} do not mention these jumps, nor do they show clear figures of the models where I see these jumps. The only model where I see a somewhat similar situation is the model they show in Figure 1 and Figure 5 of \citet{rees2024a}.
+
+Unfortunately \citet{rees2024b} have not published the simulation data so I cannot accurately compare, \emph{but} I can try to reproduce their Figure 1 and Figure 5. 
+
+\begin{figure}[ht]
+    \marginfignote{0}{Unfortunately, this is the best I could do. The image in \citet{rees2024a} is really pixelated.}
+    \marginfignote{6}{We do see a similar drop at approximately the same time and effective temperature. This does not prove that this is a real physical thing \emph{but} it does hint that \citet{rees2024b} saw similar jumps.}
+    \centering
+    \incplot{w15-3M-2}
+\end{figure}
+
+The differences towards the end of the evolution must be due to the modifications we made to the wind mass loss prescription, which now uses a constant wind velocity of 15 km/s.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Again, this is the best I could do. I think \citet{rees2024b} only computed a model with the \citet{trabucchi2018} mass loss rate and used this model to infer the mass loss rate from a \citet{vassiliadis1993} wind mass loss prescription. Otherwise, the pulses definitely would not align perfectly. We can see however that our model has a lower mass loss rate.}
+    \marginfignote{15}{The orange line is \citet{trabucchi2018} mass loss while the blue lines are \citet{vassiliadis1993}.}
+    \centering
+    \incplot{w15-3M-3}
+\end{figure}
+
+Below, I plot the radial evolution of the \(4\;M_\odot \) star.
+
+\begin{figure}[ht]
+    \marginfignote{0}{For larger masses, the evolution becomes drastically different and it is no longer possible to compare the evolution from \citet{rees2024b} with the evolution that we obtain using our modified \citet{vassiliadis1993} prescription.}
+    \centering
+    \incplot{w15-3M-4}
+\end{figure}
+
+
+\section{\texorpdfstring{\(3.5\;M_\odot \)}{3.5 Solar mass} Star Grid}
+\subsection{Model selection code}
+Looking at the first plot, I do think it is possible to run some models with a \(3.5M_\odot \) single star.
+
+In order to achieve this, I need to make sure the correct starting models are selected. I modified my \lstinline[style=output, breaklines=true]|grid-maker.py| code to now look at the predicted Roche lobe radius during the evolution and pick a model based on that.\sidenote{The code can be seen in appendix \ref{app:select_model}}
+\subsection{Results}
+\nextpage
+\bibliography{master.bib}
+\appendix
+\section{Model saving code}\label{app:model}
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+subroutine save_model_on_radius_increase(id, s, ierr)
+
+    integer, intent(in) :: id
+    type(star_info), pointer :: s
+    integer, intent(inout) :: ierr
+
+    character(len=200) :: fname
+    real(dp) :: R_now, R_last
+    real(dp) :: R_max_since_last_save
+    real(dp) :: R_max
+    integer :: evol_phase
+    logical :: needs_save
+
+    needs_save = s% lxtra(lx_needs_save)
+    evol_phase = s%x_integer_ctrl(1)
+
+    ! the subroutine uses the current stellar radius 
+    ! and the last saved stellar radius to determine
+    ! if a model should be saved.
+    R_now = s% photosphere_R
+    R_last = s% xtra(x_last_saved_R)
+    R_max_since_last_save = s% xtra(x_max_R_since_last_save)
+
+    ! if true: save a model
+
+    ! this criterion produces many models, 
+    ! but using this routine is only required once
+    ! for every mass star!
+    
+    if (((R_now - R_last > 10d0) .or. (R_now > 1.25d0 * R_last)) .and. (evol_phase > 1) .and. (evol_phase /= 5)) then
+        write(fname, fmt="(a7,f0.3,a7,i0,a4)") 'models/', R_now, 'Rsun_TP', s% ixtra(ix_TP_count), '.mod'
+
+        call star_write_model(id, fname, ierr)
+
+        s% need_to_update_history_now = .true.
+        s% need_to_save_profiles_now = .true.
+
+        open(1, file="last_saved_R.dat", status="replace")
+        write(1,*) R_now
+        close(1)
+
+        if (ierr /= 0) then
+            write(*,*) 'error writing model'
+            ierr = 0
+        end if
+
+        s% xtra(x_last_saved_R) = R_now
+        s% xtra(x_max_R_since_last_save) = R_now
+    end if
+
+    if (evol_phase == 5) then
+        ! in TPAGB phase
+
+        if ((s%lxtra(lx_in_LHe_peak) .eqv. .true.) .and. (needs_save .eqv. .true.)) then
+            write(fname, fmt="(a7,f0.3,a7,i0,a4)") 'models/', R_max_since_last_save, 'Rsun_TP', s% ixtra(ix_TP_count), '.mod'
+
+            call star_write_model(id, fname, ierr)
+
+            s% need_to_update_history_now = .true.
+
+            open(1, file="last_saved_R.dat", status="replace")
+            write(1,*) R_now
+            close(1)
+
+            if (ierr /= 0) then
+                write(*,*) 'error writing model'
+                ierr = 0
+            end if
+
+            s% xtra(x_last_saved_R) = R_now
+            s% lxtra(lx_needs_save) = .false.
+        end if
+
+        if (R_now - R_max_since_last_save > 0d0) then
+            s% xtra(x_max_R_since_last_save) = R_now
+        end if
+
+        if (s%lxtra(lx_in_LHe_peak) .eqv. .false.) then
+            s% lxtra(lx_needs_save) = .true.
+        end if
+    end if
+end subroutine save_model_on_radius_increase
+\end{minted}
+
+\section{Model Selection Code}\label{app:select_model}
+\begin{minted}[fontsize=\small,breaklines]{py}
+models_dict = get_model_dict()
+tpagb_age = _get_tpagb_age()
+ref_eagb_age = mr.MesaData(f"{ref_dir}/eagb.data").star_age[-1]
+
+Star = read_stellar_models(standard_dir)[0]
+
+for R in Rs:
+
+    for q in qs:
+        a_init = inv_roche_lobe(R, q)
+        [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+            Star, q, a_init, simple_only=True
+        )
+
+        R_star = Star.R
+        ages_star = Star.age
+        bin = Bins[0]
+
+        q_evolve = bin.m2 / bin.m1
+        RL = roche_lobe(1 / q_evolve) * bin.a
+
+        # interpolate stellar radius onto binary ages
+        R_interp = np.interp(bin.age, ages_star, R_star)
+
+        # find first near-contact point
+        inds = np.where(R_interp > 0.9 * RL)[0]
+
+        if len(inds) == 0:
+            print("system never approaches RLOF -> skipping")
+            continue
+
+        contact_index = inds[0]
+        contact_age = bin.age[contact_index]
+
+        candidate = None
+
+        for key in list(models_dict.keys())[::-1]:
+
+            model = models_dict[key]
+
+            model_path = f"{grid_dir}/models/{model['name']}"
+            mod_data = mr.MesaData(model_path)
+
+            model_age = _find_initial_age(mod_data) + tpagb_age
+
+            if model_age < contact_age:
+                candidate = model
+                break
+
+        if candidate is None:
+            print("no suitable stellar model before contact -> skipping")
+            continue
+
+        model = candidate
+        mass = model["M"]
+        model_path = f"{grid_dir}/models/{model["name"]}"
+        mod_data = mr.MesaData(model_path)
+        model_age = _find_initial_age(mod_data) + tpagb_age
+
+        index = np.argwhere(bin.age > model_age)[0][0] - 1
+        index_star = np.argwhere(Star.age > model_age)[0][0] - 1
+        q_evolve = bin.m1 / bin.m2
+        m1 = bin.m1[index]
+        m2 = bin.m2[index]
+        a = bin.a[index]
+        omega = bin.spin1[index]
+        varcontrol = Star.varcontrol[index_star]
+
+        print(f"\nR = {R:.0f}, q = {q:.2f}")
+        run_subdir = f"runs/R{R:05.2f}_q{q:.3f}"
+        run_dir = f"{grid_dir}/{run_subdir}"
+        print(f"copying reference binary to {run_subdir}...")
+        shutil.copytree(f"{grid_dir}/reference-binary", run_dir)
+        inlist_bin = f"{run_dir}/inlist_project"
+        inlist_star = f"{run_dir}/inlist1"
+        print(f"copying {model["name"]} to {run_subdir}...")
+        shutil.copyfile(model_path, f"{run_dir}/start.mod")
+        print(f"changing inlist...")
+        change_inlist_bin(a, m1, m2, inlist_bin)
+        change_inlist_star(omega, varcontrol, inlist_star)
+\end{minted}
+
+\newsection{Additional figures}\label{fig:compare}
+\begin{figure}[ht]
+    \marginfignote{0}{This plot shows the periods for models with \(\delta =0.2\), \(\gamma = 1.25\) and the radiation corrected mass accretion rate. Return to Section \ref{sec:ncmt}}
+    \centering
+    \incplot{w13-grid-2}
+\end{figure}
+\begin{figure}[ht]
+    \marginfignote{0}{This plot shows the periods for models with fully conservative mass transfer. Return to Section \ref{sec:ncmt}}
+    \centering
+    \incplot{w14-grid-3}
+\end{figure}
+
+
+
+
+\end{document}
