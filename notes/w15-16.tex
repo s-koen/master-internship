@@ -42,7 +42,24 @@ The pink regions are models that failed due to convergence problems. The green r
 
 The single white model had a problem with saving a photo, similar to what we saw for a model in another grid.
 
-One other thing to note: I accidentally simulated models with slightly different \(q\) values, this time from \(0.3\) to \(1\) in \(7\) steps, which is slightly awkward, but not necessarily bad.
+One other thing to note: I accidentally simulated models with slightly different \(q\) values, this time from \(0.3\) to \(1\) in \(7\) steps, which is slightly awkward, but not necessarily bad. It does mean one needs to be careful when directly comparing this grid to the previous ones.
+
+Below I plot the period evolution of one of the columns.
+
+\begin{figure}[ht]
+    \marginfignote{0}{I think the blue and orange model reach the Darwin Instability criterion. Is our basic tidal prescription able to accurately predict how tides should behave during RLOF?}
+    \centering
+    \incplot{w15-grid-11}
+\end{figure}
+
+Below, I plot the radial evolution of the most extreme model that survives the evolution.
+\begin{figure}[ht]
+    \marginfignote{0}{This is really extreme! Also, the time of RLOF is much shorter than in the case of fully conservative mass transfer. Here it only lasts for 30 something years.}
+    \centering
+    \incplot{w15-16-zoom-1}
+\end{figure}
+
+
 
 
 \newsection{Different Masses}
@@ -110,6 +127,54 @@ Looking at the first plot, I do think it is possible to run some models with a \
 
 In order to achieve this, I need to make sure the correct starting models are selected. I modified my \lstinline[style=output, breaklines=true]|grid-maker.py| code to now look at the predicted Roche lobe radius during the evolution and pick a model based on that.\sidenote{The code can be seen in appendix \ref{app:select_model}}
 \subsection{Results}
+
+\newsection{Non-zero Eccentricity}
+
+This is a bit unrelated to what I have been doing, but I was interested in seeing the efficiency of the \citet{hut1981} tidal prescription in circularizing the orbits before RLOF.
+
+I am interested in this, not only because of the relevance to this project, but also because of the papers by \citeauthor{parkosidis2025a} which predict that eccentricity during RLOF can significantly influence the final observed properties of binaries.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w16-eccentricity-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w16-eccentricity-2}
+\end{figure}
+
+If we look more closely to models with a larger starting eccentricity, we obtain the following plot:
+\begin{figure}[ht]
+    \marginfignote{0}{Quite remarkably, there is a clear island of models that are able to maintain their eccentricity.}
+    \centering
+    \incplot{w16-eccentricity-3}
+\end{figure}
+
+I want to look at some slices to see how this is possible. First, the column:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w16-eccentricity-5}
+\end{figure}
+
+Apparently, the RGB phase can already quite significantly circularise some of the shorter periods. Enough to make sure the eccentricity becomes very close to zero during the TPAGB phase.
+
+Now the row:
+\begin{figure}[ht]
+    \centering
+    \incplot{w16-eccentricity-6}
+\end{figure}
+
+Apparently some of the very eccentric orbits reach RLOF during the RGB tip, even for very large initial Roche lobe radii. athese models will keep a large eccentricity. The models that just barely graze the RGB tip will circularize efficiently. Then, there are some models that reach RLOF pretty quickly during the TPAGB phase. These will also maintain some eccentricity. All other models circularize. Overall, a lot of the models are actually very circular when RLOF starts.
+
+\section{Outer Lobe Overflow}
+The paper from \citet{marchant2021} is really interesting, and their prescription of outer lobe overflow is described in great detail with the aim to be easily implemented in MESA. They also provide code files of their modified mass transfer prescriptions.
+
+I \emph{think} it should be possible, but definitely not \emph{easy} to implement their mass transfer prescription. This would probably be a pretty good step forward, as it naturally handles the large overflows we see.
+
+Interestingly, \citet{marchant2021} note smaller overflows when using their outer lobe prescription. They also find that not a lot of mass is actually lost through the outer lagrange points. This probably holds for our TPAGB stars as well.
+
 \nextpage
 \bibliography{master.bib}
 \appendix

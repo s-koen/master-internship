@@ -2,13 +2,15 @@ from star_model import read_stellar_models
 from orbit_evol import *
 
 
-def call_evolution(Star, q, a_init, simple_only=False, eps=0.01, f_conv="BSE"):
+def call_evolution(
+    Star, q, a_init, simple_only=False, eps=0.01, f_conv="BSE", e_init=0
+):
     # Initial values of the mass ratio, semi-major axis and eccentricity
     # for which the evolution is to be computed
 
     q_init = [q]
     a_init = [a_init]
-    e_init = [0]
+    e_init = [e_init]
 
     # Set modelling options and parameters
     Options = Empty()
