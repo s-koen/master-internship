@@ -121,30 +121,38 @@ Below, I plot the radial evolution of the \(4\;M_\odot \) star.
 \end{figure}
 
 
-\section{\texorpdfstring{\(3.5\;M_\odot \)}{3.5 Solar mass} Star Grid}
+\newsection{\texorpdfstring{\(3.5\;M_\odot \)}{3.5 Solar mass} Star Grid}
 \subsection{Model selection code}
 Looking at the first plot, I do think it is possible to run some models with a \(3.5M_\odot \) single star.
 
 In order to achieve this, I need to make sure the correct starting models are selected. I modified my \lstinline[style=output, breaklines=true]|grid-maker.py| code to now look at the predicted Roche lobe radius during the evolution and pick a model based on that.\sidenote{The code can be seen in appendix \ref{app:select_model}}
 \subsection{Results}
 
-\newsection{Non-zero Eccentricity}
+\begin{figure}[ht]
+    \marginfignote{0}{A lot of the models had trouble here. Mostly, I kept seeing the opacity table messages, but some models also failed due to inspirals. The white squares now show models that were halted because they exceeded three times the critical mass loss rate from \citet{temmink2022}.}
+    \centering
+    \incplot{w15-grid-10000}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \incplot{w16-grid2-10}
+\end{figure}
+
+
+\section{Non-zero Eccentricity}
 
 This is a bit unrelated to what I have been doing, but I was interested in seeing the efficiency of the \citet{hut1981} tidal prescription in circularizing the orbits before RLOF.
 
 I am interested in this, not only because of the relevance to this project, but also because of the papers by \citeauthor{parkosidis2025a} which predict that eccentricity during RLOF can significantly influence the final observed properties of binaries.
 
-\begin{figure}[ht]
-    \centering
-    \incplot{w16-eccentricity-1}
-\end{figure}
-
+Below, I show a grid of models and their final eccentricity.
 \begin{figure}[ht]
     \centering
     \incplot{w16-eccentricity-2}
 \end{figure}
+It looks like the mass ratio \(q\) has very little effect on the overall eccentricity behaviour.
 
-If we look more closely to models with a larger starting eccentricity, we obtain the following plot:
+If we look more closely at models with a larger starting eccentricity, we obtain the following plot:
 \begin{figure}[ht]
     \marginfignote{0}{Quite remarkably, there is a clear island of models that are able to maintain their eccentricity.}
     \centering
@@ -360,7 +368,10 @@ for R in Rs:
     \incplot{w14-grid-3}
 \end{figure}
 
-
-
+\begin{figure}[ht]
+    \marginfignote{0}{In this case, all of the models circularize very efficiently and well before they undergo RLOF.}
+    \centering
+    \incplot{w16-eccentricity-1}
+\end{figure}
 
 \end{document}

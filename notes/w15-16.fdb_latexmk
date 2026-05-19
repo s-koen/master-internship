@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w15-16"] 1779140237.61027 "w15-16.aux" "w15-16.bbl" "w15-16" 1779140246.18607 0
+["bibtex w15-16"] 1779184872.40064 "w15-16.aux" "w15-16.bbl" "w15-16" 1779187778.04191 0
   "./master.bib" 1779104201.38574 32109 89ffa50922d7fce0ab976fe44229b668 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w15-16.aux" 1779140245.75033 4124 b6ccf5e07d3c81f71410c7254420875f "pdflatex"
+  "w15-16.aux" 1779187777.65545 4342 cd3fb4bc8c4a3c68758efa1e4a4a2180 "pdflatex"
   (generated)
   "w15-16.bbl"
   "w15-16.blg"
   (rewritten before read)
-["pdflatex"] 1779140237.72576 "w15-16.tex" "w15-16.pdf" "w15-16" 1779140246.18623 0
+["pdflatex"] 1779187769.97936 "w15-16.tex" "w15-16.pdf" "w15-16" 1779187778.04208 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -27,9 +27,11 @@
   "/home/koen/LaTeX-setup//plots/w15-analytic-grid-delta-img0.png" 1779023809.44246 18122 9767f207aade75f8ca8712e167e9ba73 ""
   "/home/koen/LaTeX-setup//plots/w15-analytic-grid-delta-img1.png" 1779023809.45416 402 b42b6dac960b42c0f5be73c7f0c94208 ""
   "/home/koen/LaTeX-setup//plots/w15-analytic-grid-delta.pgf" 1779023809.45746 40582 06e1569b3e743a1fda1dddaec79462ea ""
-  "/home/koen/LaTeX-setup//plots/w15-grid-1-img0.png" 1779137882.44972 414 b915c61a503ea6f9c25579ac2581ba6e ""
-  "/home/koen/LaTeX-setup//plots/w15-grid-1.pgf" 1779137882.45472 123304 6ff5aa3be5700ef6b4452f198fecaf26 ""
-  "/home/koen/LaTeX-setup//plots/w15-grid-11.pgf" 1779137873.8706 52973 4b75db625ff316927b70cc81dcf24fa8 ""
+  "/home/koen/LaTeX-setup//plots/w15-grid-1-img0.png" 1779184156.82901 414 b915c61a503ea6f9c25579ac2581ba6e ""
+  "/home/koen/LaTeX-setup//plots/w15-grid-1.pgf" 1779184156.83279 123277 a68b7fc27a4dc7bf31165842679f0a77 ""
+  "/home/koen/LaTeX-setup//plots/w15-grid-10000-img0.png" 1779184762.84496 414 b915c61a503ea6f9c25579ac2581ba6e ""
+  "/home/koen/LaTeX-setup//plots/w15-grid-10000.pgf" 1779184762.84996 120358 39df29fe8c13c4262e456e5c46453209 ""
+  "/home/koen/LaTeX-setup//plots/w15-grid-11.pgf" 1779182690.3724 52990 2f14a7e12b499c0a4e95226e80c5e85a ""
   "/home/koen/LaTeX-setup//plots/w15-masses-1-img0.png" 1778939842.63072 13201 71361400a5279b95625c44a065b193a2 ""
   "/home/koen/LaTeX-setup//plots/w15-masses-1-img1.png" 1778939843.00872 208368 ea55b6c037ffb6b7db9ca69eebce5c39 ""
   "/home/koen/LaTeX-setup//plots/w15-masses-1-img2.png" 1778939843.19173 20737 8aa3d70ce4c28154b44c21a010d2012f ""
@@ -40,7 +42,7 @@
   "/home/koen/LaTeX-setup//plots/w15-masses-2-img0.png" 1778944326.64888 198986 af643e325c7997d24c9d104faf822858 ""
   "/home/koen/LaTeX-setup//plots/w15-masses-2-img1.png" 1778944327.13089 45376 dea78425f34562919b65fe28d76a6135 ""
   "/home/koen/LaTeX-setup//plots/w15-masses-2.pgf" 1778944327.13689 43679 cf78bbdd0fd626871b173417693ebab0 ""
-  "/home/koen/LaTeX-setup//plots/w16-eccentricity-1.pgf" 1779137698.13316 91066 b34c28482c09c97cf016d6fb5aa5cc55 ""
+  "/home/koen/LaTeX-setup//plots/w16-eccentricity-1.pgf" 1779182984.4459 90203 511337110b4367350e5542accc655a51 ""
   "/home/koen/LaTeX-setup//plots/w16-eccentricity-2-img0.png" 1779117697.84627 24426 abfed2bc58720be7034c433944ff63fd ""
   "/home/koen/LaTeX-setup//plots/w16-eccentricity-2-img1.png" 1779117697.91127 20706 964dec83355c7a2da4a9750154dc17c6 ""
   "/home/koen/LaTeX-setup//plots/w16-eccentricity-2-img2.png" 1779117697.97427 20412 c639dc97df9734391c76f31ea64b5b7e ""
@@ -58,6 +60,7 @@
   "/home/koen/LaTeX-setup//plots/w16-eccentricity-5.pgf" 1779134253.35177 306983 38f7b4f3983aa7905a3a91945571b3a6 ""
   "/home/koen/LaTeX-setup//plots/w16-eccentricity-6-img0.png" 1779136130.35866 564 56fed18d66d6e3aeff83aa0c9efc281a ""
   "/home/koen/LaTeX-setup//plots/w16-eccentricity-6.pgf" 1779136130.36466 322986 6be01c9ea14963a7cf08d09ab0a7c19a ""
+  "/home/koen/LaTeX-setup//plots/w16-grid2-10.pgf" 1779187769.78431 90357 6d6f876e42cf6b0bdb6c594eacb9c00a ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1276641224 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/sourcecodepro/a_bzs6pp.enc" 1558300257 3266 2f15100c4cfc2de73c77a2f047b9e902 ""
@@ -449,10 +452,10 @@
   "_minted/5B1867D437E20A4B3C5A71BF70BCE606.highlight.minted" 1778872404.72235 10230 47a114bb9ee0c8a1d6bf0a705d998bd6 ""
   "_minted/_8201326F3760232E28B399FA4FDEDD9C.index.minted" 1779022205.69877 321 d7ec0052904e68f9e82146fc5b066844 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w15-16.aux" 1779140245.75033 4124 b6ccf5e07d3c81f71410c7254420875f "pdflatex"
-  "w15-16.bbl" 1779140237.717 3441 ef45339e5bafb3306ae417a24007b33b "bibtex w15-16"
-  "w15-16.out" 1779140245.7519 1800 2c29e140be2206e89d1713401b64210f "pdflatex"
-  "w15-16.tex" 1779140220.28475 16100 261e4d7ed0662f2a06dfc8fda07f0ef0 ""
+  "w15-16.aux" 1779187777.65545 4342 cd3fb4bc8c4a3c68758efa1e4a4a2180 "pdflatex"
+  "w15-16.bbl" 1779184872.51375 3929 ded516268f6ad42a419ea386be593abd "bibtex w15-16"
+  "w15-16.out" 1779187777.65645 1800 2c29e140be2206e89d1713401b64210f "pdflatex"
+  "w15-16.tex" 1779187746.76318 16822 5fd3b040ed20d55af815aa025122e6a9 ""
   (generated)
   "w15-16.aux"
   "w15-16.log"
