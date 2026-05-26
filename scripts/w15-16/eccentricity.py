@@ -85,7 +85,7 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-plt.xlim(1.24575e9, 1.24725e9)
+plt.xlim(1.24575e9, 1.24765e9)
 plt.ylim(1e-7, 1)
 plt.yscale("log")
 plt.xlabel("Time (yr)")
@@ -102,6 +102,7 @@ for e in es:
     )
     bin = Bins[0]
     plt.plot(bin.age, bin.e)
+plt.title("$R_\\textrm{RL,i} = 500, q_\\textrm{i}=0.5$")
 plt.savefig("/home/koen/LaTeX-setup/plots/w16-eccentricity-1.pgf", format="pgf")
 plt.show()
 plt.close()
@@ -250,8 +251,9 @@ df.to_csv("scripts/w15-16/results-zoom.csv", index=False)
 df2 = pd.read_csv("scripts/w15-16/results-zoom.csv")
 # %%
 from scipy.interpolate import griddata
+from matplotlib.path import Path
 
-qs_unique = np.sort(df["q"].unique())
+qs_unique = np.sort(df2["q"].unique())
 
 fig, axes = plt.subplots(
     1, 1, sharex=True, sharey=True, figsize=set_size(column), constrained_layout=True
@@ -262,7 +264,7 @@ axes = [axes]
 
 for ax, q in zip(axes, qs_unique):
 
-    sub = df[df["q"] == q]
+    sub = df2[df2["q"] == q]
 
     x = sub["e_init"].values
     y = sub["R"].values
@@ -291,6 +293,10 @@ fig.colorbar(
     orientation="vertical",
 )
 
+rect = plt.Rectangle((0.645, 200), 0.01, 450, edgecolor="w", facecolor="none")
+rect2 = plt.Rectangle((0.1, 547), 0.9, 6, edgecolor="w", facecolor="none")
+axes[0].add_patch(rect)
+axes[0].add_patch(rect2)
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/w16-eccentricity-3.pgf", format="pgf", dpi=600
 )
@@ -388,3 +394,151 @@ for q in qs:
 
 df = pd.DataFrame(rows)
 df.to_csv("scripts/w15-16/results-row.csv", index=False)
+# %%
+
+qs = [0.8]
+Rs = np.linspace(200, 650, 50)
+es = [0.65]
+
+
+rows = []
+
+for q in qs:
+    print(q)
+
+    for R in Rs:
+        print(R)
+
+        for e in es:
+            print(e)
+            a_init = inv_roche_lobe(R, q)
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                Star, q, a_init, simple_only=True, e_init=e
+            )
+
+            bin = Bins[0]
+
+            rows.append(
+                {
+                    "q": q,
+                    "R": R,
+                    "e_init": e,
+                    "age": bin.age,
+                    "a": bin.a,
+                    "e": bin.e,
+                    "spin1": bin.spin1,
+                    "type1": bin.type1,
+                    "m1": bin.m1,
+                    "m2": bin.m2,
+                    "amloss": bin.amloss,
+                }
+            )
+
+df = pd.DataFrame(rows)
+df.to_csv("scripts/w15-16/results-column.csv", index=False)
+
+# %%
+
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as colors
+
+fig, axs = plt.subplots(
+    1,
+    3,
+    sharey=True,
+    figsize=set_size(full),
+    constrained_layout=True,
+    width_ratios=[1, 0.25, 1],
+)
+
+plt.xlabel("")
+plt.ylabel("")
+
+norm = colors.Normalize(
+    vmin=df["R"].min(),
+    vmax=df["R"].max(),
+)
+
+cmap = cm.plasma
+
+
+for _, row in df.iterrows():
+
+    for ax in axs:
+        ax.plot(
+            row["age"],
+            row["e"],
+            color=cmap(norm(row["R"])),
+        )
+
+sm = cm.ScalarMappable(norm=norm, cmap=cmap)
+plt.colorbar(sm, label="Initial Roche lobe radius", ax=axs)
+
+plt.xlabel("Age")
+axs[0].set_ylabel("Eccentricity")
+
+axs[0].set_xlim(1.09e9, 1.1052e9)
+axs[0].set_title("RGB-tip")
+axs[1].set_xlim(1.1052e9, 1.245e9)
+axs[1].set_title("CHeB + EAGB")
+axs[2].set_xlim(1.245e9, 1.24625e9)
+axs[2].set_title("TPAGB")
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w16-eccentricity-5.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as colors
+
+fig, axs = plt.subplots(
+    1,
+    3,
+    sharey=True,
+    figsize=set_size(full),
+    constrained_layout=True,
+    width_ratios=[1, 0.25, 1],
+)
+
+plt.xlabel("")
+plt.ylabel("")
+
+norm = colors.Normalize(
+    vmin=df["e_init"].min(),
+    vmax=df["e_init"].max(),
+)
+
+cmap = cm.plasma
+
+
+for _, row in df.iterrows():
+
+    for ax in axs:
+        ax.plot(
+            row["age"],
+            row["e"],
+            color=cmap(norm(row["e_init"])),
+        )
+
+sm = cm.ScalarMappable(norm=norm, cmap=cmap)
+plt.colorbar(sm, label="Initial eccentricity", ax=axs)
+
+plt.xlabel("Age")
+axs[0].set_ylabel("Eccentricity")
+
+axs[0].set_xlim(1.05e9, 1.107e9)
+axs[0].set_title("RGB-tip")
+axs[1].set_xlim(1.107e9, 1.245e9)
+axs[1].set_title("CHeB + EAGB")
+axs[2].set_xlim(1.245e9, 1.2477e9)
+axs[2].set_title("TPAGB")
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w16-eccentricity-6.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%

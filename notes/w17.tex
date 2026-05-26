@@ -1,0 +1,40 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 17}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Semi-analytic Boundaries for Non-Conservative Mass Loss}
+Once the radius of a star exceeds the semi-major axis of the binary, the system is in contact. This is an critical boundary for ``normal'' Roche Lobe overflowing systems.
+
+We can use the analytical expressions from \citet{soberman1997} to compute the minimum semi-major axis that is reached during a mass-transfer episode. If we combine this with a model for the maximum radius that a star reaches during mass-transfer, we can find critical efficiency parameters for mass loss.
+
+Unfortunately, the radial response of realistic star cannot accurately be captured by an analytical expression, so we have to use some approximations.
+
+My idea is to use the radius of the mass-transferring models that I simulated with MESA. I use these radii to fit a polynomial and obtain an expression \(R_\text{max}(q, R_\text{RL})\).
+
+Below, I plot the maximum radius that the models reach divided by their starting Roche lobe radius as a form of normalization. 
+\begin{figure}[ht]
+    \centering
+    \incplot{w17-grid-strong-ratio}
+\end{figure}
+
+Unfortunately, but not entirely unexpectedly, the choice of mass transfer efficiency changes the stellar response to mass loss\sidenote{This is because different mass transfer efficiencies change the size of the orbit quite drastically. This in turn changes the mass transfer rate, which seems to impact the radial response of the star.}. For now, I continue only with the results from the \(\delta =0.2\), \(\gamma = 1.25\) models but I should definitely keep in mind that this introduces significant uncertainties.
+
+
+\bibliography{master.bib}
+\end{document}

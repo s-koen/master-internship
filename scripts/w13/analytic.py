@@ -688,6 +688,7 @@ CS = plt.contour(
     Y,
     Z,
     levels=[
+        np.log10(100),
         np.log10(250),
         np.log10(500),
         np.log10(1000),
@@ -713,7 +714,7 @@ plt.colorbar(
         np.log10(9500),
     ],
 )
-# plt.savefig("/home/koen/LaTeX-setup/plots/w13-analytic-grid-delta.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w15-analytic-grid-delta.pgf", format="pgf")
 plt.show()
 plt.close()
 

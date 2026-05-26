@@ -333,16 +333,15 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-plt.plot(model.star_age - 76000, model.log_abs_mdot, c="k", linewidth=1)
+plt.plot(model.star_age, model.log_R, c="k", linewidth=1)
 
-plt.xlim(0, 2.0e6)
-plt.ylim(-12, -4)
+plt.xlim(0, 400e3)
 
 
 image = Image.open("scripts/w15-16/bitmap3.png")
-axs.imshow(image, cmap=plt.cm.Reds, interpolation="none", extent=[0, 1.4e6, -12, -4])
+axs.imshow(image, cmap=plt.cm.Reds, interpolation="none", extent=[0, 230000, 2.5, 3.02])
 axs.set_aspect(
-    (1.4e6 / 8)
+    (230000 / (0.52))
 )  # you may also use am.imshow(..., aspect="auto") to restore the aspect ratio
 plt.xlabel("Star age (yr)")
 plt.ylabel(r"$\log(T_\textrm{eff})$")
@@ -350,3 +349,4 @@ plt.ylabel(r"$\log(T_\textrm{eff})$")
 plt.savefig("/home/koen/LaTeX-setup/plots/w15-3M-4.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
