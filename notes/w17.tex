@@ -21,6 +21,7 @@
 \section{Semi-analytic Boundaries for Non-Conservative Mass Loss}
 Once the radius of a star exceeds the semi-major axis of the binary, the system is in contact. This is an critical boundary for ``normal'' Roche Lobe overflowing systems.
 
+\subsection{Implementation}
 We can use the analytical expressions from \citet{soberman1997} to compute the minimum semi-major axis that is reached during a mass-transfer episode. If we combine this with a model for the maximum radius that a star reaches during mass-transfer, we can find critical efficiency parameters for mass loss.
 
 Unfortunately, the radial response of realistic star cannot accurately be captured by an analytical expression, so we have to use some approximations.
@@ -35,6 +36,179 @@ Below, I plot the maximum radius that the models reach divided by their starting
 
 Unfortunately, but not entirely unexpectedly, the choice of mass transfer efficiency changes the stellar response to mass loss\sidenote{This is because different mass transfer efficiencies change the size of the orbit quite drastically. This in turn changes the mass transfer rate, which seems to impact the radial response of the star.}. For now, I continue only with the results from the \(\delta =0.2\), \(\gamma = 1.25\) models but I should definitely keep in mind that this introduces significant uncertainties.
 
+I think it makes most sense to fit a simple 2d polynomial polynomial. By looking at the overall trends in the star radius, I think a second degree polynomial should be able to capture the general behaviour quite well. I use:
+\begin{equation*}
+    \frac{R_\text{max}(q, R_\text{RL})}{R_\text{RL}} = a R_\text{RL}^{2} + b q^{2} + c R_\text{RL}q + d R_\text{RL} + e q + f .
+\end{equation*}
+
+Then, I simply use \lstinline[style=output, breaklines=true]|scipy.optimize.curve_fit| to fit the data to the polynomial.
+
+\href{https://s-koen.github.io/figures/#/plots/master-internship/w17/fit-surface-low}{Here}, I have an interactive view of the fit to the data points. Below, I plot a static view.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The obvious advantage of the fit is that it is now trivially easy to compute the radius of the star for any given initial model condition. Even though I still plot the values over a discrete interval, this is by no means necessary.}
+    \marginfignote{10}{I think it is somewhat interesting to see why for lower starting Roche lobe radii, the star seems to reach relatively larger final radii. Let me plot some models.}
+    \centering
+    \incplot{w17-compare-fit}
+\end{figure}
+Here, I compare a \(R_\text{RL,i}=176.54\;R_\odot \), \(q=0.9\) model with a \(R_\text{RL,i}=650\;R_\odot \), \(q=0.4\) model. The efficient shrinking of the orbit due to wind mass transfer causes the ratio to decrease.
+\begin{figure}[ht]
+    \centering
+    \incplot{w17-compare-models}
+\end{figure}
+
+Next, we need to find the minimum orbital separation reached due to mass transfer according to the prescriptions by \citet{soberman1997}. This is actually pretty easy, since the expression for \(a/ a_{0}\) is simple too.
+
+We have:
+\begin{equation*}
+    \frac{a}{a_{0} } = \l(\frac{q}{q_{0}}\r)^{2 \mathcal{A} - 2} \l(\frac{1+q}{1+q_{0} }\r)^{1-2 \mathcal{B} } \l(\frac{1 + \varepsilon q}{1 + \varepsilon q_{0} }\r)^{2 \mathcal{C}  +3}   .
+\end{equation*}
+This is easily differentiated using logarithmic differentiation.
+\begin{align*}
+    \l(\frac{a}{a_{0} }\r)' =&  \l(\frac{a}{a_{0} }\r) \cdot \l[\ln \l(\frac{a}{a_{0} }\r)\r] '.\\
+    \ln (\frac{a}{a_{0} }) =& (2 \mathcal{A} - 2)\ln \l(\frac{q}{q_{0}}\r) + (1 - 2 \mathcal{B} )\ln \l(\frac{1+q}{1+q_{0}}\r)\\&+(2 \mathcal{C} +3)\ln \l(\frac{1+ \varepsilon  q}{1+ \varepsilon  q_{0}}\r)\\
+    \dv{a}{q} &= a \l(\frac{2 \mathcal{A}  - 2}{q} + \frac{1 - 2 \mathcal{B} }{1+q} + \frac{\varepsilon (2 \mathcal{C} + 3)}{1+ \varepsilon q}\r) 
+\end{align*}
+
+Now we can use this equation to find stationary points.
+
+We must have
+\begin{align*}
+    \frac{1}{a} \dv{a}{q} &= \frac{2 \mathcal{A}  - 2}{q} + \frac{1 - 2 \mathcal{B} }{1+q} + \frac{\varepsilon (2 \mathcal{C} + 3)}{1+ \varepsilon q} = 0.\\
+    \intertext{let \(n_{1} =  2 \mathcal{A}  - 2\), \(n_{2} =  1 - 2 \mathcal{B}\) and \(n_{3} = 2 \mathcal{C} + 3\)}
+    0 &= n_{1} (1+q)(1+ \varepsilon q) + n_{2} (q)(1+ \varepsilon q) + \varepsilon n_{3}(q)(1+q)\\
+    0 &= n_{1}(1 + (1 + \varepsilon )q + \varepsilon q^{2} ) + n_{2}q + \varepsilon n_{2}q^{2} + \varepsilon n_{3}q + \varepsilon n_{3}q^{2}.\\
+    \intertext{Now we can apply the quadratic formula using}
+    a &= \varepsilon (n_{1} + n_{2} + n_{3} )\\
+    b &= n_{1}(1+ \varepsilon ) + n_{2} + \varepsilon n_{3}\\
+    c &= n_{1}. 
+\end{align*}
+
+I select only the positive roots, and I make sure \(q\) is inside possible range of \(q\) values for this star.
+
+Then, in order to make sure the stationary point is a minimum, we use the second derivative. We have
+\begin{align*}
+    \dv[{2}]{a}{q} &= \dv{a}{q} \cdot \frac{1}{a}\dv{a}{q} + a \cdot \dv{}{q}\l[\frac{1}{a} \dv{a}{q}\r] .\\
+    \intertext{Since \(\dd{a} / \dd{q} \) at a stationary point is equal to zero, and since \(a>0\), we only need to look at the sign of \(\dd{} / \dd{q} \l[1 / a \cdot  \dd{a}/ \dd{q}\r]\). If it is positive, we are in a minimum. }
+    \dv{}{q}\l[\frac{1}{a} \dv{a}{q}\r] &= - \frac{n_{1} }{q^{2} } - \frac{n_{2} }{(1+q)^{2} } - \frac{\varepsilon^{2}n_{3}  }{(1 + \varepsilon q)^{2} }.
+\end{align*}
+
+A simple implementation of this can be seen in the appendix.
+
+\newsubsection{Results}
+
+As a first test of the model, I plot the fraction of the maximum star radius and the minimum separation as a function of the initial Roche lobe radius and mass ratio.
+\begin{figure}[ht]
+    \marginfignote{0}{The ratio seems to mostly depend on the mass ratio, and not so much on the initial Roche lobe radius. I guess this makes sense, as the mass ratio significantly affects \emph{how} the orbit responds to mass loss, while the initial separation does not.}
+    \centering
+    \incplot{w17-test-single-delta-gamma}
+\end{figure}
+
+We can also look at the required \(\delta\) for \(\max R_\text{star} = \min a\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w17-delta}
+\end{figure}
+
+Obviously, the same can be done for \(\gamma \):
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w17-gamma}
+\end{figure}
+
+But really, \(\gamma \) and \(\delta \) are connected, so we would like to see them together. Showing this is in a static plot is difficult, but I have tried:
+
+\begin{figure}[ht]
+    \marginfignote{0}{To me, this makes some intuitive sense and the values seem pretty reasonable.}
+    \centering
+    \incplot{w17-triple}
+\end{figure}
+As a test, we can also use the fit from the \emph{MESA} models with stronger mass loss:
+\begin{figure}[ht]
+    \centering
+    \incplot{w17-triple-max}
+\end{figure}
+
+
+
 
 \bibliography{master.bib}
+\nextpage
+\appendix
+\section{Python Implementation}
+
+\begin{minted}[fontsize=\small,breaklines]{py}
+    def a_over_a0(self, q=None):
+        # table 5 soberman1997
+        if q == None:
+            q = self.qs
+        term_1 = (q / self.q0) ** (2 * self.curA - 2)
+        term_2 = ((1 + q) / (1 + self.q0)) ** (1 - 2 * self.curB)
+        term_3 = ((1 + self.epsilon * q) / (1 + self.epsilon * self.q0)) ** (
+            2 * self.curC + 3
+        )
+        return term_1 * term_2 * term_3
+
+    def da_over_a0_dq(self, q=None):
+        if q == None:
+            q = self.qs
+
+        f = self.a_over_a0()
+
+        n1 = 2 * self.curA - 2
+        n2 = 1 - 2 * self.curB
+        n3 = 2 * self.curC + 3
+
+        dlogf = n1 / q + n2 / (1 + q) + n3 * self.epsilon / (1 + self.epsilon * q)
+
+        return f * dlogf
+
+    def gprime(self, q):
+        eps = self.epsilon
+        n1 = 2 * self.curA - 2
+        n2 = 1 - 2 * self.curB
+        n3 = 2 * self.curC + 3
+
+        gprime = -n1 / q**2 - n2 / (1 + q) ** 2 - n3 * eps**2 / (1 + eps * q) ** 2
+        return gprime > 0
+
+    @property
+    def stationary_points(self):
+
+        n1 = 2 * self.curA - 2
+        n2 = 1 - 2 * self.curB
+        n3 = 2 * self.curC + 3
+
+        eps = self.epsilon
+
+        a = eps * (n1 + n2 + n3)
+        b = n1 * (1 + eps) + n2 + n3 * eps
+        c = n1
+
+        disc = b**2 - 4 * a * c
+
+        if disc < 0:
+            argmin = np.argmin(self.a_over_a0())
+            return self.qs[argmin]
+
+        sqrt_disc = np.sqrt(disc)
+
+        q1 = (-b + sqrt_disc) / (2 * a)
+        q2 = (-b - sqrt_disc) / (2 * a)
+        roots = [q for q in [q1, q2] if q > 0]
+        if len(roots) == 0:
+            argmin = np.argmin(self.a_over_a0())
+            return self.qs[argmin]
+        roots = np.sort(roots)
+        for root in roots:
+            if self.gprime(root):
+                argmin = np.argmin(self.a_over_a0())
+                return np.max([root, self.qs[argmin]])
+
+        argmin = np.argmin(self.a_over_a0())
+        return self.qs[argmin]
+
+\end{minted}
+
 \end{document}

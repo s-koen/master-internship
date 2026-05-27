@@ -131,18 +131,25 @@ class CombineEvolve:
         disc = b**2 - 4 * a * c
 
         if disc < 0:
-            return []
+            argmin = np.argmin(self.a_over_a0())
+            return self.qs[argmin]
 
         sqrt_disc = np.sqrt(disc)
 
         q1 = (-b + sqrt_disc) / (2 * a)
         q2 = (-b - sqrt_disc) / (2 * a)
         roots = [q for q in [q1, q2] if q > 0]
+        if len(roots) == 0:
+            argmin = np.argmin(self.a_over_a0())
+            return self.qs[argmin]
+        roots = np.sort(roots)
         for root in roots:
             if self.gprime(root):
-                return root
+                argmin = np.argmin(self.a_over_a0())
+                return np.max([root, self.qs[argmin]])
 
-        return self.qs[-1]
+        argmin = np.argmin(self.a_over_a0())
+        return self.qs[argmin]
 
     @property
     def M_tot_over_M_tot0(self):
@@ -323,7 +330,7 @@ for grid, ax in zip(grids, axs):
         if model.env_mass[-1] > 0.1:
             mask_bad[i, j] = True
         else:
-            Z[i, j] = np.max(model.star.R) / RL
+            Z[i, j] = np.max(model.star.R) / R
         if model.star.period_days[-1] < 50:
             mask_bad[i, j] = True
             Z[i, j] = np.nan
@@ -349,7 +356,7 @@ for grid, ax in zip(grids, axs):
         if model.env_mass[-1] > 0.1:
             mask_bad[i, j] = True
         else:
-            Z[i, j] = np.max(model.star.R) / RL
+            Z[i, j] = np.max(model.star.R) / R
         if model.star.period_days[-1] < 50:
             mask_bad[i, j] = True
             Z[i, j] = np.nan
@@ -426,7 +433,7 @@ for R, q, model in grid_min.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -506,16 +513,16 @@ ax = fig.add_subplot(111, projection="3d")
 ax.scatter(x, y, z, color="red")
 
 # Fitted quadratic surface
-ax.plot_surface(RR, QQ, Z_fit, alpha=0.5)
+ax.plot_surface(RR, QQ, Z_fit, alpha=0.5, edgecolor="C0", cstride=1, rstride=1)
 
-ax.set_xlabel("R")
+ax.set_xlabel("Initial Roche lobe radius")
 ax.set_ylabel("q")
-ax.set_zlabel("Z")
-
-ax.contour(RR, QQ, Z_fit, zdir="z", offset=-100, cmap="coolwarm")
-ax.contour(RR, QQ, Z_fit, zdir="x", offset=-40, cmap="coolwarm")
-ax.contour(RR, QQ, Z_fit, zdir="y", offset=40, cmap="coolwarm")
-
+ax.set_zlabel("max R / Initial Roche lobe radius")
+#
+# ax.contour(RR, QQ, Z_fit, zdir="z", offset=ax.get_zlim()[0], cmap="viridis")
+# ax.contour(RR, QQ, Z_fit, zdir="x", offset=ax.get_xlim()[0], cmap="viridis")
+# ax.contour(RR, QQ, Z_fit, zdir="y", offset=ax.get_ylim()[1], cmap="viridis")
+#
 with open("/home/koen/master-internship/scripts/w17/figure1.pickle", "wb") as f:
     pickle.dump(fig, f)
 
@@ -528,12 +535,135 @@ plt.show()
 
 
 # %%
-from matplotlib.colors import Normalize
 
-# Evaluate fitted surface
+import numpy as np
+from scipy.optimize import curve_fit
+
+import plotly.graph_objects as go
+import plotly.express as px
+import plotly.io as pio
+
+pio.templates.default = "simple_white"
+
+# Build coordinate grids
+grid = grid_min
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] = np.max(model.star.R) / R
+    if model.star.period_days[-1] < 50:
+        mask_bad[i, j] = False
+        Z[i, j] = np.nan
+
+
+print(Z)
+RR, QQ = np.meshgrid(R_vals, q_vals)
+# Keep only valid points
+valid = (~np.isnan(Z)) & (~mask_bad)
+
+x = RR[valid]
+y = QQ[valid]
+z = Z[valid]
+
+# 2D quadratic model
+# Fit
+popt, pcov = curve_fit(quad2d, (x, y), z)
+
+a, b, c, d, e, f = popt
 Z_fit = quad2d((RR, QQ), *popt)
 
-fig, ax = plt.subplots(figsize=(7, 6))
+fig = go.Figure()
+colors = px.colors.qualitative.D3
+surf = fig.add_trace(
+    go.Surface(
+        x=RR,
+        y=QQ,
+        z=Z_fit,
+        colorscale=[[0, colors[0]], [1, colors[0]]],
+        showscale=False,
+    ),
+)
+
+fig.update_traces(opacity=0.5)
+
+fig.add_trace(
+    go.Scatter3d(x=x, y=y, z=z, mode="markers", marker=dict(size=3, color=colors[0]))
+)
+
+fig.update_layout(
+    scene=dict(
+        xaxis_title=r"Roche lobe radius",
+        yaxis_title=r"q (accretor / donor)",
+        zaxis_title=r"Max(Star radius) / Roche lobe radius",
+    ),
+    autosize=True,
+    margin=dict(l=0, r=0, b=0, t=50),
+)
+
+# export
+
+fig.write_html(
+    "/home/koen/figures/plots/master-internship/w17/fit-surface-low.html",
+    include_plotlyjs="cdn",
+    include_mathjax="cdn",
+    config={"responsive": True},
+)
+
+# %%
+
+
+from matplotlib.colors import Normalize
+
+grid = grid_min
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] = np.max(model.star.R) / R
+    if model.star.period_days[-1] < 50:
+        mask_bad[i, j] = False
+        Z[i, j] = np.nan
+
+
+print(Z)
+RR, QQ = np.meshgrid(R_vals, q_vals)
+# Keep only valid points
+valid = (~np.isnan(Z)) & (~mask_bad)
+
+x = RR[valid]
+y = QQ[valid]
+z = Z[valid]
+
+# 2D quadratic model
+# Fit
+popt, pcov = curve_fit(quad2d, (x, y), z)
+
+a, b, c, d, e, f = popt
+Z_fit = quad2d((RR, QQ), *popt)
+
+
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
 norm = Normalize(
     vmin=min([np.nanmin(z), np.nanmin(Z_fit)]),
@@ -547,14 +677,48 @@ sc = ax.scatter(x, y, c=z, cmap="viridis", s=100, norm=norm)
 
 # Colorbar
 cbar = plt.colorbar(pcm, ax=ax)
-cbar.set_label("Z")
+cbar.set_label(r"$\textrm{max}(R_\textrm{star}) / R_\textrm{RL}$")
 
-ax.set_xlabel("R")
-ax.set_ylabel("q")
+ax.set_xlabel(r"$R_\textrm{RL}$ ($R_\odot$)")
+ax.set_ylabel("$q$")
 ax.set_xscale("log")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w17-compare-fit.pgf", format="pgf")
 plt.show()
+plt.close()
 # %%
 
+grid = grid_min
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+for i, (R, q, model) in enumerate(grid.get_R1_index(1)):
+    if q != 0.9:
+        continue
+    print(R)
+    plt.plot(model.star.age / model.star.age[-1], model.star.R, c="C0", label="Star")
+    plt.plot(
+        model.star.age / model.star.age[-1], model.star.rl_1, c="C1", label="Roche lobe"
+    )
+    plt.plot([0, 0.1], [R, R], c="C2", label="Initial Roche lobe")
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(-1)):
+    if q != 0.4:
+        continue
+    print(R)
+    plt.plot(model.star.age / model.star.age[-1], model.star.R, c="C0")
+    plt.plot(model.star.age / model.star.age[-1], model.star.rl_1, c="C1")
+    plt.plot([0, 0.1], [R, R], c="C2")
+
+fig.legend(loc="outside upper center", ncols=3)
+plt.xlabel(r"Normalized age")
+plt.ylabel(r"Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w17-compare-models.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
 # Build coordinate grids
 grid = grid_max
 R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
@@ -570,7 +734,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -655,7 +819,7 @@ plt.show()
 # %%
 
 # Build coordinate grids
-grid = grid_max
+grid = grid_min
 R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
 q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
 
@@ -669,7 +833,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -693,14 +857,17 @@ alpha = 0
 beta = 0
 delta = 0.2
 gamma = 1.25
-qss = np.linspace(0.1, 1, 100)
-RLs = np.linspace(150, 750, 100)
+qss = np.linspace(0.1, 1, 300)
+RLs = np.linspace(150, 750, 300)
 
-Z = np.zeros([100, 100])
+Z = np.zeros([300, 300])
 
 rlgrid, qgrid = np.meshgrid(RLs, qs)
 
-fig, ax = plt.subplots(figsize=(7, 6))
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
 for i, RL in enumerate(RLs):
     for j, q in enumerate(qss):
         qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
@@ -717,11 +884,21 @@ pcm = ax.pcolormesh(
     cmap="bwr",
     vmin=np.min(Z),
     vmax=1 + (1 - np.min(Z)),
+    rasterized=True,
 )
 
-fig.colorbar(pcm)
+fig.colorbar(pcm, label=r"\textrm{max}(R\textrm{star})/ \textrm{min}(a)")
 
+plt.title(r"$\delta=0.2,\;\gamma = 1.25$")
+plt.xlabel("Roche lobe radius ($R_\odot$)")
+plt.ylabel("$q$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w17-test-single-delta-gamma.pgf",
+    format="pgf",
+    dpi=300,
+)
 plt.show()
+plt.close()
 
 # %%
 
@@ -740,7 +917,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -775,7 +952,11 @@ Z = np.zeros([100, 100])
 
 rlgrid, qgrid = np.meshgrid(RLs, qs)
 
-fig, ax = plt.subplots(figsize=(7, 6))
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
 for i, RL in enumerate(RLs):
     print(i)
     for j, q in enumerate(qss):
@@ -789,16 +970,16 @@ for i, RL in enumerate(RLs):
         Z[j, i] = delta
 
 
-pcm = ax.pcolormesh(
-    RLs,
-    qss,
-    Z,
-    shading="auto",
-)
+pcm = ax.pcolormesh(RLs, qss, Z, cmap="viridis", shading="auto", rasterized=True)
 
-fig.colorbar(pcm)
+fig.colorbar(pcm, label=r"$\delta$")
+plt.title(r"$\gamma = 1.25$")
+plt.xlabel("Roche lobe radius ($R_\odot$)")
+plt.ylabel("$q$")
 
+plt.savefig("/home/koen/LaTeX-setup/plots/w17-delta.pgf", format="pgf", dpi=300)
 plt.show()
+plt.close()
 
 
 # %%
@@ -819,7 +1000,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -854,7 +1035,10 @@ Z = np.zeros([100, 100])
 
 rlgrid, qgrid = np.meshgrid(RLs, qs)
 
-fig, ax = plt.subplots(figsize=(7, 6))
+fig, ax = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
 for i, RL in enumerate(RLs):
     print(i)
     for j, q in enumerate(qss):
@@ -868,16 +1052,16 @@ for i, RL in enumerate(RLs):
         Z[j, i] = gamma
 
 
-pcm = ax.pcolormesh(
-    RLs,
-    qss,
-    Z,
-    shading="auto",
-)
+pcm = ax.pcolormesh(RLs, qss, Z, shading="auto", cmap="viridis", rasterized=True)
 
-fig.colorbar(pcm)
+fig.colorbar(pcm, label=r"$\gamma$")
+plt.title(r"$\delta = 0.25$")
+plt.xlabel("Roche lobe radius ($R_\odot$)")
+plt.ylabel("$q$")
 
+plt.savefig("/home/koen/LaTeX-setup/plots/w17-gamma.pgf", format="pgf", dpi=300)
 plt.show()
+plt.close()
 
 
 # %%
@@ -897,7 +1081,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -922,7 +1106,8 @@ RLs = np.linspace(150, 750, 100)
 
 Z = np.zeros([100, 100])
 
-fig, ax = plt.subplots(3, 3, figsize=(7, 6), constrained_layout=True)
+fig, ax = plt.subplots(3, 3, figsize=set_size(full), constrained_layout=True)
+
 
 for i, RL in enumerate(RLs):
     for j, q in enumerate(qss):
@@ -930,14 +1115,16 @@ for i, RL in enumerate(RLs):
         Z[j, i] = np.log10(max_R)
 
 
-pcm = ax[1, 1].pcolormesh(
-    RLs,
-    qss,
-    Z,
-    shading="auto",
-)
+ys = [0.25, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 0.75]
+xs = [300, 450, 600, 300, 600, 300, 450, 600]
+ax[1, 1].scatter(xs, ys, color="w", zorder=100000)
+ax[1, 1].set_xlabel("Roche lobe radius ($R_\odot$)")
+ax[1, 1].set_ylabel("$q$")
+pcm = ax[1, 1].pcolormesh(RLs, qss, Z, shading="auto", cmap="viridis", rasterized=True)
 
-fig.colorbar(pcm)
+
+fig.colorbar(pcm, label=r"$\textrm{log}R_\textrm{max}$ ($R_\odot$)")
+
 
 RLs = [300, 450, 600]
 qss = [0.75, 0.5, 0.25]
@@ -971,14 +1158,15 @@ for ii in range(3):
                     / max_R
                 )
 
-        pcm = ax[ii, jj].pcolormesh(
+        pcm = ax[jj, ii].pcolormesh(
             deltagrid,
             gammagrid,
             Z,
-            cmap="bwr",
+            cmap="bwr_r",
             vmin=-0.5,
             vmax=0.5,
             shading="auto",
+            rasterized=True,
         )
 
         # ax[ii,jj].contour(
@@ -987,14 +1175,155 @@ for ii in range(3):
         #     Z,
         #     levels=[0,1]
         # )
+        ax[ii, jj].set_xlabel(r"$\delta$")
+        ax[ii, jj].set_ylabel(r"$\gamma$")
 
-        fig.colorbar(pcm)
+plt.colorbar(
+    pcm,
+    ax=ax[0, 0:3],
+    orientation="horizontal",
+    location="top",
+    label=r"$\textrm{max}(R) / \textrm{min}(a)$",
+    aspect=70,
+)
 
 
+plt.savefig("/home/koen/LaTeX-setup/plots/w17-triple.pgf", format="pgf", dpi=300)
 plt.show()
-
+plt.close()
 
 # %%
+
+# Build coordinate grids
+grid = grid_max
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] = np.max(model.star.R) / R
+    if model.star.period_days[-1] < 50:
+        mask_bad[i, j] = False
+        Z[i, j] = np.nan
+
+
+RR, QQ = np.meshgrid(R_vals, q_vals)
+# Keep only valid points
+valid = (~np.isnan(Z)) & (~mask_bad)
+
+x = RR[valid]
+y = QQ[valid]
+z = Z[valid]
+
+# 2D quadratic model
+# Fit
+popt, pcov = curve_fit(quad2d, (x, y), z)
+
+a, b, c, d, e, f = popt
+
+qss = np.linspace(0, 1, 100)
+RLs = np.linspace(150, 750, 100)
+
+Z = np.zeros([100, 100])
+
+fig, ax = plt.subplots(3, 3, figsize=set_size(full), constrained_layout=True)
+
+
+for i, RL in enumerate(RLs):
+    for j, q in enumerate(qss):
+        max_R = RL * quad2d((RL, q), *popt)
+        Z[j, i] = np.log10(max_R)
+
+
+ys = [0.25, 0.25, 0.25, 0.5, 0.5, 0.75, 0.75, 0.75]
+xs = [300, 450, 600, 300, 600, 300, 450, 600]
+ax[1, 1].scatter(xs, ys, color="w", zorder=100000)
+ax[1, 1].set_xlabel("Roche lobe radius ($R_\odot$)")
+ax[1, 1].set_ylabel("$q$")
+pcm = ax[1, 1].pcolormesh(RLs, qss, Z, shading="auto", cmap="viridis", rasterized=True)
+
+
+fig.colorbar(pcm, label=r"$\textrm{log}R_\textrm{max}$ ($R_\odot$)")
+
+
+RLs = [300, 450, 600]
+qss = [0.75, 0.5, 0.25]
+
+print(RLs)
+# panels
+
+for ii in range(3):
+    for jj in range(3):
+        RL = RLs[ii]
+        q = qss[jj]
+
+        if ii == 1 and jj == 1:
+            continue
+
+        max_R = RL * quad2d((RL, q), *popt)
+        deltagrid = np.linspace(1e-10, 1 - 1e-10, 100)
+        gammagrid = np.linspace(1e-10, 5, 100)
+
+        Z = np.zeros([100, 100])
+
+        dgrid, ggrid = np.meshgrid(deltagrid, gammagrid)
+
+        for i, d in enumerate(deltagrid):
+            for j, g in enumerate(gammagrid):
+                qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
+                orbit = CombineEvolve(alpha, beta, d, g, qs)
+                Z[j, i] = np.log10(
+                    orbit.a_over_a0(orbit.stationary_points)
+                    * get_separation(RL, q)
+                    / max_R
+                )
+
+        pcm = ax[jj, ii].pcolormesh(
+            deltagrid,
+            gammagrid,
+            Z,
+            cmap="bwr_r",
+            vmin=-0.5,
+            vmax=0.5,
+            shading="auto",
+            rasterized=True,
+        )
+        print(ii, jj, RL, q)
+
+        # ax[ii,jj].contour(
+        #     deltagrid,
+        #     gammagrid,
+        #     Z,
+        #     levels=[0,1]
+        # )
+        ax[ii, jj].set_xlabel(r"$\delta$")
+        ax[ii, jj].set_ylabel(r"$\gamma$")
+
+plt.colorbar(
+    pcm,
+    ax=ax[0, 0:3],
+    orientation="horizontal",
+    location="top",
+    label=r"$\textrm{max}(R) / \textrm{min}(a)$",
+    aspect=70,
+)
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w17-triple-max.pgf", format="pgf", dpi=300)
+plt.show()
+plt.close()
+
+# %%
+
+
 import pickle
 from matplotlib.gridspec import GridSpec
 
@@ -1013,7 +1342,7 @@ for R, q, model in grid.iter_models():
     if model.env_mass[-1] > 0.1:
         mask_bad[i, j] = True
     else:
-        Z[i, j] = np.max(model.star.R) / RL
+        Z[i, j] = np.max(model.star.R) / R
     if model.star.period_days[-1] < 50:
         mask_bad[i, j] = False
         Z[i, j] = np.nan
@@ -1114,7 +1443,7 @@ with open("/home/koen/master-internship/scripts/w17/figure.pickle", "wb") as f:
 
 # %%
 
-fig = pickle.load(open("/home/koen/master-internship/scripts/w17/figure.pickle", "rb"))
+# fig = pickle.load(open("/home/koen/master-internship/scripts/w17/figure.pickle", "rb"))
 
 
 def mouse_move(event):
@@ -1144,5 +1473,4 @@ while True:
     plt.draw()
     if plt.waitforbuttonpress(0.01):
         break
-
 # %%
