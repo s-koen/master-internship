@@ -1,0 +1,53 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 18}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Mesa Tides}
+
+\subsection{RLOF test}
+In order to test the agreement between the standard \emph{MESA} tidal prescription, which is based on \emph{BSE} and the standard \citet{hut1981} formulism, and my tidal prescription, which is also based on \emph{BSE} and \citet{hut1981}, but with the modifications to the \(k / T\) term by \citet{preece2022}.
+
+As a first test, I compare one of the Darwin Instability models from my previous grid with a \emph{MESA} default tides model.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w18-tides-1}
+\end{figure}
+
+The critical rotation in the bottom left panel is defined as
+\begin{equation*}
+    \Omega_\text{crit} = \sqrt{\frac{\Gamma G M}{R^{3}}},
+\end{equation*}
+where \(\Gamma \) is given by
+\begin{equation*}
+    \Gamma \equiv  1 - \frac{L_\text{rad}}{L_\text{edd}}
+\end{equation*}
+Unfortunately I do not have the required MESA output data to compute this for my custom tides prescription.
+
+There are a couple of interesting things here. First and most importantly, we see the same Darwin instability for the models that use the \emph{MESA} tidal prescription.
+There are some small differences in the exact strength and effects of the tides though. If anything, the \emph{MESA} tides seem to be a bit stronger than my custom implementation. The differences between the two prescription are in the \(k / T\) factor, and the way the convective regions are determined. 
+
+The \emph{MESA} rotation causes the star to be slightly more expanded, which makes sense. This has a minor effect on the time at which RLOF can start. The radius also grows significantly once the start gets close to, and eventually exceeds its critical rotation.
+
+This effect is not present in my models, since I do not account for this in any way. It is an interesting effect though, and I am wondering if there might be more models that reach its critical rotation during orbital shrinking. This might affect stability as well.
+\subsection{Divergence test}
+Besides looking at the stability of the tides during RLOF, it is also interesting to look at the general differences between the tidal prescription for longer evolutionary periods. Here, I try to compare the differences between the effects of the tides on the orbit during the thermal pulses for my custom prescription and the standard \emph{MESA} implementation. 
+
+\bibliography{master.bib}
+\end{document}
