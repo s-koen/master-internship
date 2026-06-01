@@ -1,1 +1,66 @@
-Test
+### ### ### ###
+INTRODUCTION
+### ### ### ###
+
+Hello!
+My name is Koen Essers, I am a master student, and for the last couple of months, I have been working together with Onno for my master project, which I will tell you about during this presentation.
+
+I thought I would start off with this hopefully, and probabily recognisable graph.
+Here, I plot the period of binary systems on the horizontal axis, and the eccentricity of the systems on the vertical axis. All of these dots represent systems that have previously experienced mass transfer.
+
+These systems and their orbits and eccentricities are interesting for a varierity of reasons, but in this case I want to highlight their periods. 
+Specificially, I want to highlight the periods of these systems. These are barium stars, which seem to show the same period and eccentricity distributions as other post-mass transfer systems.
+
+Barium stars are main-sequence or early giant stars that contain heavy s-procces elements such as barium in their envelope. These elements can only be formed by stars at very late evolutionary phases. To be precise, we expect only thermally pulsing asymptotic giant branch stars to produce these elements. Since we observe these elements in main-sequence, or early giant stars, we must conclude that they have accreted this material from such a thermally pulsing asymptotic giant branch stars.
+
+Now interestingly, we observe many of these barium stars in wide orbits, much wider than expected for post-common envelope systems. Yet, the many of the orbits are not wide enough to be explained by wind mass transfer alone. This really only leaves one other mechanism for mass transfer that might be able to explain the observed orbits: Roche lobe overflow.
+
+Now, untill not very long ago, Roche lobe overflow from giant donors like thermally pulsing AGB stars was thought to be unstable due to the flat temperature gradient in the adiabatic envelope of giants stars. However, very much also due to Karels work, this perception is changing. It turns out that red giant stars and early AGB stars can thermally readjust their outer superadiabatic subsurface layers in response to mass loss, which stabalizes RLOF mass trasnfer.
+
+Since we observe barium stars which have accreted mass from TPAGB stars with orbits that seem to imply that RLOF must have occured, it is only natural to question if TPAGB stars can transfer mass stably via RLOF as well. This is exactly what I my research focusses on.
+
+My goal with this presentation is to convince you that just like red giant branch and early asymptotic giant branch stars, thermally pulsing AGB stars can thermally readjust their outer layers in response to mass loss, even for initially very unequal mass ratios. This means the general trend from Karels work extends quite naturally to TPAGB stars. However, we also find that the TPAGB stars overflow their Roche lobe radius a lot during mass transfer, which is a significant uncertainty of our 1D models.
+
+During the next 15 mintues or so, I will first explain my methods. Then I think it is instructive to go over one binary model in some detail after which I want to go over some general trends of a grid of binary models. Lastly, I want to go over some prelimiary results of non-conservative RLOF mass transfer to highlight its importance for the stability.
+
+### ### ### ###
+METHODS
+### ### ### ###
+
+Okay, let's take a look at my methods. How do I actually get to my results.
+To start, let me say that my work primarily uses the 1D stellar evolution code MESA, which is a great tool. Not only can it simulate nearly all complicated stellar evolution phases imaginable, it can also simulate binary systems. As long as you use the correct options and parameters, MESA is really versitile. The tricky part however, is mostly in finding these correct settings. Especially for complicated phases like the thermally pulsing asymptotic giant branch phase, MESA can easily experience convergence problems, or instabilities. 
+
+Luckily for me however, a lot of people have already done a bunch of work and compiled usefull options and custom subroutines to make MESA behave stably for TP-AGB stars. In particular, I am using the options and routines provided by Rees in 2024 for my TP-AGB stars. I am however using a slightly different wind mass loss prescription, namely the prescription by vassiliadis and wood and I am using a constant wind velocity of 15 km/s.
+
+Now, my workflow works roughly like this:
+First, I simulate a single star using the options described by Rees. This TPAGB star will experience many pulses untill it eventually expels its entire envelope after which it will become a white dwarf. The pulses can be seen in this figure.
+For every pulse, I save a model that I can later use as a starting point for a binary evolution simulation.
+
+I then use a post-processing step, where I use the single star, together with an initial mass ratio, orbital separation and spin to determine how tides and mass loss will affect the orbit. In particular, I pay a lot of attention to the evolution of the Roche lobe radius of the TPAGB star. 
+
+Using this Roche lobe radius, an efficient binary starting model can be selected. I then use the binary separtion, stellar spin and mass-ratio of the system at the point of the starting model as starting conditions for the detailed MESA models. This ensures the MESA models start with their expected values based on ZAMS initial values.
+
+Importantly, the MESA models and the post processing step use the same tidal and wind mass transfer prescription. In both cases I use a standard hut-style tidal prescription, where I use a slightly different k over T ratio as described by Preece in 2022. I then use a wind mass transfer prescription from Saladino which is based on hydrodynamical simulations of wind mass transfer specifically from TPAGB stars.
+
+Lastly, I use the binary evolution options from Karel to make sure mass transfer is properly resolved.
+
+Okay! Now that we know how simulate my models, Let's take a look at some results. Since I have been showing of this example system that start with a Roche lobe radius of approximately 550 solar radii, let's see how this one evolves through RLOF!
+
+
+### ### ### ### ###
+SINGLE RESULTS
+### ### ### ### ###
+
+
+
+### ### ### ### ###
+MULTIPLE RESULTS
+### ### ### ### ###
+
+
+
+### ### ### ### ### ###
+NONCONSERVATIVE RESULS
+### ### ### ### ### ###
+
+
