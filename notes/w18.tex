@@ -18,6 +18,21 @@
 %Begin the document
 \begin{document}
 \setuplayout
+
+\section{Comparing Analytic Predictions with MESA}
+
+A good way to test the accuracy of my semi-analytical model for determining the ratio between the maximum radius of the star and the minimum separation is to test it directly to the grid of models for which I have the actual data.
+
+Below, I show the predictions from my semi-analytical model with the data points overplotted with the same colorscale.
+
+\begin{figure}[ht]
+    \marginfignote{0}{I think this looks quite good, but it is not super intuitive. The interactive view below gives a better idea of the actual agreement.}
+    \centering
+    \incplot{w18-compare-mesa-analytic}
+\end{figure}
+
+\href{https://s-koen.github.io/figures/#/plots/master-internship/w18/fit-surface-low}{Click here for an interactive view!}
+
 \section{Mesa Tides}
 
 \subsection{RLOF test}
@@ -46,8 +61,171 @@ There are some small differences in the exact strength and effects of the tides 
 The \emph{MESA} rotation causes the star to be slightly more expanded, which makes sense. This has a minor effect on the time at which RLOF can start. The radius also grows significantly once the start gets close to, and eventually exceeds its critical rotation.
 
 This effect is not present in my models, since I do not account for this in any way. It is an interesting effect though, and I am wondering if there might be more models that reach its critical rotation during orbital shrinking. This might affect stability as well.
+
+Lastly, the change in angular momentum due to spin orbit coupling seems pretty different during the mass transfer episode, while, at least at a first glance it behaves similarly before. Specifically, the dip seems interesting. Below, I investigate this is a bit more detail
+
+Below, I plot the non-log-scaled change in angular momentum, which clearly shows that it is sometimes positive, and sometimes negative. 
+\begin{figure}[ht]
+    \centering
+    \incplot{w18-ls-zoom}
+\end{figure}
+
+The dip we see in the first figure aligns with the crossing of the \(0\) point. Curiously, my custom implementation does not show this crossing.
+
+Below, I also plot the same figure, now using time on the horizontal axis.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w18-ls-zoom-2}
+\end{figure}
+
+This figure shows that the two methods are in general agreement throughout the evolution, \emph{execpt for} the sudden positive \(\dot{J}   \) during mass loss. 
+
+\nextpage
+Now, \emph{why} does the \emph{MESA} model get a very strong positive \(\dot{J} \) due to the spin-orbit coupling, while my custom routine does not?
+
+Just from the \citet{hut1981} spin algorithm, we would expect the change in angular spin frequency to be:
+\begin{equation*}
+    \dv{\Omega}{t} = 3 \frac{k}{T} \frac{q^{2} }{r_{g}^{2}  }\l(\frac{R}{a}\r)^{6}(\Omega_\text{orb} - \Omega_\text{star})\text{ in the case of zero eccentricity}.
+\end{equation*}
+All terms are greater than 0, except for \((\Omega_\text{orb} - \Omega_\text{star})\). We would therefore expect \(\dot{J}_\text{ls} > 0 \) if \(\Omega_\text{orb} > \Omega_\text{star}\) and \(\dot{J}_\text{ls} < 0 \) if \(\Omega_\text{orb} < \Omega_\text{star}\).
+
+Below, I plot both the ratio of the spin of the orbit and the star, as well as the \(\dot{J}\) associated with the tides.
+\begin{figure}[ht]
+    \centering
+    \incplot{w18-spins}
+\end{figure}
+
+Clearly, my implementation does exactly what we would expect. It crosses the zero line if and only if the ratio of the spins reverse.
+
+The \emph{MESA} implementation does not! There must be something else contributing to the spin-orbit coupling.
+Looking at the source code, we see that the tides are computed like this:
+
+\begin{minted}[fontsize=\small]{fortran}
+b% jdot_ls = 0
+! bulk change in spin angular momentum takes tides into account
+delta_J = b% s_donor% total_angular_momentum_old - &
+    b% s_donor% total_angular_momentum
+! ignore angular momentum lost through winds
+if (b% s_donor% mstar_dot < 0) &
+   delta_J = delta_J - b% s_donor% angular_momentum_removed * &
+      abs(b% mdot_system_wind(b% d_i) / b% s_donor% mstar_dot)
+b% jdot_ls = b% jdot_ls + delta_J
+\end{minted}
+
+My implementation only takes into account the tides, so the term
+\begin{equation*}
+    \dot{J}_\text{ls,ML} = \dot{J}_\text{donor} \cdot \beta,
+\end{equation*}
+is missing from my prescription.
+This could easily explain the differences I am seeing.
+
+Now, we need to know how \lstinline[style=output, breaklines=true]|b% s_donor% total_angular_momentum| is computed, which is necessary to truly compare both prescriptions. This is where things get a bit tricky. It is only computed using this simple function:
+
+\begin{minted}[fontsize=\small]{fortran}
+! star_utils.f90
+real(dp) function total_angular_momentum(s) result(J)
+   type (star_info), pointer :: s
+   include 'formats'
+   if (.not. s% rotation_flag) then
+      J = 0
+   else
+      J = dot_product(s% dm_bar(1:s% nz), s% j_rot(1:s% nz))
+   end if
+end function total_angular_momentum
+\end{minted}
+So it is really the terms \lstinline[style=output, breaklines=true]|s% j_rot| that are of interest to us.
+
+It seems like the tides prescription does modify \lstinline[style=output, breaklines=true]|j_rot| by setting
+\begin{minted}[fontsize=\small]{fortran}
+do k=1,nz
+   s% extra_jdot(k) = s% extra_jdot(k) - delta_j(k)/dt_next
+end do
+\end{minted}
+Here, \lstinline[style=output, breaklines=true]|delta_j(k)| is the tidal angular momentum response of the star.
+
+I feel like I should not \emph{need} to add the mass loss term to my \(\dot{J}_\text{ls}\) prescription, since i clearly only take the effects of the change in spin of the star due to tides into account when computing the change in angular momentum.
+
+I think,\sidenote{But I am not super sure.} because my \(\dot{J}_\text{ML}\)-prescription uses a fake spin, and it is not updating the actual stellar spin I am seeing these discrepancies.
+Or maybe MESA does update the spins due to mass loss automatically. I really am not super sure.
+
+\nextpage
 \subsection{Divergence test}
-Besides looking at the stability of the tides during RLOF, it is also interesting to look at the general differences between the tidal prescription for longer evolutionary periods. Here, I try to compare the differences between the effects of the tides on the orbit during the thermal pulses for my custom prescription and the standard \emph{MESA} implementation. 
+Besides looking at the stability of the tides during RLOF, it is also interesting to look at the general differences between the tidal prescription for longer evolutionary periods. Here, I try to compare the differences between the effects of the tides on the orbit during the thermal pulses for my custom prescription and the standard \emph{MESA} implementation.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w18-tides-2}
+\end{figure}
+
+Clearly there a some small differences between the two prescriptions, \emph{but} importantly, the general behaviour is quite similar. The models interact during the same pulse, and their Roche lobe radius seems to shrink at approximately the same pace.
+
+The bottom subplot shows the differences on a logarithmic scale. The different colors indicate if the difference is positive or negative.
+The difference between the Roche lobes and the difference between the star radius are roughly of equal magnitude during the interpulses.
+
+We could already see from the first figure of this document that the shape of the Roche lobe evolution is slightly different for the \emph{MESA} implementation.
+
+I theorize this is due to the different \(k / T\) prescription. To verify this, I implemented the standard \citet{hurley1902} BSE \(k / T\) definition, which is what \emph{MESA} uses too. 
+
+Below, I plot the standard \emph{MESA} tidal prescription, my custom version that uses the \(k / T\) ratio as described by \citet{preece2022}, and lastly a modified version of my implementation with the standard \citet{hurley1902} implementation.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w18-compare-separation}
+\end{figure}
+
+Since the radius of the star is slightly expanded for the standard \emph{MESA} model due to its rotation, the tides will generally work more efficiently.
+\begin{equation*}
+    \dv{\Omega}{t} = 3 \frac{k}{T} \frac{q^{2} }{r_{g}^{2}  }\underbrace{\l(\frac{R}{a}\r)}{}^{6}(\Omega_\text{orb} - \Omega_\text{star})
+\end{equation*}
+This term is strongly dependent on the precise radius of the star. Only a slight increase can significantly boost the effect of the tides.
+
+As an approximation, I boost the effect of the tides by the fraction of the larger radius over the smaller radius. To be precise, I use that
+\begin{align*}
+    \dot{J}_\text{ls} &= \dv{\Omega}{t} \cdot I_\text{eff}\\
+                      &= 3 \frac{k}{T} \frac{q^{2} }{r_{g}^{2}  }\l(\frac{R}{a}\r)^{6}(\Omega_\text{orb} - \Omega_\text{star}) \cdot I_\text{eff}.
+\end{align*}
+
+Since I know \(\dot{J}_\text{ls}\) and \(I_\text{eff}\) for my models, as well as \(R\) and \(a\) for the standard \emph{MESA} models, as well as for my custom \emph{MESA} models, I can compute the effective \(\dot{J}_\text{ls}\) if the star would have been slightly larger due to the rotation:
+
+\begin{align*}
+    \dot{J}_\text{ls,rotating} &=  \l(\dv{\Omega}{t}\r)_\text{rotating} \cdot I_\text{eff}\\
+    &\approx  \l(\dv{\Omega}{t}\r)_\text{non-rotating} \bigg/ \l(\frac{R_\text{non-rotating}}{a}\r)^{6} \cdot \l(\frac{R_\text{rotating}}{a}\r)^{6}\cdot I_\text{eff}\\
+    &= \dot{J}_\text{ls,non-rot} \cdot  \l(\frac{R_\text{rotating}}{R_\text{non-rotating}}\r)^{6}
+\end{align*}
+Now, it should be noted that this is only a rough approximation. First and foremost, I only use this as a post-processing step, meaning the orbit does not \emph{actually} correctly respond to the changes. If the orbit would expand more due to the larger radius, the effect would be smaller than this approximation shows. Inversely, the effect could be larger if the orbit should be smaller due to the changes. 
+
+Also, it is not guaranteed that \(k / T\) will not change due to the larger radius as well. The same holds for the gyration radius. I have not taken these factors into account.
+
+However, even with these clear problems, it is clear that even a small change in radius can have some noticeable effects on the evolution of the orbit.
+
+It might be a worthwhile investment to, at least artificially, use an expanded radius when computing the tides. This could be achieved by simply using a ``fake'' radius for the computation of \(\dd{\Omega } / \dd{t} \) which is some function of the actual radius and the stellar rotation.
+
+\section{Mira Pulsations}
+
+It is\sidenote{at least as far as I could find} not possible to accurately simulate Mira pulsations using \emph{RSP}, which is \emph{MESA}'s pulsation mode.
+
+\begin{shadequote}[l]{\citet{paxton2019}}
+\emph{RSP} is currently of limited use for strongly non-
+adiabatic pulsations with large \emph{L/M} ratios, including Luminous Blue Variables, Mira-type variables, and
+type II Cepheids.
+\end{shadequote}
+
+I also found the \emph{MESA} instrument papers describing the implicit hydrodynamics, but it seems quite complicated to set up and use the correct settings. Eva and Karel told me it should be easy though, so I am not sure if the implicit hydrodynamics from the instrument paper is actually what I should use.
+
+In any case, I found a single \emph{MESA} test-suite dedicated to the HLLC (numerical Riemann solver). The test case tests if the HLLC solver can hold an envelope in hydrostatic equilibrium. I \emph{think} it most important settings here are
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+change_initial_u_flag = .true.
+change_initial_v_flag = .true.
+new_v_flag = .false.
+new_u_flag = .true.
+\end{minted}
+in the \lstinline[style=output, breaklines=true]|&star_job| section. If I understand things correctly, this setting tells \emph{MESA} it should evolve a cell-centered velocity term which is used to perform the implicit hydrodynamics.
+
+There are some other settings that need to be configured though, such as the required number of cells, and factors to scale the time steps in cells with shocks. Besides this, the test-suite contains a bunch of other options that I have not seen before, of which I am unsure if they significantly affect how the hydrodynamics is simulated, and if they would be applicable in the case of TG-AGB stars.
+
+To conclude, I think I would either need to spend a lot more time getting familiar with the MESA hydro options, or I can trust Karel and assume that it will not significantly affect my models anyway.
+
 
 \bibliography{master.bib}
 \end{document}

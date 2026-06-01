@@ -1444,7 +1444,7 @@ import numpy as np
 
 import mesa_reader as mr
 
-sys.path.insert(1, "/home/koen/master-internship/scripts/evolve_mesa/")
+sys.path.insert(1, "/home/koen/master-internship/")
 from scripts.evolve_mesa.constants import *
 from scripts.evolve_mesa.bin_input import *
 from scripts.evolve_mesa.read_mist_models import *
@@ -1452,6 +1452,7 @@ from scripts.evolve_mesa.mrenv import *
 from scripts.evolve_mesa.orbit_evol import *
 from scripts.evolve_mesa.rgbf import *
 from scripts.evolve_mesa.star_model import *
+from scripts.evolve_mesa.star_model import read_stellar_models
 from scripts.evolve_mesa.grid_call import *
 
 # %%
