@@ -452,5 +452,97 @@ plt.show()
 
 # %%
 
-print(grid.tpagb_age)
+fig = plt.figure()
+ax = plt.gca()
+axis_size(10 / 8 * 7, 5 / 8 * 7)
+
+
+for i, (R, q, model) in enumerate(grid.get_R1_index(-2)):
+
+    if q not in [0.4]:
+        continue
+    print(R)
+    a_init = inv_roche_lobe(R, q)
+    [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(Star3, q, a_init)
+    bin = Bins[0]
+    q_evolve = bin.m1 / bin.m2
+    rl1 = roche_lobe(q_evolve) * bin.a
+
+    delta = model.age[0]
+
+    (l,) = plt.plot(
+        model.star.age / 1e6,
+        model.star.rl_1,
+        c=f"C{i}",
+        linewidth=1,
+        label=f"$q_i = {q:.1f}$",
+    )
+    (l,) = plt.plot(
+        model.star.age / 1e6,
+        model.star.R,
+        c=f"C{i}",
+        linewidth=1,
+        label=f"$q_i = {q:.1f}$",
+    )
+    plt.plot(
+        (bin.age - grid.tpagb_age - delta) / 1e6, rl1, c=f"C{i}", alpha=0.4, linewidth=3
+    )
+    plt.plot(
+        (Star.age - grid.tpagb_age - delta) / 1e6,
+        10**Star.log_R,
+        c=f"C{i}",
+        alpha=0.4,
+        linewidth=3,
+    )
+    r_interp = np.interp(
+        ages,
+        (Star.age - grid.tpagb_age),
+        10**Star.log_R,
+    )
+
+    plt.scatter(
+        (np.array(ages) - delta)[4] / 1e6,
+        r_interp[4],
+        marker="s",
+        s=200,
+        edgecolor="w",
+        linewidth=2,
+        zorder=1000,
+    )
+
+    plt.scatter(
+        0,
+        model.star.rl_1[0],
+        marker="s",
+        s=200,
+        edgecolor="w",
+        linewidth=2,
+        zorder=1000,
+    )
+plt.xlim(0, 2)
+
+ax.spines["left"].set_visible(False)
+ax.spines["right"].set_visible(True)
+
+plt.rcParams["ytick.right"] = plt.rcParams["ytick.labelright"] = True
+plt.rcParams["ytick.left"] = plt.rcParams["ytick.labelleft"] = False
+
+
+ax.spines["right"].set_position(("outward", 22.5))
+ax.spines["bottom"].set_position(("outward", 22.5))
+
+plt.xlim(-0.1, 0.32296 / 28 + 0.2296)
+
+plt.yticks([150, 550])
+plt.xticks([-0.1, 0, 0.2296, 0.32296 / 28 + 0.2296])
+plt.ylim(150, 550)
+
+
+axis_size(10 / 8 * 7, 5 / 8 * 7)
+plt.savefig("presentation-1/binary-methods.svg")
+plt.show()
+
+
 # %%
+
+28
