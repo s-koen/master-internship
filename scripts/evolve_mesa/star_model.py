@@ -77,6 +77,7 @@ class StellarModel:
         self.log_rhoc = track["log_cntr_Rho"]
         self.log_Tc = track["log_cntr_T"]
         self.Mdot = 10 ** track["log_abs_mdot"]
+        self.log_Mdot_crit = 10 ** track["quasi_adiabatic_Mdot"]
         self.surf_o16 = track["surface_o16"]
         self.surf_c12 = track["surface_c12"]
 

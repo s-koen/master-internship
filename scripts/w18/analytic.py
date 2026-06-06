@@ -1670,10 +1670,11 @@ fig.update_layout(
     scene=dict(
         xaxis_title=r"Roche lobe radius",
         yaxis_title=r"q (accretor / donor)",
-        zaxis_title=r"Max(Star radius) / Roche lobe radius",
+        zaxis_title=r"max(star radius) / min(separation)",
     ),
     autosize=True,
     margin=dict(l=0, r=0, b=0, t=50),
+    title="With a radius fit using the grid of models with delta=0.2, gamma=1.25",
 )
 
 # export
@@ -1882,7 +1883,7 @@ fig.update_layout(
     scene=dict(
         xaxis_title=r"Roche lobe radius",
         yaxis_title=r"q (accretor / donor)",
-        zaxis_title=r"Max(Star radius) / Roche lobe radius",
+        zaxis_title=r"max(star radius) / min(separation)",
     ),
     autosize=True,
     margin=dict(l=0, r=0, b=0, t=50),
@@ -1893,6 +1894,120 @@ fig.update_layout(
 
 fig.write_html(
     "/home/koen/figures/plots/master-internship/w18/fit-surface-max.html",
+    include_plotlyjs="cdn",
+    include_mathjax="cdn",
+    config={"responsive": True},
+)
+# %%
+
+import plotly.graph_objects as go
+import plotly.express as px
+import plotly.io as pio
+
+pio.templates.default = "simple_white"
+
+# Build coordinate grids
+grid = grid_none
+R_vals = np.array(sorted(set(R for R, q, _ in grid.iter_models())))
+q_vals = np.array(sorted(set(q for R, q, _ in grid.iter_models())))
+
+Z = np.full((len(q_vals), len(R_vals)), np.nan)
+mask_bad = np.zeros_like(Z, dtype=bool)
+
+for R, q, model in grid.iter_models():
+    i = np.where(q_vals == q)[0][0]
+    j = np.where(R_vals == R)[0][0]
+
+    if model.env_mass[-1] > 0.1:
+        mask_bad[i, j] = True
+    else:
+        Z[i, j] = np.max(model.star.R) / R
+    if model.star.period_days[-1] < 50:
+        mask_bad[i, j] = False
+        Z[i, j] = np.nan
+
+
+print(Z)
+RR, QQ = np.meshgrid(R_vals, q_vals)
+# Keep only valid points
+valid = (~np.isnan(Z)) & (~mask_bad)
+
+x = RR[valid]
+y = QQ[valid]
+z = Z[valid]
+
+# 2D quadratic model
+# Fit
+popt, pcov = curve_fit(quad2d, (x, y), z)
+
+a, b, c, d, e, f = popt
+alpha = 1e-10
+beta = 0
+delta = 0.0
+gamma = 1.25
+qss = np.linspace(0.3, 1, 300)
+RLs = np.linspace(150, 750, 300)
+
+Z = np.zeros([300, 300])
+
+rlgrid, qgrid = np.meshgrid(RLs, qs)
+
+for i, RL in enumerate(RLs):
+    for j, q in enumerate(qss):
+        qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
+        orbit = CombineEvolve(alpha, beta, delta, gamma, qs)
+
+        max_R = RL * quad2d((RL, q), *popt)
+        Z[j, i] = max_R / np.min(orbit.a_over_a0() * get_separation(RL, q))
+
+
+fig = go.Figure()
+colors = px.colors.qualitative.D3
+surf = fig.add_trace(
+    go.Surface(
+        x=RLs,
+        y=qss,
+        z=Z,
+        colorscale=[[0, colors[0]], [1, colors[0]]],
+        showscale=False,
+    ),
+)
+
+fig.update_traces(opacity=0.5)
+
+
+rs = []
+qs = []
+cs = []
+for R, q, model in grid_min.iter_models():
+    if model.star.period_days[-1] < 50:
+        continue
+    if model.env_mass[-1] > 0.1:
+        continue
+    rs.append(R)
+    qs.append(q)
+    cs.append(np.max(model.star.R / model.star.binary_separation))
+
+
+fig.add_trace(
+    go.Scatter3d(x=rs, y=qs, z=cs, mode="markers", marker=dict(size=3, color=colors[0]))
+)
+
+fig.update_layout(
+    scene=dict(
+        xaxis_title=r"Roche lobe radius",
+        yaxis_title=r"q (accretor / donor)",
+        zaxis_title=r"max(star radius) / min(separation)",
+    ),
+    autosize=True,
+    margin=dict(l=0, r=0, b=0, t=50),
+    title="With a radius fit using the grid of models with conservative mass transfer",
+)
+
+# export
+
+fig.write_html(
+    "/home/koen/figures/plots/master-internship/w18/fit-surface-none.html",
     include_plotlyjs="cdn",
     include_mathjax="cdn",
     config={"responsive": True},

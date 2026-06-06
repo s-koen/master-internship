@@ -320,20 +320,80 @@ plt.close()
 
 # %%
 fig, axs = plt.subplots(
-    2, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+    2, 5, sharex="col", sharey="row", figsize=set_size(full), constrained_layout=True
 )
 
-axs[0].plot(own.star.envelope_mass, own.star.Omega_star / own.star.Omega_orb)
-axs[0].plot(
+axs[0, 0].plot(own.star.envelope_mass, own.star.Omega_star / own.star.Omega_orb)
+axs[0, 0].plot(
     mesa_default.envelope_mass, mesa_default.surf_avg_omega / mesa_default.Omega_orb
 )
+axs[0, 0].hlines(1, -1, 1e99, linewidth=0.8, color="C9")
 
-axs[1].plot(own.star.envelope_mass, own.star.jdot_ls)
-axs[1].plot(mesa_default.envelope_mass, mesa_default.jdot_ls)
+axs[0, 1].plot(own.star.envelope_mass, own.star.Omega_star / own.star.Omega_orb)
+axs[0, 1].plot(
+    mesa_default.envelope_mass, mesa_default.surf_avg_omega / mesa_default.Omega_orb
+)
+axs[0, 1].hlines(1, -1, 1e99, linewidth=0.8, color="C9")
 
-plt.gca().invert_xaxis()
+axs[0, 2].plot(own.star.envelope_mass, own.star.Omega_star / own.star.Omega_orb)
+axs[0, 2].plot(
+    mesa_default.envelope_mass, mesa_default.surf_avg_omega / mesa_default.Omega_orb
+)
+axs[0, 2].hlines(1, -1, 1e99, linewidth=0.8, color="C9")
 
 
+axs[0, 3].plot(own.star.envelope_mass, own.star.Omega_star / own.star.Omega_orb)
+axs[0, 3].plot(
+    mesa_default.envelope_mass, mesa_default.surf_avg_omega / mesa_default.Omega_orb
+)
+axs[0, 3].hlines(1, -1, 1e99, linewidth=0.8, color="C9")
+
+
+axs[0, 4].plot(
+    own.star.envelope_mass, own.star.Omega_star / own.star.Omega_orb, label="custom"
+)
+axs[0, 4].plot(
+    mesa_default.envelope_mass,
+    mesa_default.surf_avg_omega / mesa_default.Omega_orb,
+    label="MESA",
+)
+axs[0, 4].hlines(1, -1, 1e99, linewidth=0.8, color="C9")
+axs[0, 4].legend()
+
+
+axs[0, 0].set_ylim(0.15, 2)
+
+axs[1, 0].plot(own.star.envelope_mass, own.star.jdot_ls)
+axs[1, 0].plot(mesa_default.envelope_mass, mesa_default.jdot_ls)
+
+axs[1, 1].plot(own.star.envelope_mass, own.star.jdot_ls)
+axs[1, 1].plot(mesa_default.envelope_mass, mesa_default.jdot_ls)
+
+axs[1, 2].plot(own.star.envelope_mass, own.star.jdot_ls)
+axs[1, 2].plot(mesa_default.envelope_mass, mesa_default.jdot_ls)
+
+axs[1, 3].plot(own.star.envelope_mass, own.star.jdot_ls)
+axs[1, 3].plot(mesa_default.envelope_mass, mesa_default.jdot_ls)
+
+axs[1, 4].plot(own.star.envelope_mass, own.star.jdot_ls)
+axs[1, 4].plot(mesa_default.envelope_mass, mesa_default.jdot_ls)
+
+axs[1, 0].hlines(0, -1, 1e99, linewidth=0.8, color="C9")
+axs[1, 1].hlines(0, -1, 1e99, linewidth=0.8, color="C9")
+axs[1, 2].hlines(0, -1, 1e99, linewidth=0.8, color="C9")
+axs[1, 3].hlines(0, -1, 1e99, linewidth=0.8, color="C9")
+axs[1, 4].hlines(0, -1, 1e99, linewidth=0.8, color="C9")
+
+axs[1, 0].set_ylim(-0.35e40, 0.75e40)
+axs[1, 0].set_ylabel(r"$\dot{J}_\textrm{ls-coupling}$ (g cm$^{-2}$ s$^{-2}$)")
+axs[0, 0].set_ylabel(r"$\Omega_\textrm{star} / \Omega_\textrm{orb}$")
+axs[1, 0].set_xlim(1.426, 1.4175)
+axs[1, 1].set_xlim(1.4175, 1.4105)
+axs[1, 2].set_xlim(1.4105, 1.4098)
+axs[1, 3].set_xlim(1.4098, 1.13)
+axs[1, 4].set_xlim(1.1232, 1.12314)
+
+fig.supxlabel(r"Envelope mass ($M_\odot$)", size=10)
 plt.xlabel("")
 plt.ylabel("")
 plt.savefig("/home/koen/LaTeX-setup/plots/w18-spins.pgf", format="pgf")
