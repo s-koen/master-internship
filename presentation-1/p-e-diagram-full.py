@@ -215,7 +215,6 @@ def plot_p_e_by_system_class(catalog_df=None, save=True):
         if catalog_df is None:
             return None, None
 
-    plt.rcParams.update(PAPER_PLOT_RCPARAMS)
     fig, ax = plt.subplots(figsize=(12.5, 7))
     plot_df = catalog_df.copy()
 
@@ -264,18 +263,21 @@ def plot_p_e_by_system_class(catalog_df=None, save=True):
         return any(target in f for f in flags) if isinstance(flags, list) else False
 
     # Plot each system class separately so style/legend are per class.
-    for system_class in STYLE_MAP.keys():
+    print()
+    for system_class in [
+        "Blue straggler binary",
+        "Post-AGB binary",
+        "He giant",
+        "Intermediate-M stripped star",
+    ]:
         sub = plot_df[plot_df["system_class"] == system_class]
         if sub.empty:
             continue
         # Draw WD-containing systems behind the rest so sparse high-mass systems remain visible
         Zord = 3 if "WD" not in system_class else 0
 
-        color = COLORMAP.get(system_class, "#666666")
-        marker_plotly = SYMBOLMAP.get(system_class, "circle")
-        marker_mpl = PLOTLY_TO_MPL_MARKER.get(marker_plotly, "o")
-        ms = 7 if marker_mpl in ["+", "x"] else 6
-        base_alpha = 0.9 if marker_mpl in ["+", "x"] else 0.8
+        ms = 7
+        base_alpha = 0.9
 
         # Split by quality flags
         mask_assumed_e = sub["quality_flags"].apply(lambda f: has_flag(f, "assumed_e"))
@@ -284,11 +286,12 @@ def plot_p_e_by_system_class(catalog_df=None, save=True):
         # Clean = no e-affecting flag (other flags like min_M2 don't change this figure)
         mask_clean = ~(mask_assumed_e | mask_max_e | mask_min_e)
 
+        color = "blue"
+
         base_kwargs = dict(
-            fmt=marker_mpl,
+            fmt="o",
             ms=ms,
-            color=color,
-            ecolor=color,
+            color="blue",
             elinewidth=1,
             capsize=0,
             linestyle="none",
@@ -321,9 +324,7 @@ def plot_p_e_by_system_class(catalog_df=None, save=True):
             )
 
         # One legend handle per class (proxy scatter, drawn off-plot)
-        ax.scatter(
-            [], [], c=color, marker=marker_mpl, label=f"{system_class} ({len(sub)})"
-        )
+        ax.scatter([], [], c=color, marker="o", label=f"{system_class} ({len(sub)})")
 
     # Add maximum-eccentricity envelope from Moe & di Stefano (2017), valid for P > 2 days.
     period_vals = np.logspace(np.log10(2.01), 4.5, 500)
@@ -377,16 +378,9 @@ if __name__ == "__main__":
         print(f"Loaded {len(catalog_df)} systems")
 
         print("\nGenerating P-e diagram by system class...")
-        fig1, ax1 = plot_p_e_by_system_class(catalog_df, save=True)
-
-        print(
-            "\nGenerating P-e diagram divided between low and high mass donors with their medians..."
-        )
-        fig2, ax2 = plot_p_e_2massbins_median(catalog_df, save=True)
-
-        print("\nGenerating P-e diagram by category with medians...")
-        fig3, ax3 = plot_p_e_by_category_median(catalog_df, save=True)
+        fig1, ax1 = plot_p_e_by_system_class(catalog_df, save=False)
 
         plt.show()
     else:
         print("Failed to load catalog.")
+# %%
