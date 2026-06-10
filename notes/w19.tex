@@ -1,0 +1,125 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 19}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Isotropic Re-emission}
+
+I want to combine mass lost to a circumbinary ring with isotropic re-emission to see if this could produce short period binaries with hopefully slightly less extreme overfill ratios.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w19-beta}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w19-beta-2}
+\end{figure}
+\nextpage
+\begin{figure}[ht]
+    \centering
+    \incplot{w19-beta-3}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w19-beta-4}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w19-beta-5}
+\end{figure}
+
+
+As a starting point, I wanted to test fully non-conservative mass transfer. This is definitely not realistic since the barium stars have obviously accreted mass, \emph{but} it is an interesting test. I use \(\delta =0.5\) and \(\beta =0.5\), together losing all of the mass.
+
+\newsection{White Dwarf Shrinking(?)}
+
+While making plots for the presentation, I noticed that the models, regardless of initial mass ratio and mass-transfer efficiency, all seem to converge on a envelope mass-radius relation.
+
+The relation is only really clear when the star undergoes RLOF during an interpulse. Below I show this.
+
+\begin{figure}[ht]
+    \marginfignote{2}{Notice how the models converge on a straight line in log-log space. There are however 3 blue models that experience a LTP during / after RLOF.}
+    \marginfignote{10}{These systems all have an initial Roche lobe radius of about 550 \(R_\odot \).}
+    \centering
+    \incplot{w19-shrinking-1}
+\end{figure}
+
+For systems that interact earlier on during a thermal pulse, the general trend is still visible, but a lot less pronounced.
+
+\href{https://s-koen.github.io/figures/#/plots/master-internship/w19/low-mass-radius}{Interactive view} to separate the different models and zoom in and out.
+
+\begin{figure}[ht]
+    \marginfignote{2}{These systems all have an initial Roche lobe radius of about 287.82 \(R_\odot \).}
+    \centering
+    \incplot{w19-shrinking-3}
+\end{figure}
+
+This "straight line" is interesting, because it changes the way the radius of the star responds during RLOF. The star experiences an increase in radius before reaching the "straight line". This seems to result in some pretty weird radius evolutions when plotted as a function of time.
+
+\begin{figure}[ht]
+    \marginfignote{2}{Here, you can see this bump in radius before settling on the mass radius relation line.}
+    \centering
+    \incplot{w19-shrinking-4}
+\end{figure}
+
+I suspect it has something to do with the Hayashi limit changing as the mass of the star changes.
+
+We can actually look at the HR diagram as well.
+
+\begin{figure}[ht]
+    \marginfignote{2}{Now, I think it is quite clear that the Hayashi line shifts due to mass loss to smaller effective temperatures. This is also what I would expect from theory (for example the lecture notes show clearly that the Hayashi tracks shift to lower effective temperatures for lower masses.)}
+    \centering
+    \incplot{w19-shrinking-5}
+\end{figure}
+
+I am not sure \emph{why} the models with lower \(q\) shrink a lot more before they swell up a bit again to join the mass-radius relation.
+
+It has nothing to do with the nuclear burning, since this seems to stay very constant throughout. The actual luminosity of the star does decrease though. I am not sure if this is in response to the change in radius, or the other way around.
+
+The models with smaller \(q\) experience slightly stronger mass losses, so I am wondering if these stronger mass losses might actually significantly change the response of the star, even though the quasi-adiabatic mass loss rate is much larger than the actual mass-loss rate throughout.
+
+Another difference between the models with different \(q\) is that the models with lower \(q\) interact \emph{slightly} earlier, but I am not quite sure how this would change things.
+
+\appendix
+\section{Additional figures}
+\begin{figure}[ht]
+    \marginfignote{3}{Models for grid with \(\delta =0.5\), \(\gamma =1\)}
+    \centering
+    \incplot{w19-shrinking-6}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{3}{Same figure but now with \(q\) on the horizontal axis.}
+    \centering
+    \incplot{w19-shrinking-10}
+\end{figure}
+
+I think it makes more sense to look at the envelope mass. The relations seem much stricter there.
+
+\begin{figure}[ht]
+    \marginfignote{3}{Models for grid with \(\delta =0.5\), \(\gamma =1\)}
+    \centering
+    \incplot{w19-shrinking-7}
+\end{figure}
+
+\bibliography{master.bib}
+\end{document}
