@@ -1451,14 +1451,12 @@ for a, ax in enumerate(axs.flatten()):
             q_finals.append(qs[-1])
 
         length = len(a_ratios)
-        ax.plot(
-            deltas[:length], a_ratios, color=colormap[int(beta * 1e6)], rasterized=True
-        )
+        ax.plot(q_finals, a_ratios, color=colormap[int(beta * 1e6)], rasterized=True)
     ax.text(
-        0.5,
+        0.1,
         0.9,
         f"$\delta = {delta:.1f}$",
-        horizontalalignment="center",
+        horizontalalignment="left",
         verticalalignment="top",
         transform=ax.transAxes,
     )
@@ -1466,9 +1464,195 @@ for a, ax in enumerate(axs.flatten()):
 plt.colorbar(
     ScalarMappable(cmap=plt.cm.inferno), ax=axs[:, :], label="$\\beta$", aspect=30
 )
-fig.supxlabel("$q_\\textrm{i}$", size=10)
+fig.supxlabel("$q_\\textrm{f}$", size=10)
 fig.supylabel("$a_\\textrm{f}/a_\\textrm{i}$", size=10)
 plt.ylabel("")
-plt.savefig("/home/koen/LaTeX-setup/plots/w19-beta-4.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w19-beta-5.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+further = mr.MesaData(f"{MASTER}/run-further/R552.27_q0.500/LOGS/TPAGB/history.data")
+
+delta = np.array(
+    [
+        1832709.270831625,
+        1832474.3565732383,
+        141536.33550088422,
+    ]
+)
+
+q_reversal = np.array(
+    [
+        1832803.3871383066,
+        1832542.369949226,
+        141589.52183649162,
+    ]
+)
+
+for g, grid in enumerate((grid_cons, grid_non_cons)):
+    for i, (R, q, model) in enumerate(grid.get_R1_index(8)):
+        if q != 0.5:
+            continue
+        plt.plot(model.age - delta[g], model.star.R, c=f"C{g}")
+        plt.plot(
+            model.age - delta[g], model.star.rl_1, c=f"C{g}", alpha=0.5, linewidth=3
+        )
+
+        for i in range(len(model.age)):
+            if model.star.R[i] > model.star.rl_1[i]:
+                print("start RLOF", model.age[i])
+                break
+            model_cool = model
+
+        for i in range(len(model.age)):
+            if model.star.star_2_mass[i] > model.star.star_1_mass[i]:
+                print("q-reveral", model.age[i])
+                break
+
+        plt.scatter(
+            model.age[i] - delta[g],
+            model.star.rl_1[i],
+            marker="s",
+            s=50,
+            edgecolor="w",
+            linewidth=2,
+            zorder=1000,
+        )
+
+
+for i in range(len(further.age)):
+    if further.R[i] > further.rl_1[i]:
+        print("start RLOF", further.age[i])
+        break
+
+for i in range(len(further.age)):
+    if further.star_2_mass[i] > further.star_1_mass[i]:
+        print("start RLOF", further.age[i])
+        print(i)
+        break
+
+
+print(i)
+
+plt.plot(further.age - delta[-1], further.R, c=f"C{2}")
+plt.plot(further.age - delta[-1], further.rl_1, c=f"C{2}", alpha=0.5, linewidth=3)
+
+plt.scatter(
+    further.age[i] - delta[-1],
+    further.rl_1[i],
+    marker="s",
+    s=50,
+    edgecolor="w",
+    linewidth=2,
+    zorder=1000,
+)
+
+plt.xlim(-50, 200)
+plt.ylim(135, 535)
+
+plt.xlabel("Time (yr)")
+plt.ylabel(r"Radius ($R_\odot$)")
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w19-pres-fig.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+further = mr.MesaData(f"{MASTER}/run-further/R552.27_q0.500/LOGS/TPAGB/history.data")
+
+delta = np.array(
+    [
+        1832709.270831625,
+        1832474.3565732383,
+        141536.33550088422,
+    ]
+)
+
+q_reversal = np.array(
+    [
+        1832803.3871383066,
+        1832542.369949226,
+        141589.52183649162,
+    ]
+)
+
+for g, grid in enumerate((grid_cons, grid_non_cons)):
+    for i, (R, q, model) in enumerate(grid.get_R1_index(8)):
+        if q != 0.5:
+            continue
+        plt.plot(model.env_mass, model.star.R, c=f"C{g}")
+        plt.plot(model.env_mass, model.star.rl_1, c=f"C{g}", alpha=0.5, linewidth=3)
+
+        for i in range(len(model.age)):
+            if model.star.R[i] > model.star.rl_1[i]:
+                print("start RLOF", model.age[i])
+                break
+            model_cool = model
+
+        for i in range(len(model.age)):
+            if model.star.star_2_mass[i] > model.star.star_1_mass[i]:
+                print("q-reveral", model.age[i])
+                break
+
+        plt.scatter(
+            model.env_mass[i],
+            model.star.rl_1[i],
+            marker="s",
+            s=50,
+            edgecolor="w",
+            linewidth=2,
+            zorder=1000,
+        )
+
+
+for i in range(len(further.age)):
+    if further.R[i] > further.rl_1[i]:
+        print("start RLOF", further.age[i])
+        break
+
+for i in range(len(further.age)):
+    if further.star_2_mass[i] > further.star_1_mass[i]:
+        print("start RLOF", further.age[i])
+        print(i)
+        break
+
+
+print(i)
+
+plt.plot(further.envelope_mass, further.R, c=f"C{2}")
+plt.plot(further.envelope_mass, further.rl_1, c=f"C{2}", alpha=0.5, linewidth=3)
+
+plt.scatter(
+    further.envelope_mass[i],
+    further.rl_1[i],
+    marker="s",
+    s=50,
+    edgecolor="w",
+    linewidth=2,
+    zorder=1000,
+)
+
+plt.ylim(135, 535)
+
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel(r"Radius ($R_\odot$)")
+
+plt.xscale("log")
+plt.yscale("log")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w19-pres-fig-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%

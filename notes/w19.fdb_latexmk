@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w19"] 1781135237.21334 "w19.aux" "w19.bbl" "w19" 1781135242.38138 0
-  "./master.bib" 1780337356.21368 33299 c45e6cf045db1ac37fa6c827d9a285ca ""
+["bibtex w19"] 1781167572.69782 "w19.aux" "w19.bbl" "w19" 1781167577.90533 0
+  "./master.bib" 1781165624.84061 34539 a7e112a23f2623679a059a69d18982fe ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w19.aux" 1781135242.00313 1200 781d694145e12da12fd844e24a980194 "pdflatex"
+  "w19.aux" 1781167577.49574 1569 2d73887e58e69e8eaa14c05b2be40918 "pdflatex"
   (generated)
   "w19.bbl"
   "w19.blg"
   (rewritten before read)
-["pdflatex"] 1781135237.33591 "w19.tex" "w19.pdf" "w19" 1781135242.38154 0
+["pdflatex"] 1781167572.80791 "w19.tex" "w19.pdf" "w19" 1781167577.90552 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -50,6 +50,8 @@
   "/home/koen/LaTeX-setup//plots/w19-beta-5.pgf" 1781135139.13948 112197 da0e3208e04aee78a1c5d36a3db092be ""
   "/home/koen/LaTeX-setup//plots/w19-beta-img0.png" 1781132972.89534 735 5bfc58bb6d9ed6e211df2a56fe2e3544 ""
   "/home/koen/LaTeX-setup//plots/w19-beta.pgf" 1781132972.90005 607741 521100fb1a20c6ff957ff497b42720a0 ""
+  "/home/koen/LaTeX-setup//plots/w19-pres-fig-2.pgf" 1781166935.74876 85901 eca1fbe16ea46846e18c41196634b609 ""
+  "/home/koen/LaTeX-setup//plots/w19-pres-fig.pgf" 1781166372.01293 41006 2c45193a222b4f8f52da58207a717b0e ""
   "/home/koen/LaTeX-setup//plots/w19-shrinking-1.pgf" 1781018276.44664 372401 307006e0acad3977cb11816b7c19fe94 ""
   "/home/koen/LaTeX-setup//plots/w19-shrinking-10.pgf" 1781081860.30362 136078 09a4c269010a2bea2ebb55b88f829cef ""
   "/home/koen/LaTeX-setup//plots/w19-shrinking-3.pgf" 1781005047.77111 444464 ae6731d21fdef7f4cdac705c528d05d0 ""
@@ -422,10 +424,10 @@
   "/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1734805718 5485709 8129e419010b46b234085a26866cdb87 ""
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1734805844 3343776 1d1db4be7b32d13d500bec482c2ee25e ""
   "/usr/local/texlive/2024/texmf.cnf" 1734805714.41611 455 5b996dcaa0eb4ef14a83b026bc0a008c ""
-  "w19.aux" 1781135242.00313 1200 781d694145e12da12fd844e24a980194 "pdflatex"
-  "w19.bbl" 1781135237.32705 121 176ef3ab05ccef1cd7a1f3b4a71ca9dc "bibtex w19"
-  "w19.out" 1781135242.00413 463 6b6d1c9e32dbf7d7f6ae6957b9e40b3c "pdflatex"
-  "w19.tex" 1781135231.24895 5022 c6c9d1de05fdbab15c628f53c124e7f1 ""
+  "w19.aux" 1781167577.49574 1569 2d73887e58e69e8eaa14c05b2be40918 "pdflatex"
+  "w19.bbl" 1781167572.79867 710 e2f0e6500f400b0d93e3f662a0339341 "bibtex w19"
+  "w19.out" 1781167577.49802 729 f9f02fcce86b352978f10b7056efe891 "pdflatex"
+  "w19.tex" 1781167566.33357 7451 26eae1414cdfdc426defe33569acf484 ""
   (generated)
   "w19.aux"
   "w19.log"

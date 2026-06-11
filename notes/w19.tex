@@ -50,11 +50,27 @@ I want to combine mass lost to a circumbinary ring with isotropic re-emission to
 
 As a starting point, I wanted to test fully non-conservative mass transfer. This is definitely not realistic since the barium stars have obviously accreted mass, \emph{but} it is an interesting test. I use \(\delta =0.5\) and \(\beta =0.5\), together losing all of the mass.
 
-\newsection{White Dwarf Shrinking(?)}
+\newsection{Post AGB-evolution}
 
-While making plots for the presentation, I noticed that the models, regardless of initial mass ratio and mass-transfer efficiency, all seem to converge on a envelope mass-radius relation.
+The production of the figure below for the presentation led me to become a bit side-tracked.
 
-The relation is only really clear when the star undergoes RLOF during an interpulse. Below I show this.
+\begin{figure}[ht]
+    \marginfignote{0}{Squares are the point of mass-ratio reversal. The blue line is the model with fully conservative RLOF mass transfer, the orange line is the model with \(\delta =0.2, \gamma =1.25\), the green line is the model with \(\delta = 0.5\) and \(\gamma =1\).}
+    \centering
+    \incplot{w19-pres-fig}
+\end{figure}
+
+To start, in the original figure, the model from the most extreme non-conservative grid did evolve until the end of RLOF, so the radius was still larger than the Roche lobe radius, even though the envelope mass was smaller than \(0.02\;M_\odot \). I simply evolved this model further. This can quite clearly be seen in the plot below, which I used to check the envelope mass of the model while it was running:
+
+\begin{figure}[ht]
+    \marginfignote{0}{Squares are the point of mass-ratio reversal. The blue line is the model with fully conservative RLOF mass transfer, the orange line is the model with \(\delta =0.2, \gamma =1.25\), the green line is the model with \(\delta = 0.5\) and \(\gamma =1\).}
+    \centering
+    \incplot{w19-pres-fig-2}
+\end{figure}
+
+While making this plot, I noticed that the models, regardless of initial mass ratio and mass-transfer efficiency, all seem to converge on a envelope mass-radius relation.
+
+The relation is clearest when the star undergoes RLOF during an interpulse. Below I show this.
 
 \begin{figure}[ht]
     \marginfignote{2}{Notice how the models converge on a straight line in log-log space. There are however 3 blue models that experience a LTP during / after RLOF.}
@@ -72,6 +88,8 @@ For systems that interact earlier on during a thermal pulse, the general trend i
     \centering
     \incplot{w19-shrinking-3}
 \end{figure}
+
+Returning to the first example: 
 
 This "straight line" is interesting, because it changes the way the radius of the star responds during RLOF. The star experiences an increase in radius before reaching the "straight line". This seems to result in some pretty weird radius evolutions when plotted as a function of time.
 
@@ -99,6 +117,18 @@ The models with smaller \(q\) experience slightly stronger mass losses, so I am 
 
 Another difference between the models with different \(q\) is that the models with lower \(q\) interact \emph{slightly} earlier, but I am not quite sure how this would change things.
 
+In trying to figure out what is happening and why, I came across this review paper \citep{kwok2024}, which cites \citet{paczynski1971} for finding a so called \emph{critical hydrogen mass} below which no stable giant solutions exist and the star moves at constant luminosity to higher temperatures to become a white dwarf.
+
+To me this seems to nicely explain the turn away from the Hayashi track to the WD-cooling sequence, \emph{however} the critical hydrogen masses that are typically given are on the order of \(10^{-3}\; M_\odot \), which is much much smaller than the masses that I find for the turning away of my models.
+
+\section{AGB-nucleosynthesis and inferring Barium accretion}
+
+I think you mentioned briefly before that the Monash code uses a post-processing routine to compute the abundances of \(s\)-process element of AGB stars and that something similar to that could be used to infer the amount of barium and other \(s\)-process elements that get accreted onto the accretor.
+
+Do you think this is a logical and realistic possible next step to look at? Or are there other ways to get abundances for my stars such that I can at least very crudely infer the chemical enrichment of the donor stars?
+
+\nextpage
+\bibliography{master.bib}
 \appendix
 \section{Additional figures}
 \begin{figure}[ht]
@@ -120,6 +150,4 @@ I think it makes more sense to look at the envelope mass. The relations seem muc
     \centering
     \incplot{w19-shrinking-7}
 \end{figure}
-
-\bibliography{master.bib}
 \end{document}
