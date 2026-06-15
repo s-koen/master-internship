@@ -161,6 +161,77 @@ Increasing the mesh refinement using \lstinline[style=output, breaklines=true]|m
 
 This does not seem like a good solution.
 
+I also tried an option for a denser mesh spacing around \(\text{C}_{12}\) abundance changes. This is probably a more efficient way to prevent the instability, but it is very difficult to find the correct settings. The green line is the best I was able to find, but this requires a lot of fine tuning and rerunning of the model and is not a good \emph{general} solution. 
+
+\subsection{Other Metallicities}
+
+From the samples of \citet{castro2016} we can find slightly different metallicities.
+\begin{align*}
+    \text{median}([\text{FeI/H} ]) &= -0.202,\\
+    \text{weighted average}([\text{FeI/H} ]) &= -0.222,\\
+    \text{mean}([\text{FeI/H} ]) &= -0.150.\\
+    &\\
+    \text{median}([\text{FeII/H} ]) &= -0.204,\\
+    \text{weighted average}([\text{FeII/H} ]) &= -0.222,\\
+    \text{mean}([\text{FeII/H} ]) &= -0.155.
+\end{align*}
+
+\citet{castro2016} fit a double Gaussian to the metallicity data and find a Gaussian for thin disk stars with \(\mu = -0.12\), \(\sigma = 0.14\) and a Gaussian for thick disk stars with \(\mu = -0.49\), \(\sigma = 0.09\).
+
+\newsection{Fully Non-Conservative Mass Transfer}
+
+Last week I started a grid of simulations with \(\delta =0.5\) \(\gamma =1\) and \(\beta =0.5\) such that all RLOF mass transfer would be fully non-conservative.
+
+My main hypothesis was that this effect of \(\beta \) would not change the orbits much, but will have a significant effect on the final mass of the barium star, and the C/O-ratio and other abundances.
+
+Here, I plot the final orbits.
+\begin{figure}[ht]
+    \centering
+    \incplot{w20-grid-non-cons}
+\end{figure}
+
+\href{https://s-koen.github.io/figures/#/plots/master-internship/w20/periods}{Click here for an interactive view!}
+
+This result result does not immediately make sense to me. I expected the orbits to be a bit \emph{shorter}, not a bit \emph{longer}. This is what I saw in my plots from last week as well.
+
+It is a good thing that I checked this, because as it turns out, I forgot to add the angular momentum losses due to mass losses from the accretor to my custom \(\dot{J}_\text{ML}\) prescription.
+
+Effectively, some mass is now lost \emph{without any} angular momentum losses. Since normally, mass ends up being transferred to a heavier companion, this costs angular momentum, but with isotropic re-emission without angular momentum losses, no angular momentum is consumed, which results in larger orbits.
+
+I have fixed this now and a new grid is currently simulating on the cluster.
+This is the new \(\dot{J}_\text{ML} \) prescription:
+\begin{minted}[fontsize=\small]{fortran}
+! --- mass lost from vicinity of donor --- saladino prescription
+b%jdot_ml = b%mdot_system_wind(b%d_i) &
+            *eta &
+            *(b%separation)**2 &
+            *sqrt(1 - pow2(b%eccentricity)) &
+            *2*pi/b%period
+
+!mass lost from vicinity of accretor -- isotropic re-emission
+b% jdot_ml = b% jdot_ml + (b% mdot_system_transfer(b% a_i) & 
+            + b% mdot_system_wind(b% a_i)) &
+            * pow2(b% m(b% d_i)/(b% m(b% a_i)+b% m(b% d_i)) &
+            * b% separation)*2*pi/b% period &
+            * sqrt(1 - pow2(b% eccentricity))
+
+! --- mass lost from circumbinary coplanar toroid
+b% jdot_ml = b% jdot_ml + b% mdot_system_cct * b% mass_transfer_gamma * &
+             sqrt(standard_cgrav * (b% m(1) + b% m(2)) * b% separation)
+\end{minted}
+
+I think the addition of this term should be sufficient for capturing the full angular momentum evolution of isotropic re-emission
+
+
+Below, I plot the inferred C/O-ratio for the old grid\sidenote{with the wrong \(\dot{J}_\text{ML}\)-prescription, but it should still be representative of the abundances.}. This clearly shows that the C/O-ratio does not change significantly for the model without conservative RLOF mass transfer. We can however see a small change due to winds.
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w20-grid-non-cons-CO}
+\end{figure}
+
+
 \bibliography{master.bib}
 \appendix
 \section{Additional Figures}
