@@ -1,0 +1,172 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 20}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Metallicity}
+
+I computed the mean and median of the metallicity of barium stars according to the sample of barium stars from \citet{escorza2023} and \citet{jorissen2019}.
+
+These are the observational values:
+\begin{align*}
+    \text{median}([\text{Fe/H} ]) &= -0.270,\\
+    \text{mean}([\text{Fe/H} ]) &= -0.292.
+\end{align*}
+
+I opt to use a value somewhere in between of \(\text{[Fe/H]} = -0.28\) and I convert it to a \(z\) value with the assumption that iron fraction is a good and constant proxy for the total metal contents of a star.
+
+\begin{equation*}
+    z = z_\odot \cdot 10^{\text{[Fe/H]}} \approx 7.35 \cdot 10^{-3}.
+\end{equation*}
+
+
+\begin{minted}[fontsize=\tiny]{text}
+retry:  adjust_correction failed in eval_equations -- give up in solver   57948
+      57950   8.256937   2219.747   3.918257   3.919226   0.877088   0.270911   0.000000   0.000000   0.281902  41.369220   2399      1
+ 9.9754E-01   7.869378   2.796888   0.879307   2.762703  -4.935912   0.606177   0.000000   0.632940   0.026762   9.345286      7
+ 2.1250E+06   6.460961   3.933684   1.038067 -99.000000 -11.165183   0.590577   0.358079   0.007146   1.000000  0.000E+00  max increase
+                                TP_count       17.0000000000000000
+                           alpha_mlt_max        3.4896515956277092
+                       alpha_mlt_surface        1.9330640592941499
+                                min_beta        0.4505305927141795
+                              lambda_DUP        0.0000000000000000
+retry: eos evaluted at too low a density   57952
+ retry:  logRho > hydro_mtx_max_allowed_logRho          60   57955
+ retry:  logRho > hydro_mtx_max_allowed_logRho          34   57955
+ retry:  logRho > hydro_mtx_max_allowed_logRho          46   57955
+ retry:  adjust_correction failed in eval_equations -- give up in solver   57955
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+ AESOPUS_interp: logR, logT outside of table bounds
+\end{minted}
+We see the familiar \lstinline[style=output, breaklines=true]|AESOPUS_interp: logR, logT outside of table bounds| message, and a message that the equations of state are evaluated at too low a density.
+
+The model looks like this up to the crash:
+
+\begin{figure}[ht]
+    \marginfignote{3}{The model clearly evolves a bit different from the solar metallicity one. To star, it is slightly smaller, and seems to evolve slightly slower. Then, towards the end, the evolution seems to be a bit more extreme with a sharper increase in radius and stronger final pulses. This is also where the model starts to experience problems.}
+    \centering
+    \incplot{w20-check-radius}
+\end{figure}
+
+The star has \(0.27M_\odot \) of envelope left at the point of failing. This is still a significant amount.
+
+\subsection{Diagnosing the Problem}
+
+Since previously, I was able to diagnose quite clearly see issues in the temperature gradient of the internal model at the moment of convergence problems, I tried this again.
+
+\begin{figure}[ht]
+    \marginfignote{3}{There are 2 problematic regions here that quite clearly are not behaving as they should. The most prominent one is at \(\log (r/ R_\odot ) \approx -2.2\). Then, there is a similar smaller issue at \(\log (r/ R_\odot ) \approx -1.2\).}
+    \marginfignote{15}{The figure does not make it super clear, but there is some oscillation occurring at the problematic regions for \(\nabla\) and \(\nabla_\text{rad}\).}
+    \marginfignote{25}{The first problematic regions occurs deep inside the core of the AGB star while the second (smaller) problem is right at the boundary of of the core, close to the burning regions.}
+    \centering
+    \incplot{w20-diagnose-gradient}
+\end{figure}
+
+Since we saw the notification of problematic densities in the EOS, we can plot the temperature density diagram for the problematic model
+
+\begin{figure}[ht]
+    \marginfignote{4}{The colored regions depict which EOS are used by MESA. The black line shows the profile of the star during the last model. The red crosses indicate the problematic temperature gradient regions.}
+
+    \marginfignote{13}{The profile does not look weird, nor are the problematic regions at boundaries between the EOS. I do not think this is truely a problem with the EOS.}
+    \centering
+    \incplot{w20-eos}
+\end{figure}
+
+We can also look at the opacity table.
+\begin{figure}[ht]
+    \marginfignote{5}{Again, the problematic regions do not appear at particularly interesting spots.}
+    \marginfignote{9}{The profile of the star does creep pretty close to the bottom of the \AE sopus table. Values outside the table are marked in gray. Nevertheless, is this not what is causing the issues.}
+    \centering
+    \incplot{w20-kap}
+\end{figure}
+
+I do not think the opacity table or the EOS are the problem. Let me look at the composition.
+\nextpage
+
+\begin{figure}[ht]
+    \marginfignote{0}{The vertical gray lines show the points where the problems in the temperature gradient start.}
+    \marginfignote{6}{The first line seems so perfectly align with a small jump in \(\text{C}_{12}\) and a small drop in \(\text{O}_\text{16}\).}
+    \marginfignote{12}{The second line does not correspond with such a jump, but I also think this is not the \emph{real} reason the model is failing, and it is much more likely that this problematic area only exists because the first problem could not be solved.}
+    \centering
+    \incplot{w20-abundances}
+\end{figure}
+Below, I plot the same figure but now as a function of internal mass.
+\begin{figure}[ht]
+    \marginfignote{0}{Again, the jump in \(\text{C}_{12} \) and dip in \(\text{O}_\text{16} \) are quite clear.}
+    \centering
+    \incplot{w20-abundances-mass}
+\end{figure}
+
+Here is a zoom:
+\begin{figure}[ht]
+    \centering
+    \incplot{w20-abundances-mass-zoom}
+\end{figure}
+
+I think the boundary between the flat interior and the sloping region outside \(m \approx 0.27\) aligns with the boundary between the fully mixed region during core helium burning and the region outside of it \citep{straniero1902}.
+
+I think this can be seen in the Kippenhahn plot below.
+\begin{figure}[ht]
+    \marginfignote{0}{The gray regions are convective regions, while the white regions are radiative. The gray horizontal line aligns with the location of the \(\text{C}_{12}\) and \(\text{O}_{16}\) jumps and the instability.}
+    \marginfignote{8}{Keep in mind that this Kippenhahn plot is for a solar metallicity model (one of the earlier ones because I did not have the needed profiles for a detailed kippenhahn plot during the CHeB-phase).}
+    \centering
+    \incplot{w20-kipp}
+\end{figure}
+
+So the jumps are probably a \emph{real physical feature}. They do however align with a discontinuity of the nuclear energy generation, entropy and opacity. 
+
+I hope that I can fix this by simply improving the mesh around this troublesome point.
+
+Lastly, I think the \(\Delta t\) plot is interesting.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The simulation completely grinds to a halt.}
+    \centering
+    \incplot{w12-dt}
+\end{figure}
+
+
+\subsection{Increased Mesh Refinement}
+
+Increasing the mesh refinement using \lstinline[style=output, breaklines=true]|mesh_delta_coeff = 0.5d0| seems to prevent the instability. The model can continue to evolve \emph{but} the temperature gradient is generally a lot less smooth and the evolution obviously takes significantly longer for a more refined mesh.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w20-mesh-refine}
+\end{figure}
+
+This does not seem like a good solution.
+
+\bibliography{master.bib}
+\appendix
+\section{Additional Figures}
+\begin{figure}[ht]
+    \centering
+    \incplot{w20-eps_nuc}
+\end{figure}
+
+\end{document}
