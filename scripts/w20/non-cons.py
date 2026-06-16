@@ -700,10 +700,37 @@ delta = 0.5
 q = 0.5
 
 for beta in np.linspace(0, 0.49, 10):
+    print(beta)
     qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
     orbit = CombineEvolve(alpha, beta, delta, gamma, qs, A=10)
     plt.plot(qs, orbit.P_over_P0)
 
 plt.show()
+
+# %%
+delta = 0.5
+gamma = 1
+
+beta = 0
+q = 0.5
+
+
+alpha = 0
+beta = 0
+qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
+orbit = CombineEvolve(alpha, beta, delta, gamma, qs)
+plt.plot(qs, orbit.P_over_P0)
+
+
+alpha = 0
+beta = 0.5 - 1e-10
+qs = np.linspace(q, q_f(q, 2, 0.6, alpha, beta, delta), 100)
+orbit = CombineEvolve(alpha, beta, delta, gamma, qs)
+plt.plot(qs, orbit.P_over_P0)
+
+
+plt.gca().invert_xaxis()
+plt.show()
+
 
 # %%

@@ -1,22 +1,24 @@
 # Fdb version 4
-["bibtex w20"] 1781550458.41932 "w20.aux" "w20.bbl" "w20" 1781550661.11325 0
+["bibtex w20"] 1781652906.37692 "w20.aux" "w20.bbl" "w20" 1781652914.06025 0
   "./master.bib" 1781521185.922 36275 7c850a33b6b68e163b05ff6581619e72 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w20.aux" 1781550660.60343 2522 5c4d1a19dd634dca60b5777a89e0a8d5 "pdflatex"
+  "w20.aux" 1781652913.51049 3109 1fb522b8a922d572a6cc70cad147f014 "pdflatex"
   (generated)
   "w20.bbl"
   "w20.blg"
   (rewritten before read)
-["pdflatex"] 1781550654.31034 "w20.tex" "w20.pdf" "w20" 1781550661.11344 0
+["pdflatex"] 1781652906.53437 "w20.tex" "w20.pdf" "w20" 1781652914.06047 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
   "/home/koen/LaTeX-setup//LaTeX-files/listings.tex" 1739308810.95949 27571 9f1d93b589b3961f6fd7d842d0658ca5 ""
   "/home/koen/LaTeX-setup//LaTeX-files/master-internship.tex" 1777984089.50983 14562 baf2cfd6822de1ac02f83c58e0b81203 ""
   "/home/koen/LaTeX-setup//plots/w12-dt.pgf" 1781480723.69258 246270 d8ffe30bde42963e4dbcdd279d3ce248 ""
+  "/home/koen/LaTeX-setup//plots/w20-HR.pgf" 1781603926.67953 225958 8b8fe9e4afbe6c9f8fcc6607e4188075 ""
   "/home/koen/LaTeX-setup//plots/w20-abundances-mass-zoom.pgf" 1781483527.78211 36612 fe5bf212fad0f44443b69d3473b43b6f ""
   "/home/koen/LaTeX-setup//plots/w20-abundances-mass.pgf" 1781475053.15387 53717 90fa05d8228604dfb8a4559c166cbe35 ""
   "/home/koen/LaTeX-setup//plots/w20-abundances.pgf" 1781475039.82067 66971 8909dbe37e09307a6b688582d3cef3d0 ""
+  "/home/koen/LaTeX-setup//plots/w20-check-radius-2.pgf" 1781602628.35657 112379 f77cfb9d9a532e828707ecde6d119a73 ""
   "/home/koen/LaTeX-setup//plots/w20-check-radius.pgf" 1781448030.73721 81372 1d8ad83407bb54683a3e3ce0d6d59a54 ""
   "/home/koen/LaTeX-setup//plots/w20-diagnose-gradient.pgf" 1781475023.79643 133154 2cdfe3310cdaba95ab32cb948f43af3a ""
   "/home/koen/LaTeX-setup//plots/w20-eos-img0.png" 1781448709.57962 21065 d958eedc0027814a439e3b6648f99320 ""
@@ -35,6 +37,7 @@
   "/home/koen/LaTeX-setup//plots/w20-kipp-img1.png" 1781483518.23394 2377 b0d3d34127c8f4f3cd1d8fce0f17c3d0 ""
   "/home/koen/LaTeX-setup//plots/w20-kipp.pgf" 1781483518.23994 35449 e95f1adfedfc3b068de7582ef74b4ec6 ""
   "/home/koen/LaTeX-setup//plots/w20-mesh-refine.pgf" 1781480692.91215 61803 fc2ecf462932dfe3132ef63bc783565c ""
+  "/home/koen/LaTeX-setup//plots/w20-radius-end.pgf" 1781622949.5726 134968 83846500bc583e23f1657e0056c6055d ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1276641224 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/sourcecodepro/a_lutrty.enc" 1558300257 2905 926f570532f1104044846d18d8d97080 ""
@@ -417,14 +420,16 @@
   "/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1734805718 5485709 8129e419010b46b234085a26866cdb87 ""
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1734805844 3343776 1d1db4be7b32d13d500bec482c2ee25e ""
   "/usr/local/texlive/2024/texmf.cnf" 1734805714.41611 455 5b996dcaa0eb4ef14a83b026bc0a008c ""
+  "_minted/0ECE807D95069263BA242BD0F0491BE5.highlight.minted" 1781652813.56772 3821 6bd0c4d4db37747370f4d080b2ee4616 ""
   "_minted/302B8BD32A6683F13E90B734DECE13F9.highlight.minted" 1781550456.88408 3706 bb20810ee5dde0279b069e5c03da9b8d ""
   "_minted/6F11BAA512D35121F6D4C05FC91550C1.highlight.minted" 1781345723.27905 2144 1228f20653432a78a9d8043d469f0291 ""
-  "_minted/_ED05E6BDD5B77D4935AAA754DF4BD0C8.index.minted" 1781550457.91647 318 e3eb3597280f0c1aa02b180cb8172594 ""
+  "_minted/E8B5DF67341099A4442AB19BF9355BC1.highlight.minted" 1781648646.56833 3101 d7bd8ae1180ffec4de95342a33570358 ""
+  "_minted/_ED05E6BDD5B77D4935AAA754DF4BD0C8.index.minted" 1781652814.09651 432 4071d87b2d3f0ee076d0d267cc650394 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w20.aux" 1781550660.60343 2522 5c4d1a19dd634dca60b5777a89e0a8d5 "pdflatex"
-  "w20.bbl" 1781550458.54759 1984 5597179ffd985dbd83ccb551f14607ac "bibtex w20"
-  "w20.out" 1781550660.60443 983 4b37f51f3c086e3a3cb911e7b48cde38 "pdflatex"
-  "w20.tex" 1781550653.79133 12517 78f303cb5c4fb92caf2594aed9fca302 ""
+  "w20.aux" 1781652913.51049 3109 1fb522b8a922d572a6cc70cad147f014 "pdflatex"
+  "w20.bbl" 1781652906.51339 1984 5597179ffd985dbd83ccb551f14607ac "bibtex w20"
+  "w20.out" 1781652913.51149 1673 64eeb90d1fdcf2812569c28e2fa5a94a "pdflatex"
+  "w20.tex" 1781652898.17527 16897 ba146429a072b6f02b4b0e813546d7e9 ""
   (generated)
   "w20.aux"
   "w20.log"

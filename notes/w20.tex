@@ -150,7 +150,7 @@ Lastly, I think the \(\Delta t\) plot is interesting.
 \end{figure}
 
 
-\subsection{Increased Mesh Refinement}
+\newsubsection{Increased Mesh Refinement}
 
 Increasing the mesh refinement using \lstinline[style=output, breaklines=true]|mesh_delta_coeff = 0.5d0| seems to prevent the instability. The model can continue to evolve \emph{but} the temperature gradient is generally a lot less smooth and the evolution obviously takes significantly longer for a more refined mesh.
 
@@ -177,6 +177,35 @@ From the samples of \citet{castro2016} we can find slightly different metallicit
 \end{align*}
 
 \citet{castro2016} fit a double Gaussian to the metallicity data and find a Gaussian for thin disk stars with \(\mu = -0.12\), \(\sigma = 0.14\) and a Gaussian for thick disk stars with \(\mu = -0.49\), \(\sigma = 0.09\).
+
+I start by simulating a model with \([\text{Fe/H}] = -0.2 \to Z \approx 0.0883\).
+
+\begin{figure}[ht]
+    \marginfignote{3}{This model seems to run just fine. Its behaviour is somewhere between the solar metallicity and the more metal poor star. This all makes sense and it is nice to know that \emph{MESA} can simulate metal-poorer stars, even though this star is not very metal poor at all.}
+    \centering
+    \incplot{w20-check-radius-2}
+\end{figure}
+
+Below, I plot the effects of the metallicity on the HR-diagram.
+
+\begin{figure}[ht]
+    \marginfignote{3}{The main effect is the slight horizontal shift in effective temperature. This is what I would expect.}
+    \centering
+    \incplot{w20-HR}
+\end{figure}
+
+The solar metallicity model and the new model both experience radial instabilities when become post-AGB stars. I do not think this is super important, but a saved a bunch of profiles for the new star so I can actually see what is happening inside the star.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w20-radius-end}
+\end{figure}
+
+The instabilities are show as pulsating bumps in the entropy profile close to the core-boundary of the star.
+The instabilities are not very visible when plotting the temperature gradient or the energy generation rate.
+
+\href{https://s-koen.github.io/figures/#/plots/master-internship/w20/post-AGB-instabilities}{Click here!}
+
 
 \newsection{Fully Non-Conservative Mass Transfer}
 
@@ -231,6 +260,83 @@ Below, I plot the inferred C/O-ratio for the old grid\sidenote{with the wrong \(
     \incplot{w20-grid-non-cons-CO}
 \end{figure}
 
+\newsection{MESA additions}
+
+\subsection{Stopping Condition}
+As I described last week, I want to modify my MESA models to continue running until only \(0.01M_\odot \) envelope mass is left, \emph{and} RLOF has ended. This requires a custom MESA stopping condition. Luckily this is quite easy. Below, I share the new \lstinline[style=output, breaklines=true]|extras_binary_finish_step| code:
+\begin{minted}[fontsize=\small]{fortran}
+integer function extras_binary_finish_step(binary_id)
+    ...
+
+    if (-s1%star_mdot > 3*max_Mdot_crit) then
+        do_termination = .true.
+        termination_code_str(t_xtra1) = "Critical mass loss rate exceeded"
+    end if
+
+
+    if ((0.9 * b% rl(1) >= b% r(1)) .and. (s1% star_mass - s1% he_core_mass < 0.01d0)) then
+        do_termination = .true.
+        termination_code_str(t_xtra1) = "Envelope stripped"
+    end if
+
+
+    if (b% period < 50 * secday ) then
+        do_termination = .true.
+        termination_code_str(t_xtra1) = "Period became smaller than 50 days"
+    end if
+
+
+    if (do_termination .eqv. .true.) then
+        s1%termination_code = t_xtra1
+        extras_binary_finish_step = terminate
+    end if
+end function extras_binary_finish_step
+\end{minted}
+I have tested this code and it works as intended.
+\subsection{Saving Profiles according to Envelope Mass}
+I also think it is interesting to save models based on the envelope mass of the system.
+My current implementation is pretty easily modifiable with an easy way to change the minimum envelope mass and the maximum number of profiles to save.
+
+I simply call \emph{this} subroutine every \lstinline[style=output, breaklines=true]|extras_finish_step|.
+
+\begin{minted}[fontsize=\small]{fortran}
+subroutine save_profile_on_envelope_decrease(s)
+    type (star_info), pointer, intent(inout) :: s
+
+    integer :: i ! index for envelope mass model
+    integer :: max_profiles ! index for envelope mass model
+    real(dp) :: env_mass
+    real(dp) :: target_mass
+    real(dp) :: minimum_envelope_mass
+
+    ! --- setup
+    max_profiles = 500
+    minimum_envelope_mass = 1d-3
+    env_mass = s% star_mass - s% he_core_mass
+
+    ! --- logic to determine if a profile should be saved
+    i = int(s% ixtra(ix_envelope_profile_index))
+
+    do while (i <= max_profiles)
+        target_mass = s% initial_mass &
+                    * (minimum_envelope_mass / s% initial_mass)&
+                    **((i-1d0)/real(max_profiles - 1))
+        
+        if (env_mass > target_mass) exit
+
+        s% need_to_save_profiles_now = .true.
+        s% ixtra(ix_envelope_profile_index) = s% ixtra(ix_envelope_profile_index) + 1
+
+        i = i + 1
+    end do
+
+end subroutine save_profile_on_envelope_decrease
+
+\end{minted}
+
+It computes \(n\) values from \(m_\text{min}\) to \(M_\text{star,i}\) logarithmically and checks if the current envelope mass dropped below one (or more) of these values. If this is the case, I tell MESA to save a model. It seems to work fine when I tested it quickly.
+
+\section{AGB Nucleosynthesis}
 
 \bibliography{master.bib}
 \appendix
