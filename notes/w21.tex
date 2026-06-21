@@ -1,0 +1,78 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 21}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Dredge-up and Abundances}
+
+To start, I want to plot the radius evolution for the models.
+\begin{figure}[ht]
+    \marginfignote{3}{All seem fine, and the general trends that I saw last week seem to hold for the lower metallicity star as well.}
+    \centering
+    \incplot{w21-radius}
+\end{figure}
+
+Now, more interestingly, let me plot the dredge-up efficiencies.
+
+\begin{figure}[ht]
+    \marginfignote{3}{It appears that dredge is slightly more efficient for lower metallicity stars. This is in line with literature predictions \citep{herwig2005, karakas1902}. Metallicity also seems to have an inverse relation with the number of thermal pulses that the star will experience.}
+    \centering
+    \incplot{w21-lambda}
+\end{figure}
+
+Below I plot the C/O-number ratio for the different models.
+
+\begin{figure}[ht]
+    \marginfignote{3}{Both the solar model and the \(Z=0.0883\) model look as expected, with the subsolar model achieving a slightly higher C/O-ratio, as expected.}
+    \marginfignote{10}{The \(Z=0.00453\) model shows the strong bump that we saw in some of the earlier higher mass models as well.}
+    \centering
+    \incplot{w21-co}
+\end{figure}
+
+Since I have a lot of profiles for this star, we can try to work out what is happening\sidenote{Unfortunately though, I do not have all of the abundances for all of the profiles, so we need something else that shows the same behaviour.}
+.
+
+Let me start by plotting the Z-fraction at the surface of all profiles for the low-metallicity model.
+
+\begin{figure}[ht]
+    \marginfignote{0}{This looks a lot like the plot above, which is good, because that means we can use this \(Z\)-fraction as a way to understand the sudden jump.}
+    \centering
+    \incplot{w21-Z-surface}
+\end{figure}
+
+
+I really like \href{https://s-koen.github.io/figures/#/plots/master-internship/w21/dredge-up}{this interactive figure}. It shows:
+\begin{enumd}
+    \item  Repeated hydrogen shell burning followed by unstable helium burning.
+    \item  The creation of metals during he-burning followed by dredge up.
+    \item  The loss of the envelope
+    \item The effect of the superadiabatic sub-surface layers on the metal abundances at the surface.
+\end{enumd}
+
+Clearly the abundance at the surface is not necessarily the abundance in most of the envelope. Below, I try to show that even the model with the sudden jump in surface C/O-ratio still has a well-behaved envelope abundance over time.
+
+\begin{figure}[ht]
+    \marginfignote{3}{The envelope abundance follows a much more predictable staircase-like pattern.}
+    \marginfignote{8}{Since the superadiabatic subsurface layers contain very little mass, the envelope value should provide a much better estimate for the actual abundances that get transferred during RLOF and wind mass transfer.}
+    \centering
+    \incplot{w21-Z-envelope}
+\end{figure}
+
+
+\bibliography{master.bib}
+\end{document}
