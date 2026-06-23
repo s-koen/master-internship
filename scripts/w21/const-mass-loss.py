@@ -954,13 +954,40 @@ profiles = list(l.profile_dict.values())
 
 list_of_models = []
 
-for name in ["1e-1", "1e-1.5", "1e-2.5", "1e-3", "1e-3.5", "1e-4"]:
+for i, name in enumerate(
+    [
+        "1e-1",
+        "1e-1.1",
+        "1e-1.2",
+        "1e-1.3",
+        "1e-1.4",
+        "1e-1.5",
+        "1e-1.6",
+        "1e-1.7",
+        "1e-1.8",
+        "1e-1.9",
+        "1e-2",
+        "1e-2.5",
+        "1e-3",
+    ]
+):
     l = mr.MesaLogDir(f"{MASTER}/constant-mass-loss-rate/{name}/LOGS/TPAGB")
     for profile in l.profile_numbers:
         profile = l.profile_data(profile_number=profile)
 
     profiles = list(l.profile_dict.values())
+
     list_of_models.append(profiles)
+
+true_list = list_of_models.copy()
+for i in range(len(list_of_models)):
+    if i in [5, 10, 11, 12]:
+        true_list[i] = list_of_models[i][1:]
+
+# %%
+for i in range(len(list_of_models)):
+    true_list[i] = true_list[i][::2]
+
 
 # %%
 import numpy as np
@@ -968,7 +995,19 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 
-colors = px.colors.qualitative.D3
+import matplotlib.cm as cm
+
+rates = [-1, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.5, -3]
+mass_loss = np.array(rates)
+
+norm = (mass_loss - mass_loss.min()) / (mass_loss.max() - mass_loss.min() + 1e-12)
+
+cmap = cm.viridis
+from matplotlib.colors import to_hex
+
+colors = [cmap(v) for v in norm]
+colors = [to_hex(c) for c in colors]
+print(colors)
 # --------------------------------------------------
 # input
 # --------------------------------------------------
@@ -978,6 +1017,11 @@ n_models = len(list_of_models)
 # --------------------------------------------------
 # helper: cumulative L_grav profile
 # --------------------------------------------------
+
+true_list = list_of_models.copy()
+for i in range(n_models):
+    if i in [5, 10, 11, 12]:
+        true_list[i] = list_of_models[i][1:]
 
 
 def compute_lgrav(profile):
@@ -997,7 +1041,10 @@ def compute_lgrav(profile):
     lgrav = savgol_filter(lgrav, 52, 3)
 
     env = np.log10(profile.star_mass - profile.he_core_mass)
-    return m, r, lgrav, env
+    t = np.log10(profile.Teff)
+    lum = np.log10(profile.photosphere_L)
+    print(profile.bulk_names)
+    return m, r, lgrav, env, t, lum
 
 
 # --------------------------------------------------
@@ -1009,33 +1056,41 @@ model_r = []
 model_lgrav = []
 model_labels = []
 model_env = []
+model_t = []
+model_lum = []
 
-for i, model in enumerate(list_of_models):
+for i, model in enumerate(true_list):
 
     m_series = []
     r_series = []
     l_series = []
     env_series = []
+    t_series = []
+    lum_series = []
 
     for p in model:
-        m, r, lgrav, env = compute_lgrav(p)
+        m, r, lgrav, env, t, lum = compute_lgrav(p)
         m_series.append(m)
         r_series.append(r)
         l_series.append(lgrav)
         env_series.append(env)
+        t_series.append(t)
+        lum_series.append(lum)
 
     model_m.append(m_series)
     model_r.append(r_series)
     model_lgrav.append(l_series)
     model_env.append(env_series)
-    model_labels.append(f"model {i}")
+    model_t.append(t_series)
+    model_lum.append(lum_series)
+    model_labels.append(f"1e{rates[i]:.1f} Msun / yr")
 
 
 # --------------------------------------------------
 # common grid for plotting
 # --------------------------------------------------
 
-n_grid = 300
+n_grid = 150
 
 m_min = 0.3
 m_max = 1
@@ -1056,10 +1111,10 @@ R_grid = np.logspace(np.log10(R_min), np.log10(R_max), n_grid)
 fig = make_subplots(
     rows=2,
     cols=2,
-    row_heights=[0.7, 0.3],
+    row_heights=[0.5, 0.5],
     specs=[
         [{}, {}],
-        [{"colspan": 2}, None],
+        [{}, {}],
     ],
 )
 
@@ -1074,6 +1129,8 @@ for i in range(n_models):
     r0 = model_r[i][0]
     l0 = model_lgrav[i][0]
     env0 = model_env[i]
+    t0 = model_t[i]
+    lum0 = model_lum[i]
 
     l0_interp = np.interp(m_grid, m0, l0, left=np.nan, right=np.nan)
 
@@ -1105,7 +1162,7 @@ for i in range(n_models):
         col=2,
     )
 
-    radius_proxy = np.array([np.max(p.logR) for p in list_of_models[i]])
+    radius_proxy = np.array([np.max(p.logR) for p in true_list[i]])
 
     fig.add_trace(
         go.Scatter(
@@ -1119,6 +1176,19 @@ for i in range(n_models):
         row=2,
         col=1,
     )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[t0[0]],
+            y=[lum0[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=2,
+    )
     fig.add_trace(
         go.Scatter(
             x=env0,
@@ -1130,6 +1200,18 @@ for i in range(n_models):
         ),
         row=2,
         col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=t0,
+            y=lum0,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=2,
     )
 
     # moving marker
@@ -1156,11 +1238,15 @@ for t in range(n_steps):
             r = model_r[i][t]
             l = model_lgrav[i][t]
             env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
         else:
             m = model_m[i][-1]
             r = model_r[i][-1]
             l = model_lgrav[i][-1]
             env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
 
         l_interp = np.interp(m_grid, m, l, left=np.nan, right=np.nan)
 
@@ -1181,20 +1267,26 @@ for t in range(n_steps):
                     )
                 ],
                 mode="markers",
-                marker=dict(size=10, color="red"),
             )
         )
-
+        frame_data.append(
+            go.Scatter(
+                x=[T[t] if t < len(model_m[i]) else T[-1]],
+                y=[lum[t] if t < len(model_m[i]) else lum[-1]],
+                mode="markers",
+            )
+        )
     # frame_data.append(go.Scatter())
     traces = []
 
     for i in range(n_models):
-        base = 4 * i
+        base = 6 * i
         traces.extend(
             [
                 base,
                 base + 1,
                 base + 2,
+                base + 3,
             ]
         )
     frames.append(
@@ -1228,7 +1320,7 @@ steps = [
 ]
 
 fig.update_layout(
-    template="simple_white",
+    template="plotly_dark",
     hovermode="x unified",
     updatemenus=[
         dict(
@@ -1258,12 +1350,1298 @@ fig.update_layout(
 )
 
 fig.update_xaxes(title_text="mass coordinate", row=1, col=1)
-fig.update_xaxes(title_text="mass coordinate", row=1, col=2)
-fig.update_xaxes(title_text="age", row=2, col=1)
+fig.update_xaxes(title_text="log r", row=1, col=2)
+fig.update_xaxes(title_text="log envelope mass", row=2, col=1)
+fig.update_xaxes(title_text="log Teff", row=2, col=2, autorange="reversed")
 
-fig.update_yaxes(title_text="cumulative L_grav", row=1, col=1)
-fig.update_yaxes(title_text="cumulative L_grav", row=1, col=2)
-fig.update_yaxes(title_text="radius", row=2, col=1)
+fig.update_yaxes(title_text="cumulative L_grav", row=1, col=1, range=[-8000, 2000])
+fig.update_yaxes(title_text="cumulative L_grav", row=1, col=2, range=[-8000, 2000])
+fig.update_yaxes(title_text="log radius", row=2, col=1)
+fig.update_yaxes(title_text="log L", row=2, col=2)
+#
+# fig.write_html(
+#     "/home/koen/figures/plots/master-internship/w21/losing-envelope.html",
+#     include_plotlyjs="cdn",
+#     include_mathjax="cdn",
+#     config={"responsive": True},
+# )
+#
+
 
 fig.show()
+# %%
+
+
+models = []
+
+for name in [
+    "1e-1",
+    "1e-1.1",
+    "1e-1.2",
+    "1e-1.3",
+    "1e-1.4",
+    "1e-1.5",
+    "1e-1.6",
+    "1e-1.7",
+    "1e-1.8",
+    "1e-1.9",
+    "1e-2",
+    "1e-2.5",
+    "1e-3",
+]:
+    model = mr.MesaData(
+        f"{MASTER}/constant-mass-loss-rate/{name}/LOGS/TPAGB/history.data"
+    )
+    models.append(model)
+
+# %%
+
+for model in models:
+    plt.plot(model.envelope_mass, model.R)
+
+plt.yscale("log")
+plt.xscale("log")
+plt.show()
+# %%
+for model in models:
+    plt.plot(model.log_Teff, model.log_L)
+
+plt.gca().invert_xaxis()
+
+plt.show()
+
+# %%
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.express as px
+
+import matplotlib.cm as cm
+
+rates = [-1, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.5, -3]
+mass_loss = np.array(rates)
+
+norm = (mass_loss - mass_loss.min()) / (mass_loss.max() - mass_loss.min() + 1e-12)
+
+cmap = cm.viridis
+from matplotlib.colors import to_hex
+
+colors = [cmap(v) for v in norm]
+colors = [to_hex(c) for c in colors]
+print(colors)
+# --------------------------------------------------
+# input
+# --------------------------------------------------
+
+n_models = len(list_of_models)
+
+# --------------------------------------------------
+# helper: cumulative L_grav profile
+# --------------------------------------------------
+
+true_list = list_of_models.copy()
+for i in range(n_models):
+    if i in [5, 10, 11, 12]:
+        true_list[i] = list_of_models[i][1:]
+
+
+def compute_lgrav(profile):
+    """
+    returns:
+        m_coord: mass coordinate (inward)
+        lgrav: cumulative integral of eps_grav_ad
+    """
+
+    m = profile.mass[::-1]
+    r = 10 ** profile.logR[::-1]
+    eps = profile.eps_grav_ad[::-1][1:]
+
+    dm = np.diff(m)
+
+    lgrav = profile.logS_per_baryon[::-1]
+    lgrav = savgol_filter(lgrav, 52, 3)
+
+    env = np.log10(profile.star_mass - profile.he_core_mass)
+    t = np.log10(profile.Teff)
+    lum = np.log10(profile.photosphere_L)
+    print(profile.bulk_names)
+    return m, r, lgrav, env, t, lum
+
+
+# --------------------------------------------------
+# preprocess models
+# --------------------------------------------------
+
+model_m = []
+model_r = []
+model_lgrav = []
+model_labels = []
+model_env = []
+model_t = []
+model_lum = []
+
+for i, model in enumerate(true_list):
+
+    m_series = []
+    r_series = []
+    l_series = []
+    env_series = []
+    t_series = []
+    lum_series = []
+
+    for p in model:
+        m, r, lgrav, env, t, lum = compute_lgrav(p)
+        m_series.append(m)
+        r_series.append(r)
+        l_series.append(lgrav)
+        env_series.append(env)
+        t_series.append(t)
+        lum_series.append(lum)
+
+    model_m.append(m_series)
+    model_r.append(r_series)
+    model_lgrav.append(l_series)
+    model_env.append(env_series)
+    model_t.append(t_series)
+    model_lum.append(lum_series)
+    model_labels.append(f"1e{rates[i]:.1f} Msun / yr")
+
+
+# --------------------------------------------------
+# common grid for plotting
+# --------------------------------------------------
+
+n_grid = 150
+
+m_min = 0.3
+m_max = 1
+
+m_grid = np.linspace(m_min, m_max, n_grid)
+
+
+R_min = min(np.min(10**p.logR) for p in profiles)
+R_max = max(np.max(10**p.logR) for p in profiles)
+
+R_grid = np.logspace(np.log10(R_min), np.log10(R_max), n_grid)
+
+
+# --------------------------------------------------
+# figure layout (UNCHANGED STRUCTURE)
+# --------------------------------------------------
+
+fig = make_subplots(
+    rows=2,
+    cols=2,
+    row_heights=[0.5, 0.5],
+    specs=[
+        [{}, {}],
+        [{}, {}],
+    ],
+)
+
+# --------------------------------------------------
+# static traces (initial timestep only)
+# --------------------------------------------------
+marker_indices = []
+
+for i in range(n_models):
+
+    m0 = model_m[i][0]
+    r0 = model_r[i][0]
+    l0 = model_lgrav[i][0]
+    env0 = model_env[i]
+    t0 = model_t[i]
+    lum0 = model_lum[i]
+
+    l0_interp = np.interp(m_grid, m0, l0, left=np.nan, right=np.nan)
+
+    fig.add_trace(
+        go.Scatter(
+            x=m_grid,
+            y=l0_interp,
+            mode="lines",
+            name=model_labels[i],
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=1,
+        col=1,
+    )
+
+    l0_interp = np.interp(R_grid, r0, l0, left=np.nan, right=np.nan)
+
+    fig.add_trace(
+        go.Scatter(
+            x=np.log10(R_grid),
+            y=l0_interp,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=1,
+        col=2,
+    )
+
+    radius_proxy = np.array([np.max(p.logR) for p in true_list[i]])
+
+    fig.add_trace(
+        go.Scatter(
+            x=[env0[0]],
+            y=[radius_proxy[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[t0[0]],
+            y=[lum0[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=env0,
+            y=radius_proxy,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=t0,
+            y=lum0,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=2,
+    )
+
+    # moving marker
+
+    marker_index = len(fig.data) - 1
+    marker_indices.append(marker_index)
+
+
+# --------------------------------------------------
+# frames
+# --------------------------------------------------
+
+frames = []
+n_steps = max(len(m) for m in model_m)
+
+for t in range(n_steps):
+
+    frame_data = []
+
+    for i in range(n_models):
+
+        if t < len(model_m[i]):
+            m = model_m[i][t]
+            r = model_r[i][t]
+            l = model_lgrav[i][t]
+            env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
+        else:
+            m = model_m[i][-1]
+            r = model_r[i][-1]
+            l = model_lgrav[i][-1]
+            env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
+
+        l_interp = np.interp(m_grid, m, l, left=np.nan, right=np.nan)
+
+        frame_data.append(go.Scatter(x=m_grid, y=l_interp, mode="lines"))
+
+        l_interp = np.interp(R_grid, r, l, left=np.nan, right=np.nan)
+
+        frame_data.append(go.Scatter(x=np.log10(R_grid), y=l_interp, mode="lines"))
+
+        frame_data.append(
+            go.Scatter(
+                x=[env[t] if t < len(model_m[i]) else env[-1]],
+                y=[
+                    (
+                        np.log10(np.nanmax(r))
+                        if t < len(model_m[i])
+                        else np.log10(np.nanmax(r))
+                    )
+                ],
+                mode="markers",
+            )
+        )
+        frame_data.append(
+            go.Scatter(
+                x=[T[t] if t < len(model_m[i]) else T[-1]],
+                y=[lum[t] if t < len(model_m[i]) else lum[-1]],
+                mode="markers",
+            )
+        )
+    # frame_data.append(go.Scatter())
+    traces = []
+
+    for i in range(n_models):
+        base = 6 * i
+        traces.extend(
+            [
+                base,
+                base + 1,
+                base + 2,
+                base + 3,
+            ]
+        )
+    frames.append(
+        go.Frame(
+            name=str(t),
+            data=frame_data,
+            traces=traces,
+        )
+    )
+
+fig.frames = frames
+
+
+# --------------------------------------------------
+# layout
+# --------------------------------------------------
+steps = [
+    dict(
+        method="animate",
+        args=[
+            [str(i)],
+            {
+                "mode": "immediate",
+                "frame": {"duration": 20, "redraw": False},
+                "transition": {"duration": 0},
+            },
+        ],
+        label=str(i),
+    )
+    for i in range(n_steps)
+]
+
+fig.update_layout(
+    template="plotly_dark",
+    hovermode="x unified",
+    updatemenus=[
+        dict(
+            type="buttons",
+            buttons=[
+                dict(
+                    label="Play",
+                    method="animate",
+                    args=[
+                        None,
+                        {
+                            "frame": {"duration": 30, "redraw": False},
+                            "transition": {"duration": 0},
+                            "fromcurrent": True,
+                        },
+                    ],
+                ),
+                dict(
+                    label="Pause",
+                    method="animate",
+                    args=[[None], {"mode": "immediate"}],
+                ),
+            ],
+        )
+    ],
+    sliders=[dict(active=0, steps=steps)],
+)
+
+fig.update_xaxes(title_text="mass coordinate", row=1, col=1)
+fig.update_xaxes(title_text="log r", row=1, col=2)
+fig.update_xaxes(title_text="log envelope mass", row=2, col=1)
+fig.update_xaxes(title_text="log Teff", row=2, col=2, autorange="reversed")
+
+fig.update_yaxes(
+    title_text="log S",
+    row=1,
+    col=1,
+    # range=[-8000, 2000],
+)
+fig.update_yaxes(
+    title_text="log S",
+    row=1,
+    col=2,
+    # range=[-8000, 2000],
+)
+fig.update_yaxes(title_text="log radius", row=2, col=1)
+fig.update_yaxes(title_text="log L", row=2, col=2)
+
+fig.write_html(
+    "/home/koen/figures/plots/master-internship/w21/losing-envelope-entropy.html",
+    include_plotlyjs="cdn",
+    include_mathjax="cdn",
+    config={"responsive": True},
+)
+
+
+fig.show()
+
+# %%
+
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.express as px
+
+import matplotlib.cm as cm
+
+rates = [-1, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.5, -3]
+mass_loss = np.array(rates)
+
+norm = (mass_loss - mass_loss.min()) / (mass_loss.max() - mass_loss.min() + 1e-12)
+
+cmap = cm.viridis
+from matplotlib.colors import to_hex
+
+colors = [cmap(v) for v in norm]
+colors = [to_hex(c) for c in colors]
+print(colors)
+# --------------------------------------------------
+# input
+# --------------------------------------------------
+
+n_models = len(list_of_models)
+
+# --------------------------------------------------
+# helper: cumulative L_grav profile
+# --------------------------------------------------
+
+true_list = list_of_models.copy()
+for i in range(n_models):
+    if i in [5, 10, 11, 12]:
+        true_list[i] = list_of_models[i][1:]
+
+
+def compute_lgrav(profile):
+    """
+    returns:
+        m_coord: mass coordinate (inward)
+        lgrav: cumulative integral of eps_grav_ad
+    """
+
+    m = profile.mass[::-1]
+    r = 10 ** profile.logR[::-1]
+    eps = profile.eps_grav_ad[::-1][1:]
+
+    dm = np.diff(m)
+
+    lgrav = profile.logRho[::-1]
+    lgrav = savgol_filter(lgrav, 52, 3)
+
+    env = np.log10(profile.star_mass - profile.he_core_mass)
+    t = np.log10(profile.Teff)
+    lum = np.log10(profile.photosphere_L)
+    print(profile.bulk_names)
+    return m, r, lgrav, env, t, lum
+
+
+# --------------------------------------------------
+# preprocess models
+# --------------------------------------------------
+
+model_m = []
+model_r = []
+model_lgrav = []
+model_labels = []
+model_env = []
+model_t = []
+model_lum = []
+
+for i, model in enumerate(true_list):
+
+    m_series = []
+    r_series = []
+    l_series = []
+    env_series = []
+    t_series = []
+    lum_series = []
+
+    for p in model:
+        m, r, lgrav, env, t, lum = compute_lgrav(p)
+        m_series.append(m)
+        r_series.append(r)
+        l_series.append(lgrav)
+        env_series.append(env)
+        t_series.append(t)
+        lum_series.append(lum)
+
+    model_m.append(m_series)
+    model_r.append(r_series)
+    model_lgrav.append(l_series)
+    model_env.append(env_series)
+    model_t.append(t_series)
+    model_lum.append(lum_series)
+    model_labels.append(f"1e{rates[i]:.1f} Msun / yr")
+
+
+# --------------------------------------------------
+# common grid for plotting
+# --------------------------------------------------
+
+n_grid = 150
+
+m_min = 0.3
+m_max = 1
+
+m_grid = np.linspace(m_min, m_max, n_grid)
+
+
+R_min = min(np.min(10**p.logR) for p in profiles)
+R_max = max(np.max(10**p.logR) for p in profiles)
+
+R_grid = np.logspace(np.log10(R_min), np.log10(R_max), n_grid)
+
+
+# --------------------------------------------------
+# figure layout (UNCHANGED STRUCTURE)
+# --------------------------------------------------
+
+fig = make_subplots(
+    rows=2,
+    cols=2,
+    row_heights=[0.5, 0.5],
+    specs=[
+        [{}, {}],
+        [{}, {}],
+    ],
+)
+
+# --------------------------------------------------
+# static traces (initial timestep only)
+# --------------------------------------------------
+marker_indices = []
+
+for i in range(n_models):
+
+    m0 = model_m[i][0]
+    r0 = model_r[i][0]
+    l0 = model_lgrav[i][0]
+    env0 = model_env[i]
+    t0 = model_t[i]
+    lum0 = model_lum[i]
+
+    l0_interp = np.interp(m_grid, m0, l0, left=np.nan, right=np.nan)
+
+    fig.add_trace(
+        go.Scatter(
+            x=m_grid,
+            y=l0_interp,
+            mode="lines",
+            name=model_labels[i],
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=1,
+        col=1,
+    )
+
+    l0_interp = np.interp(R_grid, r0, l0, left=np.nan, right=np.nan)
+
+    fig.add_trace(
+        go.Scatter(
+            x=np.log10(R_grid),
+            y=l0_interp,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=1,
+        col=2,
+    )
+
+    radius_proxy = np.array([np.max(p.logR) for p in true_list[i]])
+
+    fig.add_trace(
+        go.Scatter(
+            x=[env0[0]],
+            y=[radius_proxy[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[t0[0]],
+            y=[lum0[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=env0,
+            y=radius_proxy,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=t0,
+            y=lum0,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=2,
+    )
+
+    # moving marker
+
+    marker_index = len(fig.data) - 1
+    marker_indices.append(marker_index)
+
+
+# --------------------------------------------------
+# frames
+# --------------------------------------------------
+
+frames = []
+n_steps = max(len(m) for m in model_m)
+
+for t in range(n_steps):
+
+    frame_data = []
+
+    for i in range(n_models):
+
+        if t < len(model_m[i]):
+            m = model_m[i][t]
+            r = model_r[i][t]
+            l = model_lgrav[i][t]
+            env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
+        else:
+            m = model_m[i][-1]
+            r = model_r[i][-1]
+            l = model_lgrav[i][-1]
+            env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
+
+        l_interp = np.interp(m_grid, m, l, left=np.nan, right=np.nan)
+
+        frame_data.append(go.Scatter(x=m_grid, y=l_interp, mode="lines"))
+
+        l_interp = np.interp(R_grid, r, l, left=np.nan, right=np.nan)
+
+        frame_data.append(go.Scatter(x=np.log10(R_grid), y=l_interp, mode="lines"))
+
+        frame_data.append(
+            go.Scatter(
+                x=[env[t] if t < len(model_m[i]) else env[-1]],
+                y=[
+                    (
+                        np.log10(np.nanmax(r))
+                        if t < len(model_m[i])
+                        else np.log10(np.nanmax(r))
+                    )
+                ],
+                mode="markers",
+            )
+        )
+        frame_data.append(
+            go.Scatter(
+                x=[T[t] if t < len(model_m[i]) else T[-1]],
+                y=[lum[t] if t < len(model_m[i]) else lum[-1]],
+                mode="markers",
+            )
+        )
+    # frame_data.append(go.Scatter())
+    traces = []
+
+    for i in range(n_models):
+        base = 6 * i
+        traces.extend(
+            [
+                base,
+                base + 1,
+                base + 2,
+                base + 3,
+            ]
+        )
+    frames.append(
+        go.Frame(
+            name=str(t),
+            data=frame_data,
+            traces=traces,
+        )
+    )
+
+fig.frames = frames
+
+
+# --------------------------------------------------
+# layout
+# --------------------------------------------------
+steps = [
+    dict(
+        method="animate",
+        args=[
+            [str(i)],
+            {
+                "mode": "immediate",
+                "frame": {"duration": 20, "redraw": False},
+                "transition": {"duration": 0},
+            },
+        ],
+        label=str(i),
+    )
+    for i in range(n_steps)
+]
+
+fig.update_layout(
+    template="plotly_dark",
+    hovermode="x unified",
+    updatemenus=[
+        dict(
+            type="buttons",
+            buttons=[
+                dict(
+                    label="Play",
+                    method="animate",
+                    args=[
+                        None,
+                        {
+                            "frame": {"duration": 30, "redraw": False},
+                            "transition": {"duration": 0},
+                            "fromcurrent": True,
+                        },
+                    ],
+                ),
+                dict(
+                    label="Pause",
+                    method="animate",
+                    args=[[None], {"mode": "immediate"}],
+                ),
+            ],
+        )
+    ],
+    sliders=[dict(active=0, steps=steps)],
+)
+
+fig.update_xaxes(title_text="mass coordinate", row=1, col=1)
+fig.update_xaxes(title_text="log r", row=1, col=2)
+fig.update_xaxes(title_text="log envelope mass", row=2, col=1)
+fig.update_xaxes(title_text="log Teff", row=2, col=2, autorange="reversed")
+
+fig.update_yaxes(
+    title_text="log Rho",
+    row=1,
+    col=1,
+    # range=[-8000, 2000],
+)
+fig.update_yaxes(
+    title_text="log Rho",
+    row=1,
+    col=2,
+    # range=[-8000, 2000],
+)
+fig.update_yaxes(title_text="log radius", row=2, col=1)
+fig.update_yaxes(title_text="log L", row=2, col=2)
+
+fig.write_html(
+    "/home/koen/figures/plots/master-internship/w21/losing-envelope-density.html",
+    include_plotlyjs="cdn",
+    include_mathjax="cdn",
+    config={"responsive": True},
+)
+
+
+fig.show()
+# %%
+
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import plotly.express as px
+
+import matplotlib.cm as cm
+
+rates = [-1, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0, -2.5, -3]
+mass_loss = np.array(rates)
+
+norm = (mass_loss - mass_loss.min()) / (mass_loss.max() - mass_loss.min() + 1e-12)
+
+cmap = cm.viridis
+from matplotlib.colors import to_hex
+
+colors = [cmap(v) for v in norm]
+colors = [to_hex(c) for c in colors]
+print(colors)
+# --------------------------------------------------
+# input
+# --------------------------------------------------
+
+n_models = len(list_of_models)
+
+# --------------------------------------------------
+# helper: cumulative L_grav profile
+# --------------------------------------------------
+
+true_list = list_of_models.copy()
+for i in range(n_models):
+    if i in [5, 10, 11, 12]:
+        true_list[i] = list_of_models[i][1:]
+
+
+def compute_lgrav(profile):
+    """
+    returns:
+        m_coord: mass coordinate (inward)
+        lgrav: cumulative integral of eps_grav_ad
+    """
+
+    m = profile.mass[::-1]
+    r = 10 ** profile.logR[::-1]
+    eps = profile.eps_grav_ad[::-1][1:]
+
+    dm = np.diff(m)
+
+    lgrav = profile.logT[::-1]
+    lgrav = savgol_filter(lgrav, 52, 3)
+
+    env = np.log10(profile.star_mass - profile.he_core_mass)
+    t = np.log10(profile.Teff)
+    lum = np.log10(profile.photosphere_L)
+    print(profile.bulk_names)
+    return m, r, lgrav, env, t, lum
+
+
+# --------------------------------------------------
+# preprocess models
+# --------------------------------------------------
+
+model_m = []
+model_r = []
+model_lgrav = []
+model_labels = []
+model_env = []
+model_t = []
+model_lum = []
+
+for i, model in enumerate(true_list):
+
+    m_series = []
+    r_series = []
+    l_series = []
+    env_series = []
+    t_series = []
+    lum_series = []
+
+    for p in model:
+        m, r, lgrav, env, t, lum = compute_lgrav(p)
+        m_series.append(m)
+        r_series.append(r)
+        l_series.append(lgrav)
+        env_series.append(env)
+        t_series.append(t)
+        lum_series.append(lum)
+
+    model_m.append(m_series)
+    model_r.append(r_series)
+    model_lgrav.append(l_series)
+    model_env.append(env_series)
+    model_t.append(t_series)
+    model_lum.append(lum_series)
+    model_labels.append(f"1e{rates[i]:.1f} Msun / yr")
+
+
+# --------------------------------------------------
+# common grid for plotting
+# --------------------------------------------------
+
+n_grid = 150
+
+m_min = 0.3
+m_max = 1
+
+m_grid = np.linspace(m_min, m_max, n_grid)
+
+
+R_min = min(np.min(10**p.logR) for p in profiles)
+R_max = max(np.max(10**p.logR) for p in profiles)
+
+R_grid = np.logspace(np.log10(R_min), np.log10(R_max), n_grid)
+
+
+# --------------------------------------------------
+# figure layout (UNCHANGED STRUCTURE)
+# --------------------------------------------------
+
+fig = make_subplots(
+    rows=2,
+    cols=2,
+    row_heights=[0.5, 0.5],
+    specs=[
+        [{}, {}],
+        [{}, {}],
+    ],
+)
+
+# --------------------------------------------------
+# static traces (initial timestep only)
+# --------------------------------------------------
+marker_indices = []
+
+for i in range(n_models):
+
+    m0 = model_m[i][0]
+    r0 = model_r[i][0]
+    l0 = model_lgrav[i][0]
+    env0 = model_env[i]
+    t0 = model_t[i]
+    lum0 = model_lum[i]
+
+    l0_interp = np.interp(m_grid, m0, l0, left=np.nan, right=np.nan)
+
+    fig.add_trace(
+        go.Scatter(
+            x=m_grid,
+            y=l0_interp,
+            mode="lines",
+            name=model_labels[i],
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=1,
+        col=1,
+    )
+
+    l0_interp = np.interp(R_grid, r0, l0, left=np.nan, right=np.nan)
+
+    fig.add_trace(
+        go.Scatter(
+            x=np.log10(R_grid),
+            y=l0_interp,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=1,
+        col=2,
+    )
+
+    radius_proxy = np.array([np.max(p.logR) for p in true_list[i]])
+
+    fig.add_trace(
+        go.Scatter(
+            x=[env0[0]],
+            y=[radius_proxy[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=[t0[0]],
+            y=[lum0[0]],
+            mode="markers",
+            marker=dict(size=10, color=colors[i]),
+            showlegend=False,
+            legendgroup=model_labels[i],
+        ),
+        row=2,
+        col=2,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=env0,
+            y=radius_proxy,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=1,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=t0,
+            y=lum0,
+            mode="lines",
+            showlegend=False,
+            legendgroup=model_labels[i],
+            line=dict(color=colors[i]),
+        ),
+        row=2,
+        col=2,
+    )
+
+    # moving marker
+
+    marker_index = len(fig.data) - 1
+    marker_indices.append(marker_index)
+
+
+# --------------------------------------------------
+# frames
+# --------------------------------------------------
+
+frames = []
+n_steps = max(len(m) for m in model_m)
+
+for t in range(n_steps):
+
+    frame_data = []
+
+    for i in range(n_models):
+
+        if t < len(model_m[i]):
+            m = model_m[i][t]
+            r = model_r[i][t]
+            l = model_lgrav[i][t]
+            env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
+        else:
+            m = model_m[i][-1]
+            r = model_r[i][-1]
+            l = model_lgrav[i][-1]
+            env = model_env[i]
+            T = model_t[i]
+            lum = model_lum[i]
+
+        l_interp = np.interp(m_grid, m, l, left=np.nan, right=np.nan)
+
+        frame_data.append(go.Scatter(x=m_grid, y=l_interp, mode="lines"))
+
+        l_interp = np.interp(R_grid, r, l, left=np.nan, right=np.nan)
+
+        frame_data.append(go.Scatter(x=np.log10(R_grid), y=l_interp, mode="lines"))
+
+        frame_data.append(
+            go.Scatter(
+                x=[env[t] if t < len(model_m[i]) else env[-1]],
+                y=[
+                    (
+                        np.log10(np.nanmax(r))
+                        if t < len(model_m[i])
+                        else np.log10(np.nanmax(r))
+                    )
+                ],
+                mode="markers",
+            )
+        )
+        frame_data.append(
+            go.Scatter(
+                x=[T[t] if t < len(model_m[i]) else T[-1]],
+                y=[lum[t] if t < len(model_m[i]) else lum[-1]],
+                mode="markers",
+            )
+        )
+    # frame_data.append(go.Scatter())
+    traces = []
+
+    for i in range(n_models):
+        base = 6 * i
+        traces.extend(
+            [
+                base,
+                base + 1,
+                base + 2,
+                base + 3,
+            ]
+        )
+    frames.append(
+        go.Frame(
+            name=str(t),
+            data=frame_data,
+            traces=traces,
+        )
+    )
+
+fig.frames = frames
+
+
+# --------------------------------------------------
+# layout
+# --------------------------------------------------
+steps = [
+    dict(
+        method="animate",
+        args=[
+            [str(i)],
+            {
+                "mode": "immediate",
+                "frame": {"duration": 20, "redraw": False},
+                "transition": {"duration": 0},
+            },
+        ],
+        label=str(i),
+    )
+    for i in range(n_steps)
+]
+
+fig.update_layout(
+    template="plotly_dark",
+    hovermode="x unified",
+    updatemenus=[
+        dict(
+            type="buttons",
+            buttons=[
+                dict(
+                    label="Play",
+                    method="animate",
+                    args=[
+                        None,
+                        {
+                            "frame": {"duration": 30, "redraw": False},
+                            "transition": {"duration": 0},
+                            "fromcurrent": True,
+                        },
+                    ],
+                ),
+                dict(
+                    label="Pause",
+                    method="animate",
+                    args=[[None], {"mode": "immediate"}],
+                ),
+            ],
+        )
+    ],
+    sliders=[dict(active=0, steps=steps)],
+)
+
+fig.update_xaxes(title_text="mass coordinate", row=1, col=1)
+fig.update_xaxes(title_text="log r", row=1, col=2)
+fig.update_xaxes(title_text="log envelope mass", row=2, col=1)
+fig.update_xaxes(title_text="log Teff", row=2, col=2, autorange="reversed")
+
+fig.update_yaxes(
+    title_text="log opacity",
+    row=1,
+    col=1,
+    # range=[-8000, 2000],
+)
+fig.update_yaxes(
+    title_text="log opacity",
+    row=1,
+    col=2,
+    # range=[-8000, 2000],
+)
+fig.update_yaxes(title_text="log radius", row=2, col=1)
+fig.update_yaxes(title_text="log L", row=2, col=2)
+
+# fig.write_html(
+#     "/home/koen/figures/plots/master-internship/w21/losing-envelope-opacity.html",
+#     include_plotlyjs="cdn",
+#     include_mathjax="cdn",
+#     config={"responsive": True},
+# )
+
+
+fig.show()
+# %%
+
+models = []
+
+for name in [
+    "1e-1",
+    "1e-1.1",
+    "1e-1.2",
+    "1e-1.3",
+    "1e-1.4",
+    "1e-1.5",
+    "1e-1.6",
+    "1e-1.7",
+    "1e-1.8",
+    "1e-1.9",
+    "1e-2",
+    "1e-2.5",
+    "1e-3",
+]:
+    model = mr.MesaData(
+        f"{MASTER}/constant-mass-loss-rate/{name}/LOGS/TPAGB/history.data"
+    )
+    models.append(model)
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+for i, model in enumerate(models):
+    plt.plot(model.envelope_mass, model.R, c=colors[i])
+
+plt.gca().set_facecolor("C9")
+plt.yscale("log")
+plt.xscale("log")
+
+
+plt.xlabel(r"$\log(M_\textrm{env}/M_\odot)$")
+plt.ylabel(r"$\log(R/R_\odot)$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w21-constant-mass-loss-rate-radius.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+for i, model in enumerate(models):
+    plt.plot(model.log_Teff, model.log_L, c=colors[i])
+
+plt.gca().set_facecolor("C9")
+plt.gca().invert_xaxis()
+
+plt.xlabel(r"$\log(T_\textrm{eff}/\textrm{K})$")
+plt.ylabel(r"$\log(L/L_\odot)$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w21-constant-mass-loss-rate-HR.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+
 # %%
