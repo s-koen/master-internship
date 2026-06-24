@@ -72,6 +72,11 @@ Clearly the abundance at the surface is not necessarily the abundance in most of
     \centering
     \incplot{w21-Z-envelope}
 \end{figure}
+
+The interactive figure above seems to imply that the superadiabatic region grows during the TPAGB.
+
+\href{https://s-koen.github.io/figures/#/plots/master-internship/w21/super-ad}{This interactive figure} tries to show this. The region grows quite significantly with time. This could have the effect that it is not necessarily correct to assume the superadiabatic surface layers contribue so little to the amount of transferred mass that its contribution can be ignored and the constant envelope abundance can be used.
+
 \newsection{AGB-Nucleosynthesis}
 I think \citet{karakas2016} provide abundance data for every thermal pulse for a grid of initial masses and metallicities.
 
@@ -122,7 +127,27 @@ Let me compare the C/O-ratio for the Rees models and the NuGrid models.
 
 To me, it seems very difficult to match abundances from a thermal pulse from the Monash models or the NuGrid models to my MESA rees models since they are so different.
 
-\section{Constant Mass-loss Rates}
+The NuGrid model and the \citet{karakas2016} do not lose their complete envelope.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w21-compare-all}
+\end{figure}
+
+
+The \(2\;M_\odot \) model that \citet{rees2024b} show in their paper has a final C/O-ratio of 1.64. This is when the envelope has \(0.1\;M_\odot \) of mass left. Even this is lower than the values I find. 
+
+Maybe this can be explained by the different mass loss assumptions.
+
+\begin{figure}[ht]
+    \marginfignote{3}{If we use the original mass-loss prescription the we get a much more accurately matching C/O-ratio when the envelope has \(0.1\;M_\odot \) of mass left. It is still not perfect but these inlists uploaded as references for the second paper \citep{rees2024a}, while the C/O-ratio was given in the first paper. They use slightly different physics.}
+    \centering
+    \incplot{w21-CO-rees}
+\end{figure}
+
+
+
+\newsection{Constant Mass-loss Rates}
 
 I an attempt to better understand the radial response of the TPAGB star to mass loss, I have simulated a number of models with various \emph{constant} mass loss rates ranging from \(10^{-3}\;M_\odot / \text{yr}\) to \(10^{-0}\;M_\odot / \text{yr}\). The models losing more than \(10^{-1}\;M_\odot / \text{yr}\) however, failed.
 
@@ -162,7 +187,7 @@ The same is true for the temperature.
 
 \href{https://s-koen.github.io/figures/#/plots/master-internship/w21/losing-envelope-entropy}{But most significantly, the gravitational luminosity changes a lot for the different models.}
 
-\newsection{Conservation Grid}
+\section{Conservation Grid}
 
 \subsection{Varying \texorpdfstring{\(\beta \)}{beta}}
 I ran some simulation of a single binary model with different assumptions regarding the conservation of mass transfer. All models start with an initial Roche lobe radius of about \(R_\text{RL} \approx 550\;R_\odot\) and \(q=0.5\). I used \(\gamma =1.44\) for the models to simulate \(L_{2}\)-outflows.
@@ -279,9 +304,16 @@ Let me plot some boxplots again.
 \nextpage
 \appendix
 \section{Additional Figures}
+
 \begin{figure}[ht]
     \centering
     \incplot{w21-conservation-grid-beta-periods-q}
 \end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w21-mdma}
+\end{figure}
+
 
 \end{document}

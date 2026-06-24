@@ -1,27 +1,29 @@
 # Fdb version 4
-["bibtex w21"] 1782255640.32099 "w21.aux" "w21.bbl" "w21" 1782255740.19105 0
+["bibtex w21"] 1782292748.47826 "w21.aux" "w21.bbl" "w21" 1782295575.51371 0
   "./master.bib" 1782212446.82567 37750 0717e0f6fd89bd471da557aa201b9a94 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w21.aux" 1782255739.78689 4145 85d8240c1463007a719834931b6e0ab5 "pdflatex"
+  "w21.aux" 1782295575.10468 4398 fb2e6475d58c95482349650269935555 "pdflatex"
   (generated)
   "w21.bbl"
   "w21.blg"
   (rewritten before read)
-["pdflatex"] 1782255736.34825 "w21.tex" "w21.pdf" "w21" 1782255740.19123 0
+["pdflatex"] 1782295571.66475 "w21.tex" "w21.pdf" "w21" 1782295575.51387 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
   "/home/koen/LaTeX-setup//LaTeX-files/listings.tex" 1739308810.95949 27571 9f1d93b589b3961f6fd7d842d0658ca5 ""
   "/home/koen/LaTeX-setup//LaTeX-files/master-internship.tex" 1782253909.3213 14595 b8b8c4bf5ca70a68410b40bfe5d41bfe ""
+  "/home/koen/LaTeX-setup//plots/w21-CO-rees.pgf" 1782291857.9288 33620 02930b1fe1675c6e80c01cd4e6b6724a ""
   "/home/koen/LaTeX-setup//plots/w21-Z-envelope.pgf" 1781968133.04549 37168 fcc69b01088f942009f1b2eb86e07cce ""
   "/home/koen/LaTeX-setup//plots/w21-Z-surface.pgf" 1781965740.28919 23090 5d54be7824316ecda45d20a9636abb26 ""
   "/home/koen/LaTeX-setup//plots/w21-agb-nucleosynthis-compare-core-mass.pgf" 1782222180.47695 35339 0e55f88879492455403e140814ad691c ""
-  "/home/koen/LaTeX-setup//plots/w21-agb-nucleosynthis-compare-mesa.pgf" 1782244054.23594 35501 946c2b49ab454e3ce74f9b1b02e0769c ""
+  "/home/koen/LaTeX-setup//plots/w21-agb-nucleosynthis-compare-mesa.pgf" 1782292332.75023 35501 946c2b49ab454e3ce74f9b1b02e0769c ""
   "/home/koen/LaTeX-setup//plots/w21-boxplot-2.pgf" 1782253735.29961 23111 f9e4c45f37bbcf9d21ebcd9474a6f329 ""
   "/home/koen/LaTeX-setup//plots/w21-boxplot-3.pgf" 1782254853.90299 27825 dde5e65fd1e65a21189e09df8b5734f1 ""
   "/home/koen/LaTeX-setup//plots/w21-boxplot.pgf" 1782253566.03201 28518 b1dfea8f2e5883c7d9c760ed837074e7 ""
   "/home/koen/LaTeX-setup//plots/w21-co.pgf" 1781907861.3493 34457 2b0b649953e248a5914eaa03657c4f12 ""
   "/home/koen/LaTeX-setup//plots/w21-compare-CO.pgf" 1782243409.80195 45914 094bf4cd165b43f97537841383645de1 ""
+  "/home/koen/LaTeX-setup//plots/w21-compare-all.pgf" 1782292595.37969 36666 b6fbbca50aa8c38c8aebefaa59dbf90c ""
   "/home/koen/LaTeX-setup//plots/w21-compare-rees-nugrid-mdot.pgf" 1782242729.33249 83754 a61ff5b0bf89df0a57018a5cd5d92f07 ""
   "/home/koen/LaTeX-setup//plots/w21-compare-rees-nugrid.pgf" 1782228991.31029 41906 011f4568458922b689ad570c3b2acb33 ""
   "/home/koen/LaTeX-setup//plots/w21-conservation-grid-beta-HR-img0.png" 1782212460.08811 351 77b1325b86ce29d7fbac278f5ded8932 ""
@@ -41,6 +43,8 @@
   "/home/koen/LaTeX-setup//plots/w21-constant-mass-loss-rate-radius-img0.png" 1782163615.02877 360 5c1febbf1a5e295d289fc515c009ba7a ""
   "/home/koen/LaTeX-setup//plots/w21-constant-mass-loss-rate-radius.pgf" 1782163615.03503 62712 43b89a3740c680f1d4af1e6a563e9742 ""
   "/home/koen/LaTeX-setup//plots/w21-lambda.pgf" 1781959752.22127 40334 9359239ff98a6d556dcaeced14e10f3a ""
+  "/home/koen/LaTeX-setup//plots/w21-mdma-img0.png" 1782290446.02475 351 77b1325b86ce29d7fbac278f5ded8932 ""
+  "/home/koen/LaTeX-setup//plots/w21-mdma.pgf" 1782290446.03005 35228 76d64b741669397b27fd13fe5874703c ""
   "/home/koen/LaTeX-setup//plots/w21-radius.pgf" 1781909478.10845 104881 1b3bf8d05c6ec86caa1970a9592bf9dc ""
   "/home/koen/LaTeX-setup//plots/w21-scatter-2.pgf" 1782253436.38303 25509 0216adfbc1c660795d65d3ce01cf11d7 ""
   "/home/koen/LaTeX-setup//plots/w21-scatter-3.pgf" 1782255735.79884 49311 715e457b27bb93062af1ab9ba4b5b33b ""
@@ -410,10 +414,10 @@
   "/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1734805718 5485709 8129e419010b46b234085a26866cdb87 ""
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1734805844 3343776 1d1db4be7b32d13d500bec482c2ee25e ""
   "/usr/local/texlive/2024/texmf.cnf" 1734805714.41611 455 5b996dcaa0eb4ef14a83b026bc0a008c ""
-  "w21.aux" 1782255739.78689 4145 85d8240c1463007a719834931b6e0ab5 "pdflatex"
-  "w21.bbl" 1782255640.42246 3888 50038059aad9d310e4d3a7bf678c4ea1 "bibtex w21"
-  "w21.out" 1782255739.78812 1156 6bc25c2ac7718dc834198433a0bc98d7 "pdflatex"
-  "w21.tex" 1782255635.25239 14830 9c665e8ad14cf22c6ff8de33cd63c322 ""
+  "w21.aux" 1782295575.10468 4398 fb2e6475d58c95482349650269935555 "pdflatex"
+  "w21.bbl" 1782292748.57226 4679 61fc748b3536aaecbd18b519f381c4da "bibtex w21"
+  "w21.out" 1782295575.10568 1156 6bc25c2ac7718dc834198433a0bc98d7 "pdflatex"
+  "w21.tex" 1782295571.46862 16305 c24bf713e7f1aaccd6f2e802f6608c3f ""
   (generated)
   "w21.aux"
   "w21.log"
