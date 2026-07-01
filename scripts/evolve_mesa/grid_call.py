@@ -30,7 +30,7 @@ def call_evolution(
     for i, (q0, a0, e0) in enumerate(zip(q_init, a_init, e_init)):
 
         # Compute orbital evolution
-        Bin = evolve_orbit(Star, q0, a0, e0, Options, solve_method="LSODA", verbosity=1)
+        Bin = evolve_orbit(Star, q0, a0, e0, Options, verbosity=0)
 
         Bins.append(Bin)
 

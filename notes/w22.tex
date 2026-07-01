@@ -1,0 +1,54 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 22}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Dredge-Up mass}
+Since the current plan is to use the amount of mass that has been dredged up and the intershell abundances to infer the envelope abundances, I must be sure that I can actually accurately get this dredged up mass.
+
+Below I show that this is indeed possible, and the values align roughly with what I would expect from Figure 1 of \citet{karakas2016}.
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-M_DUP}
+\end{figure}
+
+\section{Envelope Abundances}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-hr+abundance}
+\end{figure}
+
+\section{Dwarf Metallicity}
+I am using \([\text{Fe/H} ] = -0.4\) which equates to \(z \approx 0.00557\).
+
+\section{Extended Grid}
+
+I want to simulate TPAGB stars from 1 to \(3.5\;M_\odot \) in order to make sure I get the minimum mass for TPAGB stars.
+
+Initially, I use a dense spacing of \(\Delta M = 0.1M_\odot \). This is probably a bit much to construct grids with, but at least I can clearly find the starting mass of the TPAGB, and I can see the stability of a wide range of masses.
+
+\section{Optimizing Output}
+
+Since we will be dealing with much larger grids and more masses, I think it is very much time to optimize the grid generation code. Up to now, it would read in the compute star model to use as input. This is very slow.
+
+My idea is to create some optimized binary file that contains only the necessary data for the grid generation.
+
+
+\bibliography{master.bib}
+\end{document}

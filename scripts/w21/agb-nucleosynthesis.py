@@ -346,4 +346,68 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w21-compare-CO.pgf", format="pgf")
 plt.show()
 plt.close()
 
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel("C/O-ratio")
+plt.plot(mesa.envelope_mass, mesa.surface_c12 / mesa.surface_o16 * 16 / 12)
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w21-CO-rees.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+rees = mr.MesaData(f"{MASTER}/rees2024-2M/LOGS/TPAGB/history.data")
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel("C/O-ratio")
+plt.plot(
+    rees.star_mass - rees.he_core_mass,
+    rees.surface_c12 / rees.surface_o16 * 16 / 12,
+    label="Rees original",
+)
+plt.plot(
+    mesa.star_mass - mesa.he_core_mass,
+    mesa.surface_c12 / mesa.surface_o16 * 16 / 12,
+    label="Rees adapted",
+)
+
+axs.set_ylim(axs.get_ylim())
+plt.vlines(0.1, *axs.get_ylim(), color="C9", linewidth=0.8)
+fig.legend(loc="outside upper center", ncols=2)
+plt.savefig("/home/koen/LaTeX-setup/plots/w21-CO-rees.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+plt.plot(mesa.star_mass, mesa.he_core_mass, label="MESA")
+plt.plot(nugrid.star_mass, nugrid.h1_boundary_mass, label="NuGrid")
+plt.plot(c.Mass, c.Mcore, label="Karakas (2016)")
+
+plt.ylim(0.55, 0.66)
+plt.gca().invert_xaxis()
+
+
+fig.legend(loc="outside upper center", ncols=3)
+plt.xlabel("Star mass ($M_\odot$)")
+plt.ylabel("He-core mass ($M_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w21-compare-all.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+c.columns
 # %%

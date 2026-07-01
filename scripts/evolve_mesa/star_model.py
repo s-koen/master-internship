@@ -8,36 +8,79 @@ from rgbf import *
 from mrenv import *
 import mesa_reader as mr
 
+#
+# def read_stellar_models(path):
+#     """
+#     using the same input arguments as before, I simply just insert the MESA history data.
+#     """
+#     print(f"loading {path}...")
+#     n = [0]
+#     for phase in ["MS", "GB", "CHeB", "EAGB", "TPAGB"]:
+#         print(f"\t{phase}...")
+#         data = mr.MesaData(f"{path}/LOGS/{phase}/history.data")
+#         n.append(n[-1] + len(data.model_number[1:]))
+#
+#     combined_star = {}
+#     for bulk_name in data.bulk_names:
+#         combined_star[bulk_name] = np.empty(n[-1])
+#     combined_star["phase"] = np.empty(n[-1])
+#
+#     for i, phase in enumerate(["MS", "GB", "CHeB", "EAGB", "TPAGB"]):
+#         data = mr.MesaData(f"{path}/LOGS/{phase}/history.data")
+#         n.append(n[-1] + len(data.model_number[1:]))
+#         for bulk_name in data.bulk_names:
+#             if bulk_name in ["model_number", "star_age"] and i != 0:
+#                 combined_star[bulk_name][n[i] : n[i + 1]] = (
+#                     data.data(bulk_name)[1:] + combined_star[bulk_name][n[i] - 1]
+#                 )
+#             else:
+#                 combined_star[bulk_name][n[i] : n[i + 1]] = data.data(bulk_name)[1:]
+#         combined_star["phase"][n[i] : n[i + 1]] = i * np.ones(n[i + 1] - n[i])
+#
+#     Stars = [StellarModel(combined_star, n)]
+#     return Stars
+
 
 def read_stellar_models(path):
     """
     using the same input arguments as before, I simply just insert the MESA history data.
     """
-    print("loading star! this takes a while...")
+    phases = ["MS", "GB", "CHeB", "EAGB", "TPAGB"]
+
+    print(f"loading {path}...")
+
+    histories = []
     n = [0]
-    for phase in ["MS", "GB", "CHeB", "EAGB", "TPAGB"]:
+
+    # read each file only once
+    for phase in phases:
+        print(f"  - {phase}...")
         data = mr.MesaData(f"{path}/LOGS/{phase}/history.data")
+        histories.append(data)
         n.append(n[-1] + len(data.model_number[1:]))
 
     combined_star = {}
-    for bulk_name in data.bulk_names:
+
+    # use the TPAGB history to determine available fields
+    for bulk_name in histories[-1].bulk_names:
         combined_star[bulk_name] = np.empty(n[-1])
+
     combined_star["phase"] = np.empty(n[-1])
 
-    for i, phase in enumerate(["MS", "GB", "CHeB", "EAGB", "TPAGB"]):
-        data = mr.MesaData(f"{path}/LOGS/{phase}/history.data")
-        n.append(n[-1] + len(data.model_number[1:]))
+    print(f"")
+    print(f"combining data into shared StarObject")
+    for i, (phase, data) in enumerate(zip(phases, histories)):
         for bulk_name in data.bulk_names:
-            if bulk_name in ["model_number", "star_age"] and i != 0:
-                combined_star[bulk_name][n[i] : n[i + 1]] = (
-                    data.data(bulk_name)[1:] + combined_star[bulk_name][n[i] - 1]
-                )
-            else:
-                combined_star[bulk_name][n[i] : n[i + 1]] = data.data(bulk_name)[1:]
-        combined_star["phase"][n[i] : n[i + 1]] = i * np.ones(n[i + 1] - n[i])
+            values = data.data(bulk_name)[1:]
 
-    Stars = [StellarModel(combined_star, n)]
-    return Stars
+            if bulk_name in ["model_number", "star_age"] and i != 0:
+                values = values + combined_star[bulk_name][n[i] - 1]
+
+            combined_star[bulk_name][n[i] : n[i + 1]] = values
+
+        combined_star["phase"][n[i] : n[i + 1]] = i
+
+    return [StellarModel(combined_star, n)]
 
 
 class StellarModel:

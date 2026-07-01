@@ -2605,16 +2605,31 @@ for name in [
     models.append(model)
 
 # %%
+import matplotlib as mpl
 
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 for i, model in enumerate(models):
-    plt.plot(model.envelope_mass, model.R, c=colors[i])
+    plt.plot(np.log10(model.envelope_mass), np.log10(model.R), c=colors[i])
 
 plt.gca().set_facecolor("C9")
-plt.yscale("log")
-plt.xscale("log")
+
+norm2 = mpl.colors.Normalize(vmin=min(mass_loss), vmax=max(mass_loss))
+
+cmap = plt.cm.viridis
+
+colors = [cmap(norm2(x)) for x in mass_loss]
+
+sm = mpl.cm.ScalarMappable(norm=norm2, cmap=cmap)
+fig.colorbar(
+    sm,
+    ax=plt.gca(),
+    label=r"$\log(\dot M / M_\odot \textrm{yr}^{-1})$",
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+)
 
 
 plt.xlabel(r"$\log(M_\textrm{env}/M_\odot)$")
@@ -2635,6 +2650,23 @@ for i, model in enumerate(models):
 plt.gca().set_facecolor("C9")
 plt.gca().invert_xaxis()
 
+norm2 = mpl.colors.Normalize(vmin=min(mass_loss), vmax=max(mass_loss))
+
+cmap = plt.cm.viridis
+
+colors = [cmap(norm2(x)) for x in mass_loss]
+
+sm = mpl.cm.ScalarMappable(norm=norm2, cmap=cmap)
+fig.colorbar(
+    sm,
+    ax=plt.gca(),
+    label=r"$\log(\dot M / M_\odot \textrm{yr}^{-1})$",
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+)
+
+
 plt.xlabel(r"$\log(T_\textrm{eff}/\textrm{K})$")
 plt.ylabel(r"$\log(L/L_\odot)$")
 plt.savefig(
@@ -2644,4 +2676,25 @@ plt.show()
 plt.close()
 
 
+# %%
+
+print(min(mass_loss))
+
+import matplotlib as mpl
+
+norm2 = mpl.colors.Normalize(vmin=min(mass_loss), vmax=max(mass_loss))
+
+cmap = plt.cm.plasma
+
+colors = [cmap(norm2(x)) for x in mass_loss]
+
+sm = mpl.cm.ScalarMappable(norm=norm2, cmap=cmap)
+fig.colorbar(sm, ax=plt.gca(), label=r"$\dot M$")
+plt.show()
+# %%
+
+profile.bulk_names
+# %%
+
+true_list[0][0].bulk_names
 # %%

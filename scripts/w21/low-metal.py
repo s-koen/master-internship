@@ -1349,6 +1349,326 @@ plt.close()
 
 # %%
 
-plt.show()
+l = mr.MesaLogDir(f"{MASTER}/single-stars/z0.00453/M2.0/LOGS/TPAGB")
+
+# %%
+for profile in l.profile_numbers:
+    profile = l.profile_data(profile_number=profile)
+    print(profile.model_number)
+
+print(profile.bulk_names)
+
+# %%
+
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import plotly.express as px
+import plotly.io as pio
+
+pio.templates.default = "simple_white"
+
+colors = px.colors.qualitative.D3
+
+
+# --------------------------------------------------
+# data
+# --------------------------------------------------
+
+profiles = list(l.profile_dict.values())[::2]
+n = len(profiles)
+
+n_grid = 200
+
+# --------------------------------------------------
+# grids
+# --------------------------------------------------
+
+logR_min = 0.45
+logR_max = 0.70
+logR_grid = np.linspace(logR_min, logR_max, n_grid)
+
+m_min = 0.0
+m_max = max(np.max(p.mass) for p in profiles)
+m_grid = np.logspace(-9, np.log10(m_max), n_grid)
+
+# --------------------------------------------------
+# precompute interpolations
+# --------------------------------------------------
+
+entropy_R = np.empty((n, n_grid + 1))
+hydrogen_R = np.empty((n, n_grid + 1))
+helium_R = np.empty((n, n_grid + 1))
+entropy_M = np.empty((n, n_grid))
+hydrogen_M = np.empty((n, n_grid))
+helium_M = np.empty((n, n_grid))
+
+for i, p in enumerate(profiles):
+
+    # ensure monotonic x for interpolation
+    xR = p.mass[::-1]
+    yR = np.log10(p.gradT[::-1])
+    HR = np.log10(p.grada[::-1])
+    HeR = np.log10(p.grada[::-1])
+
+    logR_grid = np.linspace(logR_min, logR_max, n_grid)
+    index = np.argwhere(HR > -10)[0][0] - 1
+    logR_grid = np.append(logR_grid, p.mass[index])
+    logR_grid.sort()
+    xM = p.mass[0] - p.mass
+    yM = np.log10(p.gradT)
+    HM = np.log10(p.grada)
+    HeM = np.log10(p.grada)
+
+    entropy_R[i] = np.interp(logR_grid, xR, yR, left=-100, right=np.nan)
+    hydrogen_R[i] = np.interp(logR_grid, xR, HR, left=-100, right=np.nan)
+    hydrogen_R[i] = np.nan_to_num(hydrogen_R[i], neginf=-99, nan=np.nan)
+    print(hydrogen_R[i])
+    helium_R[i] = np.interp(logR_grid, xR, HeR, left=-100, right=np.nan)
+    entropy_M[i] = np.interp(
+        np.log10(m_grid), np.log10(xM), yM, left=np.nan, right=np.nan
+    )
+    hydrogen_M[i] = np.interp(
+        np.log10(m_grid), np.log10(xM), HM, left=np.nan, right=np.nan
+    )
+    helium_M[i] = np.interp(
+        np.log10(m_grid), np.log10(xM), HeM, left=np.nan, right=np.nan
+    )
+
+print(p.bulk_names)
+# radius evolution
+radius = np.array([10 ** p.logR.max() for p in profiles])
+age = np.array(
+    [p.star_age if hasattr(p, "star_age") else i for i, p in enumerate(profiles)]
+)
+
+# use index instead of age for stability
+idx = np.arange(n)
+
+
+# --------------------------------------------------
+# figure layout
+# --------------------------------------------------
+
+fig = make_subplots(
+    rows=2,
+    cols=2,
+    row_heights=[0.7, 0.3],
+    specs=[
+        [{}, {}],
+        [{"colspan": 2}, None],
+    ],
+)
+
+# --------------------------------------------------
+# static traces
+# --------------------------------------------------
+
+# entropy vs logR
+fig.add_trace(
+    go.Scatter(
+        x=logR_grid,
+        y=entropy_R[0],
+        mode="lines",
+        name="grad T",
+        legendgroup="Z",
+        line=dict(color=colors[2]),
+    ),
+    row=1,
+    col=1,
+)
+fig.add_trace(
+    go.Scatter(
+        x=logR_grid,
+        y=hydrogen_R[0],
+        mode="lines",
+        name="H",
+        legendgroup="He",
+        showlegend=False,
+        line=dict(color=colors[0]),
+    ),
+    row=1,
+    col=1,
+)
+fig.add_trace(
+    go.Scatter(
+        x=logR_grid,
+        y=helium_R[0],
+        mode="lines",
+        name="grad a",
+        legendgroup="He",
+        line=dict(color=colors[1]),
+    ),
+    row=1,
+    col=1,
+)
+# entropy vs mass
+fig.add_trace(
+    go.Scatter(
+        x=np.log10(m_grid),
+        y=entropy_M[0],
+        mode="lines",
+        legendgroup="Z",
+        showlegend=False,
+        line=dict(color=colors[2]),
+    ),
+    row=1,
+    col=2,
+)
+fig.add_trace(
+    go.Scatter(
+        x=np.log10(m_grid),
+        y=hydrogen_M[0],
+        mode="lines",
+        legendgroup="H",
+        showlegend=False,
+        line=dict(color=colors[0]),
+    ),
+    row=1,
+    col=2,
+)
+fig.add_trace(
+    go.Scatter(
+        x=np.log10(m_grid),
+        y=helium_M[0],
+        mode="lines",
+        legendgroup="He",
+        showlegend=False,
+        line=dict(color=colors[1]),
+    ),
+    row=1,
+    col=2,
+)
+
+# radius evolution curve
+fig.add_trace(
+    go.Scatter(
+        x=age,
+        y=radius,
+        mode="lines",
+        name="radius",
+        line=dict(color="black"),
+    ),
+    row=2,
+    col=1,
+)
+
+# moving marker
+marker_trace_index = len(fig.data)
+
+fig.add_trace(
+    go.Scatter(
+        x=[age[0]],
+        y=[radius[0]],
+        mode="markers",
+        marker=dict(size=10, color="red"),
+        name="current",
+    ),
+    row=2,
+    col=1,
+)
+
+# --------------------------------------------------
+# frames
+# --------------------------------------------------
+
+frames = []
+
+for i in range(n):
+
+    frames.append(
+        go.Frame(
+            name=str(i),
+            data=[
+                go.Scatter(x=logR_grid, y=entropy_R[i]),  # trace 0
+                go.Scatter(x=logR_grid, y=hydrogen_R[i]),  # trace 0
+                go.Scatter(x=logR_grid, y=helium_R[i]),  # trace 0
+                go.Scatter(x=np.log10(m_grid), y=entropy_M[i]),  # trace 1
+                go.Scatter(x=np.log10(m_grid), y=hydrogen_M[i]),  # trace 1
+                go.Scatter(x=np.log10(m_grid), y=helium_M[i]),  # trace 1
+                # marker ONLY (must stay marker mode!)
+                go.Scatter(
+                    x=[age[i]],
+                    y=[radius[i]],
+                    mode="markers",
+                    marker=dict(size=10, color="red"),
+                ),  # trace 3 (marker)
+            ],
+            traces=[0, 1, 2, 3, 4, 5, marker_trace_index],
+        )
+    )
+
+fig.frames = frames
+
+# --------------------------------------------------
+# slider
+# --------------------------------------------------
+
+steps = [
+    dict(
+        method="animate",
+        args=[
+            [str(i)],
+            {
+                "mode": "immediate",
+                "frame": {"duration": 20, "redraw": False},
+                "transition": {"duration": 0},
+            },
+        ],
+        label=str(i),
+    )
+    for i in range(n)
+]
+
+# --------------------------------------------------
+# layout
+# --------------------------------------------------
+
+fig.update_layout(
+    template="simple_white",
+    hovermode="x unified",
+    updatemenus=[
+        dict(
+            type="buttons",
+            buttons=[
+                dict(
+                    label="Play",
+                    method="animate",
+                    args=[
+                        None,
+                        {
+                            "frame": {"duration": 30, "redraw": False},
+                            "transition": {"duration": 0},
+                            "fromcurrent": True,
+                        },
+                    ],
+                ),
+                dict(
+                    label="Pause",
+                    method="animate",
+                    args=[[None], {"mode": "immediate"}],
+                ),
+            ],
+        )
+    ],
+    sliders=[dict(active=0, steps=steps)],
+)
+
+# axis labels
+fig.update_xaxes(title_text="internal mass", row=1, col=1)
+fig.update_xaxes(title_text="log(M - m)", row=1, col=2)
+fig.update_xaxes(title_text="age", row=2, col=1)
+
+fig.update_yaxes(title_text="grad", range=[-1.5, 0.2], row=1, col=1)
+fig.update_yaxes(range=[-1.5, 0.2], row=1, col=2)
+fig.update_yaxes(title_text="radius", row=2, col=1)
+
+fig.show()
+
+fig.write_html(
+    "/home/koen/figures/plots/master-internship/w21/super-ad.html",
+    include_plotlyjs="cdn",
+    include_mathjax="cdn",
+    config={"responsive": True},
+)
 
 # %%
