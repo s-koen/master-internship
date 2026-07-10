@@ -9,9 +9,8 @@ class MesaModel:
     container for a single mesa run
     """
 
-    def __init__(self, binary_path=None, tpagb_path=None, initial_age=None):
+    def __init__(self, tpagb_path=None, initial_age=None):
 
-        self.binary = mr.MesaData(str(binary_path)) if binary_path else None
         self.star = mr.MesaData(str(tpagb_path)) if tpagb_path else None
         self.initial_age = initial_age
         self.age = self.star.star_age if tpagb_path else None
@@ -129,16 +128,11 @@ class MesaGrid:
                 f"retrieving M = {R1:.2f}, q = {q:.3f}... ({i:0{num_dig}d}/{length+1})"
             )
 
-            binary_path = run_dir / "binary_history.data"
             tpagb_path = run_dir / "LOGS" / "TPAGB" / "history.data"
 
             model = MesaModel(
-                binary_path if binary_path.exists() else None,
                 tpagb_path if tpagb_path.exists() else None,
             )
-
-            if not binary_path.exists():
-                print(run_dir)
 
             if not tpagb_path.exists():
                 print(run_dir)

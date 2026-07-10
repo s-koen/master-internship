@@ -5,6 +5,7 @@ import numpy as np
 import mesa_reader as mr
 import sys
 import json
+import pickle
 
 # WARNING: CHECK / MODIFY THESE PATHS
 grid_name = "test-grid"
@@ -14,8 +15,8 @@ reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-07-01/"
 
 # WARNING: SETTINGS FOR THE GRID
 
-Rs = np.logspace(np.log10(50), np.log10(2000), 50)
-qs = np.linspace(0.4, 1, 7)
+Rs = np.logspace(np.log10(50), np.log10(2000), 10)
+qs = np.linspace(0.4, 1, 2)
 
 # WARNING: SETTINGS FOR BINARY SIMULATION
 mass_transfer_alpha = 0.0
@@ -39,8 +40,15 @@ grid_dir = f"{proj_dir}/mesa-models/{grid_name}/"
 models_dir = f"{single_star_dir}/models/"
 os.makedirs(os.path.dirname(grid_dir), exist_ok=True)
 
+try:
+    with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+        Star = pickle.load(f)
+    print("read back combined_star.pkl")
+except:
 
-Star = read_stellar_models(single_star_dir)[0]
+    Star = read_stellar_models(single_star_dir)[0]
+    with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+        pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 tpagb_age = Star.age[Star.ntpagb]
 
@@ -70,9 +78,28 @@ def generate_settings_file():
             "gamma": mass_transfer_gamma,
         },
         "star_Z": float(star_Z),
+        "num_runs": float(len(Rs) * len(qs)),
     }
 
     with open(f"{grid_dir}/grid_settings.json", "w") as f:
+        json.dump(settings, f, indent=4)
+
+
+def generate_run_file(R, q, model_name, age, m1, m2, a, omega, varcontrol):
+
+    settings = {
+        "R": R,
+        "q": q,
+        "model_name": model_name,
+        "starting_age": age,
+        "m1": m1,
+        "m2": m2,
+        "a": a,
+        "omega": omega,
+        "varcontrol": varcontrol,
+    }
+
+    with open(f"{grid_dir}/{run_subdir}/settings.json", "w") as f:
         json.dump(settings, f, indent=4)
 
 
@@ -278,6 +305,8 @@ for R in Rs:
         inlist_star = f"{run_dir}/inlist1"
         inlist_common = f"{run_dir}/inlist_common"
         shutil.copyfile(model_path, f"{run_dir}/start.mod")
+
+        generate_run_file(R, q, model_path, model_age, m1, m2, a, omega, varcontrol)
 
         change_inlist_bin(
             a,
