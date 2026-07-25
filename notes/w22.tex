@@ -5,7 +5,7 @@
 \usepackage{\subdir/LaTeX-files/aastex}
 \usepackage{natbib}
 \bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
-
+\usepackage{blkarray}
 %Set the title, Author and date
 \title{Notes Week 22}
 \author{Koen Essers}
@@ -26,6 +26,13 @@ Below I show that this is indeed possible, and the values align roughly with wha
     \centering
     \incplot{w22-M_DUP}
 \end{figure}
+
+Below, I plot the total amount of dredged-up mass as a function of initial star age.
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-M_DUP-2}
+\end{figure}
+
 
 \section{Envelope Abundances}
 
@@ -476,10 +483,144 @@ This is because directly following the call to \lstinline[style=output, breaklin
 
 This is the place where the first error occurs due to a density that is too small.
 
+We probably want to look how we obtain the wrong \lstinline[style=output, breaklines=true]|soln(1,1)|.
+
+The scale is computed according to \lstinline[style=output, breaklines=true]|subroutine set_xscale_info(s, nvar, ierr)| in \lstinline[style=output, breaklines=true]|solver_support.f90|.
+\nextpage
+Here, for normal variables\sidenote{not rotation or abundances}, the scale is determined according to
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+s% x_scale(i,k) = max(1, abs(s% xh_start(i,k)))
+\end{minted}
+The values we find for the scale align well with this equation, so it must be the solution to the Newton-Raphson solver that is wrong.
+
+This scheme is represented by repeatedly trying to solve \citep{paxton2010}
+\begin{equation*}
+    0 = \vec{F}(\vec{y}) = \vec{F}(\vec{y}_{i} + \delta \vec{y}_{i}) = \vec{F} (\vec{y}_{i}) + \l[\dv{\vec{F} }{\vec{y}}\r]_{i} \delta \vec{y}_{i} + \mathcal{O} (\delta \vec{y}_{i}^{2}.
+\end{equation*}
+Here, \(y_{i} \) is a trial solution, \(\vec{F} (\vec{ y}_{i} ) \) is the residual of the trial solution, \(\delta \vec{y}_{i} \) is the correction to the trial solution and \([\dd{\vec{F} } / \dd{\vec{y} }]_{i} \) is the Jacobian matrix.
+The ``solutions'' from MESA are the \(\delta \vec{y}_{i} \)'s, which get scaled by the scale to obtain the changes to the star.
+
+For a single iteration, MESA solves for \(\delta \vec{y} \) in
+\begin{equation*}
+    J \delta \vec{y} = - \vec{F}(\vec{y} ).
+\end{equation*}
+
+To make sure the Newton-Raphson solver is working correctly, I access the Jacobian, correction and the residual.
+
+I then compute the LHS and the RHS of the equation above and test their agreement\sidenote{for the first zone}
+.
+\begin{minted}[fontsize=\small,breaklines]{py}
+lhs = dblk_1.T @ delta_corr_1 + ublk_1.T @ delta_corr_2
+rhs = -1 * equ
+print(lhs - rhs)
+\end{minted}
+
+\begin{minted}[fontsize=\small,breaklines]{text}
+[9.43255890e-18 1.06581410e-14 0.00000000e+00 2.41035957e-15
+ 3.64629801e-63 1.21543267e-63 2.09119527e-85 0.00000000e+00
+ 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00
+ 0.00000000e+00]
+\end{minted}
+Nice. The Newton-Raphson solver works! the Problem must occur \emph{before} the solver.
+
+This also means the absurd correction of \(-2.634\) is the \emph{correct} value based on the residuals and the Jacobian.
+
+Let's see how the corrections are constructed, based on the individual components of the Jacobian and the residuals.
+
+From now on, I will only consider the four \lstinline[style=output, breaklines=true]|hydro_vars|. This means I am \emph{excluding} the abundances, which do not seem to impact the first zone anyway.
+
+The Jacobian for the self interaction of the first zone is defined like this:
+
+\begin{equation*}
+    \mathbf{J}_{1 \to 1}  = \begin{bmatrix}
+        \pdv{y_{\rho} }{\ln \rho } & \pdv{y_{\rho} }{\ln T }& \pdv{y_{\rho} }{\ln R } & \pdv{y_{\rho} }{\ln L }\\
+        \pdv{y_{T} }{\ln \rho } & \pdv{y_{T} }{\ln T }& \pdv{y_{T} }{\ln R } & \pdv{y_{T} }{\ln L }\\
+        \pdv{y_{R} }{\ln \rho } & \pdv{y_{R} }{\ln T }& \pdv{y_{R} }{\ln R } & \pdv{y_{R} }{\ln L }\\
+        \pdv{y_{L} }{\ln \rho } & \pdv{y_{L} }{\ln T }& \pdv{y_{L} }{\ln R } & \pdv{y_{L} }{\ln L }
+        \end{bmatrix}_{1\to 1}\hspace{-12pt}, \delta \vec{y}_{1}  = \begin{bmatrix}
+    \delta y_{\rho }\\ 
+    \delta y_{T }\\ 
+    \delta y_{R }\\ 
+    \delta y_{L } 
+    \end{bmatrix}_{1}\hspace{-4pt}, \vec{F}(\vec{y}_{1}) = \begin{bmatrix}
+    F(y_{\rho })\\ 
+    F(y_{T })\\ 
+    F(y_{R })\\ 
+    F(y_{L }) 
+    \end{bmatrix}_{1}
+\end{equation*}
+
+Now, importantly, this self interaction is \emph{not the only} part that influences the first zone. MESA has couplings to the next and previous cell, where the complete matrix is split in a block diagonal form like this:
+
+\begin{equation*}
+    \begin{blockarray}{cccccc}
+        & \text{zone 1}  & \text{zone 2} & \text{zone 3} & \text{zone 4}& \text{zone 5} \\
+        \begin{block}{r[ccccc]}
+          \phantom{\mathbf{A} = }\;\text{zone 1} & D_{1}  & U_{1}  & 0& &  \\
+        \phantom{\mathbf{A} = }\;\text{zone 2} & L_{2}  & D_{2}  & U_{2}& 0&   \\
+        \mathbf{A}\;\; =\;\; \text{zone 3} & 0 & L_{3}  & D_{3} & U_{3}  & 0 \\
+        \phantom{\mathbf{A} = }\;\text{zone 4} &   & 0  & L_{4} & D_{4} & U_{4}  \\
+        \phantom{\mathbf{A} = }\;\text{zone 5} &   &   & 0 & L_{5} & D_{5}  \\
+      \end{block}
+    \end{blockarray}.
+\end{equation*}
+
+In the case of zone 1, only \(D_{1} \) and \(U_{1} \) matter\sidenote{For a more general zone \(k\), we have \(L_{k} \), \(D_{k} \) and \(U_{k} \).}.
 
 
 
+\newsection{Ba-dwarf masses}
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-scatter-2}
+\end{figure}
 
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-boxplot-2}
+\end{figure}
+
+When considering the Barium star masses, the dwarfs are much more easily modelled by a single value around \(M_\text{Ba} = 1.2\; M_\odot \).
+This aligns well with the results from \citet{sarmah2026}, who find an average mass of \(M_\text{Ba} = 1.29\pm 0.09\;M_\odot \).
+
+From now on, I will use this value.
+
+Let's say the binary interacts at a Roche lobe radius of 450 \(M_\odot \), we find:
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-co}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-grid-dup}
+\end{figure}
+
+Now, for a Roche lobe radius of 450 \(M_\odot \), we find:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-350}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-co-350}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-grid-dup-350}
+\end{figure}
+
+It is clear that the heavy stars have trouble producing the barium star masses.
+
+Now, obviously, there might be positive correlation between the barium star mass and the TP-AGB mass, but it should still be obvious that only the lighter TP-AGB stars can accrete significant mass without starting with a very unequal mass ratio.
 
 
 \bibliography{master.bib}

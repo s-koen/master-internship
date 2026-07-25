@@ -127,6 +127,11 @@ class StellarModel:
         self.envelope_c12 = track["envelope_c12"]
         self.envelope_c13 = track["envelope_c13"]
 
+        self.lambda_DUP = track["lambda_DUP"]
+        self.TP_count = track["TP_count"]
+        self.TP_count = self.TP_count[self.ntpagb :]
+        self.m_DUP = self.compute_m_DUP()
+
         self.m_env = self.mass - self.m_core
         self.radius = 10**self.log_R
         self.lum = 10**self.log_L
@@ -186,6 +191,54 @@ class StellarModel:
     #    def find_TAMS (self):
     #        mod_TAMS = np.where(self.XH_center < XHc_exh)[0][0]
     #        return mod_TAMS
+
+    def compute_m_DUP(self):
+
+        lambda_DUP = np.asarray(self.lambda_DUP)[self.ntpagb :]
+        he_core_mass = np.asarray(self.m_core)[self.ntpagb :]
+        TP_count = np.asarray(self.TP_count)
+
+        M_DUP = []
+        TP_numbers = []
+
+        unique_TPs = np.unique(TP_count)
+
+        for tp in unique_TPs[2:]:  # skip TP=0 (before first pulse)
+
+            # indices during this thermal pulse
+            pulse_idx = np.where(TP_count == tp)[0]
+
+            if len(pulse_idx) == 0:
+                continue
+
+            # maximum lambda during pulse
+            lambda_max = np.nanmax(lambda_DUP[pulse_idx])
+
+            # previous pulse
+            previous_tp = tp - 1
+
+            previous_idx = np.where(TP_count == previous_tp)[0]
+
+            if len(previous_idx) == 0:
+                continue
+
+            # end of previous TP
+            core_previous = np.min(he_core_mass[previous_idx])
+
+            # beginning of current TP
+            core_current = he_core_mass[pulse_idx[0]]
+
+            # interpulse core growth
+            delta_core = core_current - core_previous
+
+            # avoid numerical noise
+            if delta_core <= 0:
+                continue
+
+            M_DUP.append(lambda_max * delta_core)
+            TP_numbers.append(tp)
+
+        return np.array(M_DUP)
 
     def find_Rmax_MS(self):
         mod_TAMS = self.model_TAMS
