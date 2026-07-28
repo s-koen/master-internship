@@ -128,8 +128,7 @@ class StellarModel:
         self.envelope_c13 = track["envelope_c13"]
 
         self.lambda_DUP = track["lambda_DUP"]
-        self.TP_count = track["TP_count"]
-        self.TP_count = self.TP_count[self.ntpagb :]
+        self.TP_count = int(track["TP_count"])
         self.m_DUP = self.compute_m_DUP()
 
         self.m_env = self.mass - self.m_core

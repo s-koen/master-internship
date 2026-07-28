@@ -46,15 +46,335 @@ I am using \([\text{Fe/H} ] = -0.4\) which equates to \(z \approx 0.00557\).
 
 \section{Extended Grid}
 
+\subsection{Idea}
 I want to simulate TPAGB stars from 1 to \(3.5\;M_\odot \) in order to make sure I get the minimum mass for TPAGB stars.
 
 Initially, I use a dense spacing of \(\Delta M = 0.1M_\odot \). This is probably a bit much to construct grids with, but at least I can clearly find the starting mass of the TPAGB, and I can see the stability of a wide range of masses.
 
-\section{Optimizing Output}
+\section{Results}
+It turns out that MESA does have quite a bit of trouble simulating single star TPAGB stars beyond something like \(2\;M_\odot \). Especially the last pulses seem to cause a lot of trouble with convergence.
 
+Below I plot the models of the stars from \(M = 1\;M_\odot \) to \(M = 2.2\;M_\odot \).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-naive-time-radius}
+\end{figure}
+This looks good. I expect the lifetime of heavier stars to be shorter and that is exactly what i observe. We also see that the heavier stars reach larger radii, which is also expected.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-naive-HR}
+\end{figure}
+
+The HR also looks like what I would expect.
+The heavier stars are more towards the blue and luminous side on the MS. On the Giant branches, the stars are on the Hayashi tracks, where the approximate temperature is determined by the mass of the stars. Again, the results are as I would expect.
+
+\begin{figure}[ht]
+    \marginfignote{0}{We see that the number of thermal pulses increases with mass. This is in line with the results from various studies of TPAGB-stars \citep[eg.][]{rees2024b, karakas1902, karakas2016}.}
+    \centering
+    \incplot{w22-mass-tp}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The CO-ratio also increases with mass, which makes sense, since we saw that the amount of dredged up mass increases with mass too. We can almost directly compare these results with the results from \citet{karakas2016}. They use a metallicity of \(0.007\), so slightly higher, and they find very similar C/O-ratios.}
+    \centering
+    \incplot{w22-mass-co}
+\end{figure}
+
+\nextpage
+\section{Optimizing Grid Generation Code}
+
+\subsection{Idea}
 Since we will be dealing with much larger grids and more masses, I think it is very much time to optimize the grid generation code. Up to now, it would read in the compute star model to use as input. This is very slow.
 
 My idea is to create some optimized binary file that contains only the necessary data for the grid generation.
+
+I also want to be able to generate more general grids, where we can vary any parameter, not just the initial Roche lobe radius and mass ratio but also for example the initial mass or the amount of accretion.
+
+I also want to generate some \lstinline[style=output, breaklines=true]|settings.json| files so I can easily inspect which which settings the grid was generated, as well as what the settings of individual models are.
+
+The code I used previously also could drastically use a refactor
+
+\subsection{Implementation}
+
+The code now neatly starts with the user variables:
+\begin{minted}[fontsize=\small,breaklines]{py}
+# WARNING: CHECK / MODIFY THESE PATHS
+grid_name = "epsilon-grid-test"
+proj_dir = "/home/koen/master-internship"
+reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-07-01/"
+binary_exe_dir = f"{proj_dir}/mesa-models/reference-binary/"
+
+# WARNING: SETTINGS FOR THE GRID
+single_star_dirs = [f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M1.5"]
+Rs = [350]
+qs = np.linspace(0.4, 1, 7)
+epss = np.linspace(0, 0.85, 3)
+
+mass_transfer_beta = np.linspace(0, 1, 7)
+mass_transfer_delta = 1 - mass_transfer_beta
+
+# WARNING: SETTINGS FOR BINARY SIMULATION
+mass_transfer_alpha = 0.0
+mass_transfer_gamma = 1.44
+\end{minted}
+I then do some general setup things like creating the folder, setting some paths and getting the metallicity.
+\begin{minted}[fontsize=\small,breaklines]{py}
+grid_dir = f"{proj_dir}/mesa-models/{grid_name}/"
+models_dir = f"{single_star_dirs[0]}/models/"
+os.makedirs(os.path.dirname(grid_dir), exist_ok=True)
+shutil.copyfile(f"{binary_exe_dir}/binary", f"{grid_dir}/binary")
+
+
+def get_initial_Z():
+    model = [os.path.basename(f) for f in os.scandir(models_dir)][0]
+    Z = mr.MesaData(f"{models_dir}/{model}").initial_z
+    return Z
+
+
+star_Z = get_initial_Z()
+\end{minted}
+
+For the rest of process, I use two helper classes:
+\begin{minted}[fontsize=\small,breaklines]{py}
+class Evolution:
+    def __init__(self, bin, Star, inds):
+        self.bin = bin
+        self.star = Star
+        self.inds = inds
+
+class GridPoint:
+    def __init__(self, evolution, model):
+        self.evolution = evolution
+        self.model = model
+\end{minted}
+
+I then have the following functions to create the setting files:
+\begin{minted}[fontsize=\small,breaklines]{py}
+
+def generate_settings_file():
+def generate_run_file(
+    R, q, model_name, age, m1, m2, a, omega, varcontrol, beta, delta, eps, run_dir
+):
+\end{minted}
+
+I call \lstinline[style=output, breaklines=true]|generate_settings_file()| immediately and use the \lstinline[style=output, breaklines=true]|generate_run_file()| only during the grid generation process.
+
+
+The grid generation loop looks like this:
+\marginfignote{3}{These are the three variables that change the simple integration outcome from the \lstinline[style=output, breaklines=true]|evolve.py| script that I am using. I split these from the other variables to prevent unnecessary double computation.}
+\marginfignote{16}{Here, I do the bulk of the computation, including the simple integration.}
+\marginfignote{21}{Next there is some logic to stop the generation of the current \(R\) if a model failed already}
+\marginfignote{30}{Finally, I add the other variables that do not change the computation, only the MESA settings and I change all of the necessary files.}
+\marginfignote{62}{This all happens here.}
+\begin{minted}[fontsize=\small,breaklines]{py}
+for single_star_dir in single_star_dirs:
+    for R in Rs:
+        for q in qs:
+            print(R, q)
+            base = {
+                "R": R,
+                "q": q,
+                "single_star_dir": single_star_dir,
+            }
+
+            grid_point = prepare_grid_point(params=base)
+
+            if grid_point is None:
+                print("no suitable model")
+                continue
+            if grid_point is False:
+                print("skipping this R")
+                break
+
+            for eps in epss:
+                if eps == 1:
+                    params = {
+                        **base,
+                        "beta": 0,
+                        "delta": 0,
+                        "eps": eps,
+                    }
+
+                    generate_run(params=params, grid_point=grid_point)
+                    continue
+
+                for beta, delta in zip(mass_transfer_beta, mass_transfer_delta):
+                    params = {
+                        **base,
+                        "beta": beta * (1 - eps),
+                        "delta": delta * (1 - eps),
+                        "eps": eps,
+                    }
+
+                    generate_run(params=params, grid_point=grid_point)
+\end{minted}
+
+For completeness,
+This is what \lstinline[style=output, breaklines=true]|prepare_grid_point()| looks like:
+\begin{minted}[fontsize=\small,breaklines]{py}
+def prepare_grid_point(params):
+
+    evolution = evolve_binary(params)
+    if evolution is None:
+        return None
+
+    contact_age = find_contact(evolution)
+    if contact_age is None:
+        return None
+
+    if contact_age is False:
+        return False
+
+    models_dict = get_model_dict(params)
+    model = select_model(contact_age, models_dict)
+    if model is None:
+        return None
+
+    return GridPoint(evolution, model)
+\end{minted}
+and this is what \lstinline[style=output, breaklines=true]|generate_run()| looks like:
+\begin{minted}[fontsize=\small,breaklines]{py}
+def generate_run(params, grid_point):
+
+    run_dir = prepare_run_dir(params, grid_point.model)
+
+    write_run_files(
+        params,
+        grid_point.model,
+        grid_point.evolution,
+        run_dir,
+    )
+\end{minted}
+
+I tested this new setup with a general grid that I explore in section \ref{sec:grid}
+
+\nextpage
+\subsection{New MesaGrid class}
+Since the new grids are a lot more complicated, the old \lstinline[style=output, breaklines=true]|MesaGrid| class that I was could not understand the structure of the new class and I needed something more general.
+
+The new class is still a bit barren and I am planning to expand it based on what I need. For now it has the following member functions and data:
+\begin{minted}[fontsize=\small,breaklines]{py}
+
+class MesaGrid:
+    def __init__(self, grid_dir):
+
+        self.grid_dir = Path(grid_dir)
+
+        with open(f"{grid_dir }/grid_settings.json") as f:
+            self.settings = json.load(f)
+
+        self.axes = {
+            "R": self.settings["Rs"],
+            "q": self.settings["qs"],
+            "beta": self.settings["mass_transfer"]["beta"],
+            "delta": self.settings["mass_transfer"]["delta"],
+            "eps": self.settings["eps"],
+        }
+
+        self._load_models()
+
+    def _load_models(self):
+        self.models = []
+        ...
+
+
+    def filter(self, **filters):
+
+        for run in self.models:
+
+            keep = True
+
+            for key, values in filters.items():
+
+                if not isinstance(values, (list, tuple, set)):
+                    values = {values}
+
+                if run.params[key] not in values:
+                    keep = False
+                    break
+
+            if keep:
+                yield run
+
+    def array(self, value, x, y, **filters):
+
+        xs = self.axes[x]
+        ys = self.axes[y]
+
+        arr = np.full((len(xs), len(ys)), np.nan)
+
+        x_index = {np.round(v, 3): i for i, v in enumerate(xs)}
+        print(x_index)
+        y_index = {np.round(v, 3): i for i, v in enumerate(ys)}
+
+        for run in self.filter(**filters):
+
+            if callable(value):
+                z = value(run)
+            else:
+                z = getattr(run, value)
+
+            if x in ["beta", "delta"]:
+                i = x_index[np.round(run.params[x] / (1 - run.params["eps"]), 3)]
+            else:
+                i = x_index[np.round(run.params[x], 3)]
+
+            if y in ["beta", "delta"]:
+                j = y_index[np.round(run.params[y] / (1 - run.params["eps"]), 3)]
+            else:
+                j = y_index[np.round(run.params[y], 3)]
+
+            arr[i, j] = z
+
+        return np.asarray(xs), np.asarray(ys), arr
+
+
+class MesaRun:
+
+    def __init__(self, run_dir):
+        self.run_dir = run_dir
+
+        with open(run_dir / "settings.json") as f:
+            self.params = json.load(f)
+
+        self.get_history()
+
+        self.env_mass = self.history.envelope_mass
+        self.q = self.history.star_2_mass / self.history.star_1_mass
+        self.age = self.params["starting_age"] + self.star_age
+
+    def __getattr__(self, name):
+        return getattr(self.history, name)
+
+    def get_history(self):
+        try:
+            with open(f"{self.run_dir}/history.pkl", "rb") as f:
+                self.history = pickle.load(f)
+        except:
+            print(f"reading {self.run_dir}/LOGS/TPAGB/history.data")
+            self.history = mr.MesaData(f"{self.run_dir}/LOGS/TPAGB/history.data")
+            with open(f"{self.run_dir}/history.pkl", "wb") as f:
+                pickle.dump(self.history, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def get_profiles(self):
+
+        try:
+            with open(f"{self.run_dir}/profiles.pkl", "rb") as f:
+                self.profiles = pickle.load(f)
+
+        except:
+            profiles_dict = mr.MesaLogDir(f"{self.run_dir}/LOGS/TPAGB/")
+            for i, profile in enumerate(profiles_dict.profile_numbers):
+                _ = profiles_dict.profile_data(profile_number=profile)
+            self.profiles = list(profiles_dict.profile_dict.values())
+            with open(f"{self.run_dir}/profiles.pkl", "wb") as f:
+                pickle.dump(self.profiles, f, protocol=pickle.HIGHEST_PROTOCOL)
+\end{minted}
+
+Here, I also added a \lstinline[style=output, breaklines=true]|MesaRun| class to neatly combine the mesa history data as well as the parameters of the run.
+
 
 \section{Spacing}
 \begin{figure}[ht]
@@ -621,6 +941,89 @@ Now, for a Roche lobe radius of 450 \(M_\odot \), we find:
 It is clear that the heavy stars have trouble producing the barium star masses.
 
 Now, obviously, there might be positive correlation between the barium star mass and the TP-AGB mass, but it should still be obvious that only the lighter TP-AGB stars can accrete significant mass without starting with a very unequal mass ratio.
+
+\subsection{Changing interaction radius}
+Instead of varying the mass, we can also vary the interaction radius.
+This setup is lot more like my previous grids.
+
+For the \(M_\text{i} = 1.5\;M_\odot \) model, we get the following plot:
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-1000}
+\end{figure}
+
+There are two visible boundaries here. The first one is very obvious and occurs at the point where the \citet{vassiliadis1993} winds start. The second boundary is a bit less obvious. It occurs when the models interact during the last pulse instead of during the interpulse before the last pulse. The figure below shows this for a constant \(q\).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-mass-loss}
+\end{figure}
+
+The colors of the lines correspond to the colors of the dots of the previous figure.
+It now also makes sense that the possible \(q\)-range shrinks for larger \(R\). Clearly, here the star has already lost a lot of mass due to winds, which it can no longer accrete during RLOF. The winds also transfer some mass, which shifts the upper limit down a little bit\sidenote{although a lot less than the lower limit shifts upwards.}.
+
+\nextpage
+
+We can use something like this to generate a grid as well:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-1000-small}
+\end{figure}
+
+My idea is to use the \(\varepsilon \) value to ensure we produce a barium star with the appropriate mass. Once we have a value for \(\varepsilon \), we can then vary \(\beta \) and \(\delta \) to produce the required \(\varepsilon \) value.
+
+
+\newsection{Grid}\label{sec:grid}
+
+\subsection{History}
+My grid has \(R_\text{RL} = 350\;R_\odot \) and three different epsilon values. For every epsilon value, I vary the initial mass ratio and the amount of mass that gets lost through isotropic re-emission and a CCT.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist-acc}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist-mass}
+\end{figure}
+
+\subsection{Profiles}
+This section shows some tests for the MESA profiles.
+To start, here we can clearly see the profile saving code working.
+\begin{figure}[ht]
+    \marginfignote{0}{The binary saves at most 50 profiles up to \(M_\text{env} = 0.001\;M_\odot \). The profiles are saved with a logarithmic spacing between the initial envelope mass and the final envelope mass. Most models will terminate before reaching \(M_\text{env} = 0.001\;M_\odot \) and will therefore have slightly fewer profiles. In this case, we have 38 models going down to \(M_\text{env} = 0.01\;M_\odot \).}
+    \marginfignote{14}{Here we can cleary see that the entropy profile of the star becomes a lot less flat once it has shed a lot of its envelope.}
+    \centering
+    \incplot{w22-check-profiles}
+\end{figure}
+
+As a second test, I plot the radius of the profiles as a function of the envelope mass.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot not only shows the equal spacing of the profiles in log space, but also how there is not a simple relation between the envelope mass and the radius of the star. This is in part obviously caused by the thermal pulses.}
+    \centering
+    \incplot{w22-check-radius}
+\end{figure}
+
+Then, I plot the thermal time to the surface as a function of internal mass.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot aligns well with the results from \citet{temmink2022}. There, we see that an increased radius tends to shift the superadiabatic layers further from the surface. We see this here as well, with the \(\log(M_\text{env}) \approx -1\) models having the deepest superadiabatic layers.}
+    \centering
+    \incplot{w22-check-thermal}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here, we can quite clearly see that most of the envelope op the TPAGB stars is completely superadiabatic.}
+    \centering
+    \incplot{w22-check-thermal-mass}
+\end{figure}
+
 
 
 \bibliography{master.bib}

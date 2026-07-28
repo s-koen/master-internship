@@ -8,18 +8,18 @@ import json
 import pickle
 
 # WARNING: CHECK / MODIFY THESE PATHS
-grid_name = "epsilon-grid-test"
+grid_name = "const-ba-star-mass-grid"
 proj_dir = "/home/koen/master-internship"
 reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-07-01/"
 binary_exe_dir = f"{proj_dir}/mesa-models/reference-binary/"
 
 # WARNING: SETTINGS FOR THE GRID
 single_star_dirs = [f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M1.5"]
-Rs = [350]
-qs = np.linspace(0.4, 1, 7)
-epss = np.linspace(0, 0.85, 3)
+Rs = np.linspace(400, 600, 5)
+qs = np.linspace(0.4, 0.8, 5)
+barium_mass = 1.29
 
-mass_transfer_beta = np.linspace(0, 1, 7)
+mass_transfer_beta = np.linspace(0, 1, 5)
 mass_transfer_delta = 1 - mass_transfer_beta
 
 # WARNING: SETTINGS FOR BINARY SIMULATION
@@ -43,6 +43,18 @@ models_dir = f"{single_star_dirs[0]}/models/"
 os.makedirs(os.path.dirname(grid_dir), exist_ok=True)
 shutil.copyfile(f"{binary_exe_dir}/binary", f"{grid_dir}/binary")
 
+try:
+    with open(f"{single_star_dirs[0]}/combined_star.pkl", "rb") as f:
+        Star = pickle.load(f)
+    print("read back combined_star.pkl")
+except:
+
+    Star = read_stellar_models(single_star_dirs[0])[0]
+    with open(f"{single_star_dirs[0]}/combined_star.pkl", "wb") as f:
+        pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+tpagb_age = Star.age[Star.ntpagb]
+
 
 def get_initial_Z():
     model = [os.path.basename(f) for f in os.scandir(models_dir)][0]
@@ -54,10 +66,13 @@ star_Z = get_initial_Z()
 
 
 class Evolution:
-    def __init__(self, bin, Star, inds):
+    def __init__(self, bin, Star, inds, eps, CO, m_DUP):
         self.bin = bin
         self.star = Star
         self.inds = inds
+        self.eps = eps
+        self.CO = CO
+        self.m_DUP = m_DUP
 
 
 class GridPoint:
@@ -71,11 +86,11 @@ def generate_settings_file():
     settings = {
         "grid_name": grid_name,
         "project_directory": proj_dir,
-        "single_star_directory": single_star_dir,
+        "single_star_directory": single_star_dirs[0],
         "reference_binary_directory": reference_binary_dir,
-        "Rs": Rs,
+        "Rs": Rs.tolist(),
         "qs": qs.tolist(),
-        "eps": epss.tolist(),
+        "barium_mass": barium_mass,
         "mass_transfer": {
             "alpha": mass_transfer_alpha,
             "beta": mass_transfer_beta.tolist(),
@@ -83,11 +98,21 @@ def generate_settings_file():
             "gamma": mass_transfer_gamma,
         },
         "star_Z": float(star_Z),
-        "num_runs": float(len(Rs) * len(qs) * len(epss) * len(mass_transfer_beta)),
+        "num_runs": float(len(Rs) * len(qs) * len(mass_transfer_beta)),
     }
 
     with open(f"{grid_dir}/grid_settings.json", "w") as f:
         json.dump(settings, f, indent=4)
+
+
+def compute_epsilon(barium_mass, tpagb_mass, core_mass, q):
+    """
+    computes the mass transfer efficiency assuming no wind mass transfer.
+    """
+    delta_donated = tpagb_mass - core_mass
+    delta_accreted = barium_mass - tpagb_mass * q
+
+    return delta_accreted / delta_donated
 
 
 def generate_run_file(
@@ -266,16 +291,30 @@ def evolve_binary(params):
 
         R_star = 10**Star.log_R
         ages_star = Star.age
+        core_mass = Star.m_core
         bin = Bins[0]
 
         q_evolve = bin.m2 / bin.m1
         RL = roche_lobe(1 / q_evolve) * bin.a
 
+        q_begin = q_evolve[-1]
+        tpagb_mass = bin.m1[-1]
+
         # interpolate stellar radius onto binary ages
         R_interp = np.interp(bin.age, ages_star, R_star)
+        core_mass_interp = np.interp(bin.age, ages_star, core_mass)
+        TP_count = int(np.interp(bin.age, Star.age[Star.ntpagb :], Star.TP_count)[-1])
+        CO_ratio = np.interp(
+            bin.age, Star.age, Star.envelope_c12 / Star.envelope_o16 * 16 / 12
+        )[-1]
+
+        eps = compute_epsilon(barium_mass, tpagb_mass, core_mass_interp[-1], q_begin)
+        m_DUP = np.sum(Star.m_DUP[:TP_count])
 
         inds = np.where(R_interp > 0.9 * RL)[0]
-        evolution = Evolution(bin=bin, Star=Star, inds=inds)
+        evolution = Evolution(
+            bin=bin, Star=Star, inds=inds, eps=eps, CO=CO_ratio, m_DUP=m_DUP
+        )
         return evolution
     except:
         print(
@@ -394,6 +433,12 @@ def prepare_grid_point(params):
     if evolution is None:
         return None
 
+    if evolution.eps > 1:
+        return None
+
+    if evolution.eps < 0:
+        return None
+
     contact_age = find_contact(evolution)
     if contact_age is None:
         return None
@@ -440,24 +485,24 @@ for single_star_dir in single_star_dirs:
                 print("skipping this R")
                 break
 
-            for eps in epss:
-                if eps == 1:
-                    params = {
-                        **base,
-                        "beta": 0,
-                        "delta": 0,
-                        "eps": eps,
-                    }
+            # prevent double computation
+            if np.abs(grid_point.evolution.eps - 1) < 0.01:
+                params = {
+                    **base,
+                    "beta": 0,
+                    "delta": 0,
+                    "eps": grid_point.evolution.eps,
+                }
 
-                    generate_run(params=params, grid_point=grid_point)
-                    continue
+                generate_run(params=params, grid_point=grid_point)
+                continue
 
-                for beta, delta in zip(mass_transfer_beta, mass_transfer_delta):
-                    params = {
-                        **base,
-                        "beta": beta * (1 - eps),
-                        "delta": delta * (1 - eps),
-                        "eps": eps,
-                    }
+            for beta, delta in zip(mass_transfer_beta, mass_transfer_delta):
+                params = {
+                    **base,
+                    "beta": beta * (1 - grid_point.evolution.eps),
+                    "delta": delta * (1 - grid_point.evolution.eps),
+                    "eps": grid_point.evolution.eps,
+                }
 
-                    generate_run(params=params, grid_point=grid_point)
+                generate_run(params=params, grid_point=grid_point)
