@@ -144,6 +144,22 @@ for i, ax in enumerate(axs):
         vmax=maxx,
         rasterized=True,
     )
+    for k, d in enumerate(delta):
+        for j, qq in enumerate(q):
+            try:
+                if str(ratio[k, j]) == str(np.nan):
+                    continue
+                ax.text(
+                    d * (1 - epss[i]),
+                    qq,
+                    np.round(ratio[k, j], 2),
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    c="k" if (ratio[k, j] - minn) / (maxx - minn) > 0.5 else "w",
+                )
+            except:
+                pass
     ax.set_title(rf"$\epsilon = {epss[i]}$")
 
 
@@ -205,6 +221,22 @@ for i, ax in enumerate(axs):
         vmax=maxx,
         rasterized=True,
     )
+    for k, d in enumerate(delta):
+        for j, qq in enumerate(q):
+            try:
+                if str(ratio[k, j]) == str(np.nan):
+                    continue
+                ax.text(
+                    d * (1 - epss[i]),
+                    qq,
+                    np.round(ratio[k, j], 2),
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    c="k" if (ratio[k, j] - minn) / (maxx - minn) > 0.5 else "w",
+                )
+            except:
+                pass
     ax.set_title(rf"$\epsilon = {epss[i]}$")
 
 
@@ -487,6 +519,317 @@ axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel(r"$M_\textrm{env}$ ($M_\odot$)")
 plt.ylabel(r"$R$ ($R_\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w22-check-radius.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 3, sharey=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+minn = 1e99
+maxx = -1e-99
+
+for i, ax in enumerate(axs):
+
+    delta, q, ratio = grid.array(
+        find_period,
+        x="delta",
+        y="q",
+        eps=epss[i],
+    )
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+
+for i, ax in enumerate(axs):
+
+    delta, q, ratio = grid.array(find_period, x="delta", y="q", eps=epss[i])
+
+    c = axs[i].pcolormesh(
+        delta * (1 - epss[i]),
+        q,
+        ratio.T,
+        shading="auto",
+        cmap="viridis",
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+    for k, d in enumerate(delta):
+        for j, qq in enumerate(q):
+            try:
+                ax.text(
+                    d * (1 - epss[i]),
+                    qq,
+                    int(ratio[k, j]),
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    c="k" if (ratio[k, j] - minn) / (maxx - minn) > 0.5 else "w",
+                )
+            except:
+                pass
+    ax.set_title(rf"$\epsilon = {epss[i]}$")
+
+
+axs[1].set_xlabel(r"$\delta$ ($1 - \beta$)")
+axs[0].set_ylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)")
+plt.colorbar(
+    c,
+    ax=axs,
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+    label="Period (days)",
+)
+plt.xlabel("")
+plt.ylabel("")
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-eps-hist.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
+for m in grid.filter(eps=grid.axes["eps"][0], q=grid.axes["q"][3]):
+    print(m.params)
+    print(m.bulk_names)
+    plt.plot(m.q, m.period_days, label=f"$\delta = {m.params["delta"]:.2f}$")
+
+
+fig.legend(loc="outside upper center", ncols=4)
+axs.spines[["right", "top"]].set_visible(False)
+plt.yscale("log")
+plt.xlabel("$q$")
+plt.ylabel("Period (days)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-darwin-instability.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+sys.path.insert(1, "/home/koen/master-internship/scripts/evolve_mesa/")
+sys.path.insert(1, "/home/koen/master-internship/")
+
+from scripts.evolve_mesa.constants import *
+from scripts.evolve_mesa.bin_input import *
+from scripts.evolve_mesa.read_mist_models import *
+from scripts.evolve_mesa.mrenv import *
+from scripts.evolve_mesa.orbit_evol import *
+from scripts.evolve_mesa.rgbf import *
+from scripts.evolve_mesa.star_model import *
+from scripts.evolve_mesa.grid_call import *
+
+import pickle
+
+proj_dir = "/home/koen/master-internship"
+single_star_dir = f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M1.5"
+try:
+    with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+        Star = pickle.load(f)
+    print("read back combined_star.pkl")
+except:
+
+    Star = read_stellar_models(single_star_dir)[0]
+    with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+        pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+# %%
+
+
+def find_CO(r):
+    if r.period_days[-1] < 50:
+        return np.nan
+
+    m_initial = r.params["q"] * 2
+    m_C_initial = m_initial * Star.surf_c12[Star.ntams]
+    m_O_initial = m_initial * Star.surf_o16[Star.ntams]
+
+    dt = np.diff(r.star_age)
+    dm = np.diff(r.star_2_mass)
+
+    Xc = 0.5 * (r.surface_c12[:-1] + r.surface_c12[1:])
+    print(r.params["q"], r.surface_c12[-1] / r.surface_o16[-1] * 16 / 12)
+    Xo = 0.5 * (r.surface_o16[:-1] + r.surface_o16[1:])
+    M_c_transfer = np.cumsum(Xc * dm)
+    M_o_transfer = np.cumsum(Xo * dm)
+    M_c = m_C_initial + M_c_transfer
+    M_o = m_O_initial + M_o_transfer
+    Xc_final = M_c / r.star_2_mass[1:]
+    Xo_final = M_o / r.star_2_mass[1:]
+
+    return Xc_final[-1] / Xo_final[-1] * 16 / 12
+
+
+fig, axs = plt.subplots(
+    1, 3, sharey=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+minn = 1e99
+maxx = -1e-99
+
+for i, ax in enumerate(axs):
+
+    delta, q, ratio = grid.array(
+        find_CO,
+        x="delta",
+        y="q",
+        eps=epss[i],
+    )
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+
+for i, ax in enumerate(axs):
+
+    delta, q, ratio = grid.array(find_CO, x="delta", y="q", eps=epss[i])
+
+    c = axs[i].pcolormesh(
+        delta * (1 - epss[i]),
+        q,
+        ratio.T,
+        shading="auto",
+        cmap="viridis",
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+    for k, d in enumerate(delta):
+        for j, qq in enumerate(q):
+            try:
+                ax.text(
+                    d * (1 - epss[i]),
+                    qq,
+                    np.round(ratio[k, j], 2),
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    c="k" if (ratio[k, j] - minn) / (maxx - minn) > 0.5 else "w",
+                )
+            except:
+                pass
+    ax.set_title(rf"$\epsilon = {epss[i]}$")
+
+
+axs[1].set_xlabel(r"$\delta$ ($1 - \beta$)")
+axs[0].set_ylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)")
+plt.colorbar(
+    c,
+    ax=axs,
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+    label="Observed CO-ratio (complete mixing in barium star)",
+)
+plt.xlabel("")
+plt.ylabel("")
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-eps-hist-CO.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+def find_CO(r):
+    if r.period_days[-1] < 50:
+        return np.nan
+
+    ind = np.argwhere(r.rl_1 < r.R)[0][0]
+    return r.surface_c12[ind] / r.surface_o16[ind] * 16 / 12
+
+
+fig, axs = plt.subplots(
+    1, 3, sharey=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+minn = 1e99
+maxx = -1e-99
+
+for i, ax in enumerate(axs):
+
+    delta, q, ratio = grid.array(
+        find_CO,
+        x="delta",
+        y="q",
+        eps=epss[i],
+    )
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+
+for i, ax in enumerate(axs):
+
+    delta, q, ratio = grid.array(find_CO, x="delta", y="q", eps=epss[i])
+
+    c = axs[i].pcolormesh(
+        delta * (1 - epss[i]),
+        q,
+        ratio.T,
+        shading="auto",
+        cmap="viridis",
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+    for k, d in enumerate(delta):
+        for j, qq in enumerate(q):
+            try:
+                ax.text(
+                    d * (1 - epss[i]),
+                    qq,
+                    np.round(ratio[k, j], 2),
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    c="k" if (ratio[k, j] - minn) / (maxx - minn) > 0.5 else "w",
+                )
+            except:
+                pass
+    ax.set_title(rf"$\epsilon = {epss[i]}$")
+
+
+axs[1].set_xlabel(r"$\delta$ ($1 - \beta$)")
+axs[0].set_ylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)")
+plt.colorbar(
+    c,
+    ax=axs,
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+    label="Observed CO-ratio (no mixing in barium star)",
+)
+plt.xlabel("")
+plt.ylabel("")
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-eps-hist-CO-no-mixing.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
+for m in grid.filter(eps=grid.axes["eps"][0], q=grid.axes["q"][3]):
+    print(m.params)
+    print(m.bulk_names)
+    plt.plot(m.q, np.abs(m.jdot_ls), label=f"$\delta = {m.params["delta"]:.2f}$")
+
+
+fig.legend(loc="outside upper center", ncols=4)
+axs.spines[["right", "top"]].set_visible(False)
+plt.yscale("log")
+plt.xlabel("$q$")
+plt.ylabel(r"$\dot{J}_\textrm{ls}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-darwin-instability-2.pgf", format="pgf")
 plt.show()
 plt.close()
 

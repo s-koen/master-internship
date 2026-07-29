@@ -23,28 +23,154 @@ Since the current plan is to use the amount of mass that has been dredged up and
 
 Below I show that this is indeed possible, and the values align roughly with what I would expect from Figure 1 of \citet{karakas2016}.
 \begin{figure}[ht]
+    \marginfignote{0}{The figure shows the amount of dredged up mass for a \(1.5\;M_\odot \) and a \(1.8\;M_\odot \) star with a metallicity of \(z = 0.0557\). Some quick tests showed that this aligns very well with the increased CO-ratio as a function of TP-count.}
     \centering
     \incplot{w22-M_DUP}
 \end{figure}
 
 Below, I plot the total amount of dredged-up mass as a function of initial star age.
+
 \begin{figure}[ht]
+    \marginfignote{0}{This agrees quite well with \citet{karakas2016}. I would expect a maximum to occur close to \(M_\text{star} = 3\;M_\odot.\)}
     \centering
     \incplot{w22-M_DUP-2}
 \end{figure}
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+The figure above uses a grid of single star models that I simulated later. These models have a slightly different metallicity of [Fe/H] \(= -0.40\).
+\end{questionbox}
 
+I am saving the amount of dredged-up mass in the single star \lstinline[style=output, breaklines=true]|Star| objects, so it is quite easy to access this quantity later, also for grids.
 
-\section{Envelope Abundances}
+Below, I print the implementation:
+\begin{minted}[fontsize=\small]{py}
+class StellarModel:
+    ...
+    def compute_m_DUP(self):
 
+        lambda_DUP = np.asarray(self.lambda_DUP)[self.ntpagb :]
+        he_core_mass = np.asarray(self.m_core)[self.ntpagb :]
+        TP_count = np.asarray(self.TP_count)
+
+        M_DUP = []
+        TP_numbers = []
+
+        unique_TPs = np.unique(TP_count)
+
+        for tp in unique_TPs[2:]:  # skip before second pulse
+
+            # indices during this thermal pulse
+            pulse_idx = np.where(TP_count == tp)[0]
+
+            if len(pulse_idx) == 0:
+                continue
+
+            # maximum lambda during pulse
+            lambda_max = np.nanmax(lambda_DUP[pulse_idx])
+
+            previous_tp = tp - 1
+            previous_idx = np.where(TP_count == previous_tp)[0]
+
+            if len(previous_idx) == 0:
+                continue
+
+            core_previous = np.min(he_core_mass[previous_idx])
+            core_current = he_core_mass[pulse_idx[0]]
+            delta_core = core_current - core_previous
+
+            if delta_core <= 0:
+                continue
+
+            M_DUP.append(lambda_max * delta_core)
+            TP_numbers.append(tp)
+
+        return np.array(M_DUP)
+    ...
+\end{minted}
+It is pretty straightforward and uses the following equation,
+\begin{equation*}
+    \Delta M_\text{DUP} = \lambda \cdot \Delta M_\text{H},
+\end{equation*}
+where \(\lambda \) is the dredge up efficiency parameter and \(\Delta M_\text{H}\) is the increase in core mass during the preceding interpulse. The additional routines from \citet{rees2024b} give us a good definition of \(\lambda\) which we can use and the implementation of \lstinline[style=output, breaklines=true]|compute_m_DUP()| is mostly determining \(\Delta M_\text{H}\).
+
+The interpulse core mass growth is also computed by the subroutines from \citet{rees2024b}, \emph{but} I have not saved these in the history files, which makes it impossible to use these values for earlier models. I think this solution is sufficient.
+
+\newsection{Envelope Abundances}
+
+As I have shown before the summer break, the surface abundance is not always equal to the envelope abundance, mainly because the surface layers are not\sidenote{at least according to \emph{MESA},} mixed efficiently.
+
+I have implemented some additional routines my \emph{MESA} simulations to compute the average envelope abundance of all computed isotopes.
+The implementation ``borrows'' from the implementation of the surface abundance, but using the much larger envelope region to average over.
+
+Below I print my implementation.
+\marginfignote{3}{It takes the star object \lstinline[style=output, breaklines=true]|s|, and an isotope index \lstinline[style=output, breaklines=true]|j| as input.}
+\marginfignote{20}{It uses the extra variable \texttt{s\%xtra(x\_q\_above)} to determine when the end of the envelope has been reached. Keep in mind that \emph{MESA} starts from the surface and walks inwards. \texttt{s\%xtra(x\_q\_above)} gets saved during \texttt{compute\_M\_conv}.}
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+real(dp) function envelope_avg_x(s,j)
+    use chem_def, only: chem_isos
+    type (star_info), pointer :: s
+    integer, intent(in) :: j
+    real(dp) :: sum_x, sum_dq
+    integer :: k
+    include 'formats'
+    if (j == 0) then
+        envelope_avg_x = 0d0
+        return
+    end if
+    sum_x = 0
+    sum_dq = 0
+    do k = 1, s% nz
+        sum_x = sum_x + s% xa(j,k)*s% dq(k)
+        sum_dq = sum_dq + s% dq(k)
+        if (sum_dq >= s%xtra(x_q_above)) exit
+    end do
+    envelope_avg_x = sum_x/sum_dq
+end function envelope_avg_x
+\end{minted}
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I accidentally forgot to update \texttt{s\%xtra(x\_q\_above)} in \texttt{compute\_M\_conv} for the binary stars. This means grids that I created during week 22 \emph{do not} have the correct surface abundances. The single stars \emph{do}! 
+\end{questionbox}
+
+Below, I plot the envelope averaged CO-ratio and the surface average for a  \(z = 0.00453\), \(M = 2.0\;M_\odot \) star.
 \begin{figure}[ht]
+    \marginfignote{0}{This plot clearly shows the difference between the two. Although the surface average tends to approach the envelope average, they are definitely not always equal. The envelope average follows a much more predictable staircase-like pattern, which is more in line with what we expect. I think the function is behaving as it should.}
+    \marginfignote{16}{The \citet{karakas2016} models predict a CO-ratio of about \(2\) for a \(2\;M_\odot \) star with a slightly higher metallicity of \(z= 0.007\). Clearly my \emph{MESA} models predict a much larger ratio.}
     \centering
     \incplot{w22-hr+abundance}
 \end{figure}
 
-\section{Dwarf Metallicity}
-I am using \([\text{Fe/H} ] = -0.4\) which equates to \(z \approx 0.00557\).
+Since I am keeping track of \emph{all} of the envelope abundances, I can also plot some other ratios. \citet{karakas2016} Also show a figure for the \(\text{C}_{12}/ \text{C}_{13}\)-ratio. I can plot this ratio as well for the star, but we cannot look at the surface average because we do not have those values.
 
-\section{Extended Grid}
+\begin{figure}[ht]
+    \marginfignote{0}{Apparently, this ratio does not increase with the relative steps as the CO-ratio. My \emph{MESA} model seems to overpredict this value by a factor 10 compared to the \citet{karakas2016} models. I do think this ratio is very much metallicity dependent though, comparing plots 5, 6 and 7 of this paper.}
+    \centering
+    \incplot{w22-hr+abundance-c12-c13}
+\end{figure}
+
+As a sanity check, we can look at the NO-ratio, which we would expect it not to rise, since there is no HBB.
+
+\begin{figure}[ht]
+    \marginfignote{0}{We do indeed see that it does not rise. In fact, it slightly decreases as some oxygen is dredged up to the envelope.}
+    \centering
+    \incplot{w22-hr+abundance-NO}
+\end{figure}
+
+
+\section{Dwarf Metallicity}
+Like we discussed before the summer break, we want to simulate Barium dwarfs since seem to have a smaller spread in mass and metallicity. Below I plot the metallicity distribution of the dwarfs again:
+\begin{figure}[ht]
+    \marginfignote{0}{Maybe the sample from \citet{castro2016} has slightly more metal-rich stars, but the overall, the distributions look similar.}
+    \centering
+    \incplot{w21-boxplot-2}
+\end{figure}
+
+We decided on using \([\text{Fe/H} ] = -0.4\) which equates to \(z \approx 0.00557\).
+
+From now on, all models will use this metallicity value.
+
+\newsection{Extended Grid}
 
 \subsection{Idea}
 I want to simulate TPAGB stars from 1 to \(3.5\;M_\odot \) in order to make sure I get the minimum mass for TPAGB stars.
@@ -53,6 +179,9 @@ Initially, I use a dense spacing of \(\Delta M = 0.1M_\odot \). This is probably
 
 \section{Results}
 It turns out that MESA does have quite a bit of trouble simulating single star TPAGB stars beyond something like \(2\;M_\odot \). Especially the last pulses seem to cause a lot of trouble with convergence.
+
+Since these stars require \emph{a lot} of manual resuscitations to get them going again, I decided to stop at \(M=2.2\;M_\odot \), although I could definitely try to go to higher masses if this turns out to be necessary\sidenote{I think it will not be necessary though as we will see later.}
+.
 
 Below I plot the models of the stars from \(M = 1\;M_\odot \) to \(M = 2.2\;M_\odot \).
 
@@ -81,6 +210,14 @@ The heavier stars are more towards the blue and luminous side on the MS. On the 
     \centering
     \incplot{w22-mass-co}
 \end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here I show that all of the stars terminate with only \(0.01\;M_\odot \) of envelope left.}
+    \centering
+    \incplot{w22-env-mass-time}
+\end{figure}
+
+The single star results are not that interesting or surprising, but they were not meant to be. I think these plots show that the stars correctly evolved throughout their evolution and can be used as input for various binary grids.
 
 \nextpage
 \section{Optimizing Grid Generation Code}
@@ -376,15 +513,216 @@ class MesaRun:
 Here, I also added a \lstinline[style=output, breaklines=true]|MesaRun| class to neatly combine the mesa history data as well as the parameters of the run.
 
 
-\section{Spacing}
+\newsection{Debugging!}
+The \(2.4\;M_\odot \) star was behaving \emph{REALLY} badly, and would not at all continue its evolution, despite all sorts of attempts to help the solver.
+
+I tried to debug this star and after looking into a bunch of things, I was ultimately unsuccessful in resolving the issue. My full documentation can be found HERE: \ref{sec:debug}
+\newsection{Ba-dwarf masses}
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-scatter-2}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-boxplot-2}
+\end{figure}
+
+When considering the Barium star masses, the dwarfs are much more easily modelled by a single value around \(M_\text{Ba} = 1.2\; M_\odot \).
+This aligns well with the results from \citet{sarmah2026}, who find an average mass of \(M_\text{Ba} = 1.29\pm 0.09\;M_\odot \).
+
+From now on, I will use this value.
+
+Let's say the binary interacts at a Roche lobe radius of 450 \(M_\odot \), we find:
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-co}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-grid-dup}
+\end{figure}
+
+Now, for a Roche lobe radius of 450 \(M_\odot \), we find:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-350}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-co-350}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-grid-dup-350}
+\end{figure}
+
+It is clear that the heavy stars have trouble producing the barium star masses.
+
+Now, obviously, there might be positive correlation between the barium star mass and the TP-AGB mass, but it should still be obvious that only the lighter TP-AGB stars can accrete significant mass without starting with a very unequal mass ratio.
+
+\subsection{Changing interaction radius}
+Instead of varying the mass, we can also vary the interaction radius.
+This setup is lot more like my previous grids.
+
+For the \(M_\text{i} = 1.5\;M_\odot \) model, we get the following plot:
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-1000}
+\end{figure}
+
+There are two visible boundaries here. The first one is very obvious and occurs at the point where the \citet{vassiliadis1993} winds start. The second boundary is a bit less obvious. It occurs when the models interact during the last pulse instead of during the interpulse before the last pulse. The figure below shows this for a constant \(q\).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-mass-loss}
+\end{figure}
+
+The colors of the lines correspond to the colors of the dots of the previous figure.
+It now also makes sense that the possible \(q\)-range shrinks for larger \(R\). Clearly, here the star has already lost a lot of mass due to winds, which it can no longer accrete during RLOF. The winds also transfer some mass, which shifts the upper limit down a little bit\sidenote{although a lot less than the lower limit shifts upwards.}.
+
+\nextpage
+
+We can use something like this to generate a grid as well:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-1000-small}
+\end{figure}
+
+My idea is to use the \(\varepsilon \) value to ensure we produce a barium star with the appropriate mass. Once we have a value for \(\varepsilon \), we can then vary \(\beta \) and \(\delta \) to produce the required \(\varepsilon \) value.
+
+With 5 different ratios between \(\delta \) and \(\beta \), this gives \(22\times 5 = 110\) models. Because one of the models is so close to \(\varepsilon = 0\), we actually only need to simulate \(106\) models, which is pretty doable in a couple of days.
+
+Currently the grid is simulating on the Coma cluster.
+
+\newsection{Grid}\label{sec:grid}
+
+\subsection{History}
+My grid has \(R_\text{RL} = 350\;R_\odot \) and three different epsilon values. For every epsilon value, I vary the initial mass ratio and the amount of mass that gets lost through isotropic re-emission and a CCT.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist}
+\end{figure}
+
+In the figure above, I plot the orbital period at the end of the evolution. Clearly, we are able to produce some pretty short periods, even when we have  a very high accretion efficiency\sidenote{i.e. the \(\varepsilon = 0.85\) figure.}. For the figures with a lot of accretion losses, we see that a lot of models fail. I think this is due to the Darwin instability. We do see very short periods close to the Darwin instability region.
+
+I think the overall trends in the figures and between the figures make sense. We see that an increased \(\delta \) causes shorter periods with \(q\) having an effect on the strength of the shrinkage as well. We also see that less accretion losses cause less shrinkage, which is what we expect as well.
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist-acc}
+\end{figure}
+
+The plot above shows the amount of accreted mass. Now, it makes sense that it is very close to zero for the \(\varepsilon =0\) grid, since obviously here all transferred mass is lost through isotropic re-emission and CCT mass loss.
+
+The other two plots show approximately \((1.5 - 0.6) \times 0.425 \approx 0.38\) and \((1.5 - 0.6) \times 0.85 \approx 0.765\). There are some models close to \(\delta  = 0\) and \(q = 1\) that have more wind, which decreases the amount of transferred mass.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist-mass}
+\end{figure}
+
+The figure above shows the final mass of the Barium star after mass transfer. Within all grids, we have various models with realistic final barium star masses.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist-CO}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-eps-hist-CO-no-mixing}
+\end{figure}
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    The figures above use the \emph{surface} abundances because the binary models do not compute the envelope abundances correctly for this grid. I expect that the differences are minor however.
+\end{questionbox}
+
+The two figures above show the CO-ratio of the barium star after mass transfer for two different mixing assumptions. The first figure shows the CO-ratio if the accreted material is completely mixed throughout the whole star.
+
+The second figure shows the CO-ratio if the accreted material is not mixed at all, and thus lands at the surface and stays there.
+
+The CO-ratio of the \(\varepsilon =0\) grid still changes due to the wind accretion.
+
+Since these models interact before the TPAGB-star has dredged up a lot of carbon, we do not produce a very carbon rich barium star. To me, it is uncertain if the star would have a detectable barium (over-)abundance.
+
+\nextpage
+Let's look a bit closer at the \emph{failing models}. Below I plot the period evolution as a function of \(q\) for the models starting with \(q=0.7\) and \(\varepsilon = 0\). 
+\begin{figure}[ht]
+    \marginfignote{0}{We see the inspiral that we saw for some models in previous grids as well. I think this is due to the Darwin Instability.}
+    \centering
+    \incplot{w22-darwin-instability}
+\end{figure}
+
+To ensure this is the cause of the inspiral, we can look at the angular momentum derivative of the spin orbit coupling.
+\begin{figure}[ht]
+    \marginfignote{0}{Note that the label says \(\dot{J}_\text{ls}\) but it should be \(| \dot{J}_\text{ls}  |\). The derivative is negative at the time of the inspiral.}
+    \marginfignote{6}{We see the strong ramp-up in spin-orbit coupling, which makes me believe it is truely the Darwin instability.}
+    \centering
+    \incplot{w22-darwin-instability-2}
+\end{figure}
+
+\subsection{Profiles}
+This section shows some tests for the MESA profiles.
+To start, here we can clearly see the profile saving code working.
+\begin{figure}[ht]
+    \marginfignote{0}{The binary saves at most 50 profiles up to \(M_\text{env} = 0.001\;M_\odot \). The profiles are saved with a logarithmic spacing between the initial envelope mass and the final envelope mass. Most models will terminate before reaching \(M_\text{env} = 0.001\;M_\odot \) and will therefore have slightly fewer profiles. In this case, we have 38 models going down to \(M_\text{env} = 0.01\;M_\odot \).}
+    \marginfignote{14}{Here we can cleary see that the entropy profile of the star becomes a lot less flat once it has shed a lot of its envelope.}
+    \centering
+    \incplot{w22-check-profiles}
+\end{figure}
+
+As a second test, I plot the radius of the profiles as a function of the envelope mass.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot not only shows the equal spacing of the profiles in log space, but also how there is not a simple relation between the envelope mass and the radius of the star. This is in part obviously caused by the thermal pulses.}
+    \centering
+    \incplot{w22-check-radius}
+\end{figure}
+
+Then, I plot the thermal time to the surface as a function of internal mass.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot aligns well with the results from \citet{temmink2022}. There, we see that an increased radius tends to shift the superadiabatic layers further from the surface. We see this here as well, with the \(\log(M_\text{env}) \approx -1\) models having the deepest superadiabatic layers.}
+    \centering
+    \incplot{w22-check-thermal}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here, we can quite clearly see that most of the envelope op the TPAGB stars is completely superadiabatic.}
+    \centering
+    \incplot{w22-check-thermal-mass}
+\end{figure}
+
+
+
+\bibliography{master.bib}
+\appendix
+\section{Additional Stuff}
+\begin{figure}[ht]
+    \centering
+    \incplot{w22-env-mass-radius}
+\end{figure}
+
 \begin{figure}[ht]
     \centering
     \incplot{w22-spacing}
 \end{figure}
-
-\newsection{Debugging!}
+\newsection{Debugging}\label{sec:debug}
 
 The \(2.4\;M_\odot \) star was behaving \emph{REALLY} badly, and would not at all continue its evolution, despite all sorts of attempts to help the solver.
+
 Because of this, I decided to look into \emph{what} exactly is going wrong. Let me start by plotting where the problem starts occuring.
 
 \begin{figure}[ht]
@@ -889,142 +1227,4 @@ In the case of zone 1, only \(D_{1} \) and \(U_{1} \) matter\sidenote{For a more
 
 
 
-\newsection{Ba-dwarf masses}
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-scatter-2}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-boxplot-2}
-\end{figure}
-
-When considering the Barium star masses, the dwarfs are much more easily modelled by a single value around \(M_\text{Ba} = 1.2\; M_\odot \).
-This aligns well with the results from \citet{sarmah2026}, who find an average mass of \(M_\text{Ba} = 1.29\pm 0.09\;M_\odot \).
-
-From now on, I will use this value.
-
-Let's say the binary interacts at a Roche lobe radius of 450 \(M_\odot \), we find:
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-co}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-grid-dup}
-\end{figure}
-
-Now, for a Roche lobe radius of 450 \(M_\odot \), we find:
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps-350}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-co-350}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-grid-dup-350}
-\end{figure}
-
-It is clear that the heavy stars have trouble producing the barium star masses.
-
-Now, obviously, there might be positive correlation between the barium star mass and the TP-AGB mass, but it should still be obvious that only the lighter TP-AGB stars can accrete significant mass without starting with a very unequal mass ratio.
-
-\subsection{Changing interaction radius}
-Instead of varying the mass, we can also vary the interaction radius.
-This setup is lot more like my previous grids.
-
-For the \(M_\text{i} = 1.5\;M_\odot \) model, we get the following plot:
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps-1000}
-\end{figure}
-
-There are two visible boundaries here. The first one is very obvious and occurs at the point where the \citet{vassiliadis1993} winds start. The second boundary is a bit less obvious. It occurs when the models interact during the last pulse instead of during the interpulse before the last pulse. The figure below shows this for a constant \(q\).
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-mass-loss}
-\end{figure}
-
-The colors of the lines correspond to the colors of the dots of the previous figure.
-It now also makes sense that the possible \(q\)-range shrinks for larger \(R\). Clearly, here the star has already lost a lot of mass due to winds, which it can no longer accrete during RLOF. The winds also transfer some mass, which shifts the upper limit down a little bit\sidenote{although a lot less than the lower limit shifts upwards.}.
-
-\nextpage
-
-We can use something like this to generate a grid as well:
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps-1000-small}
-\end{figure}
-
-My idea is to use the \(\varepsilon \) value to ensure we produce a barium star with the appropriate mass. Once we have a value for \(\varepsilon \), we can then vary \(\beta \) and \(\delta \) to produce the required \(\varepsilon \) value.
-
-
-\newsection{Grid}\label{sec:grid}
-
-\subsection{History}
-My grid has \(R_\text{RL} = 350\;R_\odot \) and three different epsilon values. For every epsilon value, I vary the initial mass ratio and the amount of mass that gets lost through isotropic re-emission and a CCT.
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps-hist}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps-hist-acc}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w22-eps-hist-mass}
-\end{figure}
-
-\subsection{Profiles}
-This section shows some tests for the MESA profiles.
-To start, here we can clearly see the profile saving code working.
-\begin{figure}[ht]
-    \marginfignote{0}{The binary saves at most 50 profiles up to \(M_\text{env} = 0.001\;M_\odot \). The profiles are saved with a logarithmic spacing between the initial envelope mass and the final envelope mass. Most models will terminate before reaching \(M_\text{env} = 0.001\;M_\odot \) and will therefore have slightly fewer profiles. In this case, we have 38 models going down to \(M_\text{env} = 0.01\;M_\odot \).}
-    \marginfignote{14}{Here we can cleary see that the entropy profile of the star becomes a lot less flat once it has shed a lot of its envelope.}
-    \centering
-    \incplot{w22-check-profiles}
-\end{figure}
-
-As a second test, I plot the radius of the profiles as a function of the envelope mass.
-\begin{figure}[ht]
-    \marginfignote{0}{This plot not only shows the equal spacing of the profiles in log space, but also how there is not a simple relation between the envelope mass and the radius of the star. This is in part obviously caused by the thermal pulses.}
-    \centering
-    \incplot{w22-check-radius}
-\end{figure}
-
-Then, I plot the thermal time to the surface as a function of internal mass.
-\begin{figure}[ht]
-    \marginfignote{0}{This plot aligns well with the results from \citet{temmink2022}. There, we see that an increased radius tends to shift the superadiabatic layers further from the surface. We see this here as well, with the \(\log(M_\text{env}) \approx -1\) models having the deepest superadiabatic layers.}
-    \centering
-    \incplot{w22-check-thermal}
-\end{figure}
-
-\begin{figure}[ht]
-    \marginfignote{0}{Here, we can quite clearly see that most of the envelope op the TPAGB stars is completely superadiabatic.}
-    \centering
-    \incplot{w22-check-thermal-mass}
-\end{figure}
-
-
-
-\bibliography{master.bib}
 \end{document}

@@ -174,3 +174,65 @@ plt.close()
 
 
 # %%
+
+fig, axs = plt.subplots(
+    2, 1, figsize=set_size(column, height=0.9), constrained_layout=True, sharex=True
+)
+
+plt.xlabel("Time (yr)")
+axs[0].set_ylabel(r"Radius ($R_\odot$)")
+axs[1].set_ylabel("C$_{12}$/C$_{13}$-ratio")
+axs[0].plot(h.star_age, h.R, c="k", linewidth=0.8)
+axs[1].plot(
+    h.star_age,
+    h.envelope_c12 / h.envelope_c13 * 13 / 12,
+    label="Envelope average",
+    linewidth=0.8,
+)
+
+axs[0].spines[["right", "top"]].set_visible(False)
+axs[1].spines[["right", "top"]].set_visible(False)
+axs[1].legend()
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-hr+abundance-c12-c13.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, figsize=set_size(column, height=0.9), constrained_layout=True, sharex=True
+)
+
+plt.xlabel("Time (yr)")
+axs[0].set_ylabel(r"Radius ($R_\odot$)")
+# axs[1].set_ylabel("NO-ratio")
+print(h.bulk_names)
+axs[0].plot(h.star_age, h.R, c="k", linewidth=0.8)
+axs[1].plot(
+    h.star_age,
+    h.envelope_n14 / h.envelope_o16 * 16 / 14,
+    label="NO",
+    linewidth=0.8,
+)
+axs[1].plot(
+    h.star_age,
+    h.envelope_n14 / h.envelope_n14[0],
+    label=r"N / N$_\textrm{initial}$",
+    linewidth=0.8,
+)
+axs[1].plot(
+    h.star_age,
+    h.envelope_o16 / h.envelope_o16[0],
+    label=r"O / O$_\textrm{initial}$",
+    linewidth=0.8,
+)
+
+axs[0].spines[["right", "top"]].set_visible(False)
+axs[1].spines[["right", "top"]].set_visible(False)
+axs[1].legend()
+plt.savefig("/home/koen/LaTeX-setup/plots/w22-hr+abundance-NO.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%

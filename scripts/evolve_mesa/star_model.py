@@ -202,7 +202,7 @@ class StellarModel:
 
         unique_TPs = np.unique(TP_count)
 
-        for tp in unique_TPs[2:]:  # skip TP=0 (before first pulse)
+        for tp in unique_TPs[1:]:  # skip before first pulse
 
             # indices during this thermal pulse
             pulse_idx = np.where(TP_count == tp)[0]
@@ -213,24 +213,16 @@ class StellarModel:
             # maximum lambda during pulse
             lambda_max = np.nanmax(lambda_DUP[pulse_idx])
 
-            # previous pulse
             previous_tp = tp - 1
-
             previous_idx = np.where(TP_count == previous_tp)[0]
 
             if len(previous_idx) == 0:
                 continue
 
-            # end of previous TP
             core_previous = np.min(he_core_mass[previous_idx])
-
-            # beginning of current TP
             core_current = he_core_mass[pulse_idx[0]]
-
-            # interpulse core growth
             delta_core = core_current - core_previous
 
-            # avoid numerical noise
             if delta_core <= 0:
                 continue
 
