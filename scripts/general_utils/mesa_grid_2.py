@@ -3,6 +3,7 @@ from pathlib import Path
 import mesa_reader as mr
 import pickle
 import numpy as np
+import math
 
 
 def progressbar(current_value, total_value, bar_lengh, progress_char):
@@ -20,9 +21,10 @@ def progressbar(current_value, total_value, bar_lengh, progress_char):
 
 class MesaGrid:
 
-    def __init__(self, grid_dir):
+    def __init__(self, grid_dir, fresh=False):
 
         self.grid_dir = Path(grid_dir)
+        self.fresh = fresh
 
         with open(f"{grid_dir }/grid_settings.json") as f:
             self.settings = json.load(f)
@@ -32,7 +34,6 @@ class MesaGrid:
             "q": self.settings["qs"],
             "beta": self.settings["mass_transfer"]["beta"],
             "delta": self.settings["mass_transfer"]["delta"],
-            "eps": self.settings["eps"],
         }
 
         self._load_models()
@@ -47,9 +48,9 @@ class MesaGrid:
             if not run_dir.is_dir():
                 continue
 
-            self.models.append(MesaRun(run_dir))
+            self.models.append(MesaRun(run_dir, self.fresh))
 
-    def filter(self, **filters):
+    def filter(self, rel_tol=1e-3, abs_tol=1e-12, **filters):
 
         for run in self.models:
 
@@ -58,11 +59,21 @@ class MesaGrid:
             for key, values in filters.items():
 
                 if not isinstance(values, (list, tuple, set)):
-                    values = {values}
+                    values = (values,)
 
-                if run.params[key] not in values:
-                    keep = False
-                    break
+                value = run.params[key]
+
+                if isinstance(value, (int, float)):
+                    if not any(
+                        math.isclose(value, v, rel_tol=rel_tol, abs_tol=abs_tol)
+                        for v in values
+                    ):
+                        keep = False
+                        break
+                else:
+                    if value not in values:
+                        keep = False
+                        break
 
             if keep:
                 yield run
@@ -102,14 +113,16 @@ class MesaGrid:
 
 class MesaRun:
 
-    def __init__(self, run_dir):
+    def __init__(self, run_dir, fresh):
         self.run_dir = run_dir
 
         with open(run_dir / "settings.json") as f:
             self.params = json.load(f)
 
-        self.get_history()
-        self.get_profiles()
+        self.params["f_beta"] = self.params["beta"] / (1 - self.params["eps"])
+        self.params["f_delta"] = self.params["delta"] / (1 - self.params["eps"])
+        self.get_history(fresh)
+        self.get_profiles(fresh)
 
         self.env_mass = self.history.envelope_mass
         self.q = self.history.star_2_mass / self.history.star_1_mass
@@ -118,7 +131,13 @@ class MesaRun:
     def __getattr__(self, name):
         return getattr(self.history, name)
 
-    def get_history(self):
+    def get_history(self, fresh):
+        if fresh:
+            self.history = mr.MesaData(f"{self.run_dir}/LOGS/TPAGB/history.data")
+            with open(f"{self.run_dir}/history.pkl", "wb") as f:
+                pickle.dump(self.history, f, protocol=pickle.HIGHEST_PROTOCOL)
+            return
+
         try:
             with open(f"{self.run_dir}/history.pkl", "rb") as f:
                 self.history = pickle.load(f)
@@ -127,7 +146,14 @@ class MesaRun:
             with open(f"{self.run_dir}/history.pkl", "wb") as f:
                 pickle.dump(self.history, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def get_profiles(self):
+    def get_profiles(self, fresh):
+        if fresh:
+            profiles_dict = mr.MesaLogDir(f"{self.run_dir}/LOGS/TPAGB/")
+            for i, profile in enumerate(profiles_dict.profile_numbers):
+                _ = profiles_dict.profile_data(profile_number=profile)
+            self.profiles = list(profiles_dict.profile_dict.values())
+            with open(f"{self.run_dir}/profiles.pkl", "wb") as f:
+                pickle.dump(self.profiles, f, protocol=pickle.HIGHEST_PROTOCOL)
 
         try:
             with open(f"{self.run_dir}/profiles.pkl", "rb") as f:

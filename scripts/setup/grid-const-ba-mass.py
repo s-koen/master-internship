@@ -338,17 +338,17 @@ def find_contact(evolution):
 def select_model(contact_age, models_dict):
 
     candidate = None
+    models = list(models_dict.values())
 
-    for key in list(models_dict.keys())[::-1]:
+    for i in range(len(models) - 1, -1, -1):
 
-        model = models_dict[key]
-        if model["age"] < contact_age:
-            candidate = model
-            break
+        if models[i]["age"] < contact_age:
 
-    if candidate is None:
-        print("no suitable stellar model before contact -> skipping")
+            # Return the previous model if it exists
+            if i > 0:
+                return models[i - 1]
 
+    print("no suitable stellar model before contact -> skipping")
     return candidate
 
 

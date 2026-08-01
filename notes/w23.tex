@@ -1,0 +1,78 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 23}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Grid}
+Here I will note down my most important findings for the grid that is based on the accretion efficiency required to produce a \(1.29\;M_\odot \) barium star.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot show the \(\varepsilon\) values for the different \(R_\text{Roche lobe}\) and \(q\) combinations. Note that the bottom right 3 squares are empty because they cannot produce a \(1.29\;M_\odot \) barium star, even with \(100\%\) accretion. The grid only goes up to \(q=0.8\) because \(q=0.9\) would produce barium stars heavier that \(1.29\;M_\odot \) even without any accretion.} 
+    \centering
+    \incplot{w22-eps-1000-small}
+\end{figure}
+
+Below I investigate the 3d\sidenote{\(5\times 5\times 5\)} grid that I simulated last week.
+
+The first thing I want to check is \emph{how} close the final accretor masses are to the \(1.29\;M_\odot \) value.
+
+If there would be no wind accretion after the initialization of the models, and they all interact at the predicted time, all models should have a mass of \(1.29\;M_\odot \).
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-scatter}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-period}
+\end{figure}
+
+
+\section{fix}
+
+Some of the models in the grid interact directly after starting.
+\begin{figure}[ht]
+    \marginfignote{0}{This is not \emph{necessarily} wrong but it is \emph{better} to start the simulation a bit earlier, so we know for sure the stars would not have interacted at and earlier pulse.}
+    \centering
+    \incplot{w23-wrong-start}
+\end{figure}
+
+
+With the refactor of the old grid-generation code, I accidentally forgot to take the model BEFORE the first model that has a radius smaller than \(0.9\times R_\text{RL}\). Below, I show the \emph{new} and \emph{corrected} version that does have this feature again.
+\begin{minted}[fontsize=\small,breaklines]{py}
+def select_model(contact_age, models_dict):
+
+    candidate = None
+    models = list(models_dict.values())
+
+    for i in range(len(models) - 1, -1, -1):
+
+        if models[i]["age"] < contact_age:
+
+            # Return the previous model if it exists
+            if i > 0:
+                return models[i - 1]
+
+    print("no suitable stellar model before contact -> skipping")
+    return candidate
+\end{minted}
+
+
+\bibliography{master.bib}
+\end{document}
