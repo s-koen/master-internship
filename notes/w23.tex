@@ -34,14 +34,29 @@ If there would be no wind accretion after the initialization of the models, and 
 
 
 \begin{figure}[ht]
+    \marginfignote{0}{We produce many stars close to the \(1.29\;M_\odot \) final barium mass, but there is a spread with a maximum of about \(0.1\;M_\odot \). This looks quite bad here. Let's compare it with the actual barium star distribution.}
     \centering
     \incplot{w23-scatter}
 \end{figure}
 
 \begin{figure}[ht]
+    \marginfignote{0}{Now we can see that the spread in the final masses of the \emph{MESA} models is quite a bit smaller than the spread of the Barium stars. }
+    \centering
+    \incplot{w23-scatter-compare}
+\end{figure}
+
+
+
+\begin{figure}[ht]
     \centering
     \incplot{w23-period}
 \end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mass}
+\end{figure}
+
 
 
 \section{fix}
@@ -73,6 +88,70 @@ def select_model(contact_age, models_dict):
     return candidate
 \end{minted}
 
+\newsection{Suitable MESA models}
+
+The masses of the barium dwarfs range from \(0.73\) to \(1.5\;M_\odot \).
+If we want to produce barium stars with these masses using MESA, and limit ourselves to a range of mass transfer efficiencies, we can exclude \emph{many} binary configurations. 
+
+To see this in action, below I plot the mass of the final barium star after RLOF with an accretion efficiency of \(0.5\), which in this case, I assume is the \emph{upper} boundary of the efficiency\sidenote{It seems unlikely that for extreme RLOF like what is happening here, the efficiency will be higher than 0.5.}.
+ 
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-max-mass-region-all-masses}
+\end{figure}
+
+This means we can exclude all of the regions that are \emph{red} because, even with our highest amount of assumed accretion, they cannot produce stars with masses above \(0.73\;M_\odot \).
+
+Similarly, the amount of transferred mass cannot be \emph{less than 0}. A natural lower bound for the accretion efficiency is then obviously \(\varepsilon =0\). Let's look at the masses of the barium stars that we produce without any RLOF accretion.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-min-mass-region-all-masses}
+\end{figure}
+
+Now we can exclude stars that, even without any RLOF accretion, are heavier than our observed upper limit of \(1.5\;M_\odot \). These are the red regions in the figure above.
+
+Together they form a limit on possible binary configurations. The plots show that this limit is mostly determined by the initial mass ratio, although the initial Roche lobe radius does alter the limits a little bit once winds start to be important.
+
+The figures show another thing: namely the boundary between the systems that interact and undergo RLOF and systems that miss RLOF altogether. 
+
+To illustrate this more clearly, I show the evolutionary paths for a constant \(q\) of \(0.8\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind}
+\end{figure}
+\nextpage
+The green lines show the evolution of the Roche Lobe radius for systems that \emph{do not} undergo RLOF. The red lines show systems that \emph{do} undergo RLOF.
+
+Since the most interesting parts seem to occur towards the end, I show the same figure again, but now zoomed in on last few pulses.
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind-zoom}
+\end{figure}
+
+For some masses, even a relatively equal mass ratio of \(0.8\) can cause RLOF interactions \emph{after} the last pulse. This depends on the mass of the convective envelope during the last pulse.
+
+For the \(1.7\) and \(1.9\;M_\odot \) TPAGB star, we see a relatively large final bump, while the \(1.6\) and \(1.8\;M_\odot \) stars for example, have a much less pronounced final bump.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-bump}
+\end{figure}
+
+The figure above shows exactly this. It is \emph{not} an effect of initial mass. It is really based on the mass left during the last pulse.
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-CO-region-all-masses}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-m_DUP-region-all-masses}
+\end{figure}
 
 \bibliography{master.bib}
 \end{document}

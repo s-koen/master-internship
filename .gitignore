@@ -23,6 +23,9 @@
 *-blx.bib
 *.run.xml
 
+## caches
+**/cache/
+
 ## MESA stuff
 **/LOGS/
 **/LOGS*/

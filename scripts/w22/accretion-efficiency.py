@@ -555,8 +555,8 @@ barium_mass = 1.29
 
 masses = np.arange(1.0, 2.3, 1.1)
 
-qs = np.linspace(0.4, 0.8, 5)
-rs = np.linspace(400, 600, 5)
+qs = np.linspace(0.4, 0.8, 10)
+rs = np.linspace(400, 600, 10)
 print(rs)
 eps_matrix = np.full((len(rs), len(qs)), np.nan)
 m_DUP_matrix = np.full((len(rs), len(qs)), np.nan)
@@ -605,24 +605,24 @@ for i, R in enumerate(tqdm(rs)):
         m_DUP_matrix[i, j] = np.sum(Star.m_DUP[:TP_count])
         CO_matrix[i, j] = CO_ratio
 
-with open(f"scripts/w22/const_mass_eps_{m_i}_small.pkl", "wb") as f:
+with open(f"scripts/w23/const_mass_eps_{m_i}_small.pkl", "wb") as f:
     pickle.dump(eps_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-with open(f"scripts/w22/const_mass_co_{m_i}_small.pkl", "wb") as f:
+with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "wb") as f:
     pickle.dump(CO_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-with open(f"scripts/w22/const_mass_dup_{m_i}_small.pkl", "wb") as f:
+with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "wb") as f:
     pickle.dump(m_DUP_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
 # %%
 m_i = 1.5
 R = 1000
-qs = np.linspace(0.4, 0.8, 5)
-rs = np.linspace(400, 600, 5)
+qs = np.linspace(0.4, 0.8, 10)
+rs = np.linspace(400, 600, 10)
 
 
-with open(f"scripts/w22/const_mass_eps_{m_i}_small.pkl", "rb") as f:
+with open(f"scripts/w23/const_mass_eps_{m_i}_small.pkl", "rb") as f:
     eps_matrix = pickle.load(f)
-with open(f"scripts/w22/const_mass_co_{m_i}_small.pkl", "rb") as f:
+with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
     CO_matrix = pickle.load(f)
-with open(f"scripts/w22/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
     m_DUP_matrix = pickle.load(f)
 # %%
 
