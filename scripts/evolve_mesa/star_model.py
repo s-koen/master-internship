@@ -127,8 +127,18 @@ class StellarModel:
         self.envelope_c12 = track["envelope_c12"]
         self.envelope_c13 = track["envelope_c13"]
 
-        self.lambda_DUP = track["lambda_DUP"]
-        self.TP_count = int(track["TP_count"])
+        self.lambda_DUP = np.pad(
+            track["lambda_DUP"],
+            (self.n_models - len(track["lambda_DUP"]), 0),
+            constant_values=0,
+        )
+
+        self.TP_count = np.pad(
+            track["TP_count"],
+            (self.n_models - len(track["TP_count"]), 0),
+            constant_values=0,
+        )
+
         self.m_DUP = self.compute_m_DUP()
 
         self.m_env = self.mass - self.m_core
@@ -195,7 +205,7 @@ class StellarModel:
 
         lambda_DUP = np.asarray(self.lambda_DUP)[self.ntpagb :]
         he_core_mass = np.asarray(self.m_core)[self.ntpagb :]
-        TP_count = np.asarray(self.TP_count)
+        TP_count = np.asarray(self.TP_count)[self.ntpagb :]
 
         M_DUP = []
         TP_numbers = []

@@ -78,7 +78,7 @@ barium_mass_min = 0.73
 barium_mass_max = 1.5
 eps_max = 0.5
 
-masses = np.arange(1.0, 2.3, 0.1)
+masses = np.arange(2.3, 2.45, 0.1)
 
 qs = np.arange(0.05, 1.05, 0.05)
 rs = np.arange(100, 1260, 10)
@@ -152,9 +152,16 @@ for m_i in masses:
 
             # interpolate stellar radius onto binary ages
             core_mass_interp = np.interp(bin.age, ages_star, core_mass)
-            TP_count = int(
-                np.interp(bin.age, Star.age[Star.ntpagb :], Star.TP_count)[-1]
-            )
+            try:
+                TP_count = int(
+                    np.interp(bin.age, Star.age[Star.ntpagb :], Star.TP_count)[-1]
+                )
+            except ValueError:
+                TP_count = int(
+                    np.interp(
+                        bin.age, Star.age[Star.ntpagb :], Star.TP_count[Star.ntpagb :]
+                    )[-1]
+                )
             CO_ratio = np.interp(
                 bin.age, Star.age, Star.envelope_c12 / Star.envelope_o16 * 16 / 12
             )[-1]
@@ -1563,8 +1570,14 @@ plt.close()
 # %%
 
 fig, axs = plt.subplots(
-    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+    1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
 )
+
+
+norm = plt.Normalize(np.min(masses), np.max(masses))
+cmap = plt.cm.Spectral
+# color = cmap(norm(x))
+
 
 for m, m_i in enumerate(masses):
 
@@ -1580,10 +1593,25 @@ for m, m_i in enumerate(masses):
         with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
             pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
 
+    ind = np.argmax(Star.log_R)
+
+    plt.plot(
+        Star.m_env[ind:],
+        10 ** Star.log_R[ind:] / np.max(10 ** Star.log_R[ind:]),
+        c=cmap(norm(m_i)),
+    )
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$M_\textrm{TPAGB}$ ($M_\odot$)")
 
 axs.spines[["right", "top"]].set_visible(False)
-plt.xlabel("")
-plt.ylabel("")
-# plt.savefig("/home/koen/LaTeX-setup/plots/.pgf", format="pgf")
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.xscale("log")
+plt.ylabel(r"$R / R_\textrm{max}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%

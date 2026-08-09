@@ -10,7 +10,7 @@ import pickle
 # WARNING: CHECK / MODIFY THESE PATHS
 grid_name = "epsilon-grid-test"
 proj_dir = "/home/koen/master-internship"
-reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-07-01/"
+reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-07-29/"
 binary_exe_dir = f"{proj_dir}/mesa-models/reference-binary/"
 
 # WARNING: SETTINGS FOR THE GRID

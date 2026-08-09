@@ -141,17 +141,62 @@ For the \(1.7\) and \(1.9\;M_\odot \) TPAGB star, we see a relatively large fina
 
 The figure above shows exactly this. It is \emph{not} an effect of initial mass. It is really based on the mass left during the last pulse.
 
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I have only \emph{completed} the \emph{MESA} simulations for masses up to \(2.2\;M_\odot \). A simple calculation however shows that even for masses up to as high as \(3.75\;M_\odot \), there are still possible configurations with little accretion that \emph{could} form an accreting star with a final mass smaller than \(1.5\;M_\odot \).
+
+    I therefore think it might be interesting to extend the single star models to higher masses.
+\end{questionbox}
+
 \nextpage
+
+Now that I have established regions of possible and \emph{im}possible binary configurations, we can take a look at the other relevant parameters in this grid. Firstly, let me plot the C/O-ratio.
 
 \begin{figure}[ht]
     \centering
     \incplot{w23-CO-region-all-masses}
 \end{figure}
 
+There is a pretty clear divide throughout the mass range, where initial Roche lobe radii of \(\lesssim 400\;R_\odot \) all go into RLOF with a C/O-ratio that is below 1.
+
 \begin{figure}[ht]
     \centering
     \incplot{w23-m_DUP-region-all-masses}
 \end{figure}
 
+\section{Barium dwarf abundances}
+The barium dwarfs in the \lstinline[style=output, breaklines=true]|Ba_star_orbits.csv| unfortunately do not contain C/O-ratios or carbon and oxygen abundances.
+
+Some barium stars do have [Ba/Fe] abundances. They also have a metallicity. In the appendix I compare these values.
+
+I compiled some observation of abundances of barium \emph{dwarfs}\sidenote{and in some cases CH stars.}. Below, I plot the C/O-ratio as a function of the barium abundance.
+\begin{figure}[ht]
+    \marginfignote{0}{\citet{roriz2024,smith1993,pereira2002,pereira2005,pereira2019,kong2017,shejeelammal2020,liu2021}}
+    \marginfignote{8}{It \emph{seems} like the C/O-ratio \emph{alone} is not a good metric for the barium abundance. There are even some barium dwarfs that have C/O-ratios that are \emph{lower} than the C/O-ratio of my metal-poor \emph{MESA} main-sequence models.}
+    \centering
+    \incplot{w23-co-ratio}
+\end{figure}
+
+Below I show the C/O-ratio as a function of metallicity.
+\begin{figure}[ht]
+    \marginfignote{0}{The red dot seems like an outlier here. Its metallicity is much lower than the other stars, \emph{but}, compared to many more barium dwarfs, the ones that I have not collected abundances for, it is not extreme\citep{pereira2019}.}
+    \centering
+    \incplot{w23-co-ratio-metallicity}
+\end{figure}
+
+I think it is difficult to say anything meaningful based on the C/O-ratio of the accretor.
+
+In part, I think this can be because quite heavy TPAGB stars can have low C/O-ratios due to the hot bottom burning, while still having dredged up mass and probably barium and other s-process elements.
+
 \bibliography{master.bib}
+\nextpage
+\appendix
+\section{Additional plots}
+\begin{figure}[ht]
+    \marginfignote{0}{It seems, at least with this relatively small sample, both groups draw from the same distribution.}
+    \centering
+    \incplot{w23-new-old-ba-fe}
+\end{figure}
+
+
 \end{document}
