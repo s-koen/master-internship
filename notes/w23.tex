@@ -148,6 +148,20 @@ The figure above shows exactly this. It is \emph{not} an effect of initial mass.
     I therefore think it might be interesting to extend the single star models to higher masses.
 \end{questionbox}
 
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I have now simulated all masses up to 2.6 and I am working towards \(3.0\;M_\odot \)
+\end{questionbox}
+
+We can also inspect the effects of \(q\). In particular, I think it is interesting to see that the border between the binaries that do and do not interact seems to change direction. The figure below explores this idea.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-q-wind}
+\end{figure}
+
+
+
 \nextpage
 
 Now that I have established regions of possible and \emph{im}possible binary configurations, we can take a look at the other relevant parameters in this grid. Firstly, let me plot the C/O-ratio.
@@ -186,7 +200,55 @@ Below I show the C/O-ratio as a function of metallicity.
 
 I think it is difficult to say anything meaningful based on the C/O-ratio of the accretor.
 
-In part, I think this can be because quite heavy TPAGB stars can have low C/O-ratios due to the hot bottom burning, while still having dredged up mass and probably barium and other s-process elements.
+In part, I think this can be because quite heavy TPAGB stars can have low C/O-ratios due to the hot bottom burning, while still having dredged up mass and probably barium and other s-process elements. 
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-min-max-mass}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind-accretion-region-all-masses}
+\end{figure}
+
+
+\newsection{Bug fix}
+
+In some very rare cases, \emph{MESA} saves a timestep twice with the same exact stellar configuration. This is not a problem, \emph{except} when using the python \lstinline[style=output, breaklines=true]|evolve.py| code to predict the future of a binary.
+
+This breaks in various places when \(\Delta t = 0\).
+
+There is a pretty easy fix for this:
+\begin{minted}[fontsize=\small,breaklines]{py}
+def evolve_orbit(
+    ...
+    while (Bin.status == "detached") & (i < len(dM)):
+
+        # Zero-duration stellar timestep: nothing evolves.
+        if dt[i] == 0:
+            Bin.age.append(Star.age[i + 1])
+            Bin.a.append(sma)
+            Bin.e.append(ecc)
+            Bin.spin1.append(spin)
+            Bin.type1.append(Star.type[i + 1])
+            Bin.m1.append(Star.mass[i + 1])
+            Bin.m2.append(mcomp)
+            Bin.amloss.append(amloss)
+            Bin.beta.append(0)
+            Bin.eta.append(0)
+            Bin.vw_over_vorb.append(0)
+            Bin.fconv.append(0)
+
+            track_int_simple.append(i)
+            i += 1
+            continue
+    ...
+    return Bin
+\end{minted}
+
 
 \bibliography{master.bib}
 \nextpage

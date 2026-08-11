@@ -55,7 +55,7 @@ def compute_final_mass(epsilon, tpagb_mass, core_mass, q):
     return delta_accreted + tpagb_mass * q
 
 
-for m_i in np.arange(1.0, 2.3, 0.1):
+for m_i in np.arange(1.0, 2.55, 0.1):
 
     single_star_dir = (
         f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
@@ -78,7 +78,11 @@ barium_mass_min = 0.73
 barium_mass_max = 1.5
 eps_max = 0.5
 
-masses = np.arange(2.3, 2.45, 0.1)
+masses = np.arange(1.0, 2.65, 0.1)
+# masses = np.arange(2.2, 2.45, 0.1)
+# masses = [2.5] 
+# masses = [1.5,1.7] 
+print(masses)
 
 qs = np.arange(0.05, 1.05, 0.05)
 rs = np.arange(100, 1260, 10)
@@ -89,6 +93,7 @@ m_DUP_matrix = np.full((len(rs), len(qs)), np.nan)
 CO_matrix = np.full((len(rs), len(qs)), np.nan)
 min_mass_matrix = np.full((len(rs), len(qs)), np.nan)
 max_mass_matrix = np.full((len(rs), len(qs)), np.nan)
+wind_accretion_matrix = np.full((len(rs), len(qs)), np.nan)
 
 # %%
 for m_i in masses:
@@ -193,22 +198,25 @@ for m_i in masses:
             eps_min_matrix[i, j] = eps_min_mass
             eps_max_matrix[i, j] = eps_max_mass
             m_DUP_matrix[i, j] = np.sum(Star.m_DUP[:TP_count])
+            wind_accretion_matrix[i, j] = bin.m2[-1] - bin.m2[0]
             CO_matrix[i, j] = CO_ratio
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(possible_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(eps_min_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(eps_max_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(min_mass_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(max_mass_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(CO_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "wb") as f:
+    with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "wb") as f:
         pickle.dump(m_DUP_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "wb") as f:
+        pickle.dump(wind_accretion_matrix, f, protocol=pickle.HIGHEST_PROTOCOL)
 # %%
 m_i = 1.6
 R = 1000
@@ -339,9 +347,9 @@ from matplotlib.colors import TwoSlopeNorm
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
-    sharex="col",
+    sharex=True,
     sharey=True,
     figsize=set_size(full, height=1.5),
     constrained_layout=True,
@@ -352,20 +360,36 @@ maxx = -1e99
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     if np.nanmin(CO_matrix) < minn:
         minn = np.nanmin(CO_matrix)
@@ -380,25 +404,41 @@ cmap = plt.cm.coolwarm_r
 axs = axs.flatten()
 
 for ax in axs:
-    if ax == axs[-1] or ax == axs[-2]:
+    if ax == axs[-1]:
         ax.axis("off")
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     eps_plot = eps_matrix.copy()
     eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
@@ -408,15 +448,18 @@ for i, m_i in enumerate(masses):
         Q,
     )
 
-    colors = axs[i].pcolormesh(
-        R,
-        Q,
-        CO_matrix.T,
-        shading="nearest",
-        cmap=cmap,
-        norm=norm,
-        rasterized=True,
-    )
+    try:
+        colors = axs[i].pcolormesh(
+            R,
+            Q,
+            CO_matrix.T,
+            shading="nearest",
+            cmap=cmap,
+            norm=norm,
+            rasterized=True,
+        )
+    except:
+        pass
 
     lc = draw_region_boundaries(
         axs[i],
@@ -484,9 +527,9 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Border between wind regime with\n possible and impossible final masses",
-        "Border between RLOF and\nwind only regime",
-        "Border between RLOF regime with\n possible and impossible final masses",
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
     loc="lower right",
@@ -609,7 +652,7 @@ from matplotlib.colors import TwoSlopeNorm
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
     sharex="col",
     sharey=True,
@@ -621,21 +664,36 @@ minn = 1e99
 maxx = -1e99
 
 for i, m_i in enumerate(masses):
-
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     if np.nanmin(m_DUP_matrix) < minn:
         minn = np.nanmin(m_DUP_matrix)
@@ -652,20 +710,36 @@ for ax in axs:
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     eps_plot = eps_matrix.copy()
     eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
@@ -675,16 +749,19 @@ for i, m_i in enumerate(masses):
         Q,
     )
 
-    colors = axs[i].pcolormesh(
-        R,
-        Q,
-        m_DUP_matrix.T,
-        shading="nearest",
-        cmap="viridis",
-        vmin=minn,
-        vmax=maxx,
-        rasterized=True,
-    )
+    try:
+        colors = axs[i].pcolormesh(
+            R,
+            Q,
+            m_DUP_matrix.T,
+            shading="nearest",
+            cmap="viridis",
+            vmin=minn,
+            vmax=maxx,
+            rasterized=True,
+        )
+    except:
+        pass
 
     lc = draw_region_boundaries(
         axs[i],
@@ -749,9 +826,9 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Border between wind regime with\n possible and impossible final masses",
-        "Border between RLOF and\nwind only regime",
-        "Border between RLOF regime with\n possible and impossible final masses",
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
     loc="lower right",
@@ -775,7 +852,7 @@ from matplotlib.colors import TwoSlopeNorm
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
     sharex="col",
     sharey=True,
@@ -792,20 +869,36 @@ my_cmap.set_over("white")
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     matrix = eps_min_matrix
 
@@ -824,20 +917,36 @@ for ax in axs:
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     eps_plot = eps_matrix.copy()
     eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
@@ -921,9 +1030,9 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Border between wind regime with\n possible and impossible final masses",
-        "Border between RLOF and\nwind only regime",
-        "Border between RLOF regime with\n possible and impossible final masses",
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
     loc="lower right",
@@ -946,7 +1055,7 @@ from matplotlib.colors import TwoSlopeNorm
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
     sharex="col",
     sharey=True,
@@ -960,20 +1069,36 @@ maxx = -1e99
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     matrix = min_mass_matrix
 
@@ -994,25 +1119,41 @@ cmap = plt.cm.coolwarm
 
 
 for ax in axs:
-    if ax == axs[-1] or ax == axs[-2]:
+    if ax == axs[-1]:
         ax.axis("off")
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     eps_plot = eps_matrix.copy()
     eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
@@ -1097,9 +1238,9 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Border between wind regime with\n possible and impossible final masses",
-        "Border between RLOF and\nwind only regime",
-        "Border between RLOF regime with\n possible and impossible final masses",
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
     loc="lower right",
@@ -1122,7 +1263,7 @@ from matplotlib.colors import TwoSlopeNorm
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
     sharex="col",
     sharey=True,
@@ -1136,20 +1277,36 @@ maxx = -1e99
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     matrix = max_mass_matrix
 
@@ -1170,25 +1327,41 @@ cmap = plt.cm.coolwarm_r
 
 
 for ax in axs:
-    if ax == axs[-1] or ax == axs[-2]:
+    if ax == axs[-1]:
         ax.axis("off")
 
 for i, m_i in enumerate(masses):
 
-    with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
-        eps_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
-        eps_min_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
-        eps_max_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
-        CO_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
-        m_DUP_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
-        min_mass_matrix = pickle.load(f)
-    with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
-        max_mass_matrix = pickle.load(f)
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
 
     eps_plot = eps_matrix.copy()
     eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
@@ -1273,9 +1446,9 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Border between wind regime with\n possible and impossible final masses",
-        "Border between RLOF and\nwind only regime",
-        "Border between RLOF regime with\n possible and impossible final masses",
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
     loc="lower right",
@@ -1292,7 +1465,7 @@ plt.show()
 plt.close()
 # %%
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
     sharex=False,
     sharey=True,
@@ -1307,7 +1480,7 @@ axs = axs.flatten()
 
 
 for ax in axs:
-    if ax == axs[-1] or ax == axs[-2]:
+    if ax == axs[-1] :
         ax.axis("off")
 
 
@@ -1410,8 +1583,8 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Roche lobe radius (No RLOF)",
-        "Roche lobe radius (RLOF)",
+        "Roche lobe radius\n(No RLOF)",
+        "Roche lobe radius\n(RLOF)",
         "Star radius",
     ],
     loc="lower right",
@@ -1433,7 +1606,7 @@ plt.close()
 
 # %%
 fig, axs = plt.subplots(
-    5,
+    6,
     3,
     sharex=False,
     sharey=True,
@@ -1448,7 +1621,7 @@ axs = axs.flatten()
 
 
 for ax in axs:
-    if ax == axs[-1] or ax == axs[-2]:
+    if ax == axs[-1]:
         ax.axis("off")
 
 
@@ -1548,8 +1721,8 @@ custom_lines = [
 fig.legend(
     custom_lines,
     [
-        "Roche lobe radius (No RLOF)",
-        "Roche lobe radius (RLOF)",
+        "Roche lobe radius\n(No RLOF)",
+        "Roche lobe radius\n(RLOF)",
         "Star radius",
     ],
     loc="lower right",
@@ -1615,3 +1788,1222 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+R, Q = np.meshgrid(rs, qs)
+
+fig, axs = plt.subplots(
+    6,
+    3,
+    sharex="col",
+    sharey=True,
+    figsize=set_size(full, height=1.5),
+    constrained_layout=True,
+)
+
+minn = 1e99
+maxx = -1e99
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+
+    matrix = eps_matrix
+
+    if np.nanmin(matrix) < minn:
+        minn = np.nanmin(matrix)
+
+    if np.nanmax(matrix) > maxx:
+        maxx = np.nanmax(matrix)
+
+print(minn, maxx)
+norm = TwoSlopeNorm(0.5, minn, maxx)
+cmap = plt.cm.coolwarm_r
+
+
+axs = axs.flatten()
+
+for ax in axs:
+    if ax == axs[-1] or ax == axs[-2]:
+        ax.axis("off")
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+
+    eps_plot = eps_matrix.copy()
+    eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
+
+    RR, QQ = np.meshgrid(
+        R,
+        Q,
+    )
+
+    colors = axs[i].pcolormesh(
+        R,
+        Q,
+        eps_matrix.T,
+        shading="nearest",
+        cmap=cmap,
+        norm=norm,
+        rasterized=True,
+    )
+
+    lc = draw_region_boundaries(
+        axs[i],
+        eps_matrix.T,  # important: match CO_matrix.T
+        rs,
+        qs,
+        colors={
+            (0, 0.5): "magenta",
+            (0.5, 1): "black",
+            (0, 1): "lime",
+        },
+    )
+
+    axs[i].contourf(
+        R,
+        Q,
+        eps_matrix.T,
+        colors="none",
+        hatches=["||", None, None, None],
+        corner_mask=False,
+        rasterized=True,
+    )
+    # axs[i].text(
+    #     0.1,
+    #     0.9,
+    #     f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    #     transform=axs[i].transAxes,
+    #     ha="left",
+    #     va="top",
+    #     bbox=dict(
+    #         boxstyle="square",
+    #         fc=(1.0, 1, 1,0.7),
+    #         ec=(1.0, 1, 1, 0.7),
+    #     ),
+    # )
+    axs[i].set_title(
+        f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    )
+
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+axs[0].set_yticks([0.1, 0.5, 1])
+
+cbar = plt.colorbar(sm, ax=axs[1], orientation="horizontal", location="top")
+cbar.ax.set_xscale("linear")
+cbar.set_label(r"CO-ratio at end of binary evolution")
+# plt.colorbar(label=r"$\epsilon$")
+# plt.xlabel(r"initial mass [$M_\odot$]")
+# plt.ylabel(r"$q$")
+# plt.ylim(0.39, 0.9)
+
+
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind regime with\n possible and impossible final masses",
+        "Border between RLOF and\nwind only regime",
+        "Border between RLOF regime with\n possible and impossible final masses",
+        "Impossible region",
+    ],
+    loc="lower right",
+    ncols=1,
+)
+
+axs[-3].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[6].set_ylabel("Initial mass ratio $q$")
+
+# plt.savefig("/home/koen/LaTeX-setup/plots/w23-CO-region-all-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+for m_i in [2.5]:
+
+    for i, R in enumerate([1000]):
+
+        single_star_dir = (
+            f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
+        )
+        try:
+            with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+                Star = pickle.load(f)
+        except:
+
+            Star = read_stellar_models(single_star_dir)[0]
+            with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+                pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        for j, q in enumerate(qs):
+
+            a_init = inv_roche_lobe(R, q)
+
+            cache_file = cache_dir / f"m{m_i:.1f}_R{R:.2f}_q{q:.3f}.pkl"
+
+            try:
+                if cache_file.exists():
+                    with open(cache_file, "rb") as f:
+                        result = pickle.load(f)
+
+                    if len(result) == 6:
+                        # old cache
+                        Star, Options, q_init, a_init, e_init, Bins = result
+                    elif len(result) == 5:
+                        # new cache (Star omitted)
+                        Options, q_init, a_init, e_init, Bins = result
+                    else:
+                        raise ValueError(
+                            f"Unexpected cache format ({len(result)} elements)"
+                        )
+                else:
+                    Star, Options, q_init, a_init, e_init, Bins = call_evolution(
+                        Star, q, a_init, simple_only=True
+                    )
+
+                    with open(cache_file, "wb") as f:
+                        pickle.dump(
+                            (Options, q_init, a_init, e_init, Bins),
+                            f,
+                            protocol=pickle.HIGHEST_PROTOCOL,
+                        )
+            except EOFError:
+                print(q)
+                Star, Options, q_init, a_init, e_init, Bins = call_evolution(
+                    Star, q, a_init, simple_only=True
+                )
+
+                with open(cache_file, "wb") as f:
+                    pickle.dump(
+                        (Options, q_init, a_init, e_init, Bins),
+                        f,
+                        protocol=pickle.HIGHEST_PROTOCOL,
+                    )
+
+            R_star = 10**Star.log_R
+            core_mass = Star.m_core
+            ages_star = Star.age
+            bin = Bins[0]
+
+            q_evolve = bin.m2 / bin.m1
+            RL = roche_lobe(1 / q_evolve) * bin.a
+
+            q_begin = q_evolve[-1]
+            tpagb_mass = bin.m1[-1]
+
+            # interpolate stellar radius onto binary ages
+            core_mass_interp = np.interp(bin.age, ages_star, core_mass)
+            try:
+                TP_count = int(
+                    np.interp(bin.age, Star.age[Star.ntpagb :], Star.TP_count)[-1]
+                )
+            except ValueError:
+                TP_count = int(
+                    np.interp(
+                        bin.age, Star.age[Star.ntpagb :], Star.TP_count[Star.ntpagb :]
+                    )[-1]
+                )
+            CO_ratio = np.interp(
+                bin.age, Star.age, Star.envelope_c12 / Star.envelope_o16 * 16 / 12
+            )[-1]
+            print(bin.age[-1] - ages_star[-1])
+
+            plt.plot(bin.age, RL)
+
+plt.plot(ages_star, R_star)
+plt.show()
+# %%
+
+q = 0.05
+R = 960
+
+a_init = inv_roche_lobe(R, q)
+Star, Options, q_init, a_init, e_init, Bins = call_evolution(
+    Star, q, a_init, simple_only=True
+)
+
+R_star = 10**Star.log_R
+core_mass = Star.m_core
+ages_star = Star.age
+bin = Bins[0]
+
+q_evolve = bin.m2 / bin.m1
+RL = roche_lobe(1 / q_evolve) * bin.a
+
+plt.plot(bin.age, RL)
+plt.plot(Star.age, 10**Star.log_R)
+plt.show()
+# %%
+print(type(bin.m2[-1]))
+# %%
+from matplotlib.colors import Normalize
+from matplotlib.colors import TwoSlopeNorm
+
+R, Q = np.meshgrid(rs, qs)
+
+fig, axs = plt.subplots(
+    1,
+    2,
+    sharex="col",
+    sharey=True,
+    figsize=set_size(full, height=0.6),
+    constrained_layout=True,
+)
+
+minn = 1e99
+maxx = -1e99
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+
+    if np.nanmin(CO_matrix) < minn:
+        minn = np.nanmin(CO_matrix)
+
+    if np.nanmax(CO_matrix) > maxx:
+        maxx = np.nanmax(CO_matrix)
+
+norm = TwoSlopeNorm(1, minn, maxx)
+cmap = plt.cm.coolwarm_r
+
+# masses = [2.5]
+masses = np.arange(1.0, 2.55, 0.1)
+cmap = plt.cm.viridis
+norm = Normalize(np.min(masses), np.max(masses))
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+
+    eps_plot = eps_matrix.copy()
+    eps_plot[(eps_plot < 0) | (eps_plot == 0)] = 0
+    eps_plot[(eps_plot > 0) | (eps_plot == 0.5)] = m_i
+
+    RR, QQ = np.meshgrid(
+        R,
+        Q,
+    )
+
+    # colors = axs.pcolormesh(
+    #     R,
+    #     Q,
+    #     CO_matrix.T,
+    #     shading="nearest",
+    #     cmap=cmap,
+    #     norm=norm,
+    #     rasterized=True,
+    # )
+    #
+    # lc = draw_region_boundaries(
+    #     axs,
+    #     eps_matrix.T,  # important: match CO_matrix.T
+    #     rs,
+    #     qs,
+    #     colors={
+    #         (0, 0.5): "magenta",
+    #         (0.5, 1): "black",
+    #         (0, 1): "lime",
+    #     },
+    # )
+    #
+    print(eps_plot.T)
+    # plt.contour(R,Q,eps_plot.T, levels=[m_i/2], colors=[cmap(norm(m_i))])
+    axs[0].contourf(
+    R,
+    Q,
+    eps_plot.T,
+    levels=[m_i / 2, m_i + 1],
+    colors=[cmap(norm(m_i))],
+    alpha=1
+    )
+    # plt.pcolormesh(R,Q,eps_plot.T,cmap="viridis", vmin=np.min(masses),vmax=np.max(masses))
+
+    # axs.contourf(
+    #     R,
+    #     Q,
+    #     eps_matrix.T,
+    #     colors="none",
+    #     hatches=["||", None, None, None],
+    #     corner_mask=False,
+    #     rasterized=True,
+    # )
+    # axs[i].text(
+    #     0.1,
+    #     0.9,
+    #     f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    #     transform=axs[i].transAxes,
+    #     ha="left",
+    #     va="top",
+    #     bbox=dict(
+    #         boxstyle="square",
+    #         fc=(1.0, 1, 1,0.7),
+    #         ec=(1.0, 1, 1, 0.7),
+    #     ),
+    # )
+for i, m_i in enumerate(masses[::-1]):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+
+    eps_plot = eps_matrix.copy()
+    eps_plot[(eps_plot < 0) | (eps_plot == 0)] = 0
+    eps_plot[(eps_plot > 0) | (eps_plot == 0.5)] = m_i
+
+    RR, QQ = np.meshgrid(
+        R,
+        Q,
+    )
+
+    # colors = axs.pcolormesh(
+    #     R,
+    #     Q,
+    #     CO_matrix.T,
+    #     shading="nearest",
+    #     cmap=cmap,
+    #     norm=norm,
+    #     rasterized=True,
+    # )
+    #
+    # lc = draw_region_boundaries(
+    #     axs,
+    #     eps_matrix.T,  # important: match CO_matrix.T
+    #     rs,
+    #     qs,
+    #     colors={
+    #         (0, 0.5): "magenta",
+    #         (0.5, 1): "black",
+    #         (0, 1): "lime",
+    #     },
+    # )
+    #
+    print(eps_plot.T)
+    # plt.contour(R,Q,eps_plot.T, levels=[m_i/2], colors=[cmap(norm(m_i))])
+    cs = axs[1].contourf(
+    R,
+    Q,
+    eps_plot.T,
+    levels=[m_i / 2, m_i + 1],
+    colors=[cmap(norm(m_i))],
+    alpha=1,
+    zorder=-20
+    )
+
+    # plt.pcolormesh(R,Q,eps_plot.T,cmap="viridis", vmin=np.min(masses),vmax=np.max(masses))
+
+    # axs.contourf(
+    #     R,
+    #     Q,
+    #     eps_matrix.T,
+    #     colors="none",
+    #     hatches=["||", None, None, None],
+    #     corner_mask=False,
+    #     rasterized=True,
+    # )
+    # axs[i].text(
+    #     0.1,
+    #     0.9,
+    #     f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    #     transform=axs[i].transAxes,
+    #     ha="left",
+    #     va="top",
+    #     bbox=dict(
+    #         boxstyle="square",
+    #         fc=(1.0, 1, 1,0.7),
+    #         ec=(1.0, 1, 1, 0.7),
+    #     ),
+    # )
+
+
+for ax in axs:
+    ax.set_rasterization_zorder(-10)
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=axs, orientation="horizontal", location="top", aspect=50)
+cbar.ax.set_xscale("linear")
+cbar.set_label(r"Mass of TPAGB-star ($M_\odot$)")
+# plt.colorbar(label=r"$\epsilon$")
+# plt.xlabel(r"initial mass [$M_\odot$]")
+# plt.ylabel(r"$q$")
+# plt.ylim(0.39, 0.9)
+
+axs[0].set_title("Maximum possible mass")
+axs[1].set_title("Minimum possible mass")
+
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+
+# custom_lines = [
+#     Line2D([0], [0], color="magenta", lw=2),
+#     Line2D([0], [0], color="black", lw=2),
+#     Line2D([0], [0], color="lime", lw=2),
+#     Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+# ]
+#
+# fig.legend(
+#     custom_lines,
+#     [
+#         "Border between wind regime with\n possible and impossible final masses",
+#         "Border between RLOF and\nwind only regime",
+#         "Border between RLOF regime with\n possible and impossible final masses",
+#         "Impossible region",
+#     ],
+#     loc="lower right",
+#     ncols=1,
+# )
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-min-max-mass.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+
+RRs = [460,460,490,540,730,710,860,780,960,900,960,1000,1120,1140,1160,1180, 1180]
+
+fig, axs = plt.subplots(
+    6,
+    3,
+    sharex=False,
+    sharey=False,
+    figsize=set_size(full, height=1.5),
+    constrained_layout=True,
+)
+
+eps_mins = []
+eps_maxs = []
+
+axs = axs.flatten()
+
+norm = plt.Normalize(0.05, 1)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+
+
+for ax in axs:
+    if ax == axs[-1]:
+        ax.axis("off")
+
+
+for m, m_i in enumerate(tqdm(masses)):
+
+    for i, R in enumerate([RRs[m]]):
+
+        single_star_dir = (
+            f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
+        )
+        try:
+            with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+                Star = pickle.load(f)
+        except:
+
+            Star = read_stellar_models(single_star_dir)[0]
+            with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+                pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+        #
+        # if i != 72:
+        #     continue
+
+        for j, q in enumerate(qs):
+
+
+            a_init = inv_roche_lobe(R, q)
+
+            cache_file = cache_dir / f"m{m_i:.1f}_R{R:.2f}_q{q:.3f}.pkl"
+
+            if cache_file.exists():
+                with open(cache_file, "rb") as f:
+                    result = pickle.load(f)
+
+                if len(result) == 6:
+                    # old cache
+                    Star, Options, q_init, a_init, e_init, Bins = result
+                elif len(result) == 5:
+                    # new cache (Star omitted)
+                    Options, q_init, a_init, e_init, Bins = result
+                else:
+                    raise ValueError(
+                        f"Unexpected cache format ({len(result)} elements)"
+                    )
+            else:
+                Star, Options, q_init, a_init, e_init, Bins = call_evolution(
+                    Star, q, a_init, simple_only=True
+                )
+
+            R_star = 10**Star.log_R
+            core_mass = Star.m_core
+            ages_star = Star.age
+            bin = Bins[0]
+
+            q_evolve = bin.m2 / bin.m1
+            RL = roche_lobe(1 / q_evolve) * bin.a
+
+            q_begin = q_evolve[-1]
+            tpagb_mass = bin.m1[-1]
+            core_mass_interp = np.interp(bin.age, ages_star, core_mass)
+
+            eps_min_mass = compute_epsilon(
+                barium_mass_min, tpagb_mass, core_mass_interp[-1], q_begin
+            )
+            eps_max_mass = compute_epsilon(
+                barium_mass_max, tpagb_mass, core_mass_interp[-1], q_begin
+            )
+
+            axs[m].plot(bin.age, RL, c=cmap(norm(q)), linewidth=0.4, rasterized=True)
+
+            eps_mins.append(eps_min_mass)
+            eps_maxs.append(eps_max_mass)
+            # axs[1].plot(bin.age, bin.m2)
+            # axs[1].plot(bin.age, bin.m1)
+
+    axs[m].plot(Star.age, 10**Star.log_R, c="k")
+    max = Star.age[-1]
+    min = (Star.age[Star.ntpagb] + 5 * max) / 6
+    delta = max - min
+    axs[m].set_xlim(min - delta / 10, max + delta / 10)
+
+    axs[m].set_title(
+        f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$, $R_\\textrm{{RL,i}} = {R:.0f}$",
+    )
+
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+
+
+cbar = plt.colorbar(sm, ax=axs[1], orientation="horizontal", location="top")
+cbar.ax.set_xscale("linear")
+cbar.set_label(r"Initial binary mass ratio ($q$)")
+
+
+# plt.ylim(0, 1300)
+
+axs[-3].set_xlabel("Age (yr)")
+axs[6].set_ylabel("Radius ($R_\odot$)")
+
+plt.xlabel("")
+plt.ylabel("")
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-q-wind.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+from matplotlib.colors import Normalize
+from matplotlib.colors import TwoSlopeNorm
+
+R, Q = np.meshgrid(rs, qs)
+
+fig, axs = plt.subplots(
+    1,
+    1,
+    sharex="col",
+    sharey=True,
+    figsize=set_size(full, height=0.6),
+    constrained_layout=True,
+)
+
+minn = 1e99
+maxx = -1e99
+
+masses = [2.0]
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+
+    if np.nanmin(CO_matrix) < minn:
+        minn = np.nanmin(CO_matrix)
+
+    if np.nanmax(CO_matrix) > maxx:
+        maxx = np.nanmax(CO_matrix)
+
+norm = TwoSlopeNorm(1, minn, maxx)
+cmap = plt.cm.coolwarm_r
+
+masses = [2.0]
+# masses = np.arange(1.0, 2.55, 0.1)
+cmap = plt.cm.viridis
+norm = Normalize(np.min(masses), np.max(masses))
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+
+    eps_plot = eps_matrix.copy()
+    eps_plot[(eps_plot < 0) | (eps_plot == 0)] = 0
+    eps_plot[(eps_plot > 0) | (eps_plot == 0.5)] = m_i
+
+    RR, QQ = np.meshgrid(
+        R,
+        Q,
+    )
+
+    # colors = axs.pcolormesh(
+    #     R,
+    #     Q,
+    #     CO_matrix.T,
+    #     shading="nearest",
+    #     cmap=cmap,
+    #     norm=norm,
+    #     rasterized=True,
+    # )
+    #
+    # lc = draw_region_boundaries(
+    #     axs,
+    #     eps_matrix.T,  # important: match CO_matrix.T
+    #     rs,
+    #     qs,
+    #     colors={
+    #         (0, 0.5): "magenta",
+    #         (0.5, 1): "black",
+    #         (0, 1): "lime",
+    #     },
+    # )
+    #
+    print(eps_plot.T)
+    # plt.contour(R,Q,eps_plot.T, levels=[m_i/2], colors=[cmap(norm(m_i))])
+    axs.pcolormesh(
+    R,
+    Q,
+    wind_accretion_matrix.T,
+    )
+    # plt.pcolormesh(R,Q,eps_plot.T,cmap="viridis", vmin=np.min(masses),vmax=np.max(masses))
+
+    # axs.contourf(
+    #     R,
+    #     Q,
+    #     eps_matrix.T,
+    #     colors="none",
+    #     hatches=["||", None, None, None],
+    #     corner_mask=False,
+    #     rasterized=True,
+    # )
+    # axs[i].text(
+    #     0.1,
+    #     0.9,
+    #     f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    #     transform=axs[i].transAxes,
+    #     ha="left",
+    #     va="top",
+    #     bbox=dict(
+    #         boxstyle="square",
+    #         fc=(1.0, 1, 1,0.7),
+    #         ec=(1.0, 1, 1, 0.7),
+    #     ),
+    # )
+
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=axs, orientation="horizontal", location="top", aspect=50)
+cbar.ax.set_xscale("linear")
+cbar.set_label(r"Mass of TPAGB-star ($M_\odot$)")
+# plt.colorbar(label=r"$\epsilon$")
+# plt.xlabel(r"initial mass [$M_\odot$]")
+# plt.ylabel(r"$q$")
+# plt.ylim(0.39, 0.9)
+
+
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+
+# custom_lines = [
+#     Line2D([0], [0], color="magenta", lw=2),
+#     Line2D([0], [0], color="black", lw=2),
+#     Line2D([0], [0], color="lime", lw=2),
+#     Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+# ]
+#
+# fig.legend(
+#     custom_lines,
+#     [
+#         "Border between wind regime with\n possible and impossible final masses",
+#         "Border between RLOF and\nwind only regime",
+#         "Border between RLOF regime with\n possible and impossible final masses",
+#         "Impossible region",
+#     ],
+#     loc="lower right",
+#     ncols=1,
+# )
+
+# plt.savefig("/home/koen/LaTeX-setup/plots/w23-min-max-mass.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+from matplotlib.colors import TwoSlopeNorm
+
+R, Q = np.meshgrid(rs, qs)
+
+fig, axs = plt.subplots(
+    6,
+    3,
+    sharex="col",
+    sharey=True,
+    figsize=set_size(full, height=1.5),
+    constrained_layout=True,
+)
+
+minn = 1e99
+maxx = -1e99
+
+for i, m_i in enumerate(masses):
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+
+    matrix = wind_accretion_matrix
+
+    if np.nanmin(matrix) < minn:
+        minn = np.nanmin(matrix)
+
+    if np.nanmax(matrix) > maxx:
+        maxx = np.nanmax(matrix)
+
+
+axs = axs.flatten()
+
+for ax in axs:
+    if ax == axs[-1]:
+        ax.axis("off")
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+
+    eps_plot = eps_matrix.copy()
+    eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
+
+    RR, QQ = np.meshgrid(
+        R,
+        Q,
+    )
+
+    colors = axs[i].pcolormesh(
+        R,
+        Q,
+        wind_accretion_matrix.T,
+        shading="nearest",
+        cmap="viridis",
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+
+    lc = draw_region_boundaries(
+        axs[i],
+        eps_matrix.T,  # important: match CO_matrix.T
+        rs,
+        qs,
+        colors={
+            (0, 0.5): "magenta",
+            (0.5, 1): "black",
+            (0, 1): "lime",
+        },
+    )
+
+    try:
+        axs[i].contourf(
+             R,
+             Q,
+             eps_matrix.T,
+             colors="none",
+             hatches=["||", None, None, None],
+             corner_mask=False,
+             rasterized=True,
+        )
+    except:
+        pass
+
+    # axs[i].text(
+    #     0.1,
+    #     0.9,
+    #     f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    #     transform=axs[i].transAxes,
+    #     ha="left",
+    #     va="top",
+    #     bbox=dict(
+    #         boxstyle="square",
+    #         fc=(1.0, 1, 1,0.7),
+    #         ec=(1.0, 1, 1, 0.7),
+    #     ),
+    # )
+    axs[i].set_title(
+        f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    )
+
+
+axs[0].set_yticks([0.1, 0.5, 1])
+
+cbar = plt.colorbar(colors, ax=axs[1], orientation="horizontal", location="top")
+cbar.ax.set_xscale("linear")
+cbar.set_label(r"$\Delta M_\textrm{wind}$ at end of binary evolution ($M_\odot$)")
+# plt.colorbar(label=r"$\epsilon$")
+# plt.xlabel(r"initial mass [$M_\odot$]")
+# plt.ylabel(r"$q$")
+# plt.ylim(0.39, 0.9)
+
+
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="lower right",
+    ncols=1,
+)
+
+axs[-3].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[6].set_ylabel("Initial mass ratio $q$")
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w23-wind-accretion-region-all-masses.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+single_star_dir = (
+            f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
+        )
+        try:
+            with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+                Star = pickle.load(f)
+        except:
+
+            Star = read_stellar_models(single_star_dir)[0]
+            with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+                pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+q = 0.05
+R = 960
+
+a_init = inv_roche_lobe(R, q)
+Star, Options, q_init, a_init, e_init, Bins = call_evolution(
+    Star, q, a_init, simple_only=True
+)
+
+R_star = 10**Star.log_R
+core_mass = Star.m_core
+ages_star = Star.age
+bin = Bins[0]
+
+q_evolve = bin.m2 / bin.m1
+RL = roche_lobe(1 / q_evolve) * bin.a
+
+plt.plot(bin.age, RL)
+plt.plot(Star.age, 10**Star.log_R)
+plt.show()
+

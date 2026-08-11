@@ -29,7 +29,7 @@ sys.path.insert(1, "/home/koen/master-internship/")
 MASTER = "/home/koen/master-internship/mesa-models/"
 
 import mesa_reader as mr
-from scripts.general_utils.cache import *
+from scripts.general_utils.cache import get_star
 from scripts.general_utils.mesa_grid import MesaGrid
 
 # %%
@@ -234,25 +234,75 @@ w = mr.MesaData(
 )
 # %%
 
-r = mr.MesaData(f"{MASTER}/single-stars/z0.00557/fixes/M2.3/LOGS/TPAGB/history.data")
+r = mr.MesaData(f"{MASTER}/single-stars/z0.00557/fixes/M2.4/LOGS/TPAGB/history.data")
 # %%
 
 
+# plt.plot(r.star_age, r.envelope_mass)
 plt.plot(r.star_age, r.R)
-plt.plot(w.star_age, w.R)
+plt.plot(star3.age - star3.age[star3.ntpagb], 10**star3.log_R)
+# plt.plot(w.star_age, w.R)
 # plt.plot(w.star_age, w.surface_c12 / w.surface_o16)
 # plt.plot(w.star_age, w.envelope_c12 / w.envelope_o16)
 # plt.plot(r.star_age, r.envelope_c12 / r.envelope_o16)
 # plt.plot(r.star_age, r.surface_c12 / r.surface_o16)
+
 plt.show()
 
 # %%
-single_star_dir = f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
-try:
-    with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
-        Star = pickle.load(f)
-except:
 
-    Star = read_stellar_models(single_star_dir)[0]
-    with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
-        pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+star = get_star(m=2.2)
+star2 = get_star(m=2.1)
+star3 = get_star(m=2.5)
+star4 = get_star(m=2.0)
+star5 = get_star(m=2.3)
+star6 = get_star(m=2.4)
+# %%
+plt.plot(star.age, star.log_R)
+plt.plot(star2.age, star2.log_R)
+plt.plot(star3.age, star3.log_R)
+plt.plot(star4.age, star4.log_R)
+plt.plot(star5.age, star5.log_R)
+plt.plot(star6.age, star6.log_R)
+plt.show()
+
+# %%
+
+plt.plot(np.cumsum(star.m_DUP))
+plt.plot(np.cumsum(star2.m_DUP))
+plt.plot(np.cumsum(star3.m_DUP))
+plt.show()
+# %%
+
+for s in [star, star2, star3, star4]:
+    plt.plot(
+        s.age[s.ntpagb :] - s.age[s.ntpagb],
+        s.envelope_c12[s.ntpagb :] / s.envelope_o16[s.ntpagb :] * 16 / 12,
+    )
+plt.plot(r.star_age, r.envelope_c12 / r.envelope_o16 * 16 / 12)
+plt.show()
+# %%
+
+for s in [star, star2, star3, star4]:
+    plt.plot(
+        10 ** s.log_R[s.ntpagb :],
+        s.envelope_c12[s.ntpagb :] / s.envelope_o16[s.ntpagb :] * 16 / 12,
+    )
+plt.plot(r.R, r.envelope_c12 / r.envelope_o16 * 16 / 12)
+plt.show()
+
+# %%
+
+r = mr.MesaData(f"{MASTER}/single-stars/z0.00557/fixes/M2.6/LOGS/TPAGB/history.data")
+# %%
+
+plt.plot(r.star_age, r.R)
+plt.show()
+# %%
+
+for s in [star, star2, star3, star4]:
+    plt.plot(s.age[s.ntpagb :] - s.age[s.ntpagb], 10 ** s.log_R[s.ntpagb :])
+plt.plot(r.star_age, 10**r.log_R)
+plt.show()
+
+# %%

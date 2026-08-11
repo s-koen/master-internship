@@ -636,19 +636,16 @@ direct = plot_df["C/O method"] == "log eps"
 fallback = plot_df["C/O method"] == "[C/H], [O/H]"
 
 for ref, group in plot_df.groupby("ref"):
-    print(ref)
     if len(group.loc[direct, "[Ba/Fe]"]) != 0:
-        print("yay 1")
         ax.scatter(
-            group.loc[direct, "[Ba/Fe]"], group.loc[direct, "C/O"], s=30, label=ref
+            group.loc[direct, "[Ba/Fe]"], group.loc[direct, "C/O"], s=15, label=ref
         )
 
     if len(group.loc[fallback, "[Ba/Fe]"]) != 0:
-        print("yay 2")
         ax.scatter(
             group.loc[fallback, "[Ba/Fe]"],
             group.loc[fallback, "C/O"],
-            s=30,
+            s=15,
             marker="s",
             label=ref,
         )
@@ -763,14 +760,14 @@ fallback = plot_df["C/O method"] == "[C/H], [O/H]"
 for ref, group in plot_df.groupby("ref"):
     if len(group.loc[direct, "[Fe/H]"]) != 0:
         ax.scatter(
-            group.loc[direct, "[Fe/H]"], group.loc[direct, "C/O"], s=30, label=ref
+            group.loc[direct, "[Fe/H]"], group.loc[direct, "C/O"], s=15, label=ref
         )
 
     if len(group.loc[fallback, "[Fe/H]"]) != 0:
         ax.scatter(
             group.loc[fallback, "[Fe/H]"],
             group.loc[fallback, "C/O"],
-            s=30,
+            s=15,
             marker="s",
             label=ref,
         )
@@ -833,7 +830,7 @@ plt.scatter(
 plt.scatter(
     plot_df["[Fe/H]"],
     plot_df["[Ba/Fe]"],
-    s=30,
+    s=15,
     c="C1",
     label=r"New sample",
 )

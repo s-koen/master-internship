@@ -158,6 +158,25 @@ def evolve_orbit(
 
     while (Bin.status == "detached") & (i < len(dM)):
 
+        # Zero-duration stellar timestep: nothing evolves.
+        if dt[i] == 0:
+            Bin.age.append(Star.age[i + 1])
+            Bin.a.append(sma)
+            Bin.e.append(ecc)
+            Bin.spin1.append(spin)
+            Bin.type1.append(Star.type[i + 1])
+            Bin.m1.append(Star.mass[i + 1])
+            Bin.m2.append(mcomp)
+            Bin.amloss.append(amloss)
+            Bin.beta.append(0)
+            Bin.eta.append(0)
+            Bin.vw_over_vorb.append(0)
+            Bin.fconv.append(0)
+
+            track_int_simple.append(i)
+            i += 1
+            continue
+
         # Define stellar parameters required for integration.
         SP.mass = Star.mass[i]
         SP.radius = Star.radius[i]
@@ -178,6 +197,8 @@ def evolve_orbit(
         ecc_next = ecc + de_dt * dt[i]
         spin_next = spin + dspin_dt * dt[i]
         mcomp_next = mcomp + dmcomp_dt * dt[i]
+        if np.isnan(mcomp_next) and not np.isnan(mcomp):
+            print(i, mcomp, dmcomp_dt, dt[i])
         amloss_next = amloss + dj_dt * dt[i]
 
         # Expected relative changes in orbit, mass, spin and tidal
