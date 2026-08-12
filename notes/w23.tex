@@ -18,56 +18,17 @@
 %Begin the document
 \begin{document}
 \setuplayout
-\section{Grid}
-Here I will note down my most important findings for the grid that is based on the accretion efficiency required to produce a \(1.29\;M_\odot \) barium star.
-\begin{figure}[ht]
-    \marginfignote{0}{This plot show the \(\varepsilon\) values for the different \(R_\text{Roche lobe}\) and \(q\) combinations. Note that the bottom right 3 squares are empty because they cannot produce a \(1.29\;M_\odot \) barium star, even with \(100\%\) accretion. The grid only goes up to \(q=0.8\) because \(q=0.9\) would produce barium stars heavier that \(1.29\;M_\odot \) even without any accretion.} 
-    \centering
-    \incplot{w22-eps-1000-small}
-\end{figure}
-
-Below I investigate the 3d\sidenote{\(5\times 5\times 5\)} grid that I simulated last week.
-
-The first thing I want to check is \emph{how} close the final accretor masses are to the \(1.29\;M_\odot \) value.
-
-If there would be no wind accretion after the initialization of the models, and they all interact at the predicted time, all models should have a mass of \(1.29\;M_\odot \).
 
 
-\begin{figure}[ht]
-    \marginfignote{0}{We produce many stars close to the \(1.29\;M_\odot \) final barium mass, but there is a spread with a maximum of about \(0.1\;M_\odot \). This looks quite bad here. Let's compare it with the actual barium star distribution.}
-    \centering
-    \incplot{w23-scatter}
-\end{figure}
+\section{Small bug fix}
 
-\begin{figure}[ht]
-    \marginfignote{0}{Now we can see that the spread in the final masses of the \emph{MESA} models is quite a bit smaller than the spread of the Barium stars. }
-    \centering
-    \incplot{w23-scatter-compare}
-\end{figure}
-
-
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-period}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-mass}
-\end{figure}
-
-
-
-\section{fix}
-
+While I was looking through the constant mass \emph{MESA} grid that I simulated over the summer, I noticed a small issue. 
 Some of the models in the grid interact directly after starting.
 \begin{figure}[ht]
-    \marginfignote{0}{This is not \emph{necessarily} wrong but it is \emph{better} to start the simulation a bit earlier, so we know for sure the stars would not have interacted at and earlier pulse.}
+    \marginfignote{0}{This is not \emph{necessarily} wrong but it is \emph{better} to start the simulation a bit earlier, so we know for sure the stars would not have interacted during an earlier pulse.}
     \centering
     \incplot{w23-wrong-start}
 \end{figure}
-
 
 With the refactor of the old grid-generation code, I accidentally forgot to take the model BEFORE the first model that has a radius smaller than \(0.9\times R_\text{RL}\). Below, I show the \emph{new} and \emph{corrected} version that does have this feature again.
 \begin{minted}[fontsize=\small,breaklines]{py}
@@ -87,96 +48,6 @@ def select_model(contact_age, models_dict):
     print("no suitable stellar model before contact -> skipping")
     return candidate
 \end{minted}
-
-\newsection{Suitable MESA models}
-
-The masses of the barium dwarfs range from \(0.73\) to \(1.5\;M_\odot \).
-If we want to produce barium stars with these masses using MESA, and limit ourselves to a range of mass transfer efficiencies, we can exclude \emph{many} binary configurations. 
-
-To see this in action, below I plot the mass of the final barium star after RLOF with an accretion efficiency of \(0.5\), which in this case, I assume is the \emph{upper} boundary of the efficiency\sidenote{It seems unlikely that for extreme RLOF like what is happening here, the efficiency will be higher than 0.5.}.
- 
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-max-mass-region-all-masses}
-\end{figure}
-
-This means we can exclude all of the regions that are \emph{red} because, even with our highest amount of assumed accretion, they cannot produce stars with masses above \(0.73\;M_\odot \).
-
-Similarly, the amount of transferred mass cannot be \emph{less than 0}. A natural lower bound for the accretion efficiency is then obviously \(\varepsilon =0\). Let's look at the masses of the barium stars that we produce without any RLOF accretion.
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-min-mass-region-all-masses}
-\end{figure}
-
-Now we can exclude stars that, even without any RLOF accretion, are heavier than our observed upper limit of \(1.5\;M_\odot \). These are the red regions in the figure above.
-
-Together they form a limit on possible binary configurations. The plots show that this limit is mostly determined by the initial mass ratio, although the initial Roche lobe radius does alter the limits a little bit once winds start to be important.
-
-The figures show another thing: namely the boundary between the systems that interact and undergo RLOF and systems that miss RLOF altogether. 
-
-To illustrate this more clearly, I show the evolutionary paths for a constant \(q\) of \(0.8\).
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-wind}
-\end{figure}
-\nextpage
-The green lines show the evolution of the Roche Lobe radius for systems that \emph{do not} undergo RLOF. The red lines show systems that \emph{do} undergo RLOF.
-
-Since the most interesting parts seem to occur towards the end, I show the same figure again, but now zoomed in on last few pulses.
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-wind-zoom}
-\end{figure}
-
-For some masses, even a relatively equal mass ratio of \(0.8\) can cause RLOF interactions \emph{after} the last pulse. This depends on the mass of the convective envelope during the last pulse.
-
-For the \(1.7\) and \(1.9\;M_\odot \) TPAGB star, we see a relatively large final bump, while the \(1.6\) and \(1.8\;M_\odot \) stars for example, have a much less pronounced final bump.
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-bump}
-\end{figure}
-
-The figure above shows exactly this. It is \emph{not} an effect of initial mass. It is really based on the mass left during the last pulse.
-
-\begin{questionbox}{}{}
-\textbf{\textcolor{keywordscolor}{NOTE:}}
-    I have only \emph{completed} the \emph{MESA} simulations for masses up to \(2.2\;M_\odot \). A simple calculation however shows that even for masses up to as high as \(3.75\;M_\odot \), there are still possible configurations with little accretion that \emph{could} form an accreting star with a final mass smaller than \(1.5\;M_\odot \).
-
-    I therefore think it might be interesting to extend the single star models to higher masses.
-\end{questionbox}
-
-\begin{questionbox}{}{}
-\textbf{\textcolor{keywordscolor}{NOTE:}}
-    I have now simulated all masses up to 2.6 and I am working towards \(3.0\;M_\odot \)
-\end{questionbox}
-
-We can also inspect the effects of \(q\). In particular, I think it is interesting to see that the border between the binaries that do and do not interact seems to change direction. The figure below explores this idea.
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-q-wind}
-\end{figure}
-
-
-
-\nextpage
-
-Now that I have established regions of possible and \emph{im}possible binary configurations, we can take a look at the other relevant parameters in this grid. Firstly, let me plot the C/O-ratio.
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-CO-region-all-masses}
-\end{figure}
-
-There is a pretty clear divide throughout the mass range, where initial Roche lobe radii of \(\lesssim 400\;R_\odot \) all go into RLOF with a C/O-ratio that is below 1.
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w23-m_DUP-region-all-masses}
-\end{figure}
 
 \section{Barium dwarf abundances}
 The barium dwarfs in the \lstinline[style=output, breaklines=true]|Ba_star_orbits.csv| unfortunately do not contain C/O-ratios or carbon and oxygen abundances.
@@ -202,16 +73,192 @@ I think it is difficult to say anything meaningful based on the C/O-ratio of the
 
 In part, I think this can be because quite heavy TPAGB stars can have low C/O-ratios due to the hot bottom burning, while still having dredged up mass and probably barium and other s-process elements. 
 
+
+
+\newsection{Suitable MESA models}
+
+\subsection{Separated Masses}
+The masses of the barium dwarfs range from \(0.73\) to \(1.5\;M_\odot \), see plot below.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-scatter-dwarf-masses}
+\end{figure}
+
+
+If we want to produce barium stars with these masses using MESA, and limit ourselves to a range of mass transfer efficiencies, we can exclude \emph{many} binary configurations. 
+
+To see this in action, below I plot the mass of the final barium star after RLOF with an accretion efficiency of \(0.5\), which in this case, I assume is the \emph{upper} boundary of the efficiency\sidenote{It seems unlikely that for extreme RLOF like what is happening here, the efficiency will be higher than 0.5.}.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-max-mass-region-all-masses}
+\end{figure}
+
+This means we can exclude all of the regions that are \emph{red} because, even with our highest amount of assumed accretion, they cannot produce stars with masses above \(0.73\;M_\odot \).
+
+Similarly, the amount of transferred mass cannot be \emph{less than 0}. A natural lower bound for the accretion efficiency is then obviously \(\varepsilon =0\). Let's look at the masses of the barium stars that we produce without any RLOF accretion.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-min-mass-region-all-masses}
+\end{figure}
+
+Now we can exclude stars that, even without any RLOF accretion, are heavier than our observed upper limit of \(1.5\;M_\odot \). These are the red regions in the figure above.
+
+Together they form a limit on possible binary configurations. The plots show that this limit is mostly determined by the initial mass ratio, although the initial Roche lobe radius does alter the limits a little bit once winds start to be important.
+
+The figures show another thing: namely the boundary between the systems that interact and undergo RLOF and systems that miss RLOF altogether. 
+
+\nextpage
+To illustrate this more clearly, I show the evolutionary paths for a constant \(q\) of \(0.8\).
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind}
+\end{figure}
+The green lines show the evolution of the Roche Lobe radius for systems that \emph{do not} undergo RLOF. The red lines show systems that \emph{do} undergo RLOF.
+
+Since the most interesting parts seem to occur towards the end, I show the same figure again, but now zoomed in on last few pulses.
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind-zoom}
+\end{figure}
+
+For some masses, even a relatively equal mass ratio of \(0.8\) can cause RLOF interactions \emph{after} the last pulse. This depends on the mass of the convective envelope during the last pulse.
+
+For the \(1.7\) and \(1.9\;M_\odot \) TPAGB star, we see a relatively large final bump, while the \(1.6\) and \(1.8\;M_\odot \) stars for example, have a much less pronounced final bump.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-bump}
+\end{figure}
+
+The figure above shows exactly this. It is \emph{not} an effect of initial mass. It is really based on the mass left during the last pulse.
+
+To highlight this, I show the same plot, but now with the colors based on the mass at the moment of the largest radius.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-bump-2}
+\end{figure}
+
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I have only \emph{completed} the \emph{MESA} simulations for masses up to \(2.2\;M_\odot \). A simple calculation however shows that even for masses up to as high as \(3.75\;M_\odot \), there are still possible configurations with little accretion that \emph{could} form an accreting star with a final mass smaller than \(1.5\;M_\odot \).
+
+    I therefore think it might be interesting to extend the single star models to higher masses.
+\end{questionbox}
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I have now simulated all masses up to 2.6 and I am working towards \(3.0\;M_\odot \)
+\end{questionbox}
+
+We can also inspect the effects of \(q\). In particular, I think it is interesting to see that the border between the binaries that do and do not interact seems to change direction. The figure below explores this idea.
 \nextpage
 
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-q-wind}
+\end{figure}
+
+
+Now that I have established regions of possible and \emph{im}possible binary configurations, we can take a look at the other relevant parameters in this grid. Firstly, let me plot the C/O-ratio.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-CO-region-all-masses}
+\end{figure}
+
+There is a pretty clear divide throughout the mass range, where initial Roche lobe radii of \(\lesssim 400\;R_\odot \) all go into RLOF with a C/O-ratio that is below 1.
+
+Obviously, we can also clearly see that the CO-ratio increases strongly with the mass. where higher masses can much more easily generate large CO-ratios at the time of interaction / end of evolution.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-m_DUP-region-all-masses}
+\end{figure}
+
+\nextpage
+
+Because we are looking at relatively low-mass TPAGB stars, the amount of dredged up mass seems to follow a similar relation as the CO-ratio. This would probably not be the case if we look at larger masses, were we expect a peak in dredged up mass at some point, and a dip in CO-ratio initially due to hot-bottom-burning.
+
+Below I show the effects of wind. In particular, I show how much mass is \emph{accreted} during the evolution up to the point of RLOF or envelope stripping.
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind-accretion-region-all-masses}
+\end{figure}
+
+Here we see that, kind of as expected, the heavier stars lose most mass due to winds. However, importantly, these regions are mostly forbidden because they create barium stars that are too heavy.
+
+In this case, it is probably more interesting to exclude the forbidden regions.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind-accretion-region-all-masses-zoom}
+\end{figure}
+
+Then we see that the mass is really not an important factor anymore. The binary configurations are key here. You need a system that barely misses RLOF to have most wind accretion. System can also transfer some mass via winds if the system interacts during the last (few) thermal pulses. Preferably, the system should \emph{not} be in a binary that is too wide. At that point the accretion efficiency drops. This can best be seen at the lower masses.
+
+It is not immediately clear from this graph, but the amount of dredged up mass does not change a lot during the last few pulses. Since this is exactly when the wind starts to become important, it is actually not too difficult to estimate the amount of accreted dredged up mass assuming perfect mixing.
+
+To show where in the parameter space, certain masses are possible, I show two plots below, one highlighting the \emph{maximum} initial mass to produce a barium star within the observed range, and one highlighting the \emph{minimum} initial mass to produce a barium star within the observed range.
 \begin{figure}[ht]
     \centering
     \incplot{w23-min-max-mass}
 \end{figure}
 
+This plot shows quite clearly what is intuitively true, namely that high initial TPAGB masses can only produce the observed barium stars in unequal binary configurations.
+
+It also shows that somewhere around \(q=0.5\), a very broad range of initial masses can produce barium stars for a very broad range of starting periods.
+
+
+
+\newsubsection{Separated Masses}
+
+Instead of looking at the mass in separated panels and using \(q\) as the y-axis, we can obviously also swap these two. They even have roughly the same size.
+
+I start by showing the mass-space equivalent of the plot above.
 \begin{figure}[ht]
     \centering
-    \incplot{w23-wind-accretion-region-all-masses}
+    \incplot{w23-min-max-q}
+\end{figure}
+
+Now the mass-equivalent pictures of the previous plots.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mspace-m_min}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mspace-m_max}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mspace-co}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mspace-dup}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mspace-wind-accretion}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-wind-accretion-region-all-q}
 \end{figure}
 
 
@@ -253,11 +300,58 @@ def evolve_orbit(
 \bibliography{master.bib}
 \nextpage
 \appendix
+
+\section{Constant mass Grid}
+Here I will note down my most important findings for the grid that is based on the accretion efficiency required to produce a \(1.29\;M_\odot \) barium star.
+\begin{figure}[ht]
+    \marginfignote{0}{This plot show the \(\varepsilon\) values for the different \(R_\text{Roche lobe}\) and \(q\) combinations. Note that the bottom right 3 squares are empty because they cannot produce a \(1.29\;M_\odot \) barium star, even with \(100\%\) accretion. The grid only goes up to \(q=0.8\) because \(q=0.9\) would produce barium stars heavier that \(1.29\;M_\odot \) even without any accretion.} 
+    \centering
+    \incplot{w22-eps-1000-small}
+\end{figure}
+
+Below I investigate the 3d\sidenote{\(5\times 5\times 5\)} grid that I simulated last week.
+
+The first thing I want to check is \emph{how} close the final accretor masses are to the \(1.29\;M_\odot \) value.
+
+If there would be no wind accretion after the initialization of the models, and they all interact at the predicted time, all models should have a mass of \(1.29\;M_\odot \).
+
+
+\begin{figure}[ht]
+    \marginfignote{0}{We produce many stars close to the \(1.29\;M_\odot \) final barium mass, but there is a spread with a maximum of about \(0.1\;M_\odot \). This looks quite bad here. Let's compare it with the actual barium star distribution.}
+    \centering
+    \incplot{w23-scatter}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Now we can see that the spread in the final masses of the \emph{MESA} models is quite a bit smaller than the spread of the Barium stars. }
+    \centering
+    \incplot{w23-scatter-compare}
+\end{figure}
+
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-period}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mass}
+\end{figure}
+
+
+
 \section{Additional plots}
 \begin{figure}[ht]
     \marginfignote{0}{It seems, at least with this relatively small sample, both groups draw from the same distribution.}
     \centering
     \incplot{w23-new-old-ba-fe}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-dup-something}
 \end{figure}
 
 

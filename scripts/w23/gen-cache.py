@@ -73,7 +73,7 @@ barium_mass_min = 0.73
 barium_mass_max = 1.5
 eps_max = 0.5
 
-masses = [3.0]
+masses = [2.8]
 print(masses)
 
 qs = np.arange(0.05, 1.05, 0.05)

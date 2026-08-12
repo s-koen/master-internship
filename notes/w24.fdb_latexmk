@@ -1,0 +1,11 @@
+# Fdb version 4
+["pdflatex"] 1786498530.65593 "w24.tex" "w24.pdf" "w24" 1786498530.75585 2
+  "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
+  "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1783670470 2968234 d23dd1d939fcf2c5a6fef745ad70030a ""
+  "w24.aux" 1786498522.65364 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "w24.tex" 1786498511.2536 0 d41d8cd98f00b204e9800998ecf8427e ""
+  (generated)
+  "w24.aux"
+  "w24.log"
+  "w24.pdf"
+  (rewritten before read)

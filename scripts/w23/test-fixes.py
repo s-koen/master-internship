@@ -251,26 +251,33 @@ plt.show()
 
 # %%
 
-star = get_star(m=2.2)
+star1 = get_star(m=2.0)
 star2 = get_star(m=2.1)
-star3 = get_star(m=2.5)
-star4 = get_star(m=2.0)
-star5 = get_star(m=2.3)
-star6 = get_star(m=2.4)
+star3 = get_star(m=2.2)
+star4 = get_star(m=2.3)
+star5 = get_star(m=2.4)
+star6 = get_star(m=2.5)
+star7 = get_star(m=2.6)
+star8 = get_star(m=2.9)
 # %%
-plt.plot(star.age, star.log_R)
+plt.plot(star1.age, star1.log_R)
 plt.plot(star2.age, star2.log_R)
 plt.plot(star3.age, star3.log_R)
 plt.plot(star4.age, star4.log_R)
 plt.plot(star5.age, star5.log_R)
 plt.plot(star6.age, star6.log_R)
+plt.plot(star7.age, star7.log_R)
+plt.plot(star8.age, star8.log_R)
 plt.show()
 
 # %%
 
-plt.plot(np.cumsum(star.m_DUP))
+plt.plot(np.cumsum(star1.m_DUP))
 plt.plot(np.cumsum(star2.m_DUP))
 plt.plot(np.cumsum(star3.m_DUP))
+plt.plot(np.cumsum(star4.m_DUP))
+plt.plot(np.cumsum(star5.m_DUP))
+plt.plot(np.cumsum(star6.m_DUP))
 plt.show()
 # %%
 
@@ -305,4 +312,133 @@ for s in [star, star2, star3, star4]:
 plt.plot(r.star_age, 10**r.log_R)
 plt.show()
 
+# %%
+
+w = mr.MesaData(f"{MASTER}/single-stars/z0.00557/fixes/M3.0/LOGS/TPAGB/history.data")
+# %%
+plt.plot(w.star_age, w.log_R)
+plt.plot(w.star_age, w.envelope_mass)
+plt.show()
+
+# %%
+g = mr.MesaData(
+    f"{MASTER}/single-stars/z0.00557/first-try/M2.7/LOGS/TPAGB/history.data"
+)
+# %%
+plt.plot(g.star_age, g.log_R)
+plt.plot(g.star_age, g.envelope_mass)
+plt.show()
+# %%
+f = mr.MesaData(f"{MASTER}/single-stars/z0.00557/fixes/M2.9/LOGS/TPAGB/history.data")
+# %%
+plt.plot(f.star_age, f.R)
+plt.plot(g.star_age, g.R)
+# plt.plot(w.star_age, w.R)
+plt.show()
+
+# %%
+plt.plot(f.star_age, f.envelope_c12 / f.envelope_o16 * 16 / 12)
+plt.plot(f.star_age, f.surface_c12 / f.surface_o16 * 16 / 12)
+plt.plot(g.star_age, g.envelope_c12 / g.envelope_o16 * 16 / 12)
+plt.plot(g.star_age, g.surface_c12 / g.surface_o16 * 16 / 12)
+# plt.plot(w.star_age, w.R)
+plt.show()
+
+
+# %%
+
+for m in [
+    1,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5,
+    1.6,
+    1.7,
+    1.8,
+    1.9,
+    2,
+    2.1,
+    2.2,
+    2.3,
+    2.4,
+    2.5,
+    2.6,
+    2.7,
+    2.9,
+    3.0,
+]:
+
+    star = get_star(m=m)
+    plt.plot(star.age, 10**star.log_R)
+plt.show()
+# %%
+
+plt.plot(w.star_age, w.dt)
+plt.show()
+# %%
+
+plt.plot(w.model_number)
+plt.show()
+# %%
+
+plt.plot(np.diff(w.star_age))
+plt.show()
+# %%
+m_list = [
+    1,
+    1.1,
+    1.2,
+    1.3,
+    1.4,
+    1.5,
+    1.6,
+    1.7,
+    1.8,
+    1.9,
+    2,
+    2.1,
+    2.2,
+    2.3,
+    2.4,
+    2.5,
+    2.6,
+    2.7,
+    2.9,
+    3.0,
+]
+dup_list = []
+
+for m in m_list:
+
+    star = get_star(m=m)
+    dup_list.append(np.sum(star.m_DUP))
+plt.plot(m_list, dup_list, "o-")
+plt.show()
+
+# %%
+
+
+star = get_star(m=2.5)
+plt.plot(star.m_DUP)
+plt.plot(star.TP_count, star.mass)
+plt.show()
+# %%
+
+tp_count = np.where(
+    np.abs(star.TP_count - star.TP_count.astype(np.int64)) > 1e-10, 0, star.TP_count
+)
+tp_count = np.where(tp_count > 0, tp_count, 0)
+tp_count = np.where(tp_count > 50, 0, tp_count)
+plt.plot(tp_count)
+plt.show()
+# %%
+
+for m in [1, 1.5, 2, 2.5, 3]:
+    star = get_star(m=2.5)
+    tp_count = np.where(star.model > star.ntpagb, star.TP_count, 0)
+    plt.plot(tp_count, star.mass / star.mass[0])
+    plt.plot(range(2, 2 + len(star.m_DUP)), np.cumsum(star.m_DUP) / np.sum(star.m_DUP))
+plt.show()
 # %%

@@ -2976,19 +2976,19 @@ plt.close()
 # %%
 
 single_star_dir = (
-            f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
-        )
-        try:
-            with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
-                Star = pickle.load(f)
-        except:
+    f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M3.0"
+)
+try:
+    with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+        Star = pickle.load(f)
+except:
 
-            Star = read_stellar_models(single_star_dir)[0]
-            with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
-                pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+    Star = read_stellar_models(single_star_dir)[0]
+    with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+        pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-q = 0.05
-R = 960
+q = 0.3
+R = 1300 
 
 a_init = inv_roche_lobe(R, q)
 Star, Options, q_init, a_init, e_init, Bins = call_evolution(
@@ -3006,4 +3006,805 @@ RL = roche_lobe(1 / q_evolve) * bin.a
 plt.plot(bin.age, RL)
 plt.plot(Star.age, 10**Star.log_R)
 plt.show()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+masses = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.9, 3.0]
+
+norm = plt.Normalize(np.min(masses), np.max(masses))
+cmap = plt.cm.Spectral
+# color = cmap(norm(x))
+
+print(masses)
+
+
+for m, m_i in enumerate(masses):
+
+    single_star_dir = (
+        f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
+    )
+    try:
+        with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+            Star = pickle.load(f)
+    except:
+
+        Star = read_stellar_models(single_star_dir)[0]
+        with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+            pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    ind = np.argmax(Star.log_R)
+
+    plt.plot(
+        Star.m_env[ind:],
+        10 ** Star.log_R[ind:] / np.max(10 ** Star.log_R[ind:]),
+        c=cmap(norm(m_i)),
+    )
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$M_\textrm{TPAGB}$ ($M_\odot$)")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.xscale("log")
+plt.ylabel(r"$R / R_\textrm{max}$")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+masses = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.9, 3.0]
+
+min_mass = 1e99
+max_mass = -1e99
+
+for m, m_i in enumerate(masses):
+
+    single_star_dir = (
+        f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
+    )
+    try:
+        with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+            Star = pickle.load(f)
+    except:
+
+        Star = read_stellar_models(single_star_dir)[0]
+        with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+            pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    ind = np.argmax(Star.log_R)
+    
+    mass = Star.mass[ind]
+    if mass < min_mass:
+        min_mass = mass
+    if mass > max_mass:
+        max_mass = mass
+    
+
+
+
+norm = plt.Normalize(min_mass, max_mass)
+cmap = plt.cm.plasma
+# color = cmap(norm(x))
+
+print(masses)
+
+
+for m, m_i in enumerate(masses):
+
+    single_star_dir = (
+        f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{m_i:.1f}"
+    )
+    try:
+        with open(f"{single_star_dir}/combined_star.pkl", "rb") as f:
+            Star = pickle.load(f)
+    except:
+
+        Star = read_stellar_models(single_star_dir)[0]
+        with open(f"{single_star_dir}/combined_star.pkl", "wb") as f:
+            pickle.dump(Star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    ind = np.argmax(Star.log_R)
+
+    plt.plot(
+        Star.m_env[ind:],
+        10 ** Star.log_R[ind:] / np.max(10 ** Star.log_R[ind:]),
+        c=cmap(norm(Star.mass[ind])),
+    )
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$M_\textrm{TPAGB}$ ($M_\odot$)")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.xscale("log")
+plt.ylabel(r"$R / R_\textrm{max}$")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+masses = np.arange(1.0, 2.65, 0.1)
+R, Q = np.meshgrid(rs, qs)
+
+fig, axs = plt.subplots(
+    6,
+    3,
+    sharex=False,
+    sharey=False,
+    figsize=set_size(full, height=1.5),
+    constrained_layout=True,
+)
+
+minn = 1e99
+maxx = -1e99
+
+for i, m_i in enumerate(masses):
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+
+
+    wind_masked = np.where(eps_matrix, wind_accretion_matrix, np.nan)
+    matrix = wind_masked
+
+    if np.nanmin(matrix) < minn:
+        minn = np.nanmin(matrix)
+
+    if np.nanmax(matrix) > maxx:
+        maxx = np.nanmax(matrix)
+
+
+axs = axs.flatten()
+
+for ax in axs:
+    if ax == axs[-1]:
+        ax.axis("off")
+
+for i, m_i in enumerate(masses):
+
+    try:
+        with open(f"scripts/w23/const_mass_possible_{m_i}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+    except FileNotFoundError:
+        with open(f"scripts/w23/const_mass_possible_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_max_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_min_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_eps_min_{m_i:.1f}_small.pkl", "rb") as f:
+            eps_max_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_co_{m_i:.1f}_small.pkl", "rb") as f:
+            CO_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_dup_{m_i:.1f}_small.pkl", "rb") as f:
+            m_DUP_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_min_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            min_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_max_mass_{m_i:.1f}_small.pkl", "rb") as f:
+            max_mass_matrix = pickle.load(f)
+        with open(f"scripts/w23/const_mass_wind_accretion_{m_i:.1f}_small.pkl", "rb") as f:
+            wind_accretion_matrix = pickle.load(f)
+
+    eps_plot = eps_matrix.copy()
+    eps_plot[(eps_plot < 0) | (eps_plot > 1)] = np.nan
+
+    RR, QQ = np.meshgrid(
+        R,
+        Q,
+    )
+
+    wind_masked = np.where(eps_matrix, wind_accretion_matrix, np.nan)
+
+    colors = axs[i].pcolormesh(
+        R,
+        Q,
+        wind_masked.T,
+        shading="nearest",
+        cmap="viridis",
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+
+    lc = draw_region_boundaries(
+        axs[i],
+        eps_matrix.T,  # important: match CO_matrix.T
+        rs,
+        qs,
+        colors={
+            (0, 0.5): "magenta",
+            (0.5, 1): "black",
+            (0, 1): "lime",
+        },
+    )
+
+    try:
+        axs[i].contourf(
+             R,
+             Q,
+             eps_matrix.T,
+             colors="none",
+             hatches=["||", None, None, None],
+             corner_mask=False,
+             rasterized=True,
+        )
+    except:
+        pass
+
+    for max_count,arr in enumerate(wind_masked.T[::-1]):
+        if not np.all(np.isnan(arr)):
+            break
+
+
+    for min_count,arr in enumerate(wind_masked.T):
+        if not np.all(np.isnan(arr)):
+            break
+
+    for min_xcount,arr in enumerate(wind_masked):
+        if np.any(arr > 0.005):
+            break
+
+
+    axs[i].set_ylim(qs[min_count]-0.025,qs[-(max_count+1)]+0.025)
+    axs[i].set_xlim(rs[min_xcount]+0.025, axs[i].get_xlim()[1])
+
+
+
+
+
+    # axs[i].text(
+    #     0.1,
+    #     0.9,
+    #     f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    #     transform=axs[i].transAxes,
+    #     ha="left",
+    #     va="top",
+    #     bbox=dict(
+    #         boxstyle="square",
+    #         fc=(1.0, 1, 1,0.7),
+    #         ec=(1.0, 1, 1, 0.7),
+    #     ),
+    # )
+    axs[i].set_title(
+        f"$M_\\textrm{{TPAGB}} = {m_i:.1f}$",
+    )
+
+
+cbar = plt.colorbar(colors, ax=axs[1], orientation="horizontal", location="top")
+cbar.ax.set_xscale("linear")
+cbar.set_label(r"$\Delta M_\textrm{wind}$ accreted at end of binary evolution ($M_\odot$)")
+# plt.colorbar(label=r"$\epsilon$")
+# plt.xlabel(r"initial mass [$M_\odot$]")
+# plt.ylabel(r"$q$")
+# plt.ylim(0.39, 0.9)
+
+
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="lower right",
+    ncols=1,
+)
+
+axs[-3].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[6].set_ylabel("Initial mass ratio $q$")
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w23-wind-accretion-region-all-masses-zoom.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+for i,arr in enumerate(wind_masked):
+    if np.any(arr > 0.005):
+        break
+
+
+# %%
+from pathlib import Path
+import pickle
+
+DATA_DIR = Path("scripts/w23")
+
+
+# helpers
+
+def load_mass_data(mass):
+    """Load all W23 grid data for a given TP-AGB mass."""
+
+    names = [
+        "possible",
+        "eps_max",
+        "eps_min",
+        "co",
+        "dup",
+        "min_mass",
+        "max_mass",
+        "wind_accretion"
+    ]
+
+    for fmt in [f"{mass}", f"{mass:.1f}"]:
+        try:
+            data = {}
+
+            for name in names:
+                path = DATA_DIR / f"const_mass_{name}_{fmt}_small.pkl"
+
+                with open(path, "rb") as f:
+                    data[name] = pickle.load(f)
+
+            return data
+
+        except FileNotFoundError:
+            continue
+
+    raise FileNotFoundError(f"could not find data for mass {mass}")
+
+def plot_panel(ax, co_matrix, eps_matrix, x, y, norm, cmap):
+    """Plot one CO-ratio / epsilon-region panel."""
+
+    ax.pcolormesh(
+        x,
+        y,
+        co_matrix.T,
+        shading="nearest",
+        cmap=cmap,
+        norm=norm,
+        rasterized=True,
+    )
+
+    draw_region_boundaries(
+        ax,
+        eps_matrix.T,
+        x,
+        y,
+        colors={
+            (0, 0.5): "magenta",
+            (0.5, 1): "black",
+            (0, 1): "lime",
+        },
+    )
+
+    ax.contourf(
+        x,
+        y,
+        eps_matrix.T,
+        colors="none",
+        hatches=["||", None, None, None],
+        corner_mask=False,
+        rasterized=True,
+    )
+
+def plot_by_mass(data,variable, masses, rs, qs, norm, cmap, figsize=full, figheight=1.5, ncols=3):
+    ncols = ncols
+    nrows = int(np.ceil(len(masses) / ncols))
+
+    fig, axs = plt.subplots(
+        nrows,
+        ncols,
+        sharex=True,
+        sharey=True,
+        figsize=set_size(figsize, height=figheight),
+        constrained_layout=True,
+    )
+
+    axs = np.atleast_1d(axs).flatten()
+
+    for ax, mass in zip(axs, masses):
+        d = data[mass]
+
+        plot_panel(
+            ax,
+            d[variable],
+            d["possible"],
+            rs,
+            qs,
+            norm,
+            cmap,
+        )
+
+        ax.set_title(f"$M_{{\\rm TPAGB}} = {mass:.1f}$")
+
+    for ax in axs[len(masses):]:
+        ax.axis("off")
+
+    return fig, axs
+
+def get_q_slice(data, variable, masses, q_index):
+    """Return CO and epsilon grids for a fixed q."""
+
+    co = np.array([
+        data[mass][variable][:, q_index]
+        for mass in masses
+    ]).T
+
+    eps = np.array([
+        data[mass]["possible"][:, q_index]
+        for mass in masses
+    ]).T
+
+    return co, eps
+
+def plot_by_q(data, variable, masses, qs, rs, norm, cmap, figsize=full, figheight=1.5,ncols=3):
+    ncols = ncols 
+    nrows = int(np.ceil(len(qs) / ncols))
+
+    fig, axs = plt.subplots(
+        nrows,
+        ncols,
+        sharex=True,
+        sharey=True,
+        figsize=set_size(figsize, height=figheight),
+        constrained_layout=True,
+    )
+
+    axs = np.atleast_1d(axs).flatten()
+
+    for ax, q_index, q in zip(axs, range(len(qs)), qs):
+
+        co, eps = get_q_slice(data, variable, masses, q_index)
+
+        plot_panel(
+            ax,
+            co,
+            eps,
+            rs,
+            masses,
+            norm,
+            cmap,
+        )
+
+        ax.set_title(f"$q = {q:.2f}$")
+
+    for ax in axs[len(qs):]:
+        ax.axis("off")
+
+    return fig, axs
+
+def add_colorbar(fig, ax, norm, cmap, label):
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+    sm.set_array([])
+
+    cbar = plt.colorbar(
+        sm,
+        ax=ax,
+        orientation="horizontal",
+        location="top",
+    )
+    cbar.ax.set_xscale("linear")
+
+    cbar.set_label(label)
+
+    return cbar
+# %%
+        # "possible",
+        # "eps_max",
+        # "eps_min",
+        # "co",
+        # "dup",
+        # "min_mass",
+        # "max_mass",
+        # "wind_accretion"
+
+variable = "max_mass"
+
+# loading data
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+print(minn, maxx)
+norm = TwoSlopeNorm(vcenter=0.73, vmin=minn, vmax=maxx)
+# norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.coolwarm_r
+
+
+fig, axs = plot_by_mass(
+    data,
+    variable,
+    masses,
+    rs,
+    qs,
+    norm,
+    cmap,
+    ncols=4
+)
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"Mass with $\varepsilon = 0.0$ ($M_\odot$)")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-max-mass-region-all-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+        # "possible",
+        # "eps_max",
+        # "eps_min",
+        # "co",
+        # "dup",
+        # "min_mass",
+        # "max_mass",
+        # "wind_accretion"
+
+variable = "min_mass"
+
+# loading data
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+print(minn, maxx)
+norm = TwoSlopeNorm(vcenter=1.5, vmin=minn, vmax=maxx)
+# norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.coolwarm
+
+
+fig, axs = plot_by_mass(
+    data,
+    variable,
+    masses,
+    rs,
+    qs,
+    norm,
+    cmap,
+    ncols=4
+)
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"Mass with $\varepsilon = 0.5$ ($M_\odot$)")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-min-mass-region-all-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+
+
+variable = "min_mass"
+
+# loading data
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+norm = TwoSlopeNorm(vcenter=1.5, vmin=minn, vmax=maxx)
+# norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.coolwarm
+
+fig, axs = plot_by_q(
+    data,
+    variable,
+    masses,
+    qs,
+    rs,
+    norm,
+    cmap,
+)
+
+
+
+plt.show()
+
+# %%
+variable = "max_mass"
+
+# loading data
+masses = np.arange(1.0, 2.65, 0.1)
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+norm = TwoSlopeNorm(vcenter=0.73, vmin=minn, vmax=maxx)
+cmap = plt.cm.coolwarm_r
+
+fig, axs = plot_by_q(
+    data,
+    variable,
+    masses,
+    qs,
+    rs,
+    norm,
+    cmap,
+)
+plt.show()
+
+
+# %%
+variable = "wind_accretion"
+
+# loading data
+masses = np.arange(1.0, 2.75, 0.1)
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+# norm = TwoSlopeNorm(vcenter=0.73, vmin=minn, vmax=maxx)
+norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.viridis
+
+fig, axs = plot_by_q(
+    data,
+    variable,
+    masses,
+    qs,
+    rs,
+    norm,
+    cmap,
+    ncols=4
+)
+
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.supxlabel(r"Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+fig.supylabel(r"TPAGB mass ($M_\odot$)", fontsize=10)
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside lower center",
+    ncols=4,
+)
+
+plt.show()
+
+
+# %%
 
