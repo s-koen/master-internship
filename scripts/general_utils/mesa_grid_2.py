@@ -4,6 +4,7 @@ import mesa_reader as mr
 import pickle
 import numpy as np
 import math
+import re
 
 
 def progressbar(current_value, total_value, bar_lengh, progress_char):
@@ -121,6 +122,10 @@ class MesaRun:
 
         self.params["f_beta"] = self.params["beta"] / (1 - self.params["eps"])
         self.params["f_delta"] = self.params["delta"] / (1 - self.params["eps"])
+
+        if "m" not in self.params:
+            self.params["m"] = self.get_mass_from_model_path(self.params["model_name"])
+
         self.get_history(fresh)
         self.get_profiles(fresh)
 
@@ -130,6 +135,14 @@ class MesaRun:
 
     def __getattr__(self, name):
         return getattr(self.history, name)
+
+    def get_mass_from_model_path(self, model_path):
+        match = re.search(r"/M([0-9.]+)/models/", str(model_path))
+
+        if match is None:
+            raise ValueError(f"could not extract mass from {model_path}")
+
+        return float(match.group(1))
 
     def get_history(self, fresh):
         if fresh:

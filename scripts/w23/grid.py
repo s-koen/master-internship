@@ -745,3 +745,51 @@ d = dwarf["M"].dropna().to_numpy().astype(np.float64)
 d.sort()
 d
 # %%
+
+import pandas as pd
+
+data = pd.read_csv("presentation-1/Ba_star_orbits.csv")
+dwarf = data[data["class"].isin(["dBa", "?dBa"])]
+giant = data[
+    data["class"].isin(
+        [
+            "Ba 0",
+            "Ba 0.5",
+            "Ba 1",
+            "Ba 2",
+            "Ba mild",
+            "sgCH",
+            "sgCH / Ba 1",
+            "Ba 3",
+            "Ba 4",
+            "Ba 5",
+            "Ba strong",
+            "Ba 5 / eS",
+        ]
+    )
+]
+
+
+d = dwarf["M"].dropna().to_numpy().astype(np.float64)
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.175), constrained_layout=True
+)
+
+
+plt.scatter(d, d * 0, s=1.5, marker="o", color="k")
+
+axs.spines[["right", "top", "left"]].set_visible(False)
+axs.tick_params(axis="y", which="both", length=0)
+plt.xlim(1.175, 1.375)
+plt.xticks([0.7, 1, 1.25, 1.5, 1.75])
+plt.xlabel(r"Final Barium star mass ($M_\odot$)")
+plt.yticks([])
+plt.ylim(-0.5, 0.5)
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-scatter-dwarf-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%

@@ -1,0 +1,161 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 24}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Grid}
+\subsection{Grid setup}
+
+I want to generate a 3 dimensional grid where models have a significant amount of dredged up mass in their envelope when they undergo RLOF.
+
+I think it is interesting to vary the masses, initial mass ratios and the initial Roche lobe radius. According to the picture below from last week, we require a minimum Roche lobe radius of \emph{at least} \(500\;R_\odot \) for RLOF with significant amounts of dredge up.
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w23-mspace-dup}
+\end{figure}
+
+The picture also shows us that we need a donor mass that is initially heavier than about \(1.8\;M_\odot \).
+
+We can also exclude the regions where \(q < 0.4\) since these are \emph{really} difficult to simulate with \emph{MESA}.
+
+Together with the less interesting regions that create masses outside our sample of observations, we obtain the following regions.
+
+\begin{figure}[ht]
+    \marginfignote{8}{This figure shows the regions that I chose as a first \emph{MESA}-grid try. They are the systems that lie inside the red rectangle. even if parts of these regions contain vertical stripes.}
+
+    \marginfignote{15}{Clearly this is only a small region of the total possible parameter space, \emph{but} I need to make sure the simulations can run within a reasonable time.}
+    \marginfignote{22}{For the larger \(q\) values, many of the produced barium stars will likely be too heavy. This means we cannot directly compare them with the observed sample, \emph{but} these stars likely do exist.}
+    \marginfignote{32}{Even though grid regions are marked by a red rectangle, I do exclude \emph{some} of the models in this rectangle. This is if they do not undergo RLOF, in which case we can simply compute their wind mass-transfer without the need of MESA binary evolution.}
+    \centering
+    \incplot{w24-mspace-dup}
+\end{figure}
+
+I am limited by the specific masses that I have simulated with \emph{MESA}, meaning I cannot \emph{easily} simulate \emph{MESA} models with a TPAGB star of mass \(1.05\;M_\odot \).
+
+The pictures above show that the masses between \(M_\text{TPAGB} = 3.0\;M_\odot \) and \(M_\text{TPAGB} = 1.8\;M_\odot \) are most relevant for significant amounts of dredged up mass. I want to test the masses \([1.8, 2.2, 2.6 \text{ and } 3.0]\)\sidenote{Preferably we would use a denser mass spacing, but to keep the size of the grid manageable, I opt to only use 4 here.}.
+
+
+This is \emph{not} the case of the values of \(q, R, \varepsilon, \delta \) and \(\beta \).
+
+In this case, I think the Roche lobe radii can quite easily be split up into 8 values: \([500, 600, 700, 800, 900, 1000, 1100 \text{ and } 1200]\).
+
+In order to keep the grid to a relatively manageable size, I will only simulate a single value of \(\varepsilon \), which is \(0.25\). This is exactly between the minimum and maximum value of \(\varepsilon  \) that I used in the pictures above.\sidenote{This is an obvious variable to vary in a future, more advanced grid.}
+
+I will use \(\delta = 0.2\). This, again is an assumption which only changes the amount of angular momentum lost. It does not change the accretion\sidenote{Again, this is a variable that \emph{could} be varied in a future grid as well}. Since \(\varepsilon =0.25\) and \(\delta =0.2\), we must use \(\beta =0.55\). 
+
+Lastly, we need to choose \(q\) values. An intuitive choice is to take \(q\) between \(0.4\) and \(0.7\) in equal steps, which would lead to \(0.4, 0.5, 0.6\) and \(0.7\).
+
+I use this.
+
+I also think it could be interesting to \(q\) values to space out the initial accretor masses. 
+
+\begin{figure}[ht]
+    \marginfignote{0}{The equal \(q\) spacing has \(4\) values, \(0.4, 0.5, 0.6\) and \(0.7\). There are large gaps, especially at the large masses.}
+    \marginfignote{5}{The unequal \(q\) spacing has \(5\) values, \([0.4, 0.43, 0.64, 0.65, 0.7]\). Here the gaps are much smaller.}
+    \centering
+    \incplot{w24-scatter}
+\end{figure}
+
+The \emph{un}equal \(q\) spacing is based on a maximum interval between the different initial accretor masses.
+
+I test both options, which is possible because they use the same limits on \(q\), which saves on the amount of \emph{MESA} simulations.
+
+They can also be combined later, since the intermediate \(q\) values are different.
+
+\newsubsection{Grid results}
+
+\newsection{Dredge up}
+
+Since I know how much mass is dredged up during every thermal pulse dredge up event, I can compute some interesting things.
+
+To start, we can simply look at the amount of dredged up mass over time.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Now obviously, this plot is a little bit boring. The TDU events are so short that they happen basically instantaneously when compared to the total TPAGB lifetime. The amount of dredged up mass obviously also does not change once the dredge up event has concluded.}
+    \marginfignote{12}{However, because we know the contributions of the individual TDUs, we \emph{can} look at some other interesting quantities.}
+    \centering
+    \incplot{w24-TDU-individual}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \marginfignote{0}{For example, we can see the amount of dredged up mass in the envelope as a function of time, taking into account mass loss from the envelope due to winds.}
+    \marginfignote{8}{The actual amount of dredged up mass \emph{in the envelope} is nearly identical to the total amount of dredged up mass up until the wind starts to pick up, after which the amount of dredged up mass decreases.}
+    \centering
+    \incplot{w24-TDU-left}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The shape of the \(M_\text{DUP}\) curves are very similar for the different masses, although it is pretty clear that the total amount of dredged up mass is much larger.}
+    \marginfignote{10}{Apparently the TPAGB does not keep increasing with mass. Instead, for masses above about \(M=2.2\;M_\odot \), the TPAGB age seems to \emph{decrease}.}
+    \centering
+    \incplot{w24-TDU-diff-masses}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This figure clearly shows this. It seems like it was a coincidence that I only saw the increase in TPAGB age with mass.}
+    \centering
+    \incplot{w24-mass-tpagb-time}
+\end{figure}
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    Above, I showed a picture of the amount of dredged up mass \emph{in the envelope} as a function of time. This quantity decreases over time due to \emph{wind} mass losses, and in the case of a binary evolution, possible RLOF events. \emph{However}, it \emph{also} decreases over time due to the core mass growth, which causes envelope mass to be burned and developed into a dense core. This decrease in envelope does \emph{not} contribute to the possible enrichment of a companion, so it should be separated.
+\end{questionbox}
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w24-components-dup}
+\end{figure}
+
+This figure clearly shows the separations. Using my code, I can also inspect how the dredged up mass is removed from the envelope for a single TDU event:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w24-components-dup-single}
+\end{figure}
+
+
+
+\newsection{Effect of wind on q flipping}
+
+\section{Fixes}
+
+Since some of the binaries seem to get stuck in an evolution state with \(\log \Delta t < -6 \text{ yr}\), I think it is important to set some lower limit for the timestep. If it breaches below that, the evolution should stop so the cores on the cluster are freed up.
+
+To see what an appropriate minimum \(\log \Delta t\) might be, I plot the minimum value of this quantity for the epsilon grid from a couple of weeks ago.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The most important thing for use now is that the minimum mass never drops below \(\log (\Delta t / \text{yr}) = -4 \) for the models that terminate and never below \(-5.5\) for the models that undergo the Darwin stability. I think it is safe to set the limit at \(-6\).}
+    \marginfignote{10}{The clustering of the models is quite fun too though. It is quite easy to see that the models with a lot of circumbinary mass loss are more likely to experience the Darwin instability, and they will continue RLOF for much longer (in the sense that RLOF only stops after the envelope is stripped down to \(10^{-5}\;M_\odot \) in some extreme cases.)}
+    \centering
+    \incplot{w24-minlogt}
+\end{figure}
+
+A lower limit of \(\log (\Delta t / \text{yr}) = -6 \) seems appropriate. I will use this. Since \emph{MESA} expects the lower limit in terms of seconds, this means I will set 
+\begin{minted}[fontsize=\small,breaklines]{fortran}
+min_timestep_limit = 30d0 ! seconds, about 10**-6 yr
+\end{minted}
+in the common \emph{MESA} inlist.
+
+
+\bibliography{master.bib}
+\end{document}

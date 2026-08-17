@@ -38,5 +38,3 @@
 **/*.o
 **/reference-histories/
 mesa-models/**
-!mesa-models/**/
-!mesa-models/**/combined_star.pkl

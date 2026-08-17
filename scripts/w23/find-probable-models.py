@@ -1465,7 +1465,7 @@ plt.show()
 plt.close()
 # %%
 fig, axs = plt.subplots(
-    6,
+    5,
     3,
     sharex=False,
     sharey=True,
@@ -1483,8 +1483,9 @@ for ax in axs:
     if ax == axs[-1] :
         ax.axis("off")
 
+masses_strict = np.arange(1,2.35,0.1)
 
-for m, m_i in enumerate(masses):
+for m, m_i in enumerate(masses_strict):
 
     for i, R in enumerate(tqdm(rs[::2])):
 
@@ -1606,7 +1607,7 @@ plt.close()
 
 # %%
 fig, axs = plt.subplots(
-    6,
+    5,
     3,
     sharex=False,
     sharey=True,
@@ -1625,7 +1626,7 @@ for ax in axs:
         ax.axis("off")
 
 
-for m, m_i in enumerate(masses):
+for m, m_i in enumerate(masses_strict):
 
     for i, R in enumerate(tqdm(rs[::2])):
 
@@ -2169,7 +2170,7 @@ norm = TwoSlopeNorm(1, minn, maxx)
 cmap = plt.cm.coolwarm_r
 
 # masses = [2.5]
-masses = np.arange(1.0, 2.55, 0.1)
+masses = np.arange(1.0, 3.05, 0.1)
 cmap = plt.cm.viridis
 norm = Normalize(np.min(masses), np.max(masses))
 
@@ -2769,11 +2770,11 @@ from matplotlib.colors import TwoSlopeNorm
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    6,
+    7,
     3,
     sharex="col",
     sharey=True,
-    figsize=set_size(full, height=1.5),
+    figsize=set_size(full, height=1.8),
     constrained_layout=True,
 )
 
@@ -2826,10 +2827,6 @@ for i, m_i in enumerate(masses):
 
 
 axs = axs.flatten()
-
-for ax in axs:
-    if ax == axs[-1]:
-        ax.axis("off")
 
 for i, m_i in enumerate(masses):
 
@@ -2959,12 +2956,12 @@ fig.legend(
         "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
-    loc="lower right",
-    ncols=1,
+    loc="outside upper center",
+    ncols=4,
 )
 
-axs[-3].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
-axs[6].set_ylabel("Initial mass ratio $q$")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
 
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/w23-wind-accretion-region-all-masses.pgf", format="pgf"
@@ -3013,7 +3010,7 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
 )
 
-masses = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.9, 3.0]
+masses = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.7, 2.8,2.9, 3.0]
 
 norm = plt.Normalize(np.min(masses), np.max(masses))
 cmap = plt.cm.Spectral
@@ -3054,7 +3051,7 @@ axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Envelope mass ($M_\odot$)")
 plt.xscale("log")
 plt.ylabel(r"$R / R_\textrm{max}$")
-# plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
 plt.show()
 plt.close()
 
@@ -3064,7 +3061,7 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
 )
 
-masses = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.9, 3.0]
+masses = [1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.7, 2.8,2.9, 3.0]
 
 min_mass = 1e99
 max_mass = -1e99
@@ -3095,7 +3092,7 @@ for m, m_i in enumerate(masses):
 
 
 norm = plt.Normalize(min_mass, max_mass)
-cmap = plt.cm.plasma
+cmap = plt.cm.Spectral
 # color = cmap(norm(x))
 
 print(masses)
@@ -3127,13 +3124,13 @@ sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
 
 cbar = plt.colorbar(sm, ax=plt.gca())
-cbar.set_label(r"$M_\textrm{TPAGB}$ ($M_\odot$)")
+cbar.set_label(r"$M_\textrm{TPAGB}$ at largest radius ($M_\odot$)")
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Envelope mass ($M_\odot$)")
 plt.xscale("log")
 plt.ylabel(r"$R / R_\textrm{max}$")
-# plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-bump-2.pgf", format="pgf")
 plt.show()
 plt.close()
 
@@ -3142,15 +3139,15 @@ plt.close()
 
 from matplotlib.colors import TwoSlopeNorm
 
-masses = np.arange(1.0, 2.65, 0.1)
+masses = np.arange(1.0, 3.05, 0.1)
 R, Q = np.meshgrid(rs, qs)
 
 fig, axs = plt.subplots(
-    6,
+    7,
     3,
     sharex=False,
     sharey=False,
-    figsize=set_size(full, height=1.5),
+    figsize=set_size(full, height=1.8),
     constrained_layout=True,
 )
 
@@ -3205,10 +3202,6 @@ for i, m_i in enumerate(masses):
 
 
 axs = axs.flatten()
-
-for ax in axs:
-    if ax == axs[-1]:
-        ax.axis("off")
 
 for i, m_i in enumerate(masses):
 
@@ -3359,12 +3352,12 @@ fig.legend(
         "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
-    loc="lower right",
-    ncols=1,
+    loc="outside upper center",
+    ncols=4,
 )
 
-axs[-3].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
-axs[6].set_ylabel("Initial mass ratio $q$")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
 
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/w23-wind-accretion-region-all-masses-zoom.pgf", format="pgf"
@@ -3455,7 +3448,7 @@ def plot_panel(ax, co_matrix, eps_matrix, x, y, norm, cmap):
         rasterized=True,
     )
 
-def plot_by_mass(data,variable, masses, rs, qs, norm, cmap, figsize=full, figheight=1.5, ncols=3):
+def plot_by_mass(data,variable, masses, rs, qs, norm, cmap, figsize=full, figheight=1.8, ncols=3):
     ncols = ncols
     nrows = int(np.ceil(len(masses) / ncols))
 
@@ -3505,7 +3498,7 @@ def get_q_slice(data, variable, masses, q_index):
 
     return co, eps
 
-def plot_by_q(data, variable, masses, qs, rs, norm, cmap, figsize=full, figheight=1.5,ncols=3):
+def plot_by_q(data, variable, masses, qs, rs, norm, cmap, figsize=full, figheight=1.8,ncols=3):
     ncols = ncols 
     nrows = int(np.ceil(len(qs) / ncols))
 
@@ -3592,7 +3585,7 @@ fig, axs = plot_by_mass(
     qs,
     norm,
     cmap,
-    ncols=4
+    ncols=3
 )
 custom_lines = [
     Line2D([0], [0], color="magenta", lw=2),
@@ -3616,7 +3609,7 @@ fig.legend(
 fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
 fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
 
-add_colorbar(fig, axs[1:3], norm, cmap, label=r"Mass with $\varepsilon = 0.0$ ($M_\odot$)")
+add_colorbar(fig, axs[1], norm, cmap, label=r"Mass with $\varepsilon = 0.5$ ($M_\odot$)")
 
 plt.savefig("/home/koen/LaTeX-setup/plots/w23-max-mass-region-all-masses.pgf", format="pgf")
 plt.show()
@@ -3659,7 +3652,7 @@ fig, axs = plot_by_mass(
     qs,
     norm,
     cmap,
-    ncols=4
+    ncols=3
 )
 custom_lines = [
     Line2D([0], [0], color="magenta", lw=2),
@@ -3683,13 +3676,148 @@ fig.legend(
 fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
 fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
 
-add_colorbar(fig, axs[1:3], norm, cmap, label=r"Mass with $\varepsilon = 0.5$ ($M_\odot$)")
+add_colorbar(fig, axs[1], norm, cmap, label=r"Mass with $\varepsilon = 0.0$ ($M_\odot$)")
 
 plt.savefig("/home/koen/LaTeX-setup/plots/w23-min-mass-region-all-masses.pgf", format="pgf")
 plt.show()
 plt.close()
 
 # %%
+
+        # "possible",
+        # "eps_max",
+        # "eps_min",
+        # "co",
+        # "dup",
+        # "min_mass",
+        # "max_mass",
+        # "wind_accretion"
+
+variable = "co"
+
+# loading data
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+print(minn, maxx)
+norm = TwoSlopeNorm(vcenter=1, vmin=minn, vmax=maxx)
+# norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.coolwarm_r
+
+
+fig, axs = plot_by_mass(
+    data,
+    variable,
+    masses,
+    rs,
+    qs,
+    norm,
+    cmap,
+    ncols=3
+)
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1], norm, cmap, label=r"CO-ratio at the end of \texttt{evolve.py}")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-CO-region-all-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+        # "possible",
+        # "eps_max",
+        # "eps_min",
+        # "co",
+        # "dup",
+        # "min_mass",
+        # "max_mass",
+        # "wind_accretion"
+
+variable = "dup"
+
+# loading data
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+print(minn, maxx)
+# norm = TwoSlopeNorm(vcenter=1, vmin=minn, vmax=maxx)
+norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.viridis
+
+
+fig, axs = plot_by_mass(
+    data,
+    variable,
+    masses,
+    rs,
+    qs,
+    norm,
+    cmap,
+    ncols=3
+)
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1], norm, cmap, label=r"$M_\textrm{dup}$ the end of \texttt{evolve.py} ($M_\odot$)")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-m_DUP-region-all-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
 
 
 
@@ -3717,17 +3845,37 @@ fig, axs = plot_by_q(
     rs,
     norm,
     cmap,
+    ncols=4
+)
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
 )
 
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
 
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"Mass with $\varepsilon = 0.0$ ($M_\odot$)")
+
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-mspace-m_min.pgf", format="pgf")
 
 plt.show()
+plt.close()
 
 # %%
 variable = "max_mass"
 
 # loading data
-masses = np.arange(1.0, 2.65, 0.1)
+masses = np.arange(1.0, 3.05, 0.1)
 data = {
     m: load_mass_data(m)
     for m in masses
@@ -3748,15 +3896,39 @@ fig, axs = plot_by_q(
     rs,
     norm,
     cmap,
+    ncols=4
 )
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"Mass with $\varepsilon = 0.5$ ($M_\odot$)")
+
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-mspace-m_max.pgf", format="pgf")
+
+
+
 plt.show()
 
 
 # %%
-variable = "wind_accretion"
+variable = "co"
 
 # loading data
-masses = np.arange(1.0, 2.75, 0.1)
+masses = np.arange(1.0, 3.05, 0.1)
 data = {
     m: load_mass_data(m)
     for m in masses
@@ -3766,7 +3938,68 @@ data = {
 minn = np.min([np.nanmin(d[variable]) for d in data.values()])
 maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
 
-# norm = TwoSlopeNorm(vcenter=0.73, vmin=minn, vmax=maxx)
+norm = TwoSlopeNorm(vcenter=1, vmin=minn, vmax=maxx)
+# norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.coolwarm_r
+
+fig, axs = plot_by_q(
+    data,
+    variable,
+    masses,
+    qs,
+    rs,
+    norm,
+    cmap,
+    ncols=4
+)
+
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.supxlabel(r"Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+fig.supylabel(r"TPAGB mass ($M_\odot$)", fontsize=10)
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"CO-ratio at end of \texttt{evolve.py}")
+
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-mspace-co.pgf", format="pgf")
+plt.show()
+
+
+# %%
+variable = "dup"
+
+# loading data
+masses = np.arange(1.0, 3.05, 0.1)
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+# norm = TwoSlopeNorm(vcenter=1, vmin=minn, vmax=maxx)
 norm = plt.Normalize(minn, maxx)
 cmap = plt.cm.viridis
 
@@ -3799,12 +4032,309 @@ fig.legend(
         "Border between RLOF\nregime with possible and\nimpossible final masses",
         "Impossible region",
     ],
-    loc="outside lower center",
+    loc="outside upper center",
     ncols=4,
 )
 
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"$M_\textrm{DUP}$ at end of \texttt{evolve.py}")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-mspace-dup.pgf", format="pgf")
 plt.show()
 
+
+# %%
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
+
+
+def build_q_region_grid(data, masses, qs, which="min"):
+    """
+    Construct a mass x R grid containing the minimum or maximum
+    q for which the final mass is possible.
+
+    Returns
+    -------
+    q_grid : ndarray
+        Shape (len(masses), len(rs)).
+        Contains q where possible, NaN where impossible.
+    """
+
+    q_grid = np.full((len(masses), len(rs)), np.nan)
+
+    for i, mass in enumerate(masses):
+        possible = data[mass]["possible"]
+
+        for j in range(len(rs)):
+            possible_q = qs[possible[j] > 0]
+
+            if len(possible_q) == 0:
+                continue
+
+            if which == "min":
+                q_grid[i, j] = possible_q.min()
+            elif which == "max":
+                q_grid[i, j] = possible_q.max()
+            else:
+                raise ValueError("which must be 'min' or 'max'")
+
+    return q_grid
+# %%
+masses = np.arange(1.0, 3.05, 0.1)
+
+cmap = plt.cm.viridis
+norm = Normalize(
+    vmin=np.min(qs),
+    vmax=np.max(qs),
+)
+
+fig, axs = plt.subplots(
+    1,
+    2,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=0.6),
+    constrained_layout=True,
+)
+
+for ax, which, title in zip(
+    axs,
+    ["max", "min"],
+    ["Maximum possible $q$", "Minimum possible $q$"],
+):
+    q_grid = build_q_region_grid(
+        data,
+        masses,
+        qs,
+        which=which,
+    )
+
+    pcm = ax.pcolormesh(
+        rs,
+        masses,
+        q_grid,
+        cmap=cmap,
+        norm=norm,
+        shading="nearest",
+        rasterized=True,
+    )
+
+    ax.set_title(title)
+
+axs[0].set_ylabel("Initial mass ($M_\\odot$)")
+axs[0].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[1].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+
+cbar = fig.colorbar(
+    pcm,
+    ax=axs,
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+)
+cbar.set_label("Initial mass ratio $q$")
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w23-min-max-q.pgf",
+    format="pgf",
+)
+
+plt.show()
+plt.close()
+
+# %%
+variable = "wind_accretion"
+
+# loading data
+masses = np.arange(1.0, 3.05, 0.1)
+data = {
+    m: load_mass_data(m)
+    for m in masses
+}
+
+# color normalisation
+minn = np.min([np.nanmin(d[variable]) for d in data.values()])
+maxx = np.max([np.nanmax(d[variable]) for d in data.values()])
+
+# norm = TwoSlopeNorm(vcenter=1, vmin=minn, vmax=maxx)
+norm = plt.Normalize(minn, maxx)
+cmap = plt.cm.viridis
+
+fig, axs = plot_by_q(
+    data,
+    variable,
+    masses,
+    qs,
+    rs,
+    norm,
+    cmap,
+    ncols=4
+)
+
+custom_lines = [
+    Line2D([0], [0], color="magenta", lw=2),
+    Line2D([0], [0], color="black", lw=2),
+    Line2D([0], [0], color="lime", lw=2),
+    Rectangle((0, 0), 2, 2, fill=False, hatch="|||"),
+]
+
+fig.supxlabel(r"Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+fig.supylabel(r"TPAGB mass ($M_\odot$)", fontsize=10)
+
+fig.legend(
+    custom_lines,
+    [
+        "Border between wind\nregime with possible and\nimpossible final masses",
+        "Border between RLOF\nand wind only regime",
+        "Border between RLOF\nregime with possible and\nimpossible final masses",
+        "Impossible region",
+    ],
+    loc="outside upper center",
+    ncols=4,
+)
+
+fig.supylabel("Initial mass ratio ($q$)", fontsize=10)
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)", fontsize=10)
+
+add_colorbar(fig, axs[1:3], norm, cmap, label=r"$\Delta M_\textrm{wind}$ accreted at end of \texttt{evolve.py}")
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-mspace-wind-accretion.pgf", format="pgf")
+plt.show()
+
+
+# %%
+def get_q_wind_accretion_slice(data, masses, qs, q_index):
+    """
+    Construct the wind-accretion grid for a fixed q.
+
+    Returns
+    -------
+    wind : ndarray
+        Shape (len(masses), len(rs)).
+        Invalid regions are NaN.
+    """
+
+    wind = np.full((len(masses), len(rs)), np.nan)
+
+    for i, mass in enumerate(masses):
+        possible = data[mass]["possible"]
+        accretion = data[mass]["wind_accretion"]
+
+        wind[i] = np.where(
+            possible[:, q_index],
+            accretion[:, q_index],
+            np.nan,
+        )
+
+    return wind
+# %%
+from matplotlib.colors import Normalize
+
+masses = np.arange(1.0, 3.05, 0.1)
+
+for mass in masses:
+    mask = data[mass]["possible"].astype(bool)
+
+# determine global colour scale using only valid regions
+valid_accretion = np.concatenate([
+    data[mass]["wind_accretion"][data[mass]["possible"].astype(bool)]
+    for mass in masses
+])
+
+norm = Normalize(
+    vmin=np.nanmin(valid_accretion),
+    vmax=np.nanmax(valid_accretion),
+)
+
+cmap = plt.cm.viridis
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=False,
+    sharey=False,
+    figsize=set_size(full, height=1.8),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+for i, q_index in enumerate(range(len(qs))):
+
+    wind = get_q_wind_accretion_slice(
+        data,
+        masses,
+        qs,
+        q_index,
+    )
+
+    pcm = axs[i].pcolormesh(
+        rs,
+        masses,
+        wind,
+        shading="nearest",
+        cmap=cmap,
+        norm=norm,
+        rasterized=True,
+    )
+
+    axs[i].set_title(f"$q = {qs[q_index]:.2f}$")
+    valid = ~np.isnan(wind)
+    
+    if np.any(valid):
+        valid_mass = np.any(valid, axis=1)
+        valid_r = np.any(valid, axis=0)
+    
+        mass_indices = np.where(valid_mass)[0]
+        r_indices = np.where(valid_r)[0]
+    
+        axs[i].set_ylim(
+            masses[mass_indices[0]] - 0.05,
+            masses[mass_indices[-1]] + 0.05,
+        )
+    
+        axs[i].set_xlim(
+            rs[r_indices[0]] - 0.025,
+            rs[r_indices[-1]] + 0.025,
+        )
+
+
+for ax in axs[len(qs):]:
+    ax.axis("off")
+
+
+# colourbar
+cbar = fig.colorbar(
+    pcm,
+    ax=axs[1:3],
+    orientation="horizontal",
+    location="top",
+)
+
+cbar.set_label(
+    r"$\Delta M_\mathrm{wind}$ accreted at end of binary evolution "
+    r"($M_\odot$)"
+)
+
+
+fig.supxlabel("Initial Roche lobe radius ($R_\odot$)",fontsize=10)
+fig.supylabel(r"$M_\mathrm{TPAGB}$ ($M_\odot$)",fontsize=10)
+
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/"
+    "w23-wind-accretion-region-all-q.pgf",
+    format="pgf",
+)
+
+plt.show()
+plt.close()
 
 # %%
 

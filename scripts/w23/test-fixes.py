@@ -386,6 +386,9 @@ plt.show()
 plt.plot(np.diff(w.star_age))
 plt.show()
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 m_list = [
     1,
     1.1,
@@ -405,6 +408,7 @@ m_list = [
     2.5,
     2.6,
     2.7,
+    2.8,
     2.9,
     3.0,
 ]
@@ -415,12 +419,19 @@ for m in m_list:
     star = get_star(m=m)
     dup_list.append(np.sum(star.m_DUP))
 plt.plot(m_list, dup_list, "o-")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Mass ($M_\odot$)")
+plt.ylabel("Dredged up mass ($M_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-mdup.pgf", format="pgf")
 plt.show()
+plt.close()
 
 # %%
 
 
-star = get_star(m=2.5)
+star = get_star(m=2.8)
 plt.plot(star.m_DUP)
 plt.plot(star.TP_count, star.mass)
 plt.show()
@@ -435,10 +446,43 @@ plt.plot(tp_count)
 plt.show()
 # %%
 
-for m in [1, 1.5, 2, 2.5, 3]:
-    star = get_star(m=2.5)
-    tp_count = np.where(star.model > star.ntpagb, star.TP_count, 0)
-    plt.plot(tp_count, star.mass / star.mass[0])
-    plt.plot(range(2, 2 + len(star.m_DUP)), np.cumsum(star.m_DUP) / np.sum(star.m_DUP))
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+for i, m in enumerate([1, 1.5, 2, 2.5, 3]):
+    star = get_star(m=m)
+    try:
+        tp_count = np.where(star.model > star.ntpagb, star.TP_count, 0)
+        plt.plot(tp_count, star.mass / star.mass[0], c=f"C{i}", alpha=0.5, linewidth=3)
+        plt.plot(
+            range(2, 2 + len(star.m_DUP)),
+            np.cumsum(star.m_DUP) / np.sum(star.m_DUP),
+            c=f"C{i}",
+            label=f"$M = {m}\\;M_\\odot$",
+        )
+    except:
+        tp_count = star.TP_count
+        plt.plot(
+            tp_count,
+            star.mass[star.ntpagb :] / star.mass[0],
+            c=f"C{i}",
+            alpha=0.5,
+            linewidth=3,
+        )
+
+        plt.plot(
+            range(3, 3 + len(star.m_DUP)),
+            np.cumsum(star.m_DUP) / np.sum(star.m_DUP),
+            c=f"C{i}",
+            label=f"$M = {m}\\;M_\\odot$",
+        )
+fig.legend(loc="outside upper center", ncols=5)
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Thermal pulse count")
+plt.ylabel(r"$M_\textrm{DUP} / M_\textrm{DUP,tot}$ ($M / M_\textrm{initial}$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w23-dup-something.pgf", format="pgf")
 plt.show()
+plt.close()
 # %%

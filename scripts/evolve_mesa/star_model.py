@@ -128,14 +128,22 @@ class StellarModel:
         self.envelope_c13 = track["envelope_c13"]
 
         self.lambda_DUP = np.pad(
-            track["lambda_DUP"],
-            (self.n_models - len(track["lambda_DUP"]), 0),
+            track["lambda_DUP"][-(self.n_models - self.ntpagb) :],
+            (
+                self.n_models
+                - len(track["lambda_DUP"][-(self.n_models - self.ntpagb) :]),
+                0,
+            ),
             constant_values=0,
         )
 
         self.TP_count = np.pad(
-            track["TP_count"],
-            (self.n_models - len(track["TP_count"]), 0),
+            track["TP_count"][-(self.n_models - self.ntpagb) :],
+            (
+                self.n_models
+                - len(track["TP_count"][-(self.n_models - self.ntpagb) :]),
+                0,
+            ),
             constant_values=0,
         )
 
@@ -206,16 +214,26 @@ class StellarModel:
         lambda_DUP = np.asarray(self.lambda_DUP)[self.ntpagb :]
         he_core_mass = np.asarray(self.m_core)[self.ntpagb :]
         TP_count = np.asarray(self.TP_count)[self.ntpagb :]
+        self.m_DUP_time = {}
 
         M_DUP = []
         TP_numbers = []
 
         unique_TPs = np.unique(TP_count)
 
-        for tp in unique_TPs[1:]:  # skip before first pulse
+        self.m_DUP_time[0] = np.zeros(self.n_models)
+
+        for tp in unique_TPs:  # skip before first pulse
+            self.m_DUP_time[tp] = np.zeros(self.n_models)
 
             # indices during this thermal pulse
             pulse_idx = np.where(TP_count == tp)[0]
+
+            if tp == 1:
+                M_DUP.append(
+                    0
+                )  # negligible and prevents difficulties with trying to compute the core mass growth during previous phases.
+                continue
 
             if len(pulse_idx) == 0:
                 continue
@@ -237,6 +255,14 @@ class StellarModel:
                 continue
 
             M_DUP.append(lambda_max * delta_core)
+
+            min_index = (
+                self.ntpagb
+                + np.argwhere(he_core_mass == np.nanmin(he_core_mass[pulse_idx]))[0][0]
+            )
+            self.m_DUP_time[tp][min_index:] = lambda_max * delta_core
+            self.m_DUP_time[0][min_index:] += lambda_max * delta_core
+
             TP_numbers.append(tp)
 
         return np.array(M_DUP)
