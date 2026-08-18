@@ -18,11 +18,22 @@ sys.path.insert(1, "/home/koen/master-internship/")
 MASTER = "/home/koen/master-internship/mesa-models/"
 
 
-def get_star(proj_dir="/home/koen/master-internship/mesa-models/", m=2, z="0.00557"):
-    directory = Path(proj_dir) / "single-stars" / f"z{z}" / "completed" / f"M{m:.1f}"
+def get_star(
+    proj_dir="/home/koen/master-internship/mesa-models/",
+    m=2,
+    z="0.00557",
+    full_path=None,
+):
+
+    if full_path == None:
+        directory = (
+            Path(proj_dir) / "single-stars" / f"z{z}" / "completed" / f"M{m:.1f}"
+        )
+
+    else:
+        directory = Path(full_path)
 
     path = directory / "combined_star.pkl"
-
     if path.exists():
         with path.open("rb") as f:
             return pickle.load(f)

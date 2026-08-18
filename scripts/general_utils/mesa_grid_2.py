@@ -5,6 +5,10 @@ import pickle
 import numpy as np
 import math
 import re
+import sys
+
+sys.path.insert(1, "/home/koen/master-internship/")
+from scripts.general_utils.cache import get_star
 
 
 def progressbar(current_value, total_value, bar_lengh, progress_char):
@@ -39,8 +43,39 @@ class MesaGrid:
 
         self._load_models()
 
+    def _finalize_grid(self):
+
+        self.axes = {}
+
+        for run in self.models:
+            for key, value in run.params.items():
+
+                if key not in self.axes:
+                    self.axes[key] = set()
+
+                self.axes[key].add(value)
+
+        for key in self.axes:
+            self.axes[key] = sorted(self.axes[key])
+
+    def merge(self, other, overwrite=False):
+
+        existing = {run.key: run for run in self.models}
+
+        for run in other.models:
+
+            if run.key in existing:
+                if overwrite:
+                    existing[run.key] = run
+            else:
+                existing[run.key] = run
+
+        self.models = list(existing.values())
+        self._finalize_grid()
+
     def _load_models(self):
         self.models = []
+        self.failed_models = []
 
         l = len(list(self.grid_dir.iterdir()))
         for i, run_dir in enumerate(self.grid_dir.iterdir()):
@@ -49,7 +84,10 @@ class MesaGrid:
             if not run_dir.is_dir():
                 continue
 
-            self.models.append(MesaRun(run_dir, self.fresh))
+            try:
+                self.models.append(MesaRun(run_dir, self.fresh))
+            except FileNotFoundError:
+                self.failed_models.append(run_dir)
 
     def filter(self, rel_tol=1e-3, abs_tol=1e-12, **filters):
 
@@ -87,7 +125,6 @@ class MesaGrid:
         arr = np.full((len(xs), len(ys)), np.nan)
 
         x_index = {np.round(v, 3): i for i, v in enumerate(xs)}
-        print(x_index)
         y_index = {np.round(v, 3): i for i, v in enumerate(ys)}
 
         for run in self.filter(**filters):
@@ -126,12 +163,15 @@ class MesaRun:
         if "m" not in self.params:
             self.params["m"] = self.get_mass_from_model_path(self.params["model_name"])
 
+        self.get_starting_model(fresh)
         self.get_history(fresh)
         self.get_profiles(fresh)
 
         self.env_mass = self.history.envelope_mass
         self.q = self.history.star_2_mass / self.history.star_1_mass
-        self.age = self.params["starting_age"] + self.star_age
+        star = get_star(m=self.params["m"])
+        tpagb_age = star.age[star.ntpagb]
+        self.age = self.starting_model.star_age + tpagb_age + self.star_age
 
     def __getattr__(self, name):
         return getattr(self.history, name)
@@ -144,6 +184,21 @@ class MesaRun:
 
         return float(match.group(1))
 
+    def get_starting_model(self, fresh):
+        if fresh:
+            self.starting_model = mr.MesaData(self.params["model_name"])
+            with open(f"{self.run_dir}/starting_model.pkl", "wb") as f:
+                pickle.dump(self.starting_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+            return
+
+        try:
+            with open(f"{self.run_dir}/starting_model.pkl", "rb") as f:
+                self.starting_model = pickle.load(f)
+        except FileNotFoundError:
+            self.starting_model = mr.MesaData(self.params["model_name"])
+            with open(f"{self.run_dir}/starting_model.pkl", "wb") as f:
+                pickle.dump(self.starting_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+
     def get_history(self, fresh):
         if fresh:
             self.history = mr.MesaData(f"{self.run_dir}/LOGS/TPAGB/history.data")
@@ -154,7 +209,7 @@ class MesaRun:
         try:
             with open(f"{self.run_dir}/history.pkl", "rb") as f:
                 self.history = pickle.load(f)
-        except:
+        except FileNotFoundError:
             self.history = mr.MesaData(f"{self.run_dir}/LOGS/TPAGB/history.data")
             with open(f"{self.run_dir}/history.pkl", "wb") as f:
                 pickle.dump(self.history, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -172,10 +227,18 @@ class MesaRun:
             with open(f"{self.run_dir}/profiles.pkl", "rb") as f:
                 self.profiles = pickle.load(f)
 
-        except:
+        except FileNotFoundError:
             profiles_dict = mr.MesaLogDir(f"{self.run_dir}/LOGS/TPAGB/")
             for i, profile in enumerate(profiles_dict.profile_numbers):
                 _ = profiles_dict.profile_data(profile_number=profile)
             self.profiles = list(profiles_dict.profile_dict.values())
             with open(f"{self.run_dir}/profiles.pkl", "wb") as f:
                 pickle.dump(self.profiles, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    @property
+    def key(self):
+        return tuple(
+            sorted(
+                (key, value) for key, value in self.params.items() if key != "grid_name"
+            )
+        )
