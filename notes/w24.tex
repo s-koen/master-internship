@@ -243,6 +243,21 @@ The see \emph{why} the models did not reach the minimum required envelope mass t
     \incplot{w24-grid-fate}
 \end{figure}
 
+Because the \(M=2.2\), \(2.6\) and \(3.0\;M_\odot \) models contain very few finished models, it does not make much sense to look at these grids in more detail. For the \(M=1.8\;M_\odot \) model, we can look at the grid.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w24-grid-period-days}
+\end{figure}
+
+The right most column has quite significantly larger periods than the other models. This is because these models miss RLOF:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w24-miss-rlof}
+\end{figure}
+
+
 
 \newsection{Dredge up}
 
@@ -295,6 +310,21 @@ This figure clearly shows the separations. Using my code, I can also inspect how
     \centering
     \incplot{w24-components-dup-single}
 \end{figure}
+
+I also wrote a routine to compute combine the binary MESA evolution with the single star evolution to continue the DUP evolution.
+
+Below are examples:
+\begin{figure}[ht]
+    \centering
+    \incplot{w24-dup-combined-age}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w24-dup-combined-m_env}
+\end{figure}
+
+
 
 \newsection{Improvements}
 
@@ -349,7 +379,7 @@ The disadvantage of this method is that it obviously causes the star to take sig
 
 I also experiment with increasing the \lstinline[style=output, breaklines=true]|mesh_delta_coeff| to larger values during the strong wind phases:
 
-\begin{minted}[fontsize=\small,breaklines]{fortran}
+\begin{minted}[fontsize=\small]{fortran}
 subroutine resolve_mesh_during_mass_loss(s, ierr)
     ! Increase mesh_delta_coeff during strong envelope stripping
     ! outside of thermal pulses, to reduce the number of cells.
@@ -392,10 +422,17 @@ subroutine resolve_mesh_during_mass_loss(s, ierr)
 end subroutine resolve_mesh_during_mass_loss
 \end{minted}
 
+Unfortunately, this also does not fix every binary model. On the model that I tried, I managed to evolve a bit further, but it ultimately ended in with the same convergence problems.
 
-\newsection{Effect of wind on q flipping}
+What I have found that does seem to work if the convergence problems are persistent, is to force the star to remesh with a significantly different number of zones close to the convergence problems. There is then a big chance that this remeshing skips over the original convergence problems.
 
-\section{Fixes}
+The only way that I can think to automate this, is by wrapping the whole \emph{MESA} run in another script that detects the convergence problems, changes the mesh coefficient temporarily and then resumes the \emph{MESA} simulation from the last photo.
+
+I think it is worth trying out, and I think it should not be too difficult. Especially if we use the \lstinline[style=output, breaklines=true]|resolve_mesh_during_mass_loss| formalism from above.
+
+To give an idea, by manually doing this method, I was able to simulate \emph{all} single stars, \emph{and} for the binary models that were stuck, I was able to revive them with only one additional resume call after the initial resume.
+
+\newsection{Fixes}
 
 Since some of the binaries seem to get stuck in an evolution state with \(\log \Delta t < -6 \text{ yr}\), I think it is important to set some lower limit for the timestep. If it breaches below that, the evolution should stop so the cores on the cluster are freed up.
 

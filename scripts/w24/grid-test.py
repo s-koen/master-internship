@@ -2061,15 +2061,14 @@ def z(r):
 
 
 fig, axs = plt.subplots(
-    2,
-    2,
+    1,
+    1,
     sharey=True,
     sharex=True,
-    figsize=set_size(full, height=1),
+    figsize=set_size(column),
     constrained_layout=True,
 )
 
-axs = axs.flatten()
 
 minn = 1e99
 maxx = -1e99
@@ -2080,14 +2079,14 @@ R, q, ratio = grid.array(z, x="R", y="q")
 minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
 maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
 
-ms = [1.8, 2.2, 2.6, 3.0]
+ms = [1.8]
 
-for i, ax in enumerate(axs):
+for i, ax in enumerate([axs]):
 
     ax.set_title(f"$M_\\textrm{{TPAGB}} = {ms[i]:.1f}\\;M_\\odot$")
     R, q, ratio = grid.array(z, x="R", y="q", m=ms[i])
 
-    c = axs[i].pcolormesh(
+    c = axs.pcolormesh(
         R,
         q,
         ratio.T,
@@ -2104,16 +2103,15 @@ fig.supylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)", fontsize=10)
 plt.colorbar(
     c,
     ax=axs,
-    orientation="horizontal",
-    location="top",
-    aspect=50,
-    label=r"Final envelope mass ($M_\odot$)",
+    orientation="vertical",
+    location="right",
+    label=r"Final period (days)",
 )
 plt.yticks(
     [0.7, 0.66, 0.63, 0.6, 0.5, 0.44, 0.4][::-1], [f"{q:.2f}" for q in grid.axes["q"]]
 )
 
-# plt.savefig("/home/koen/LaTeX-setup/plots/w24-grid-envelope-mass.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w24-grid-period-days.pgf", format="pgf")
 plt.show()
 plt.close()
 
@@ -2338,7 +2336,7 @@ plt.show()
 
 
 def get_mass_limit(envelope_mass):
-    return np.clip(envelope_mass * 2e-4, a_min=5e-6, a_max=1e-3)
+    return np.clip(envelope_mass * 1e-4, a_min=7.5e-6, a_max=1e-3)
 
 
 plt.plot(star.m_env, get_mass_limit(star.m_env))
@@ -2372,3 +2370,137 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w24-lgdmass.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%
+
+
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(full, height=0.2), constrained_layout=True)
+
+
+plt.plot(m.envelope_mass[1:], (np.diff(m.R) / 10) / (np.diff(m.age) / 10))
+
+unique_counts = np.unique(m.TP_count)
+
+plt.xscale("log")
+plt.xlim(axs.get_xlim())
+for c in unique_counts:
+    ind = np.argwhere(m.TP_count == c)[0][0]
+    plt.axvline(m.envelope_mass[ind],c="C9", linewidth=0.75,zorder=-10)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\odot$)")
+plt.ylabel(r"$\textrm{d}R / \textrm{d}t$")
+plt.ylim(-50,100)
+plt.savefig("/home/koen/LaTeX-setup/plots/w24-radius-pulsations-after-fix.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+model.bulk_names
+# %%
+
+for model in grid.filter(q=[0.6,0.7]):
+
+    plt.plot(model.envelope_mass, model.num_retries)
+
+plt.show()
+# %%
+rng = np.random.default_rng(seed=10000)
+models = rng.permutation(grid.models)
+for model in models:
+
+    if model.envelope_mass[-1] > 0.01:
+        if model.envelope_mass[-1] < 0.2:
+            print(model.params)
+            break
+
+plt.plot(model.age, model.R)
+plt.plot(model.age, model.rl_1)
+plt.show()
+
+# %%
+plt.plot(model.envelope_mass, model.R)
+plt.plot(model.envelope_mass, model.rl_1)
+plt.plot(m.envelope_mass, m.R)
+plt.plot(m.envelope_mass, m.rl_1)
+plt.show()
+
+
+# %%
+
+m = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/test-grid-fixes-2026-08-18/R800.00_q0.429_eps0.250_delta0.200_M3.0/LOGS/TPAGB/history.data"
+)
+
+
+# %%
+
+plt.plot(star.m_env, get_mass_limit(star.m_env))
+plt.plot(m.envelope_mass[1:], -np.diff(m.star_mass) / 10)
+plt.show()
+
+# %%
+rng = np.random.default_rng(seed=20000)
+models = rng.permutation(grid.models)
+for model in models:
+
+    if model.envelope_mass[-1] > 0.01:
+        if model.envelope_mass[-1] < 0.2:
+            print(model.params)
+            break
+
+plt.plot(model.age, model.R)
+plt.plot(model.age, model.rl_1)
+plt.show()
+
+
+# %%
+
+m = mr.MesaData(
+    f"/home/koen/master-internship/mesa-models/test-grid-fixes-2026-08-18/R600.00_q0.651_eps0.250_delta0.200_M2.6/LOGS/TPAGB/history.data"
+)
+
+
+# %%
+
+plt.plot(star.m_env, get_mass_limit(star.m_env))
+plt.plot(m.envelope_mass[1:], -np.diff(m.star_mass) / 10)
+plt.show()
+
+
+# %%
+plt.plot(model.envelope_mass, model.R)
+plt.plot(model.envelope_mass, model.rl_1)
+plt.plot(m.envelope_mass, m.R)
+plt.plot(m.envelope_mass, m.rl_1)
+plt.show()
+
+
+# %%
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+
+norm = plt.Normalize(0.4, 0.7)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+for model in grid.filter(m=1.8,R=[900,1000]):
+    l1, =plt.plot(model.age, model.R, c="C9", linewidth=0.75, zorder=-10, label="Star radius")
+    l2, = plt.plot(model.age, model.rl_1, c=cmap(norm(model.params["q"])), label = "Roche lobe radius")
+
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$q_\textrm{i}$")
+
+fig.legend(handles=[l1,l2], loc="outside upper center",ncols=2)
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Time (yr)")
+plt.ylabel("Radius ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+

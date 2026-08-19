@@ -163,6 +163,9 @@ class MesaRun:
         if "m" not in self.params:
             self.params["m"] = self.get_mass_from_model_path(self.params["model_name"])
 
+        if "TP" not in self.params:
+            self.params["TP"] = self.get_TP_from_model_path(self.params["model_name"])
+
         self.get_starting_model(fresh)
         self.get_history(fresh)
         self.get_profiles(fresh)
@@ -181,6 +184,14 @@ class MesaRun:
 
         if match is None:
             raise ValueError(f"could not extract mass from {model_path}")
+
+        return float(match.group(1))
+
+    def get_TP_from_model_path(self, model_path):
+        match = re.search(r"TP([0-9.]+).mod", str(model_path))
+
+        if match is None:
+            raise ValueError(f"could not extract TP from {model_path}")
 
         return float(match.group(1))
 

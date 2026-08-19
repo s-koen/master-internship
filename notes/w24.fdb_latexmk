@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w24"] 1787095918.70092 "w24.aux" "w24.bbl" "w24" 1787095929.91001 0
+["bibtex w24"] 1787128918.29935 "w24.aux" "w24.bbl" "w24" 1787138249.34717 0
   "./master.bib" 1786996755.78717 48736 b10f790b2ba9e9409a3d475aaac693b9 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w24.aux" 1787095929.40493 2962 0c5ac0852212cad2b0144932ddc97907 "pdflatex"
+  "w24.aux" 1787138248.98227 2836 5adce11a4e0caf1923b0fb2f4da13a85 "pdflatex"
   (generated)
   "w24.bbl"
   "w24.blg"
   (rewritten before read)
-["pdflatex"] 1787095918.79271 "w24.tex" "w24.pdf" "w24" 1787095929.91074 0
+["pdflatex"] 1787138238.6724 "w24.tex" "w24.pdf" "w24" 1787138249.34729 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -62,6 +62,8 @@
   "/home/koen/LaTeX-setup//plots/w24-TDU-left.pgf" 1786915259.80564 29587 c6ec0d7c1d476ce92a4f7ff4f333437a ""
   "/home/koen/LaTeX-setup//plots/w24-components-dup-single.pgf" 1786925015.6975 24696 b411f8e774831b76bee56151fde38ddd ""
   "/home/koen/LaTeX-setup//plots/w24-components-dup.pgf" 1786925021.23259 37864 d5587302b1dadd3eab7e1865000f3771 ""
+  "/home/koen/LaTeX-setup//plots/w24-dup-combined-age.pgf" 1787138148.81961 94479 4792e93612b0b0d65d59d6b5d274ea6b ""
+  "/home/koen/LaTeX-setup//plots/w24-dup-combined-m_env.pgf" 1787138123.73019 154809 ee58117b29b923c16008fb9b531af00c ""
   "/home/koen/LaTeX-setup//plots/w24-grid-1-success.pgf" 1787043811.01367 509279 3e06a8d48cb4fd81b3a0fa94088c5711 ""
   "/home/koen/LaTeX-setup//plots/w24-grid-envelope-mass-img0.png" 1787046693.77249 862 cf2cc34281cc542c02dfc10c67143bea ""
   "/home/koen/LaTeX-setup//plots/w24-grid-envelope-mass-img1.png" 1787046693.78549 1215 01c56db2cacd30d7e44221dbd35c81fd ""
@@ -74,11 +76,16 @@
   "/home/koen/LaTeX-setup//plots/w24-grid-fate-img2.png" 1787053322.70952 1026 4f5a9374f0ed19cf84bae61b01462bc0 ""
   "/home/koen/LaTeX-setup//plots/w24-grid-fate-img3.png" 1787053322.7242 1052 ce70f59971db46626e51c3b063df4a6e ""
   "/home/koen/LaTeX-setup//plots/w24-grid-fate.pgf" 1787053322.73452 70129 f4e1cae850d854e3c28cd7264877bb21 ""
+  "/home/koen/LaTeX-setup//plots/w24-grid-period-days-img0.png" 1787129770.73634 941 947c151b964c0c5b59e411e6c635758c ""
+  "/home/koen/LaTeX-setup//plots/w24-grid-period-days-img1.png" 1787129770.75197 387 e53afc11923ea6e972b38c9f690d5a8f ""
+  "/home/koen/LaTeX-setup//plots/w24-grid-period-days.pgf" 1787129770.75734 27659 021c125d821706cbbb60ebbf15c732bb ""
   "/home/koen/LaTeX-setup//plots/w24-grid-scatter.pgf" 1787075059.5922 346128 874154c958d251bd0278402bc6658480 ""
   "/home/koen/LaTeX-setup//plots/w24-lgdmass.pgf" 1787090601.33636 45860 cddf56d8fa298ed991e9d25a116a7974 ""
   "/home/koen/LaTeX-setup//plots/w24-mass-tpagb-time.pgf" 1786915251.53152 28609 e86bc8a2ce413237edafdf74461908eb ""
   "/home/koen/LaTeX-setup//plots/w24-minlogt-img0.png" 1787075039.73411 357 e901fac8c20c7478458a954eb83c1e9a ""
   "/home/koen/LaTeX-setup//plots/w24-minlogt.pgf" 1787075039.74587 94025 90c5cd4be743df6362ac6dc2525ae8e4 ""
+  "/home/koen/LaTeX-setup//plots/w24-miss-rlof-img0.png" 1787130200.38923 357 e901fac8c20c7478458a954eb83c1e9a ""
+  "/home/koen/LaTeX-setup//plots/w24-miss-rlof.pgf" 1787130200.39973 262828 94a3844b2c0f2bc0ccc7c4ec750ae34e ""
   "/home/koen/LaTeX-setup//plots/w24-mspace-dup-img0.png" 1787074857.24284 1754 65ab58b467075ecfc8e09a8848172c07 ""
   "/home/koen/LaTeX-setup//plots/w24-mspace-dup-img1.png" 1787074857.26884 1230 ef3b24a5048fdc20b87f99776fcf1572 ""
   "/home/koen/LaTeX-setup//plots/w24-mspace-dup-img10.png" 1787074857.42284 1689 b3aa62a758165ae6e81ce738c2c09c14 ""
@@ -500,10 +507,10 @@
   "_minted/E225AEC9A92E697BC291EDC8D4E61DC6.highlight.minted" 1787082917.32803 1683 aa5a7ec57b23df09a812fd4d919b2443 ""
   "_minted/_428F2D185F8EEA8F86B568D7560408C8.index.minted" 1787095918.1981 489 a3409240a2c0fcba9a8d23a3ee871dd3 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w24.aux" 1787095929.40493 2962 0c5ac0852212cad2b0144932ddc97907 "pdflatex"
-  "w24.bbl" 1787095918.77374 507 083a7ca41828101c466a4c31e4068333 "bibtex w24"
-  "w24.out" 1787095929.40593 865 db487c6a285dcc41160e5d69c12bf084 "pdflatex"
-  "w24.tex" 1787095905.4705 27763 4974d39a3c658b43c3619a4ae52794b2 ""
+  "w24.aux" 1787138248.98227 2836 5adce11a4e0caf1923b0fb2f4da13a85 "pdflatex"
+  "w24.bbl" 1787128918.37299 507 083a7ca41828101c466a4c31e4068333 "bibtex w24"
+  "w24.out" 1787138248.98427 667 6bbbabc71ed4dab4df436c7bc29de1e6 "pdflatex"
+  "w24.tex" 1787138237.52608 29701 6e6b9cde5de27c56bf8b4a3d762bb6e0 ""
   (generated)
   "w24.aux"
   "w24.log"
