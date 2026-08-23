@@ -1,0 +1,65 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 25}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Intershell abundances}
+
+Using the provided script I was able to, quite easily access the intershell abundances.
+
+However, the structure is not immediately very clear to me. It seems like there are multiple abundances for every.
+
+Then I also need to figure out what the actual ``abundances'' mean.
+
+A quick test is to simply sum the ``abundances'' of a TP and see what the sum is equal to.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-number-abundance}
+\end{figure}
+
+Clearly, this is \emph{not} a mass ratio, since this would sum to 1.
+Now, if we multiply it by the atomic mass, we get the following picture.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-mass-abundance}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-mass-abundance-ba}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-mass-abundance-ba-per-mass}
+\end{figure}
+
+
+
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-first-tests-intershell}
+\end{figure}
+
+
+
+\bibliography{master.bib}
+\end{document}
