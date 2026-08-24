@@ -26,7 +26,7 @@ from scripts.general_utils.mesa_grid_2 import MesaGrid
 
 # %%
 
-grid = MesaGrid(f"{MASTER}grid-masses-2026-08-14")
+grid = MesaGrid(f"{MASTER}grid-masses-2-2026-08-16")
 
 # %%
 
@@ -34,10 +34,9 @@ rng = np.random.default_rng(seed=9)
 models = rng.permutation(grid.models)
 for model in models:
 
-    if model.envelope_mass[-1] > 0.01:
-        if model.envelope_mass[-1] < 0.2:
-            print(model.params)
-            break
+    if model.period_days[-1] < 50:
+        print(model.params)
+        break
 
 plt.plot(model.age, model.R)
 plt.plot(model.age, model.rl_1)

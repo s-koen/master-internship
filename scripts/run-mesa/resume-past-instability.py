@@ -82,7 +82,7 @@ def get_restart(prev_start_model):
 
     final_restart_value = history.model_number[-index]
     if final_restart_value % 1000 == 0:
-        photo_str = int(final_restart_value)
+        photo_str = f"{int(final_restart_value)}"
     else:
         photo_str = f"x{int(str(final_restart_value)[-3:])}"
 
@@ -90,6 +90,11 @@ def get_restart(prev_start_model):
 
 
 def check_finished():
+    history = mr.MesaData(f"LOGS/history.data")
+    if history.period_days[-1] < 50:
+        # model in inspiral, no need to continue
+        return True
+
     final_model = Path("post_AGB.mod")
     return final_model.exists()
 

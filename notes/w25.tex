@@ -60,6 +60,139 @@ Now, if we multiply it by the atomic mass, we get the following picture.
 \end{figure}
 
 
+\section{Fixing MESA models}
+
+Overall, my code to ``revive'' \emph{MESA} models works very well!
+\begin{minted}[fontsize=\small,breaklines]{text}
+cleaning dir
+making binaries
+11800, not enough models between
+11750, possible, testing retries
+retries succesful
+x750
+18250, not enough models between
+18200, possible, testing retries
+retries succesful
+x200
+18200, not enough models between
+18150, possible, testing retries
+retries succesful
+x150
+18250, not enough models between
+18200, possible, testing retries
+retries succesful
+x200
+18300, not enough models between
+18250, possible, testing retries
+retries failed
+18200, want to select the same starting model as last time. selecting earlier model.
+18150, possible, testing retries
+retries succesful
+x150
+18250, not enough models between
+18200, possible, testing retries
+retries succesful
+x200
+18300, not enough models between
+18250, possible, testing retries
+retries failed
+18200, want to select the same starting model as last time. selecting earlier model.
+18150, possible, testing retries
+retries succesful
+x150
+18250, not enough models between
+18200, possible, testing retries
+retries succesful
+x200
+18300, not enough models between
+18250, possible, testing retries
+retries failed
+18200, want to select the same starting model as last time. selecting earlier model.
+18150, possible, testing retries
+retries succesful
+x150
+18250, not enough models between
+18200, possible, testing retries
+retries succesful
+x200
+\end{minted}
+
+\begin{minted}[fontsize=\small,breaklines]{text}
+cleaning dir
+making binaries
+22750, not enough models between
+22700, possible, testing retries
+retries failed
+22650, possible, testing retries
+retries succesful
+x650
+22700, not enough models between
+22650, want to select the same starting model as last time. selecting earlier model.
+22600, possible, testing retries
+retries succesful
+x600
+30050, not enough models between
+30000, possible, testing retries
+retries succesful
+30000
+30000, not enough models between
+29950, possible, testing retries
+retries succesful
+x950
+30050, possible, testing retries
+retries failed
+30000, possible, testing retries
+retries succesful
+30000
+30100, not enough models between
+30050, possible, testing retries
+retries failed
+30000, want to select the same starting model as last time. selecting earlier model.
+29950, possible, testing retries
+retries succesful
+x950
+30050, possible, testing retries
+retries failed
+30000, possible, testing retries
+retries succesful
+30000
+30100, not enough models between
+30050, possible, testing retries
+retries failed
+30000, want to select the same starting model as last time. selecting earlier model.
+29950, possible, testing retries
+retries succesful
+x950
+30050, possible, testing retries
+retries failed
+30000, possible, testing retries
+retries succesful
+30000
+30100, not enough models between
+30050, possible, testing retries
+retries failed
+30000, want to select the same starting model as last time. selecting earlier model.
+29950, possible, testing retries
+retries succesful
+x950
+30050, possible, testing retries
+retries failed
+30000, possible, testing retries
+retries succesful
+30000
+30100, not enough models between
+30050, possible, testing retries
+retries failed
+30000, want to select the same starting model as last time. selecting earlier model.
+29950, possible, testing retries
+retries succesful
+x950
+\end{minted}
+
+\section{Interesting model}
+
+\lstinline[style=output, breaklines=true]|R500.00_q0.700_eps0.250_delta0.200_M3.0/resume-past-instability.py|
+This model has a \emph{very} late thermal pulse.
 
 \bibliography{master.bib}
 \end{document}

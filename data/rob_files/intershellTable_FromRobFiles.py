@@ -484,7 +484,75 @@ plt.close()
 # %%
 
 interesting = df[df["pmz"] == "2e-3"]
-# %%
 masses = np.unique(interesting["M1tp"])
+print(masses)
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+
+ls = []
+
+for m, mass in enumerate(masses):
+
+    prev_len = 0
+    mass_abundance = interesting[interesting["M1tp"] == mass]
+    for i in range(1, 18):
+        pulse = mass_abundance[mass_abundance["ntp"] == f"{i}"]
+        sum = 0
+        for j, species in enumerate(pulse):
+
+            if species not in [
+                "ba134",
+                "ba135",
+                "ba136",
+                "ba137",
+                "ba138",
+            ]:
+                continue
+
+            if j in [4, 5]:
+                a = 1
+            elif j == 6:
+                a = 2
+            else:
+                match = re.search(r"(\d+)$", species)
+                a = int(match.group(1))
+
+            p = []
+            tp = []
+            for x in pulse[species]:
+                p.append(np.float64(x))
+
+            p = a * np.array(p)
+            sum += np.array(p)
+            for x in pulse["ntp"]:
+                tp.append(np.float64(x))
+
+        (j,) = plt.plot(
+            list(range(prev_len, len(p) + prev_len)),
+            sum,
+            c=f"C{m}",
+            label=f"$M_\\textrm{{TPAGB}} = {mass}\\;M_\\odot$",
+        )
+
+        prev_len += len(p)
+    ls.append(j)
+
+# plt.colorbar(cbar, label="Thermal pulse count")
+
+plt.yscale("log")
+fig.legend(handles=ls, ncols=3, loc="outside upper center")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Zone number")
+plt.ylabel(r"$X(\textrm{Ba}_{138})$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w25-mass-abundance-ba-per-mass.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
 
 # %%
