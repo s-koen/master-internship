@@ -122,10 +122,13 @@ class StellarModel:
         self.Mdot = 10 ** track["log_abs_mdot"]
         self.log_Mdot_crit = track["quasi_adiabatic_Mdot"]
         self.surf_o16 = track["surface_o16"]
-        self.envelope_o16 = track["envelope_o16"]
         self.surf_c12 = track["surface_c12"]
-        self.envelope_c12 = track["envelope_c12"]
-        self.envelope_c13 = track["envelope_c13"]
+        try:
+            self.envelope_o16 = track["envelope_o16"]
+            self.envelope_c12 = track["envelope_c12"]
+            self.envelope_c13 = track["envelope_c13"]
+        except:
+            pass
 
         self.lambda_DUP = np.pad(
             track["lambda_DUP"][-(self.n_models - self.ntpagb) :],

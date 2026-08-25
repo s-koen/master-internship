@@ -26,10 +26,12 @@ def progressbar(current_value, total_value, bar_lengh, progress_char):
 
 class MesaGrid:
 
-    def __init__(self, grid_dir, fresh=False):
+    def __init__(self, grid_dir, fresh=False, loc="LOGS/"):
 
         self.grid_dir = Path(grid_dir)
         self.fresh = fresh
+        print(self.fresh)
+        self.loc = loc
 
         with open(f"{grid_dir }/grid_settings.json") as f:
             self.settings = json.load(f)
@@ -84,8 +86,9 @@ class MesaGrid:
             if not run_dir.is_dir():
                 continue
 
+            self.models.append(MesaRun(run_dir, self.fresh, self.loc))
             try:
-                self.models.append(MesaRun(run_dir, self.fresh))
+                self.models.append(MesaRun(run_dir, self.fresh, self.loc))
             except FileNotFoundError:
                 self.failed_models.append(run_dir)
 
@@ -151,8 +154,9 @@ class MesaGrid:
 
 class MesaRun:
 
-    def __init__(self, run_dir, fresh):
+    def __init__(self, run_dir, fresh, loc):
         self.run_dir = run_dir
+        self.loc = loc
 
         with open(run_dir / "settings.json") as f:
             self.params = json.load(f)
@@ -212,7 +216,7 @@ class MesaRun:
 
     def get_history(self, fresh):
         if fresh:
-            self.history = mr.MesaData(f"{self.run_dir}/LOGS/TPAGB/history.data")
+            self.history = mr.MesaData(f"{self.run_dir}/{self.loc}history.data")
             with open(f"{self.run_dir}/history.pkl", "wb") as f:
                 pickle.dump(self.history, f, protocol=pickle.HIGHEST_PROTOCOL)
             return
@@ -221,13 +225,13 @@ class MesaRun:
             with open(f"{self.run_dir}/history.pkl", "rb") as f:
                 self.history = pickle.load(f)
         except FileNotFoundError:
-            self.history = mr.MesaData(f"{self.run_dir}/LOGS/TPAGB/history.data")
+            self.history = mr.MesaData(f"{self.run_dir}/{self.loc}/history.data")
             with open(f"{self.run_dir}/history.pkl", "wb") as f:
                 pickle.dump(self.history, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     def get_profiles(self, fresh):
         if fresh:
-            profiles_dict = mr.MesaLogDir(f"{self.run_dir}/LOGS/TPAGB/")
+            profiles_dict = mr.MesaLogDir(f"{self.run_dir}/{self.loc}/")
             for i, profile in enumerate(profiles_dict.profile_numbers):
                 _ = profiles_dict.profile_data(profile_number=profile)
             self.profiles = list(profiles_dict.profile_dict.values())
@@ -239,7 +243,7 @@ class MesaRun:
                 self.profiles = pickle.load(f)
 
         except FileNotFoundError:
-            profiles_dict = mr.MesaLogDir(f"{self.run_dir}/LOGS/TPAGB/")
+            profiles_dict = mr.MesaLogDir(f"{self.run_dir}/{self.loc}/")
             for i, profile in enumerate(profiles_dict.profile_numbers):
                 _ = profiles_dict.profile_data(profile_number=profile)
             self.profiles = list(profiles_dict.profile_dict.values())

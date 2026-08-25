@@ -28,6 +28,8 @@ Then I also need to figure out what the actual ``abundances'' mean.
 
 A quick test is to simply sum the ``abundances'' of a TP and see what the sum is equal to.
 
+Here, I show the ``abundances'' for the \(M_\text{TPAGB,i}=1.5\;M_\odot \) star, with \(z = 0.007\) and \(M_\text{mix} / M_\odot = 2\times 10^{-3} \), which is what \citet{karakas2016} indicates as the ``standard'' choice.
+
 \begin{figure}[ht]
     \centering
     \incplot{w25-number-abundance}
@@ -41,6 +43,10 @@ Now, if we multiply it by the atomic mass, we get the following picture.
     \incplot{w25-mass-abundance}
 \end{figure}
 
+Now we see that the elements do sum to \(1\). Therefore, the abundances are given in terms of number ratios. I find mass abundances to be a bit more intuitive so I think I will work with those from now on.
+
+Let me look at some abundances for barium:
+
 \begin{figure}[ht]
     \centering
     \incplot{w25-mass-abundance-ba}
@@ -51,7 +57,15 @@ Now, if we multiply it by the atomic mass, we get the following picture.
     \incplot{w25-mass-abundance-ba-per-mass}
 \end{figure}
 
+Here I show the carbon abundances for the \(M=2.0\;M_\odot \) model.
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-carbon}
+\end{figure}
+Here we see that the \(\text{C}_{13}\) abundances have very clear pulse-like shape, just like the \(\text{O}_{18}\) and \(\text{N}_{14}\) abundances for example.
 
+
+\nextpage
 
 
 \begin{figure}[ht]
@@ -193,6 +207,68 @@ x950
 
 \lstinline[style=output, breaklines=true]|R500.00_q0.700_eps0.250_delta0.200_M3.0/resume-past-instability.py|
 This model has a \emph{very} late thermal pulse.
+\lstinline[style=output, breaklines=true]|R1000.00_q0.429_eps0.250_delta0.200_M2.2| also has a \emph{very} late thermal pulse. 
+
+\newsection{Testing MESA dredge-up}
+To validate the abundance post-processing procedure that I am to use, we can look at elements for which we \emph{know} the abundances both in the intershell region, \emph{and} in the envelope. We can then \emph{just} use the intershell abundances, the mass of dredge-up and the mass of the convective envelope to predict the envelope abundances.
+
+I have previously simulated a single star \((z=0.00453 \emph{ and } M_\text{TPAGB,i} = 2\;M_\odot )\) with \emph{a lot} of profiles throughout the complete evolution.
+
+This star does not have individual abundances for isotopes, \emph{but} it does have the hydrogen, helium and metal mass fractions. We can use this metal mass fraction. It should not matter if we are looking at a single isotope or if we are looking at the combination of a bunch of isotopes.
+
+Let me show the metal mass fraction for a couple of profiles. \href{https://s-koen.github.io/figures/#/plots/master-internship/w21/dredge-up}{This interactive plot} however, shows the mass fraction of metals as a function of time.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The vertical lines denote the border of the CO-core and the helium core. The intershell region lies between these two lines. The border between the CO-core and the intershell region is not very sharp. This is however not a big problem because the TDU does not get close to this border at all. This can clearly be seen in the interactive figure.}
+    \marginfignote{15}{After the gradual border between the CO-core and the intershell region, we see that the metal mass fraction is roughly constant. We can use an average here to determine the metal mass fraction in the intershell region as a function of time.}
+    \centering
+    \incplot{w25-show-profiles-1}
+\end{figure}
+
+Below I plot this, as well as a similarly retrieved envelope abundance:
+\begin{figure}[ht]
+    \marginfignote{0}{The intershell abundances actually have some slight pulsation during thermal pulses. I do not think this is noise and I expect this to be a real effect.}
+    \marginfignote{20}{We can also clearly see that the envelope does not get enriched during the first thermal pulses. This is in line with what we expect, where there is nearly no TDU during the earlier pulses.}
+    \centering
+    \incplot{w25-z-inter+env}
+\end{figure}
+
+From the \lstinline[style=output, breaklines=true]|history| data, we know \(M_\text{DUP}\) and \(M_\text{env}\). For the sake of completeness, let me plot these as well.
+
+\begin{figure}[ht]
+    \marginfignote{10}{I am approximating the dredge-up as happening instantaneously. This means we are seeing a bunch of \(\delta\)-functions here.}
+    \centering
+    \incplot{w25-m_env}
+\end{figure}
+
+Since my approximation uses instantaneous dredge-up, I then use the following equation:
+
+% # z_metal_env_next = z_metal_env * M_env / (M_env + M_dup)
+\begin{align*}
+    \Delta Z_\text{env} &= \frac{M_\text{\(Z\),env} + \Delta M_\text{\(Z\),env}}{M_\text{env} + \Delta M_\text{env}} - \frac{M_\text{\(Z\),env}}{M_\text{env}}\\
+    &= \frac{M_\text{\(Z\),env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}} - \frac{M_\text{\(Z\),env}}{M_\text{env}}\\
+    \intertext{or, for implementation in code:}
+    Z_\text{env,next} &= Z_\text{env} + \Delta Z_\text{env} = \frac{M_\text{\(Z\),env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}}\\
+    Z_\text{env,next} &= \frac{Z_\text{env} \cdot M_\text{env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}}
+\end{align*}
+Below we see the results of this.
+\begin{figure}[ht]
+    \marginfignote{0}{Here I plot the actual mass fraction of metals as a function of time and the post-processed mass fraction of metals.}
+    \marginfignote{10}{The envelope abundances are \emph{quite} close but not identical. It seems like we \emph{slightly} overestimate the effects of dredge-up. }
+    \centering
+    \incplot{w25-compare-real-articifial}
+\end{figure}
+Similarly to how I computed the envelope abundances, we can also compute \(M_\text{DUP}\) using the intershell and envelope abundances and compare this mass with the dredge-up mass that I find using just the history data. 
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here we see nearly the same thing. We slightly overestimate the amount of dredge-up that occurs.}
+    \centering
+    \incplot{w25-compare-dup}
+\end{figure}
+
+
+\section{SLURM change}
+When inspecting the progress of my \emph{MESA} models, I saw that Karel was also running some models and he set the time limit to 1 days, 23 hours and 45 minutes instead of exactly 2 days. I suspect this is to give SLURM time to transfer the models after a job has been finished and I am going to use this in the future (even though I do not suspect my models will need to simulate for a full 2 days). 
 
 \bibliography{master.bib}
 \end{document}

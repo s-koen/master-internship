@@ -897,7 +897,7 @@ for ax in axs.flatten():
 
 fig.legend(loc="outside upper center", ncols=4, handles=[l1, l2, l3, l4])
 fig.supxlabel("Age (yr)", fontsize=10)
-fig.supylabel("$M_\\textrm{DUP}$", fontsize=10)
+fig.supylabel(r"$M_\textrm{DUP}$ ($M_\odot$)", fontsize=10)
 plt.savefig("/home/koen/LaTeX-setup/plots/w24-dup-combined-age.pgf", format="pgf")
 plt.show()
 plt.close()
@@ -1044,3 +1044,5 @@ plt.show()
 plt.close()
 
 plt.show()
+# %%
+
