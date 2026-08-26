@@ -86,7 +86,6 @@ class MesaGrid:
             if not run_dir.is_dir():
                 continue
 
-            self.models.append(MesaRun(run_dir, self.fresh, self.loc))
             try:
                 self.models.append(MesaRun(run_dir, self.fresh, self.loc))
             except FileNotFoundError:

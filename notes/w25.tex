@@ -275,6 +275,47 @@ While inspecting the progress of the models on the cluster, I noticed that there
     \incplot{w25-LTP-predictor}
 \end{figure}
 
+\begin{figure}[ht]
+    \marginfignote{3}{Here I show the \emph{full} HR diagrams for the simulation. The gray line is the single star, which continues into the colored lines for the different binary simulations. The colors are the same as in the figures above, meaning the green models experience the late thermal pulses.}
+    \marginfignote{18}{Clearly, when viewed in the full HR diagram, the thermal pulses do not appear to happen in a very different place than the earlier pulses. This is in contrast to the thermal pulses that happen during for example the white dwarf cooling track of late during the post-age.}
+    \marginfignote{30}{To make the late pulses more visible, let me zoom in on only the TPAGB-region.}
+    \centering
+    \incplot{w25-LTP-HR}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-LTP-HR-zoom}
+\end{figure}
+
+Next, let me plot some \(2\)D histograms. To start, I want to compare to look at the final fate of the models. Again, let me first compare it with the results from last week:
+\begin{figure}[ht]
+    \marginfignote{4}{This is the grid as it was last week. We see that for \(M=2.2\;M_\odot \), \(2.6\;M_\odot \) and \(3.0\;M_\odot \), nearly all models crashed.}
+    \centering
+    \incplot{w24-grid-fate}
+\end{figure}
+\begin{figure}[ht]
+    \marginfignote{4}{This is the grid now. At this point, there are only a few models in every grid that did not simulate properly.}
+    \centering
+    \incplot{w25-grid-fate}
+\end{figure}
+
+Below, I plot the final period of the binaries.
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-grid-period}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-grid-star_2_mass}
+\end{figure}
+
+
+
+
 
 
 \section{Reviving MESA models II}
@@ -473,9 +514,36 @@ Similarly to how I computed the envelope abundances, we can also compute \(M_\te
     \incplot{w25-compare-dup}
 \end{figure}
 
+\section{Problem with Grid Setup}
+When working on some dredge-up calculations, I kept running into a problem where the simple binary evolution would not agree with the start of the detailed \emph{MESA} binary evolution.
+
+Here is an example:
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-wrong-separation}
+\end{figure}
+
+After some debugging, I was able to attribute this to the way I determine the starting conditions of the starting models. This was based on the values of the peak, instead of the values at the actual start\sidenote{because those are not the same.}.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-incorrect-setup}
+\end{figure}
+
+\nextpage
+I have now fixed this!
+\begin{figure}[ht]
+    \marginfignote{0}{The green dot is the starting position of the binary \emph{after} fixing the grid generation code.}
+    \centering
+    \incplot{w25-wrong-separation-fix}
+\end{figure}
+
 
 \section{SLURM change}
 When inspecting the progress of my \emph{MESA} models, I saw that Karel was also running some models and he set the time limit to 1 days, 23 hours and 45 minutes instead of exactly 2 days. I suspect this is to give SLURM time to transfer the models after a job has been finished and I am going to use this in the future (even though I do not suspect my models will need to simulate for a full 2 days). 
+
+\section{TODO}
+I want to implement some form of caching where I save an array of \(\beta \)-accretion values for the simple binaries i simulate without python. This would save a lot of time in the future for the TDU calculations where i need the accretion efficiency as a function of time.
 
 \bibliography{master.bib}
 \nextpage

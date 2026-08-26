@@ -15,6 +15,7 @@ plt.style.use("tex rm")
 sys.path.insert(1, "/home/koen/master-internship/")
 from scripts.general_utils.cplot import cplot
 from scripts.general_utils.cache import get_star
+from scripts.general_utils.m_dup import compute_m_DUP
 
 plt.cplot = cplot
 
@@ -2372,7 +2373,9 @@ plt.close()
 # %%
 
 
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(full, height=0.2), constrained_layout=True)
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full, height=0.2), constrained_layout=True
+)
 
 
 plt.plot(m.envelope_mass[1:], (np.diff(m.R) / 10) / (np.diff(m.age) / 10))
@@ -2383,13 +2386,15 @@ plt.xscale("log")
 plt.xlim(axs.get_xlim())
 for c in unique_counts:
     ind = np.argwhere(m.TP_count == c)[0][0]
-    plt.axvline(m.envelope_mass[ind],c="C9", linewidth=0.75,zorder=-10)
+    plt.axvline(m.envelope_mass[ind], c="C9", linewidth=0.75, zorder=-10)
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Envelope mass ($M_\odot$)")
 plt.ylabel(r"$\textrm{d}R / \textrm{d}t$")
-plt.ylim(-50,100)
-plt.savefig("/home/koen/LaTeX-setup/plots/w24-radius-pulsations-after-fix.pgf", format="pgf")
+plt.ylim(-50, 100)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w24-radius-pulsations-after-fix.pgf", format="pgf"
+)
 plt.show()
 plt.close()
 
@@ -2397,7 +2402,7 @@ plt.close()
 model.bulk_names
 # %%
 
-for model in grid.filter(q=[0.6,0.7]):
+for model in grid.filter(q=[0.6, 0.7]):
 
     plt.plot(model.envelope_mass, model.num_retries)
 
@@ -2475,16 +2480,25 @@ plt.show()
 
 
 # %%
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
 norm = plt.Normalize(0.4, 0.7)
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
 
-for model in grid.filter(m=1.8,R=[900,1000]):
-    l1, =plt.plot(model.age, model.R, c="C9", linewidth=0.75, zorder=-10, label="Star radius")
-    l2, = plt.plot(model.age, model.rl_1, c=cmap(norm(model.params["q"])), label = "Roche lobe radius")
+for model in grid.filter(m=1.8, R=[900, 1000]):
+    (l1,) = plt.plot(
+        model.age, model.R, c="C9", linewidth=0.75, zorder=-10, label="Star radius"
+    )
+    (l2,) = plt.plot(
+        model.age,
+        model.rl_1,
+        c=cmap(norm(model.params["q"])),
+        label="Roche lobe radius",
+    )
 
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -2493,7 +2507,7 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"$q_\textrm{i}$")
 
-fig.legend(handles=[l1,l2], loc="outside upper center",ncols=2)
+fig.legend(handles=[l1, l2], loc="outside upper center", ncols=2)
 
 
 axs.spines[["right", "top"]].set_visible(False)
@@ -2503,4 +2517,3 @@ plt.savefig("/home/koen/LaTeX-setup/plots/.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%
-

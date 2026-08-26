@@ -7,20 +7,21 @@ import sys
 import json
 import pickle
 from datetime import datetime
+from pathlib import Path
 
 # ---
 
 # WARNING: CHECK / MODIFY THESE PATHS
-name = "grid-masses-2"
+name = "grid-masses-3"
 grid_name = f"{name}-{datetime.today().strftime('%Y-%m-%d')}"
 proj_dir = "/home/koen/master-internship"
 reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-08-15/"
 binary_exe_dir = f"{proj_dir}/mesa-models/reference-binary/"
 
 # WARNING: SETTINGS FOR THE GRID
-single_star_masses = np.array([1.8, 2.2, 2.6, 3])
-Rs = np.linspace(500, 1200, 8)
-qs = np.array([0.5, 0.6])
+single_star_masses = np.array([2.2])
+Rs = np.array([800.0])
+qs = np.array([0.7])
 epss = np.array([0.25])
 
 mass_transfer_beta = np.array([1 - 0.266666666667])
@@ -55,6 +56,23 @@ grid_dir = f"{proj_dir}/mesa-models/{grid_name}/"
 models_dir = f"{single_star_dirs[0]}/models/"
 os.makedirs(os.path.dirname(grid_dir), exist_ok=True)
 shutil.copyfile(f"{binary_exe_dir}/binary", f"{grid_dir}/binary")
+
+
+def get_star(full_path):
+
+    directory = Path(full_path)
+
+    path = directory / "combined_star.pkl"
+    if path.exists():
+        with path.open("rb") as f:
+            return pickle.load(f)
+
+    star = read_stellar_models(directory)[0]
+
+    with path.open("wb") as f:
+        pickle.dump(star, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    return star
 
 
 def get_initial_Z():
@@ -130,22 +148,24 @@ def generate_run_file(
 generate_settings_file()
 
 
-def get_model_dict(params, evolution):
+def get_model_dict(single_star_dir):
 
-    single_star_dir = params["single_star_dir"]
     models_dir = f"{single_star_dir}/models/"
     models = [os.path.basename(f) for f in os.scandir(models_dir)]
     pattern = re.compile(r"([0-9.]+)Rsun_TP([0-9]+)")
 
     models_R = []
     models_TP = []
+    models_age = []
 
     for model in models:
+        p = mr.MesaData(f"{models_dir}/{model}")
         match = pattern.search(model)
         R = float(match.group(1))
         TP = int(match.group(2))
         models_R.append(R)
         models_TP.append(TP)
+        models_age.append(p.star_age)
 
     models_dict = {}
     index = 0
@@ -156,23 +176,42 @@ def get_model_dict(params, evolution):
             "name": models.pop(arg),
             "R": models_R.pop(arg),
             "TP": models_TP.pop(arg),
+            "age": models_age.pop(arg),
         }
 
         index += 1
-    star = evolution.star
+    star = get_star(single_star_dir)
 
     for key in models_dict.keys():
+
         R = models_dict[key]["R"]
-        arg = np.where(10**star.log_R >= R - 1e-3)[0][0]
-        M = star.mass[arg]
-        phase = star.phase[arg]
+        naive_arg = np.where(np.abs(10**star.log_R - R) <= 1e-2)[0][0]
+        phase = int(star.phase[naive_arg])
+
+        match phase:
+            case 0:
+                offset = 0
+            case 1:
+                offset = star.age[star.ntams]
+            case 2:
+                offset = star.age[star.nzacheb]
+            case 3:
+                offset = star.age[star.ntacheb]
+            case 4:
+                offset = star.age[star.ntpagb]
+            case _:
+                raise Exception("invalid phase")
+
+        real_age = models_dict[key]["age"] + offset
+        arg = np.argmin(np.abs(star.age - real_age))
         R = 10 ** star.log_R[arg]
         age = star.age[arg]
+        M = star.mass[arg]
 
         models_dict[key]["M"] = M
         models_dict[key]["phase"] = phase
         models_dict[key]["age"] = age
-        models_dict[key]["R"] = R
+        models_dict[key]["real_R"] = R
 
     return models_dict
 
@@ -406,7 +445,7 @@ def write_run_files(params, model, evolution, run_dir):
     )
 
 
-def prepare_grid_point(params):
+def prepare_grid_point(params, models_dict):
 
     evolution = evolve_binary(params)
     if evolution is None:
@@ -419,7 +458,6 @@ def prepare_grid_point(params):
     if contact_age is False:
         return False
 
-    models_dict = get_model_dict(params, evolution)
     model = select_model(contact_age, models_dict)
     if model is None:
         return None
@@ -444,6 +482,8 @@ for single_star_mass in single_star_masses:
     single_star_dir = (
         f"{proj_dir}/mesa-models/single-stars/z0.00557/completed/M{single_star_mass}"
     )
+    print(f"getting model dict for {single_star_mass}")
+    models_dict = get_model_dict(single_star_dir)
     for R in Rs:
         for q in qs:
             print(single_star_mass, R, q)
@@ -454,7 +494,7 @@ for single_star_mass in single_star_masses:
                 "single_star_dir": single_star_dir,
             }
 
-            grid_point = prepare_grid_point(params=base)
+            grid_point = prepare_grid_point(params=base, models_dict=models_dict)
 
             if grid_point is None:
                 print("no suitable model")
