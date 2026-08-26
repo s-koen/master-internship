@@ -15,7 +15,7 @@ from pathlib import Path
 name = "grid-masses-3"
 grid_name = f"{name}-{datetime.today().strftime('%Y-%m-%d')}"
 proj_dir = "/home/koen/master-internship"
-reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-08-15/"
+reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-08-26"
 binary_exe_dir = f"{proj_dir}/mesa-models/reference-binary/"
 
 # WARNING: SETTINGS FOR THE GRID
@@ -524,4 +524,3 @@ for single_star_mass in single_star_masses:
                     }
 
                     generate_run(params=params, grid_point=grid_point)
-# %%

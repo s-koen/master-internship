@@ -14,6 +14,7 @@ table_location = (
     filepath + "nucsyn_intershell_abundances_karakas_LMC2016_tmp.h"
 )  # Where to save binary_c table
 
+# %%
 Z = []
 pmz = []
 TPnum = []
@@ -498,7 +499,9 @@ for m, mass in enumerate(masses):
 
     prev_len = 0
     mass_abundance = interesting[interesting["M1tp"] == mass]
-    for i in range(1, 18):
+
+    tps = np.unique(interesting["ntp"])
+    for i in range(1, len(tps) + 1):
         pulse = mass_abundance[mass_abundance["ntp"] == f"{i}"]
         sum = 0
         for j, species in enumerate(pulse):
@@ -554,5 +557,360 @@ plt.savefig(
 plt.show()
 plt.close()
 
+
+# %%
+interesting = df[df["pmz"] == "2e-3"]
+interesting = interesting[interesting["M1tp"] == "2.09998"]
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+prev_len = 0
+
+tps = np.unique(interesting["ntp"])
+for i in range(1, len(tps) + 1):
+    pulse = interesting[interesting["ntp"] == f"{i}"]
+    sum = 0
+    for j, species in enumerate(pulse):
+
+        if species not in ["c12", "c13", "c14"]:
+            continue
+
+        if j in [4, 5]:
+            a = 1
+        elif j == 6:
+            a = 2
+        else:
+            match = re.search(r"(\d+)$", species)
+            a = int(match.group(1))
+
+        p = []
+        tp = []
+        for x in pulse[species]:
+            p.append(np.float64(x))
+
+        p = a * np.array(p)
+        sum += np.array(p)
+        for x in pulse["ntp"]:
+            tp.append(np.float64(x))
+
+        max = -1e99
+        if np.max(p) > max:
+            max = np.max(p)
+
+        plt.plot(list(range(prev_len, len(p) + prev_len)), p, c=f"C{j%9}")
+        if i == len(tps):
+            if species in ["na23", "ne20", "mg24"]:
+                pass
+            elif species == "fe56":
+                axs.text(
+                    len(p) + prev_len + 2,
+                    p[-1],
+                    f"ne20,fe56,na23, mg24",
+                    ha="left",
+                    va="center",
+                )
+            else:
+                axs.text(
+                    len(p) + prev_len + 2,
+                    p[-1],
+                    f"{species}",
+                    ha="left",
+                    va="center",
+                    color=f"C{j%9}",
+                )
+
+    # plt.plot(list(range(prev_len, len(p) + prev_len)), sum, c="k")
+
+    axs.text(len(p) / 2 + prev_len, 0.4, f"{i}", ha="center", va="bottom")
+    prev_len += len(p)
+
+# axs.text(
+#     prev_len + 2,
+#     sum[-1] * 1.2,
+#     f"sum",
+#     ha="left",
+#     va="center",
+# )
+# plt.colorbar(cbar, label="Thermal pulse count")
+
+plt.yscale("log")
+# plt.ylim(1e-)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Zone number")
+plt.ylabel(r"$X_i$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-carbon.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+prev_len = 0
+
+for i in range(1, 18):
+    pulse = interesting[interesting["ntp"] == f"{i}"]
+    p = []
+    c13 = []
+    tp = []
+
+    for x in pulse["p"]:
+        p.append(np.float64(x))
+
+    for x in pulse["c13"]:
+        c13.append(np.float64(x))
+
+    for x in pulse["ntp"]:
+        tp.append(np.float64(x))
+
+    cbar = plt.cplot(
+        list(range(prev_len, len(p) + prev_len)),
+        np.array(p),
+        i * np.ones(len(p)),
+        cmap="viridis",
+        vmin=1,
+        vmax=17,
+    )
+    cbar = plt.cplot(
+        list(range(prev_len, len(p) + prev_len)),
+        np.array(c13),
+        i * np.ones(len(p)),
+        cmap="viridis",
+        vmin=1,
+        vmax=17,
+    )
+
+    axs.text(
+        np.argmax(c13) + prev_len, 2 * np.max(c13), f"{i}", ha="center", va="bottom"
+    )
+    prev_len += len(p)
+
+axs.text(prev_len + 2, c13[-1], r"C$_{13}$", ha="left", va="center")
+axs.text(prev_len + 2, p[-1], r"p$^{+}$", ha="left", va="center")
+plt.colorbar(cbar, label="Thermal pulse count")
+
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Zone number")
+plt.ylabel(r"$Y_i$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-first-tests-intershell.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+interesting = df[df["pmz"] == "2e-3"]
+masses = np.unique(interesting["M1tp"])
+print(masses)
+
+fig, axs = plt.subplots(
+    len(masses) + 1,
+    1,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+    sharex=True,
+)
+
+
+ls = []
+
+for m, mass in enumerate(masses):
+
+    prev_len = 0
+    mass_abundance = interesting[interesting["M1tp"] == mass]
+
+    tps = np.unique(interesting["ntp"])
+    for i in range(1, len(tps) + 1):
+        pulse = mass_abundance[mass_abundance["ntp"] == f"{i}"]
+        sum = 0
+        for j, species in enumerate(pulse):
+            if j < 4:
+                continue
+
+            if species in [
+                "p",
+                "n",
+                "d",
+                "he3",
+                "he4",
+            ]:
+                continue
+
+            if j in [4, 5]:
+                a = 1
+            elif j == 6:
+                a = 2
+            else:
+                match = re.search(r"(\d+)$", species)
+                a = int(match.group(1))
+
+            p = []
+            tp = []
+            for x in pulse[species]:
+                p.append(np.float64(x))
+
+            p = a * np.array(p)
+            sum += np.array(p)
+            for x in pulse["ntp"]:
+                tp.append(np.float64(x))
+
+        (j,) = axs[m].plot(
+            list(range(prev_len, len(p) + prev_len)),
+            sum,
+            c=f"C{m}",
+            label=f"$M_\\textrm{{TPAGB}} = {mass}\\;M_\\odot$",
+        )
+
+        prev_len += len(p)
+    ls.append(j)
+
+# plt.colorbar(cbar, label="Thermal pulse count")
+
+z_intershell = []
+for p in profiles:
+    z = p.z_mass_fraction_metals
+    m = p.mass
+    i = np.argmax(
+        np.abs(
+            np.log10(p.z_mass_fraction_metals[10:])
+            - np.log10(p.z_mass_fraction_metals[:-10])
+        )
+    )
+    ind = i + 5
+    if np.log10(p.power_he_burn) > 4:
+        print(np.log10(p.power_h_burn))
+        z_intershell.append(
+            np.average(
+                z[ind + 100 : ind + 110],
+                weights=np.diff(m[ind + 100 : ind + 110], prepend=m[ind + 99]),
+            )
+        )
+
+axs[-1].plot(np.linspace(0, 250, len(z_intershell)), z_intershell)
+for i, ax in enumerate(axs):
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_yscale("log")
+    if i == len(masses):
+        ax.text(
+            0.95,
+            0.95,
+            f"$M = 2.00\\;M_\\odot$\nMESA",
+            transform=ax.transAxes,
+            ha="right",
+            va="top",
+        )
+        continue
+    ax.text(
+        0.95,
+        0.95,
+        f"$M = {float(masses[i]):.2f}\\;M_\\odot$",
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+    )
+plt.xlabel("Zone number")
+fig.supylabel(r"$Z$", size=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-mass-abundance-Z.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from matplotlib.style import context
+import mesa_reader as mr
+import sys
+
+sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
+from plot_size import set_size
+
+column = 312.98032
+full = 483.69684
+plt.style.use("default")
+plt.style.use("tex rm")
+
+sys.path.insert(1, "/home/koen/master-internship/")
+from scripts.general_utils.cplot import cplot
+from scripts.general_utils.cache import get_star
+
+plt.cplot = cplot
+
+sys.path.insert(1, "/home/koen/master-internship/")
+MASTER = "/home/koen/master-internship/mesa-models/"
+
+import mesa_reader as mr
+from scripts.general_utils.mesa_grid_2 import MesaGrid
+
+# %%
+
+l = mr.MesaLogDir(f"{MASTER}/single-stars/z0.00453/M2.0/LOGS/TPAGB")
+
+# %%
+for profile in l.profile_numbers:
+    profile = l.profile_data(profile_number=profile)
+    print(profile.model_number)
+
+print(profile.bulk_names)
+
+
+# %%
+
+profiles = list(l.profile_dict.values())
+profiles[0].header_names
+for profile in profiles:
+    print(np.log10(profile.power_he_burn))
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+z_intershell = []
+z_envelope = []
+age = []
+m_env = []
+for p in profiles:
+    z = p.z_mass_fraction_metals
+    m = p.mass
+    i = np.argmax(
+        np.abs(
+            np.log10(p.z_mass_fraction_metals[10:])
+            - np.log10(p.z_mass_fraction_metals[:-10])
+        )
+    )
+    ind = i + 5
+    z_intershell.append(
+        np.average(
+            z[ind + 100 : ind + 110],
+            weights=np.diff(m[ind + 100 : ind + 110], prepend=m[ind + 99]),
+        )
+    )
+    m_env.append(m[0] - m[ind])
+    z_envelope.append(
+        np.average(z[: ind - 100], weights=np.diff(m[: ind - 100], prepend=m[0]))
+    )
+    age.append(p.star_age)
+
+# plt.plot(age, m_env)
+plt.plot(z_intershell)
+
+plt.yscale("log")
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Age (yr)")
+plt.ylabel("$Z$ (metal mass fraction)")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w25-z-inter+env.pgf", format="pgf")
+plt.show()
+plt.close()
 
 # %%

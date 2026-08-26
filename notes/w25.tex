@@ -68,25 +68,93 @@ Here we see that the \(\text{C}_{13}\) abundances have very clear pulse-like sha
 \nextpage
 
 
+Next, I plot the intershell proton number ratio and the C\(_{13}\) number ratio. They follow a very similar pattern. I know TPAGB stars get C\(_{13}\) pockets, so I wonder if the different abundances per pulse have to do with this?
 \begin{figure}[ht]
     \centering
     \incplot{w25-first-tests-intershell}
 \end{figure}
 
+Below, I compare the total metals mass fraction for stars of different masses. I also compare it with the intershell metal abundances of a \emph{MESA} model\sidenote{see next section.}. It is important to note that the MESA model only contains profiles during the thermal pulse. This seems to most closely match the properties of the intershell abundances from Zara. It is also important to realise that the horizontal axes has little meaning here and should \emph{not} be used to make real comparisons. For example, the \emph{MESA} model has much fewer models during the first thermal pulses than the last, which makes the last pulses seem much more important.
+ 
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-mass-abundance-Z}
+\end{figure}
+
+The overal shape and metal fractions align well I would say.
+
+\newsection{Testing MESA dredge-up}
+To validate the abundance post-processing procedure that I am to use, we can look at elements for which we \emph{know} the abundances both in the intershell region, \emph{and} in the envelope. We can then \emph{just} use the intershell abundances, the mass of dredge-up and the mass of the convective envelope to predict the envelope abundances.
+
+I have previously simulated a single star \((z=0.00453 \emph{ and } M_\text{TPAGB,i} = 2\;M_\odot )\) with \emph{a lot} of profiles throughout the complete evolution.
+
+This star does not have individual abundances for isotopes, \emph{but} it does have the hydrogen, helium and metal mass fractions. We can use this metal mass fraction. It should not matter if we are looking at a single isotope or if we are looking at the combination of a bunch of isotopes.
+
+Let me show the metal mass fraction for a couple of profiles. \href{https://s-koen.github.io/figures/#/plots/master-internship/w21/dredge-up}{This interactive plot} however, shows the mass fraction of metals as a function of time.
+
+\begin{figure}[ht]
+    \marginfignote{0}{The vertical lines denote the border of the CO-core and the helium core. The intershell region lies between these two lines. The border between the CO-core and the intershell region is not very sharp. This is however not a big problem because the TDU does not get close to this border at all. This can clearly be seen in the interactive figure.}
+    \marginfignote{15}{After the gradual border between the CO-core and the intershell region, we see that the metal mass fraction is roughly constant. We can use an average here to determine the metal mass fraction in the intershell region as a function of time.}
+    \centering
+    \incplot{w25-show-profiles-1}
+\end{figure}
+
+Below I plot this, as well as a similarly retrieved envelope abundance:
+\begin{figure}[ht]
+    \marginfignote{0}{The intershell abundances actually have some slight pulsation during thermal pulses. I do not think this is noise and I expect this to be a real effect.}
+    \marginfignote{20}{We can also clearly see that the envelope does not get enriched during the first thermal pulses. This is in line with what we expect, where there is nearly no TDU during the earlier pulses.}
+    \centering
+    \incplot{w25-z-inter+env}
+\end{figure}
+
+From the \lstinline[style=output, breaklines=true]|history| data, we know \(M_\text{DUP}\) and \(M_\text{env}\). For the sake of completeness, let me plot these as well.
+
+\begin{figure}[ht]
+    \marginfignote{10}{I am approximating the dredge-up as happening instantaneously. This means we are seeing a bunch of \(\delta\)-functions here.}
+    \centering
+    \incplot{w25-m_env}
+\end{figure}
+
+Since my approximation uses instantaneous dredge-up, I then use the following equation:
+
+% # z_metal_env_next = z_metal_env * M_env / (M_env + M_dup)
+\begin{align*}
+    \Delta Z_\text{env} &= \frac{M_\text{\(Z\),env} + \Delta M_\text{\(Z\),env}}{M_\text{env} + \Delta M_\text{env}} - \frac{M_\text{\(Z\),env}}{M_\text{env}}\\
+    &= \frac{M_\text{\(Z\),env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}} - \frac{M_\text{\(Z\),env}}{M_\text{env}}\\
+    \intertext{or, for implementation in code:}
+    Z_\text{env,next} &= Z_\text{env} + \Delta Z_\text{env} = \frac{M_\text{\(Z\),env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}}\\
+    Z_\text{env,next} &= \frac{Z_\text{env} \cdot M_\text{env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}}
+\end{align*}
+Below we see the results of this.
+\begin{figure}[ht]
+    \marginfignote{0}{Here I plot the actual mass fraction of metals as a function of time and the post-processed mass fraction of metals.}
+    \marginfignote{10}{The envelope abundances are \emph{quite} close but not identical. It seems like we \emph{slightly} overestimate the effects of dredge-up. }
+    \centering
+    \incplot{w25-compare-real-articifial}
+\end{figure}
+Similarly to how I computed the envelope abundances, we can also compute \(M_\text{DUP}\) using the intershell and envelope abundances and compare this mass with the dredge-up mass that I find using just the history data. 
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here we see nearly the same thing. We slightly overestimate the amount of dredge-up that occurs.}
+    \centering
+    \incplot{w25-compare-dup}
+\end{figure}
+
+
 \newsection{Reviving MESA models I}
 \subsection{Introduction}
 Last week I showed this image:
-\begin{figure}[ht]
-    \centering
-    \incplot{w24-grid-1-success}
-\end{figure}
-It is clear that nearly all of the binary models for masses \(2.2\), \(2.6\) and \(3.0\;M_\odot \) crashed before losing their envelope. This is obviously pretty bad so I tried to solve this problem. First I show the results:
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w25-grid-1-success}
-\end{figure}
-
+% \begin{figure}[ht]
+%     \centering
+%     \incplot{w24-grid-1-success}
+% \end{figure}
+% It is clear that nearly all of the binary models for masses \(2.2\), \(2.6\) and \(3.0\;M_\odot \) crashed before losing their envelope. This is obviously pretty bad so I tried to solve this problem. First I show the results:
+%
+% \begin{figure}[ht]
+%     \centering
+%     \incplot{w25-grid-1-success}
+% \end{figure}
+%
 Clearly my fix works pretty well. Now only about 5\% of the models fail due to convergence problems.
 
 \subsection{Method}
@@ -250,6 +318,30 @@ I put the complete code in the appendix of this document.
 \end{full}
 
 \subsection{Grid Results}
+To start, I want to compare to look at the final fate of the models. Again, let me first compare it with the results from last week:
+\begin{figure}[ht]
+    \marginfignote{4}{This is the grid as it was last week. We see that for \(M=2.2\;M_\odot \), \(2.6\;M_\odot \) and \(3.0\;M_\odot \), nearly all models crashed.}
+    \centering
+    \incplot{w24-grid-fate}
+\end{figure}
+\begin{figure}[ht]
+    \marginfignote{4}{This is the grid now. At this point, there are only a few models in every grid that did not simulate properly.}
+    \centering
+    \incplot{w25-grid-fate}
+\end{figure}
+
+Below, I plot the final period of the binaries.
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-grid-period}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w25-grid-star_2_mass}
+\end{figure}
+
+\nextpage
 
 While inspecting the progress of the models on the cluster, I noticed that there were a few models that seemed to experience a thermal pulse very close to the end of the simulation \sidenote{read, when they only have very little envelope left.}. This made me want to look into this phenomenon.
 
@@ -283,47 +375,19 @@ While inspecting the progress of the models on the cluster, I noticed that there
     \incplot{w25-LTP-HR}
 \end{figure}
 
-\nextpage
 
 \begin{figure}[ht]
     \centering
     \incplot{w25-LTP-HR-zoom}
 \end{figure}
 
-Next, let me plot some \(2\)D histograms. To start, I want to compare to look at the final fate of the models. Again, let me first compare it with the results from last week:
-\begin{figure}[ht]
-    \marginfignote{4}{This is the grid as it was last week. We see that for \(M=2.2\;M_\odot \), \(2.6\;M_\odot \) and \(3.0\;M_\odot \), nearly all models crashed.}
-    \centering
-    \incplot{w24-grid-fate}
-\end{figure}
-\begin{figure}[ht]
-    \marginfignote{4}{This is the grid now. At this point, there are only a few models in every grid that did not simulate properly.}
-    \centering
-    \incplot{w25-grid-fate}
-\end{figure}
 
-Below, I plot the final period of the binaries.
-\begin{figure}[ht]
-    \centering
-    \incplot{w25-grid-period}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \incplot{w25-grid-star_2_mass}
-\end{figure}
-
-
-
-
-
-
-\section{Reviving MESA models II}
+\newsection{Reviving MESA models II}
 
 As I have shown in the previous section, my code to ``revive'' \emph{MESA} models works very well.
 However, there are still a handful of models that fail to converge. Looking at the output, we see that the models get stuck in a loop where they keep trying the same two starting photos in a row.
 
-\begin{minted}[fontsize=\small,breaklines]{text}
+\begin{minted}[fontsize=\small]{text}
 cleaning dir
 making binaries
 11800, not enough models between
@@ -377,7 +441,9 @@ retries succesful
 x200
 \end{minted}
 
-\begin{minted}[fontsize=\small,breaklines]{text}
+This is another example of a model that experiences a similar issue.
+
+\begin{minted}[fontsize=\small]{text}
 cleaning dir
 making binaries
 22750, not enough models between
@@ -451,68 +517,100 @@ x950
 
 Luckily, we can fix this quite easily.
 
-\section{Interesting model}
+Below, I write the updated main loop:
 
-\lstinline[style=output, breaklines=true]|R500.00_q0.700_eps0.250_delta0.200_M3.0/resume-past-instability.py|
-This model has a \emph{very} late thermal pulse.
-\lstinline[style=output, breaklines=true]|R1000.00_q0.429_eps0.250_delta0.200_M2.2| also has a \emph{very} late thermal pulse. 
+\begin{minted}[fontsize=\small]{py}
 
-\newsection{Testing MESA dredge-up}
-To validate the abundance post-processing procedure that I am to use, we can look at elements for which we \emph{know} the abundances both in the intershell region, \emph{and} in the envelope. We can then \emph{just} use the intershell abundances, the mass of dredge-up and the mass of the convective envelope to predict the envelope abundances.
+# the beginning is the same
 
-I have previously simulated a single star \((z=0.00453 \emph{ and } M_\text{TPAGB,i} = 2\;M_\odot )\) with \emph{a lot} of profiles throughout the complete evolution.
+print("cleaning dir")
+subprocess.run(["./clean"])
+print("making binaries")
+subprocess.run(["./mk"])
 
-This star does not have individual abundances for isotopes, \emph{but} it does have the hydrogen, helium and metal mass fractions. We can use this metal mass fraction. It should not matter if we are looking at a single isotope or if we are looking at the combination of a bunch of isotopes.
+restarts = 1
 
-Let me show the metal mass fraction for a couple of profiles. \href{https://s-koen.github.io/figures/#/plots/master-internship/w21/dredge-up}{This interactive plot} however, shows the mass fraction of metals as a function of time.
 
+try:
+    history = mr.MesaData(f"LOGS/history.data")
+except FileNotFoundError:
+    print("running from scratch because data is missing")
+    subprocess.run([f"./rn"])
+
+# i introduce a boolean "strict", which is on by default.
+# it chances the conditions a photo has to satisfy in order
+# to be accepted as the starting photo.
+# if strict:
+#   -   difference between starting photo and final model
+#       of the previous run has to be greater than 30 models.
+#   -   starting photo and photo before it need to have the
+#       exact same number of retries
+#
+# if not strict:
+#   -   photo only needs to be older than the final model
+#       of the last simulation.
+#   -   starting photo can have 3 retries more than the
+#       photo before it.
+
+strict = True
+
+# prev_start_models is now a list to keep all previous starts stored.
+prev_start_models = []
+
+# i increase the limit of retries to 15.
+while restarts <= 15 and not check_finished():
+
+    print(f"{prev_start_models = }")
+
+    photo_int, mesh_delta_coeff, start_model = get_restart(prev_start_models, strict)
+    update_inlist(mesh_delta_coeff)
+
+    print(photo_int)
+    subprocess.run([f"./re", photo_int])
+
+    if check_finished():
+        break
+
+    # if the simulation moved past a troublesome part, we can remove the
+    # previous photos and return to the strict mode if we are no longer
+    # in this mode.
+
+    if len(prev_start_models) > 0 and start_model > np.max(prev_start_models) + 149:
+        prev_start_models = []
+        strict = True
+
+    # we add the previous photo to the list of starting models.
+
+    prev_start_models.append(start_model)
+
+    restarts += 1
+
+    # if we encountered 3 restarts at a similiar point without making progress,
+    # we disable strict mode and try again.
+
+    if len(prev_start_models) > 3 and strict == True:
+        prev_start_models = []
+        strict = False
+\end{minted}
+
+\newsubsection{Results}
 \begin{figure}[ht]
-    \marginfignote{0}{The vertical lines denote the border of the CO-core and the helium core. The intershell region lies between these two lines. The border between the CO-core and the intershell region is not very sharp. This is however not a big problem because the TDU does not get close to this border at all. This can clearly be seen in the interactive figure.}
-    \marginfignote{15}{After the gradual border between the CO-core and the intershell region, we see that the metal mass fraction is roughly constant. We can use an average here to determine the metal mass fraction in the intershell region as a function of time.}
+    \marginfignote{0}{After the second fix, nearly all models completed, with the two exceptions being:}
+    \marginfignote{5}{
+\begin{enumd}
+    \item  A model is still simulating and experiencing a late thermal pulse, which takes a long time
+    \item  I forgot to simulate a model that did not strip its envelope with the new fix.
+\end{enumd}
+    }
     \centering
-    \incplot{w25-show-profiles-1}
+    \incplot{w25-grid-fate-2}
 \end{figure}
 
-Below I plot this, as well as a similarly retrieved envelope abundance:
 \begin{figure}[ht]
-    \marginfignote{0}{The intershell abundances actually have some slight pulsation during thermal pulses. I do not think this is noise and I expect this to be a real effect.}
-    \marginfignote{20}{We can also clearly see that the envelope does not get enriched during the first thermal pulses. This is in line with what we expect, where there is nearly no TDU during the earlier pulses.}
     \centering
-    \incplot{w25-z-inter+env}
+    \incplot{w25-grid-accr}
 \end{figure}
 
-From the \lstinline[style=output, breaklines=true]|history| data, we know \(M_\text{DUP}\) and \(M_\text{env}\). For the sake of completeness, let me plot these as well.
-
-\begin{figure}[ht]
-    \marginfignote{10}{I am approximating the dredge-up as happening instantaneously. This means we are seeing a bunch of \(\delta\)-functions here.}
-    \centering
-    \incplot{w25-m_env}
-\end{figure}
-
-Since my approximation uses instantaneous dredge-up, I then use the following equation:
-
-% # z_metal_env_next = z_metal_env * M_env / (M_env + M_dup)
-\begin{align*}
-    \Delta Z_\text{env} &= \frac{M_\text{\(Z\),env} + \Delta M_\text{\(Z\),env}}{M_\text{env} + \Delta M_\text{env}} - \frac{M_\text{\(Z\),env}}{M_\text{env}}\\
-    &= \frac{M_\text{\(Z\),env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}} - \frac{M_\text{\(Z\),env}}{M_\text{env}}\\
-    \intertext{or, for implementation in code:}
-    Z_\text{env,next} &= Z_\text{env} + \Delta Z_\text{env} = \frac{M_\text{\(Z\),env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}}\\
-    Z_\text{env,next} &= \frac{Z_\text{env} \cdot M_\text{env} + M_\text{DUP}\cdot Z_\text{is}}{M_\text{env} + M_\text{DUP}}
-\end{align*}
-Below we see the results of this.
-\begin{figure}[ht]
-    \marginfignote{0}{Here I plot the actual mass fraction of metals as a function of time and the post-processed mass fraction of metals.}
-    \marginfignote{10}{The envelope abundances are \emph{quite} close but not identical. It seems like we \emph{slightly} overestimate the effects of dredge-up. }
-    \centering
-    \incplot{w25-compare-real-articifial}
-\end{figure}
-Similarly to how I computed the envelope abundances, we can also compute \(M_\text{DUP}\) using the intershell and envelope abundances and compare this mass with the dredge-up mass that I find using just the history data. 
-
-\begin{figure}[ht]
-    \marginfignote{0}{Here we see nearly the same thing. We slightly overestimate the amount of dredge-up that occurs.}
-    \centering
-    \incplot{w25-compare-dup}
-\end{figure}
 
 \section{Problem with Grid Setup}
 When working on some dredge-up calculations, I kept running into a problem where the simple binary evolution would not agree with the start of the detailed \emph{MESA} binary evolution.
@@ -530,7 +628,6 @@ After some debugging, I was able to attribute this to the way I determine the st
     \incplot{w25-incorrect-setup}
 \end{figure}
 
-\nextpage
 I have now fixed this!
 \begin{figure}[ht]
     \marginfignote{0}{The green dot is the starting position of the binary \emph{after} fixing the grid generation code.}

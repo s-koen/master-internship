@@ -450,7 +450,9 @@ for i, m_i in enumerate([1.8, 2.2, 2.6, 3.0]):
     # axs[i].set_xlim(min_age)
 
     star = get_star(m=m_i)
-    axs[i].plot(star.log_Teff, star.log_L, c="C9", linewidth=0.75, zorder=-1)
+    axs[i].plot(
+        star.log_Teff, star.log_L, c="C9", linewidth=0.75, zorder=-1, rasterized=True
+    )
     axs[i].text(
         0.05,
         0.95,
@@ -511,7 +513,9 @@ for i, m_i in enumerate([1.8, 2.2, 2.6, 3.0]):
     # axs[i].set_xlim(min_age)
 
     star = get_star(m=m_i)
-    axs[i].plot(star.log_Teff, star.log_L, c="C9", linewidth=0.75, zorder=-1)
+    axs[i].plot(
+        star.log_Teff, star.log_L, c="C9", linewidth=0.75, zorder=-1, rasterized=True
+    )
     axs[i].text(
         0.05,
         0.95,
@@ -915,7 +919,7 @@ print(winds)
 # %%
 
 fix = mr.MesaData(
-    "/home/koen/master-internship/mesa-models/R800.00_q0.700_eps0.250_delta0.200_M2.2/LOGS/history.data"
+    "/home/koen/master-internship/mesa-models/grid-masses-3-2026-08-26/R800.00_q0.700_eps0.250_delta0.200_M2.2/LOGS/history.data"
 )
 
 # %%
@@ -946,11 +950,47 @@ plt.plot(model.age, model.vwind_over_vorbit)
 plt.show()
 # %%
 
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
 plt.plot(bin.age, bin.a)
 plt.plot(model.age, model.binary_separation)
-plt.plot(star.age, 10**star.log_R)
+plt.xlim(model.age[0] - 300000, model.age[-1] + 10000)
+axs.spines[["right", "top"]].set_visible(False)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel("Separation ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-wrong-separation.pgf", format="pgf")
+
 plt.show()
+plt.close()
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+
+plt.plot(bin.age, bin.a)
+plt.plot(model.age, model.binary_separation)
+plt.plot(fix.age + model.age[0], fix.binary_separation, c="C3")
+plt.scatter(
+    fix.age[0] + model.age[0], fix.binary_separation[0], color="C2", zorder=3, s=50
+)
+
+plt.xlim(model.age[0] - 300000, model.age[-1] + 10000)
+axs.spines[["right", "top"]].set_visible(False)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel("Separation ($R_\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-wrong-separation-fix.pgf", format="pgf")
+
+plt.show()
+plt.close()
+# %%
+
+
 import os
 import re
 
@@ -1085,7 +1125,7 @@ def get_model_dict2(params, evolution):
 models_dict2 = get_model_dict2(x, None)
 # %%
 fig, axs = plt.subplots(
-    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+    1, 1, sharex=True, figsize=set_size(full, height=0.75), constrained_layout=True
 )
 
 
@@ -1096,15 +1136,15 @@ for model1, model2 in zip(models_dict.values(), models_dict2.values()):
         color="C3",
         zorder=100,
         marker="x",
-        label="correct starting point",
+        label="incorrect starting point",
     )
     w = plt.scatter(
         model2["age"],
-        model2["R"],
+        model2["real_R"],
         color="C2",
         zorder=90,
         marker="s",
-        label="incorrect starting point",
+        label="correct starting point",
     )
 
 fig.legend(loc="outside upper center", ncols=2, handles=[c, w])
@@ -1119,5 +1159,217 @@ plt.ylabel("Radius ($R_\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w25-incorrect-setup.pgf", format="pgf")
 plt.show()
 plt.close()
+
+# %%
+grid3 = MesaGrid(f"{MASTER}grid-masses-3-2026-08-24")
+# grid.merge(grid3, overwrite=True)
+# %%
+grid4 = MesaGrid(f"{MASTER}grid-masses-4-2026-08-25")
+# grid.merge(grid4, overwrite=True)
+# %%
+print(grid4.models)
+for model in grid4.models:
+    print(model.envelope_mass[-1])
+
+# %%
+import matplotlib
+
+
+def z(r):
+    try:
+        r.period_days[-1]
+    except IndexError:
+        return np.nan
+
+    if r.envelope_mass[-1] > 1e-2:
+        if r.period_days[-1] < 50:
+            return 0.5
+        else:
+            return 0
+
+    return 1
+
+
+from matplotlib.colors import ListedColormap
+
+# Let's also design our color mapping: 1s should be plotted in blue, 2s in red, etc...
+col_dict = {
+    0: "C3",
+    0.2: "C1",
+    1: "C2",
+}
+
+# We create a colormar from our list of colors
+cm = ListedColormap([col_dict[x] for x in col_dict.keys()])
+
+# Let's also define the description of each category : 1 (blue) is Sea; 2 (red) is burnt, etc... Order should be respected here ! Or using another dict maybe could help.
+labels = np.array(["Still simulating / forgotten", "Darwin Instability", "Completed"])
+len_lab = len(labels)
+# prepare normalizer
+# Prepare bins for the normalizer
+norm_bins = np.sort([*col_dict.keys()]) + 0.5
+norm_bins = np.insert(norm_bins, 0, np.min(norm_bins) - 1.0)
+print(norm_bins)
+# Make normalizer and formatter
+norm = matplotlib.colors.BoundaryNorm(norm_bins, len_lab, clip=True)
+
+
+fig, axs = plt.subplots(
+    2,
+    2,
+    sharey=True,
+    sharex=True,
+    figsize=set_size(column, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+minn = 0
+maxx = -1e99
+
+
+R, q, ratio = grid.array(z, x="R", y="q")
+
+minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+print(minn, maxx)
+ms = [1.8, 2.2, 2.6, 3.0]
+
+for i, ax in enumerate(axs):
+
+    ax.set_title(f"$M_\\textrm{{TPAGB}} = {ms[i]:.1f}\\;M_\\odot$")
+    R, q, ratio = grid.array(z, x="R", y="q", m=ms[i])
+    print(ratio.T)
+
+    c = axs[i].pcolormesh(
+        R,
+        q,
+        ratio.T,
+        shading="auto",
+        cmap=cm,
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+
+
+fig.supxlabel(r"Roche lobe radius ($R_\odot$)", fontsize=10)
+fig.supylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)", fontsize=10)
+
+fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: labels[norm(x)])
+
+plt.colorbar(
+    c,
+    ax=axs,
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+    ticks=[0.333 / 2, 0.5, 1 - 0.333 / 2],
+    format=fmt,
+)
+plt.yticks(
+    [0.7, 0.66, 0.63, 0.6, 0.5, 0.44, 0.4][::-1], [f"{q:.2f}" for q in grid.axes["q"]]
+)
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-grid-fate-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+
+def z(r):
+    try:
+        r.period_days[-1]
+    except IndexError:
+        return np.nan
+
+    if r.envelope_mass[-1] > 1e-2:
+        return np.nan
+
+    return r.star_2_mass[-1] - r.params["q"] * r.params["m"]
+
+
+fig, axs = plt.subplots(
+    2,
+    2,
+    sharey=True,
+    sharex=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+minn = 1e99
+maxx = -1e99
+
+
+R, q, ratio = grid.array(z, x="R", y="q")
+
+minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+print(minn, maxx)
+ms = [1.8, 2.2, 2.6, 3.0]
+
+for i, ax in enumerate(axs):
+
+    ax.set_title(f"$M_\\textrm{{TPAGB}} = {ms[i]:.1f}\\;M_\\odot$")
+    R, q, ratio = grid.array(z, x="R", y="q", m=ms[i])
+    print(ratio.T)
+
+    c = axs[i].pcolormesh(
+        R,
+        q,
+        ratio.T,
+        shading="auto",
+        cmap="viridis",
+        vmin=minn,
+        vmax=maxx,
+        rasterized=True,
+    )
+    for k, d in enumerate(R):
+        for j, qq in enumerate(q):
+            try:
+                axs[i].text(
+                    d,
+                    qq,
+                    f"{ratio[k,j]:.2f}",
+                    ha="center",
+                    va="center",
+                    fontsize=6,
+                    c="k" if (ratio[k, j] - minn) / (maxx - minn) > 0.5 else "w",
+                    zorder=1000,
+                )
+                print(ratio[k, j])
+            except:
+                pass
+
+
+fig.supxlabel(r"Roche lobe radius ($R_\odot$)", fontsize=10)
+fig.supylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)", fontsize=10)
+
+fmt = matplotlib.ticker.FuncFormatter(lambda x, pos: labels[norm(x)])
+
+plt.colorbar(
+    c,
+    ax=axs,
+    orientation="horizontal",
+    location="top",
+    aspect=50,
+    label=r"$\Delta M_\textrm{Ba-star}$ ($M_\odot$)",
+)
+plt.yticks(
+    [0.7, 0.66, 0.63, 0.6, 0.5, 0.44, 0.4][::-1], [f"{q:.2f}" for q in grid.axes["q"]]
+)
+
+plt.savefig("/home/koen/LaTeX-setup/plots/w25-grid-accr.pgf", format="pgf")
+plt.show()
+plt.close()
+
 
 # %%
