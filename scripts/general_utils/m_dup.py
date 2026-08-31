@@ -528,3 +528,296 @@ def track_DUP(model):
 
 
 # %%
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from matplotlib.style import context
+import sys
+import pickle
+
+sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
+from plot_size import set_size
+
+column = 312.98032
+full = 483.69684
+plt.style.use("default")
+plt.style.use("tex rm")
+
+sys.path.insert(1, "/home/koen/master-internship/")
+from scripts.general_utils.cplot import cplot
+from scripts.general_utils.cache import get_star
+
+plt.cplot = cplot
+
+sys.path.insert(1, "/home/koen/master-internship/")
+MASTER = "/home/koen/master-internship/mesa-models/"
+
+import mesa_reader as mr
+from scripts.general_utils.mesa_grid_2 import MesaGrid
+
+grid = MesaGrid(f"{MASTER}/grid-masses-2-2026-08-16-clean")
+
+for m in grid.models:
+    star = get_star(m=m.params["m"])
+    plt.plot(star.age, m.sb.a)
+    plt.plot(m.age, m.binary_separation)
+    break
+plt.show()
+print(m)
+
+# %%
+
+import pickle
+import re
+from collections import defaultdict
+
+
+class Isotope:
+    def __init__(self, isotope):
+        self.key = isotope
+
+        match isotope:
+            case "n":
+                self.mass = 1
+                self.name = f"$\\textrm{{{isotope}}}$"
+                self.short_name = "neutron"
+            case "p":
+                self.mass = 1
+                self.name = f"$\\textrm{{{isotope}}}^{{+}}$"
+                self.short_name = "proton"
+            case "d":
+                self.mass = 2
+                self.name = f"$\\textrm{{{isotope}}}$"
+                self.short_name = "deuterium"
+            case _:
+                match = re.match(r"([a-zA-Z]+)(\d+)$", isotope)
+                if match:
+                    self.short_name = match.group(1)
+                    self.mass = int(match.group(2))
+                    self.name = (
+                        f"$\\textrm{{{self.short_name.capitalize()}}}_{{{self.mass}}}$"
+                    )
+                else:
+                    self.short_name = None
+                    self.name = None
+                    self.mass = None
+
+    def __str__(self):
+        return f"{self.key} with mass {self.mass}"
+
+    def __repr__(self):
+        return f"{self.key}"
+
+
+class Element:
+    def __init__(self, name):
+        self.key = name
+        self.name = name.capitalize()
+        self.isotopes = {}
+
+    def add_isotope(self, isotope):
+        self.isotopes[isotope.key] = isotope
+
+    def __getitem__(self, isotope):
+        return self.isotopes[isotope]
+
+    def __iter__(self):
+        return iter(self.isotopes.values())
+
+    def __repr__(self):
+        return self.key
+
+    def __getattr__(self, name):
+        if name in self.isotopes:
+            return self.isotopes[name]
+
+
+class AbundanceTables:
+    def __init__(self):
+
+        with open("data/intershell_pd_df.pkl", "rb") as f:
+            self.intershell = pickle.load(f)
+
+        species = self.intershell.columns[4:]
+
+        self.isotopes = {spec: Isotope(spec) for spec in species}
+
+        self.elements = {}
+
+        for isotope in self.isotopes.values():
+            if isotope.short_name is None:
+                continue
+
+            element = self.elements.setdefault(
+                isotope.short_name, Element(isotope.short_name)
+            )
+            element.add_isotope(isotope)
+
+        with open("data/env_pd_df.pkl", "rb") as f:
+            self.envelope = pickle.load(f)
+
+        self.envelope = self.envelope[self.envelope["pmz"] == 2e-3]
+        self.envelope = self.envelope[self.envelope["N_ov"] != 0]
+        self.envelope = self.envelope[self.envelope["Z"].astype(np.float64) == 0.014]
+        self.envelope = self.envelope[self.envelope["M_init"].astype(np.float64) == 2]
+
+    def __getattr__(self, name):
+        try:
+            return self.isotopes[name]
+        except KeyError:
+            raise AttributeError(f"{type(self).__name__} has no attribute {name!r}")
+
+    def get_initial_envelope_abundance(self, element, metallicity):
+        df = self.envelope[self.envelope["element"] == element]
+        return float(df["massfrac"].iloc[-1]) * metallicity
+
+
+class Abundances:
+    """
+    this class computes and contains the abundances of the envelope of a
+    binary run. it uses the MESA binary simulation, combined with the
+    simple binary to determine
+    """
+
+    def __init__(self, model, df):
+        self.model = model
+        df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
+        self.df = df
+
+        simple = get_star(full_path=m.params["single_star"])
+
+        self.dup_simple = compute_m_DUP(simple)
+        self.dup_detailed = compute_m_DUP(model, self.dup_simple)
+
+        binary_start_age = model.age[0]
+
+        simple_age = np.asarray(simple.age)
+
+        self.simple_end_idx = (
+            np.searchsorted(
+                simple_age,
+                binary_start_age,
+                side="right",
+            )
+            - 1
+        )
+
+        self.total_length = self.simple_end_idx + len(self.model.age)
+        self.m_dup = np.zeros(self.total_length)
+        self.m_env = np.concatenate(
+            [simple.m_env[: self.simple_end_idx], self.model.envelope_mass]
+        )
+        self.time = np.concatenate([simple.age[: self.simple_end_idx], self.model.age])
+
+        m2 = np.concatenate(
+            [
+                self.model.sb.m2[: self.simple_end_idx],
+                self.model.star_2_mass,
+            ]
+        )
+
+        valid = ~np.isnan(m2)
+
+        m2_filled = np.nan_to_num(m2, nan=0)
+
+        dm = np.diff(m2_filled)
+        dm[~valid[:-1] | ~valid[1:]] = 0
+
+        self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+
+        for key, value in self.dup_simple.items():
+            if value["index"] > self.simple_end_idx:
+                break
+            self.m_dup[value["index"]] = value["mass"]
+
+        for key, value in self.dup_detailed.items():
+            self.m_dup[self.simple_end_idx + value["index"]] = value["mass"]
+
+    def __getattr__(self, name):
+        if name in self.df.elements:
+
+            # compute the intershell elemental abundance
+            intershell = self.compute_intershell(name)
+
+            # compute the initial envelope abundance
+            envelope = self.compute_envelope_abundance(name, intershell)
+
+            self.df.elements[name].envelope = envelope
+            self.df.elements[name].intershell = intershell
+            self.df.elements[name].m_accreted = np.cumsum(envelope * self.dm_acc)
+
+            return self.df.elements[name]
+
+        if name in self.df.isotopes:
+
+            return self.df.isotopes[name]
+
+    def compute_intershell(self, name):
+        # TODO: this needs to be changed to the ACTUAL abundances
+        # keep in mind that we need to sum the abundances for the
+        # different isotopes separately.
+        # it is also important to keep in mind that the abundances
+        # here should be MASS RATIOS.
+        intershell = np.zeros(self.total_length)
+        for isotope in self.df.elements[name].isotopes:
+            intershell += 0.1 * np.random.rand() * np.ones(self.total_length)
+        return intershell
+
+    def compute_envelope_abundance(self, name, intershell):
+        # INFO: gets the initial envelope abundance of the element
+        # scaled by the metallicity of the model.
+        initial_envelope_abundance = self.df.get_initial_envelope_abundance(
+            element=name,
+            metallicity=self.model.params["z"],
+        )
+
+        # INFO: computes the elemental abundance in the envelope by
+        # enriching it with intershell abundances.
+        envelope = np.zeros(self.total_length)
+        delta_M_element = intershell * self.m_dup
+        for i in range(self.total_length):
+            if i == 0:
+                envelope[i] = initial_envelope_abundance
+                continue
+            envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
+                self.m_env[i] + self.m_dup[i]
+            )
+
+        return envelope
+
+
+# %%
+
+df = AbundanceTables()
+# %%
+
+ab = Abundances(model=m, df=df)
+# %%
+
+ab.df.elements
+# %%
+for i, name in enumerate(list(ab.df.elements)[:15]):
+    print(name)
+    if name in [
+        "neutron",
+        "proton",
+        "deuterium",
+        "li",
+        "be",
+        "b",
+    ]:
+        continue
+
+    element = getattr(ab, name)
+    plt.plot(ab.time, element.envelope, label=element.name, c=f"C{i}")
+    plt.plot(ab.time, element.intershell, c=f"C{i}", linewidth=3, alpha=0.5)
+    print(element, element.isotopes)
+
+plt.legend()
+plt.show()
+# %%
+print(m.params)
+# %%
+print(grid.settings)
+# %%

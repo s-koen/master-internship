@@ -1,0 +1,31 @@
+---------------------------------------------------------------------
+Title: Impact of \textit{T}- and $\rho$-dependent decay rates and new (n,$\gamma$) cross sections on the \textit{s} process in low-mass AGB stars
+Authors: B. Szányi, A. Yagüe López, A.I. Karakas, M. Lugaro
+--------------------------------------------------------------------
+Description of contents: Surface isotopic abundance data tables of seven stellar models of low-mass AGB stars from Karakas & Lugaro (2016) for three nuclear networks. The sources of the reaction rates in the different sets are described in Table 2 of the article. Each file includes 1) The essential features of the models in the header: initial mass (M), initial mass fraction of helium (Y), initial metallicity (Z), and the nucleosynthesis set; 2) The mass number (A), atomic number (Z) and neutron number (N) for 328 isotopes that includes in our nuclear network; 3) Initial normalised number abundances (from Apslund et. al. 2009) used in the post-processing calculations; 4) Surface normalised number abundances calculated at each thermal pulse steps; 5) Final normalised number abundances computed at the last time step.
+
+	Filename		Mass (Msun)	Metallicity	Set
+	srf_m3z007_set0.dat	3		0.007		0
+	srf_m4z007_set0.dat	4		0.007		0
+	srf_m2z014_set0.dat	2		0.014		0
+	srf_m3z014_set0.dat	3		0.014		0
+	srf_m4z014_set0.dat	4		0.014		0
+	srf_m3z030_set0.dat	3		0.03		0
+	srf_m4z030_set0.dat	4		0.03		0
+	srf_m3z007_set1.dat	3		0.007		1
+	srf_m4z007_set1.dat	4		0.007		1
+	srf_m2z014_set1.dat	2		0.014		1
+	srf_m3z014_set1.dat	3		0.014		1
+	srf_m4z014_set1.dat	4		0.014		1
+	srf_m3z030_set1.dat	3		0.03		1
+	srf_m4z030_set1.dat	4		0.03		1
+	srf_m3z007_set2.dat	3		0.007		2
+	srf_m4z007_set2.dat	4		0.007		2
+	srf_m2z014_set2.dat	2		0.014		2
+	srf_m3z014_set2.dat	3		0.014		2
+	srf_m4z014_set2.dat	4		0.014		2
+	srf_m3z030_set2.dat	3		0.03		2
+	srf_m4z030_set2.dat	4		0.03		2
+
+
+System requirements: None specific to these files.

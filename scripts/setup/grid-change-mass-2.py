@@ -84,6 +84,12 @@ def get_initial_Z():
 star_Z = get_initial_Z()
 
 
+class SimpleBinary:
+    def __init__(self, a, m2):
+        self.a = a
+        self.m2 = m2
+
+
 class Evolution:
     def __init__(self, bin, Star, inds):
         self.bin = bin
@@ -407,6 +413,16 @@ def write_run_files(params, model, evolution, run_dir):
     inlist_bin = f"{run_dir}/inlist_project"
     inlist_star = f"{run_dir}/inlist1"
     inlist_common = f"{run_dir}/inlist_common"
+
+    bin = evolution.bin
+    star = evolution.star
+    m2 = np.interp(star.age, bin.age, bin.m2, np.nan, np.nan)
+    a = np.interp(star.age, bin.age, bin.a, np.nan, np.nan)
+
+    sb = SimpleBinary(a, m2)
+    with open(f"{run_dir}/simple_binary.pkl", "wb") as f:
+        pickle.dump(sb, f, protocol=pickle.HIGHEST_PROTOCOL)
+
     generate_run_file(
         m_i,
         R,

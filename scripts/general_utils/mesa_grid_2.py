@@ -7,6 +7,15 @@ import math
 import re
 import sys
 
+from scripts.evolve_mesa.constants import *
+from scripts.evolve_mesa.bin_input import *
+from scripts.evolve_mesa.read_mist_models import *
+from scripts.evolve_mesa.mrenv import *
+from scripts.evolve_mesa.orbit_evol import *
+from scripts.evolve_mesa.rgbf import *
+from scripts.evolve_mesa.star_model import *
+from scripts.evolve_mesa.grid_call import *
+
 sys.path.insert(1, "/home/koen/master-internship/")
 from scripts.general_utils.cache import get_star
 
@@ -87,7 +96,9 @@ class MesaGrid:
                 continue
 
             try:
-                self.models.append(MesaRun(run_dir, self.fresh, self.loc))
+                self.models.append(
+                    MesaRun(run_dir, self.fresh, self.loc, z=self.settings["star_Z"])
+                )
             except FileNotFoundError:
                 self.failed_models.append(run_dir)
 
@@ -153,7 +164,7 @@ class MesaGrid:
 
 class MesaRun:
 
-    def __init__(self, run_dir, fresh, loc):
+    def __init__(self, run_dir, fresh, loc, z=0.00557):
         self.run_dir = run_dir
         self.loc = loc
 
@@ -162,6 +173,7 @@ class MesaRun:
 
         self.params["f_beta"] = self.params["beta"] / (1 - self.params["eps"])
         self.params["f_delta"] = self.params["delta"] / (1 - self.params["eps"])
+        self.params["z"] = z
 
         if "m" not in self.params:
             self.params["m"] = self.get_mass_from_model_path(self.params["model_name"])
@@ -169,18 +181,27 @@ class MesaRun:
         if "TP" not in self.params:
             self.params["TP"] = self.get_TP_from_model_path(self.params["model_name"])
 
+        self.get_star_dir_from_model_path(self.params["model_name"])
+
         self.get_starting_model(fresh)
         self.get_history(fresh)
-        self.get_profiles(fresh)
+        self.get_simple_binary(fresh)
 
         self.env_mass = self.history.envelope_mass
         self.q = self.history.star_2_mass / self.history.star_1_mass
-        star = get_star(m=self.params["m"])
+        star = get_star(full_path=self.params["single_star"])
         tpagb_age = star.age[star.ntpagb]
         self.age = self.starting_model.star_age + tpagb_age + self.star_age
 
     def __getattr__(self, name):
+        if name == "profiles":
+            self.get_profiles(fresh=False)
+            return self.profiles
+
         return getattr(self.history, name)
+
+    def get_star_dir_from_model_path(self, model_path):
+        self.params["single_star"] = str(Path(model_path).parent.parent) + "/"
 
     def get_mass_from_model_path(self, model_path):
         match = re.search(r"/M([0-9.]+)/models/", str(model_path))
@@ -197,6 +218,30 @@ class MesaRun:
             raise ValueError(f"could not extract TP from {model_path}")
 
         return float(match.group(1))
+
+    def get_simple_binary(self, fresh):
+        if fresh:
+
+            star = get_star(full_path=self.params["single_star"])
+            a_init = inv_roche_lobe(self.params["R"], self.params["q"])
+            [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
+                star, self.params["q"], a_init, simple_only=True
+            )
+            bin = Bins[0]
+            m2 = np.interp(star.age, bin.age, bin.m2, np.nan, np.nan)
+            a = np.interp(star.age, bin.age, bin.a, np.nan, np.nan)
+
+            self.sb = SimpleBinary(a, m2)
+            with open(f"{self.run_dir}/simple_binary.pkl", "wb") as f:
+                pickle.dump(self.sb, f, protocol=pickle.HIGHEST_PROTOCOL)
+            return
+
+        try:
+            with open(f"{self.run_dir}/simple_binary.pkl", "rb") as f:
+                self.sb = pickle.load(f)
+            return
+        except FileNotFoundError:
+            self.get_simple_binary(fresh=True)
 
     def get_starting_model(self, fresh):
         if fresh:
@@ -256,3 +301,10 @@ class MesaRun:
                 (key, value) for key, value in self.params.items() if key != "grid_name"
             )
         )
+
+
+class SimpleBinary:
+
+    def __init__(self, a, m2):
+        self.a = a
+        self.m2 = m2

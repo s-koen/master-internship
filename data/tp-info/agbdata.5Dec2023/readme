@@ -1,0 +1,74 @@
+
+A compilation of the AGB stellar model data, surface abundances and stellar yields from the Monash/Stromlo Stellar Structure code.
+
+These include:
+
+Karakas & Lugaro (2016) model set
+---------------------------------
+
+AGB models with Z = 0.03, 0.014 (solar), 0.007 mpublished in Karakas & Lugaro (2016). The range of masses are from 1Msun to the upper limit for CO cores, 7 or 8Msun, depending on Z. 
+
+The data files associated with that paper can be found in the sub-folder:
+
+../agbdata/karakas_lugaro2016_datafiles
+
+The isotopic yields (including 7Li) can be under individual sub-folders for each metallicity.
+Note that regarding the isotopic yields, we don't trust the isotopic ratios for elements beyond Mo  (e.g., we didn't include the density dependence on the decay of 99Tc). These issues with the network have been fixed but we haven't yet recalculated the yields.
+
+I also re-calculated an extended set of nucleosynthesis models with a smaller partial mixing zone, these can be found under 
+
+../agbdata/karakas_lugaro2016_extended_set/ 
+
+In some cases there is also a sub-folder with "AGB_model_data". These contain stellar structure information for each mass, Z combination for each thermal pulse calculated. See the "readme.agb-model-info" for more details.
+
+Other AGB metallicity grids:
+----------------------------
+
+1. Z = 0.0006 - published in Shingles et al. (2016) and Karakas et al. (2014). These include low-metallicity helium "normal" and helium rich stellar yields and models.
+
+2. Z = 0.001 - published in Fishlock et al. (2014). Scaled solar models for comparison to halo stars.
+
+3. Z = 0.0001 - for comparison to CEMP s-stars, published in Lugaro et al. (2012). Also includes a set of alpha-enhanced nucleosynthesis models and yields.
+
+4. Z = 0.0028 - extending the Karakas & Lugaro (2016) down to Z ~ 0.003, applicable to the SMC. Published in Karakas et al. (2018).
+
+5. Z = 2.2e-4 - NOT published. See the 'readme' file in the sub-directory for more information. 
+
+6. We have also published yields for very metal-rich AGB models with Z = 0.04 to 0.1; see Cinquegrana et al. (2022). 
+If you would like these, please contact me or Giulia Cinquegrana directly. 
+
+
+Useful notes:
+--------------
+
+1. The stellar yields = isotopic yields.
+
+2. Model data is the same as described elsewhere, and includes structural
+properties during the thermally-pulsing AGB phase, for each thermal pulse.
+
+3. Mass loss on the AGB: 
+   We mostly use assiliadis & Wood (1993, VW93), which is a good match for carbon stars.
+   For some of the lower metallicity models, we adopt Bloecker (1995) for intermediate-mass stars since these luminous stars never become C-rich. See the papers for details.
+
+
+4. Partial mixing zones: required for s-process in low-mass AGB models. 
+   These allow for the formation of a c13 pocket and the release of neutrons (see description in Karakas & Lugaro 2016).
+   We used (for solar Z):
+   M <= 2.5: PMZ = 2e-3 Msun
+   M > 4.0: no partially mixed zone; neutrons entirely from ne22(a,n)mg25 reaction.
+   3.0 < M < 4.0: a transition region where we used a smaller pocket of PMZ = 1e-4
+   2.5 < M < 3.0: a region where we used PMZ = 1e-3 Msun
+
+   the size of the resultant c13 pocket < the size of the mass region over which we mix in protons (the PMZ).
+
+   Also the mass regimes shift down in lower metallicity models because metal-poor models
+   have larger H-exhausted cores, at a given mass.
+
+
+History:
+--------
+
+The Monash/Stromlo code was originally developed at Mt Stromlo Observatory in Canberra by Peter Wood and John Faulkner and was designed to model low and intermediate-mass stars through the difficult AGB phase. The code has been in use since the 1970s.  John Lattanzio was supervised by Peter Wood, who took the code to Monash. Since then John's students have been constantly updating/adding it (e.g., adding C-rich low temperature opacities etc). 
+
+The post-processing nucleosynthesis code was designed to study the surface abundances and stellar yields of species not included in the stellar evolution code. Most of these nuclear reactions play not role in energy generation (e.g., the Mg-Al chains or (n,g) s-process reactions). We generally limit usage of this code to metallicities above Z ~ 1e-4. Below this value, it is likely that neutron producing reactions may contribute energy toward the structure, especially during proton mixing events.
+

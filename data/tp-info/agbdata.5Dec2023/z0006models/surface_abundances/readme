@@ -1,0 +1,14 @@
+m2.36z0006y24a0pmz0001.surf.dat
+
+M = 2.36Msun, Z = 0.0006, [Fe/H] = -1.4
+
+a0 => no alpha enhancement
+a4 => [alpha/Fe] = +0.4 
+
+pmz0001 => PMZ = 0.001 Msun 
+   size of the partial mixing zone that will be converted into a 13C pocket
+   needed for formation of s-process elements in low-mass AGB stars 
+   (see Shingles et al. 2015) 
+
+pmz0 => no partial mixing zone
+   

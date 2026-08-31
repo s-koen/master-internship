@@ -7,8 +7,10 @@ import re
 
 filepath = "/home/koen/master-internship/data/"  # Filepath where all information is stored/saved
 species_folder = "/home/koen/master-internship/data/rob_files/"
-which_folder = (
-    filepath + "rob_files/z0.007_models/"
+which_folders = (
+    filepath + "rob_files/z0.007_models/",
+    filepath + "rob_files/z0.0028_models/",
+    filepath + "rob_files/z0.014_models/",
 )  # Where to find Amanda's data files
 table_location = (
     filepath + "nucsyn_intershell_abundances_karakas_LMC2016_tmp.h"
@@ -36,59 +38,65 @@ with open(species_folder + "species.dat") as f:
 
 print("Number of Isotopes: ", len(isotope))
 
-for filename in sorted(glob.glob(which_folder + "/intershell_*")):
-    print(filename)
-    first = True
-    with open(filename, "r") as file:  # Opening rob.dat file
-        for line in file:  # Sorting through the data
-            newPulse = False
-            line = re.split("\s+", line)
-            if line[0] == "":
-                line = line[1:-1]
-            elif line[-1] == "":
-                line = line[:-1]
-            else:
-                line = line[:-1]
-            line = [float(i) for i in line]
-
-            if line[0] >= 1.0:  # All mass fractions are less than 1
-                newPulse = True
-                TPnum.append(
-                    int(line[0])
-                )  # The intershell file takes Z, pmz, M, and TPnum.
-                if first == True:
-                    M_first = line[3]
-                M.append(float(M_first))
-
-                # automatically get pmz and Z from filename
-                match_number = re.compile("-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?")
-                string_num = re.findall(match_number, filename)
-                Z.append(float(string_num[-3]))
-                pmz.append(string_num[-2])
-
-            else:
-                if len(line) == 11:
-                    if first == False:
-                        if len(newGroup) != 328:
-                            print("Something is off!", len(newGroup))
-                        newline.append(
-                            np.concatenate(
-                                ([Z[-1]], [pmz[-1]], [M[-1]], [TPprev], newGroup),
-                                axis=0,
-                            )
-                        )
-                    # else: newline.append(np.concatenate(([Z[-1]], [pmz[-1]], [M[-1]], [TPnum[-1]], newGroup), axis = 0))
-                    first = False
-                    newGroup = line
-                    TPprev = TPnum[-1]
+for which_folder in which_folders:
+    print(which_folder)
+    for filename in sorted(glob.glob(which_folder + "/intershell_*")):
+        print(filename)
+        first = True
+        with open(filename, "r") as file:  # Opening rob.dat file
+            for line in file:  # Sorting through the data
+                newPulse = False
+                line = re.split("\s+", line)
+                if line[0] == "":
+                    line = line[1:-1]
+                elif line[-1] == "":
+                    line = line[:-1]
                 else:
-                    newGroup = np.concatenate((newGroup, line), axis=0)
+                    line = line[:-1]
+                line = [float(i) for i in line]
 
-        if len(newGroup) != 328:
-            print("Something is off!", len(newGroup))
-        newline.append(
-            np.concatenate(([Z[-1]], [pmz[-1]], [M[-1]], [TPprev], newGroup), axis=0)
-        )
+                if line[0] >= 1.0:  # All mass fractions are less than 1
+                    newPulse = True
+                    TPnum.append(
+                        int(line[0])
+                    )  # The intershell file takes Z, pmz, M, and TPnum.
+                    if first == True:
+                        M_first = line[3]
+                    M.append(float(M_first))
+
+                    # automatically get pmz and Z from filename
+                    match_number = re.compile(
+                        "-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?"
+                    )
+                    string_num = re.findall(match_number, filename)
+                    Z.append(float(string_num[-3]))
+                    pmz.append(string_num[-2])
+
+                else:
+                    if len(line) == 11:
+                        if first == False:
+                            if len(newGroup) != 328:
+                                print("Something is off!", len(newGroup))
+                            newline.append(
+                                np.concatenate(
+                                    ([Z[-1]], [pmz[-1]], [M[-1]], [TPprev], newGroup),
+                                    axis=0,
+                                )
+                            )
+                        # else: newline.append(np.concatenate(([Z[-1]], [pmz[-1]], [M[-1]], [TPnum[-1]], newGroup), axis = 0))
+                        first = False
+                        newGroup = line
+                        TPprev = TPnum[-1]
+                    else:
+                        newGroup = np.concatenate((newGroup, line), axis=0)
+
+            if len(newGroup) != 328:
+                print("Something is off!", len(newGroup))
+            newline.append(
+                np.concatenate(
+                    ([Z[-1]], [pmz[-1]], [M[-1]], [TPprev], newGroup), axis=0
+                )
+            )
 
 print("next step")
 # Column names
@@ -111,9 +119,9 @@ print("Finished :)")
 
 import pickle
 
-# with open(f"data/intershell_pd_df.pkl", "wb") as f:
-#     pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
-#
+with open(f"data/intershell_pd_df.pkl", "wb") as f:
+    pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
+
 # %%
 
 with open(f"data/intershell_pd_df.pkl", "rb") as f:
@@ -912,5 +920,144 @@ plt.ylabel("$Z$ (metal mass fraction)")
 # plt.savefig("/home/koen/LaTeX-setup/plots/w25-z-inter+env.pgf", format="pgf")
 plt.show()
 plt.close()
+
+# %%
+
+
+import re
+import pandas as pd
+
+
+def parse_surf_file(paths):
+
+    header_regex = re.compile(
+        r"Initial mass =\s*([\d.]+).*M_mix =\s*([\d.E+-]+)(?:.*N_ov =\s*([\d.E+-]+))?"
+    )
+
+    tp_regex = re.compile(
+        r"#\s+(\d+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)\s+([\d.E+-]+)"
+    )
+
+    abundance_regex = re.compile(
+        r"^\s*([a-z]{1,2})\s+\d+\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)\s+[\d.E+-]+\s+([\d.E+-]+)",
+        re.IGNORECASE,
+    )
+
+    rows = []
+
+    # state
+    current_mass = None
+    current_mmix = None
+    current_tp_meta = None
+    in_abundance_block = False
+    last_tp = None
+    final = False
+
+    for path in paths:
+
+        Z = float("0." + re.search(r"surf_z(\d+)\.dat$", path).group(1))
+        with open(path) as f:
+            for line in f:
+
+                # -------------------------
+                # NEW MODEL (hard reset)
+                # -------------------------
+                h = header_regex.search(line)
+                if h:
+                    current_mass = float(h.group(1))
+                    current_mmix = float(h.group(2))
+                    N_ov = float(h.group(3)) if h.group(3) is not None else 1.0
+
+                    current_tp_meta = None
+                    in_abundance_block = False
+
+                    last_tp = None
+                    continue
+
+                # -------------------------
+                # TP HEADER
+                # -------------------------
+                t = tp_regex.match(line)
+                if t:
+                    tp = int(t.group(1))
+
+                    if tp == last_tp:
+                        continue
+
+                    last_tp = tp
+
+                    current_tp_meta = {
+                        "M_init": current_mass,
+                        "pmz": current_mmix,
+                        "N_ov": N_ov,
+                        "ntp": tp,
+                        "Z": Z,
+                        "Mass": float(t.group(2)),
+                        "Mcore": float(t.group(3)),
+                        "Menv": float(t.group(4)),
+                        "logL": float(t.group(5)),
+                    }
+
+                    in_abundance_block = False
+                    continue
+
+                # -------------------------
+                # ABUNDANCE BLOCK START
+                # -------------------------
+                if line.strip().startswith("# El") and "X(i)" in line:
+                    in_abundance_block = True
+                    continue
+
+                # -------------------------
+                # ABUNDANCE BLOCK END MARKERS
+                # -------------------------
+                if line.startswith("# Elemental abundance ratios"):
+                    in_abundance_block = False
+                    continue
+
+                if line.startswith("# Initial abundances"):
+                    in_abundance_block = False
+                    final = False
+                    continue
+
+                if line.startswith("# Final abundances"):
+                    in_abundance_block = False
+                    final = True
+                    continue
+
+                # -------------------------
+                # ABUNDANCES
+                # -------------------------
+
+                if final and current_tp_meta:
+                    current_tp_meta["ntp"] += 1
+                    final = False
+
+                if in_abundance_block and current_tp_meta is not None:
+                    a = abundance_regex.match(line)
+                    if a:
+                        rows.append(
+                            {
+                                **current_tp_meta,
+                                "element": a.group(1),
+                                "XFe": float(a.group(2)),
+                                "massfrac": float(a.group(3)),
+                            }
+                        )
+
+    return pd.DataFrame(rows)
+
+
+# %%
+paths = [
+    "scripts/w21/surf_z007.dat",
+    "scripts/w21/surf_z014.dat",
+    "scripts/w21/surf_z03.dat",
+]
+df = parse_surf_file(paths)
+
+with open(f"data/env_pd_df.pkl", "wb") as f:
+    pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 # %%

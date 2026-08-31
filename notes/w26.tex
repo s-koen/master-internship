@@ -1,0 +1,88 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 26}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Intershell}
+
+The plot below shows the effects of metallicity on the \(\text{Ba}_{138}\) abundances in the intershell for a \(1.5\;M_\odot \) TPAGB star.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-ba138-metal}
+\end{figure}
+
+It looks like the metallicity changes the first time dredge-up occurs. This is expected as well, since we see that lower metallicity stars have more dredge-up than the higher metallicity ones \citep{karakas2016}.
+
+Now let me look at two elements that are very quickly produced by the \(s\)-process.
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-fe60-metal}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-co59-metal}
+\end{figure}
+
+Now I plot \(\text{Pb}_{206}\), the heaviest stable isotope that is produced by the s process
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-pb208-metal}
+\end{figure}
+
+Here I plot the metallicity dependence on the initial envelope abundances of a \(1.5\;M_\odot \) star. This means there is no TDU enrichment.
+The vertical axis shows the abundances scaled to the solar metallicity model.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-initial-envelope}
+\end{figure}
+
+The horizontal lines in this figure show \(Z / Z_\odot \). Clearly, nearly all elements are just linearly scaled with metallicity. We do see however that the Helium abundances, technesium abundances and the polonium abundances differ. I think this is not a big problem. It just means we should be careful when we analyse the enrichment of these elements.
+
+Below, I show the same figure, now with a zoomed in vertical axis.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-initial-envelope-zoom}
+\end{figure}
+
+I think we can clearly see here that the \(Z=0.03\) model is scaled by a slightly different value. In fact, it looks like the abundances are nearly all at exactly \(2\), which would make sense and mean that \(Z=0.028\) or \(2Z_\odot \).
+
+We can do the same, but now looking at the mass:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-initial-envelope-zoom-mass}
+\end{figure}
+
+We see that for the light elements, there is some variation with mass, \emph{but}, nearly all \(s\)-process elements have initial abundances that are \emph{independent} of the initial mass of the star.
+
+If we oppose this to the final abundances, we see a clear mass dependence, although not linear and not equal per element.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w26-final-envelope-zoom-mass}
+\end{figure}
+
+Anyway, we can simply use the metallicity and linearly scale this with a standard envelope abundance to get the envelope abundances for our \emph{MESA} models.
+
+\bibliography{master.bib}
+\end{document}
