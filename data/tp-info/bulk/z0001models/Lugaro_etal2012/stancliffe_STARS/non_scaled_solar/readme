@@ -1,0 +1,40 @@
+All models have a partial mixed zone of 2e-3 msun.
+
+Variations in initial abundance made for the 1.5 and 2Msun models.
+
+CEM = chemical evolution model output for species c12 to ge74. 
+     Output is from Chiaki Kobayashi's code, and she provides predictions
+     for the solar neighbourhood as a function of [Fe/H]. 
+     She does not provide predictions for isotopes heavier than ge74. 
+     Reference: Kobayashi, Karakas, Umeda (2010, MNRAS, submitted).
+
+SCG08 = Isotopic abundances from Sneden, Cowan & Gallino (2008) review.
+     This paper breaks down the solar abundances of the heavy elements into 
+     r and s-process. Their table includes heavy elements from Ga to Bi. 
+     We use their abundances for Arsenic onwards.
+     r+0.4dex = the r-process component of each heavy isotope has been
+     enhanced by 0.4 dex. the s-process component scaled solar.
+     r+1.0dex_s+0.4dex = r component enriched by 1 dex, s component by 0.4 dex.
+
+Asplund = Isotopic abundances from Asplund et al. (2009) review. 
+     This paper includes all abundances from hydrogen to Bi.
+     But they do not give a breakdown into s and r-process.
+
+We experiment with using scaled solar abundances for As onwards taking initial 
+abundances from Asplund et al. and from Sneden, Cowan & Gallino. 
+There should be little difference in final results.
+
+Naming scheme examples:
+
+surf_m1.5_CEM_scaledsolarSCG08.dat 
+  - 1.5Msun model.
+  - CEM for light elements
+  - scaled solar abundances from
+    SCG08 for elements heavier than As.
+
+surf_1.5_scaledsolarlight_r+0.4dex.dat
+  - 1.5Msun model
+  - scaled solar for elements up to As (from Asplund et al. 2009)
+  -  the r-process component of each heavy isotope has been
+     enhanced by 0.4 dex. the s-process component scaled solar.
+     Heavy abundances from SCG08.

@@ -1,0 +1,121 @@
+AGB yield and surface abundance files
+======================================
+
+Yield files for the following
+Metallicities Z = 0.0001, 0.0006, 0.001, 0.0028, 0.007, 0.014, 0.03.
+
+Correspond to: [Fe/H] = -2.3, -1.4, -1.2, -0.7, -0.3, 0, +0.3
+
+References:
+Z = 0.03, 0.014 (solar), 0.007: Karakas & Lugaro (2016)
+Z = 0.001: Fishlock et al. (2014)
+Z = 0.0006: Karakas et al. (2014), Shingles et al. (2015)
+Z = 0.0001: Lugaro et al. (2012)
+
+For the Z = 0.001 there are only elemental yields available; for the other
+metallicities there are isotopic and elemental yield files. 
+
+For the Z = 0.0028 there are only surface abundances, not yields.
+
+Isotopic yield files:
+----------------------
+
+Each file contains the isotopic yields in the following format:
+
+  species  A   yield   mass(i)_lost  mass(i)_0  <X(i)>   X0(i)   log10(<X(i)>/X0(i)) 
+
+where species is the name of the isotope, A the atomic number
+
+yield = the net yield of species i, in solar masses and is equal to 
+      = mass(i)_lost - mass(i)_0
+  
+mass(i)_lost = mass of species lost to the ISM, in solar masses
+
+mass(i)_0 = the amount of species i initially present in the mass lost, in solar masses
+
+<X(i)> = average mass fraction of species i in the wind
+
+X0(i) = initial mass fraction 
+
+log10(<X(i)>/X0(i)) = production factor, relative to the initial composition.
+
+
+The total amount of mass lost, and the initial and final masses are
+provided in the file "masses.dat".
+
+
+Filename convention
+====================
+
+e.g., m8z03.nopmz.dat 
+
+8Msun, Z = 0.03 model with no partial mixing zone. 
+
+e.g., m3z03.pmz=2e-3.overshoot.dat  
+
+3Msun, Z = 0.03 model with a partial mixing zone = 2e-3 Msun and with overshoot 
+  applied to increase the amount of third dredge-up. 
+
+
+Some file names do not follow this convention, especially if they are older.
+If you are not sure, please email me.
+
+Partial mixing zones and s-process elements:
+============================================
+Needed for the prodution of s-process elements and a few key neutron rich isotopes.
+
+The partial mixing zones are discussed in Karakas & Lugaro (2016) and are needed 
+to form 13C pockets in the He-intershell region. This is where s-process elements are
+synthesized. Without 13C pockets, low-mass models less than about 5Msun do not produce
+any s-process elements.
+
+Low-mass models that do not dredge-up any material, e.g., 1Msun for all metallicities
+here, do not have 13C pockets and do not produce s-process elements. 
+
+**If there is a choice in the pocket size, choose the 
+"standard size" for that mass, see Tables 2 and 3 in Karakas & Lugaro (2016) but
+in general the standard sizes are as follows:
+
+M <= 3Msun: PMZ = 2e-3 Msun
+3 < M/Msun <= 4:  PMZ = 1e-3 Msun
+4 < M/Msun <  5:  PMZ = 1e-4 Msun 
+M >= 5 Msun: PMZ = 0.0
+
+This variation reflects the fact that the size of the He-intershell becomes smaller 
+(in mass) with increasing stellar mass. Note that these masses shift as the 
+metallicity is reduced because the star is hotter and has a larger core for a 
+given initial mass.
+
+Overshoot: 
+============
+Third dredge-up brings material from the He-intershell to the surface and is
+responsible for turning stars into C and s-process rich objects. Historically there have
+been problems modelling this mixing process, with the minimum predicted mass for C-star formation
+higher than estimated from observations. For solar metallicity, we predict the 
+minimum mass = 2Msun but observationally, this is likely to be ~1.5Msun.
+
+For models near this mass border we include some overshoot at the base of the convective
+enveloep in order to enhance the amount of third dredge-up (see Karakas & Lugaro 2016 for
+details).  
+
+If overshoot is NOT mentioned in the filename, it is not included in that model 
+(e.g., m6z014.nopmz.dat - model has no overshoot). Note that this does not mean 
+the model does not have third dredge-up (see Karakas 2014). 
+
+**I suggest choosing the model with overshoot if there is a choice. 
+
+Models with Z = 0.0006:
+========================
+
+Here we also experimented with varying the initial helium composition 
+on the structure, evolution and nucleosynthesis; see Karakas et al. (2014) 
+and Shingles et al. (2015). 
+
+We include yields where the initial helium abundance is 
+Y = 0.24 (primordial), 0.30, 0.35, 0.40.
+
+We also include some models with an initially alpha enhanced mixture, denoted
+by the filename.
+
+
+

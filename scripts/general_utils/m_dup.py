@@ -1,5 +1,8 @@
 import sys
 import numpy as np
+import pickle
+import re
+from collections import defaultdict
 
 sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 
@@ -527,52 +530,6 @@ def track_DUP(model):
     }
 
 
-# %%
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-from matplotlib.style import context
-import sys
-import pickle
-
-sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
-from plot_size import set_size
-
-column = 312.98032
-full = 483.69684
-plt.style.use("default")
-plt.style.use("tex rm")
-
-sys.path.insert(1, "/home/koen/master-internship/")
-from scripts.general_utils.cplot import cplot
-from scripts.general_utils.cache import get_star
-
-plt.cplot = cplot
-
-sys.path.insert(1, "/home/koen/master-internship/")
-MASTER = "/home/koen/master-internship/mesa-models/"
-
-import mesa_reader as mr
-from scripts.general_utils.mesa_grid_2 import MesaGrid
-
-grid = MesaGrid(f"{MASTER}/grid-masses-2-2026-08-16-clean")
-
-for m in grid.models:
-    star = get_star(m=m.params["m"])
-    plt.plot(star.age, m.sb.a)
-    plt.plot(m.age, m.binary_separation)
-    break
-plt.show()
-print(m)
-
-# %%
-
-import pickle
-import re
-from collections import defaultdict
-
-
 class Isotope:
     def __init__(self, isotope):
         self.key = isotope
@@ -639,10 +596,15 @@ class AbundanceTables:
         with open("data/intershell_pd_df.pkl", "rb") as f:
             self.intershell = pickle.load(f)
 
+        with open("data/env_pd_df.pkl", "rb") as f:
+            self.envelope = pickle.load(f)
+
+        with open("data/tp_info_pd_df.pkl", "rb") as f:
+            self.tp = pickle.load(f)
+
         species = self.intershell.columns[4:]
 
         self.isotopes = {spec: Isotope(spec) for spec in species}
-
         self.elements = {}
 
         for isotope in self.isotopes.values():
@@ -653,9 +615,6 @@ class AbundanceTables:
                 isotope.short_name, Element(isotope.short_name)
             )
             element.add_isotope(isotope)
-
-        with open("data/env_pd_df.pkl", "rb") as f:
-            self.envelope = pickle.load(f)
 
         self.envelope = self.envelope[self.envelope["pmz"] == 2e-3]
         self.envelope = self.envelope[self.envelope["N_ov"] != 0]
@@ -672,6 +631,11 @@ class AbundanceTables:
         df = self.envelope[self.envelope["element"] == element]
         return float(df["massfrac"].iloc[-1]) * metallicity
 
+    def get_pulse_info_specific_model(self, mass, metallicity):
+        df = self.tp[self.tp["initial_mass"] == mass]
+        df = df[df["z"] == metallicity]
+        return df
+
 
 class Abundances:
     """
@@ -685,7 +649,7 @@ class Abundances:
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
         self.df = df
 
-        simple = get_star(full_path=m.params["single_star"])
+        simple = get_star(full_path=self.model.params["single_star"])
 
         self.dup_simple = compute_m_DUP(simple)
         self.dup_detailed = compute_m_DUP(model, self.dup_simple)
@@ -759,10 +723,97 @@ class Abundances:
         # different isotopes separately.
         # it is also important to keep in mind that the abundances
         # here should be MASS RATIOS.
+
         intershell = np.zeros(self.total_length)
         for isotope in self.df.elements[name].isotopes:
-            intershell += 0.1 * np.random.rand() * np.ones(self.total_length)
+
+            intershell += self.get_abundance(
+                self.df.isotopes[isotope],
+                self.model.params["m"],
+                self.model.params["z"],
+                np.cumsum(self.m_dup + 1e-12),
+            )
         return intershell
+
+    def get_iso_and_Mdredge(self, isotope, intershell, tp_info):
+        # keep only pulses that exist in both datasets
+        intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
+
+        # one intershell abundance per pulse
+        i_data = intershell.drop_duplicates("ntp").set_index("ntp")
+
+        # one dredge-up mass per pulse
+        tp_data = tp_info.drop_duplicates("pulse").set_index("pulse")
+
+        # common pulses, in ascending order
+        pulses = i_data.index.intersection(tp_data.index).sort_values()
+
+        Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
+        isotope_abundance = i_data.loc[pulses, isotope.key].to_numpy()
+
+        Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
+        isotope_abundance = np.log10(isotope.mass * isotope_abundance + 1e-20)
+
+        return isotope_abundance, Mdredge
+
+    def get_abundance(self, isotope, M, Z, Mdredge_interp, drop=None):
+
+        if Z in [0.0028, 0.007, 0.014]:
+            return 10 ** self.get_abundance_Z(isotope, M, Z, Mdredge_interp, drop)
+
+        if Z <= 0.0028:
+            return 10 ** self.get_abundance_Z(isotope, M, 0.0028, Mdredge_interp, drop)
+        if Z >= 0.014:
+            return 10 ** self.get_abundance_Z(isotope, M, 0.014, Mdredge_interp, drop)
+
+        if Z <= 0.007:
+            z_min = 0.0028
+            z_max = 0.007
+        else:
+            z_min = 0.007
+            z_max = 0.014
+
+        abundance_min = self.get_abundance_Z(isotope, M, z_min, Mdredge_interp, drop)
+        abundance_max = self.get_abundance_Z(isotope, M, z_max, Mdredge_interp, drop)
+        weight = (np.log10(Z) - np.log10(z_min)) / (np.log10(z_max) - np.log10(z_min))
+
+        return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
+
+    def get_abundance_Z(self, isotope, M, Z, Mdredge_interp, drop=None):
+        intershell_metal = self.df.intershell.query(
+            f"Z == {Z} and pmz == 2e-3 and last == 1"
+        ).sort_values("ntp")
+
+        ms = np.unique(intershell_metal.M1tp)
+        ms.sort()
+        if drop != None:
+            for i, m in enumerate(ms):
+                if m == drop:
+                    ms = np.delete(ms, i)
+        try:
+            arg_max = np.where(ms >= M)[0][0]
+            i1_max = intershell_metal.query(f"M1tp == {ms[arg_max]}")
+            tp1_max = self.df.tp.query(f"initial_mass == {ms[arg_max]} and z == {Z}")
+            iso, Mdredge_real = self.get_iso_and_Mdredge(isotope, i1_max, tp1_max)
+            abundance_max = np.interp(np.log10(Mdredge_interp), Mdredge_real, iso)
+        except IndexError:
+            abundance_max = None
+        try:
+            arg_min = np.where(ms < M)[0][-1]
+            i1_min = intershell_metal.query(f"M1tp == {ms[arg_min]}")
+            tp1_min = self.df.tp.query(f"initial_mass == {ms[arg_min]} and z == {Z}")
+            iso, Mdredge_real = self.get_iso_and_Mdredge(isotope, i1_min, tp1_min)
+            abundance_min = np.interp(np.log10(Mdredge_interp), Mdredge_real, iso)
+        except IndexError:
+            abundance_min = None
+
+        if type(abundance_min) == type(None):
+            return abundance_max
+        if type(abundance_max) == type(None):
+            return abundance_min
+        weight = (M - ms[arg_min]) / (ms[arg_max] - ms[arg_min])
+
+        return abundance_min + weight * (abundance_max - abundance_min)
 
     def compute_envelope_abundance(self, name, intershell):
         # INFO: gets the initial envelope abundance of the element
@@ -785,39 +836,3 @@ class Abundances:
             )
 
         return envelope
-
-
-# %%
-
-df = AbundanceTables()
-# %%
-
-ab = Abundances(model=m, df=df)
-# %%
-
-ab.df.elements
-# %%
-for i, name in enumerate(list(ab.df.elements)[:15]):
-    print(name)
-    if name in [
-        "neutron",
-        "proton",
-        "deuterium",
-        "li",
-        "be",
-        "b",
-    ]:
-        continue
-
-    element = getattr(ab, name)
-    plt.plot(ab.time, element.envelope, label=element.name, c=f"C{i}")
-    plt.plot(ab.time, element.intershell, c=f"C{i}", linewidth=3, alpha=0.5)
-    print(element, element.isotopes)
-
-plt.legend()
-plt.show()
-# %%
-print(m.params)
-# %%
-print(grid.settings)
-# %%

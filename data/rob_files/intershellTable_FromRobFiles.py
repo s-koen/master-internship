@@ -21,9 +21,11 @@ Z = []
 pmz = []
 TPnum = []
 M = []
+age = []
 newGroup = [0]
 newline = []
 M_first = 0
+Mcore = []
 num_particles = []
 isotope = []
 
@@ -62,14 +64,17 @@ for which_folder in which_folders:
                     )  # The intershell file takes Z, pmz, M, and TPnum.
                     if first == True:
                         M_first = line[3]
-                    M.append(float(M_first))
 
                     # automatically get pmz and Z from filename
                     match_number = re.compile(
                         "-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?"
                     )
                     string_num = re.findall(match_number, filename)
+                    M.append(float(string_num[-1]))
                     Z.append(float(string_num[-3]))
+                    age.append(float(line[1]))
+                    Mcore.append(float(line[-4]))
+
                     pmz.append(string_num[-2])
 
                 else:
@@ -79,7 +84,15 @@ for which_folder in which_folders:
                                 print("Something is off!", len(newGroup))
                             newline.append(
                                 np.concatenate(
-                                    ([Z[-1]], [pmz[-1]], [M[-1]], [TPprev], newGroup),
+                                    (
+                                        [Z[-1]],
+                                        [pmz[-1]],
+                                        [M[-1]],
+                                        [TPprev],
+                                        [age[-1]],
+                                        [Mcore[-1]],
+                                        newGroup,
+                                    ),
                                     axis=0,
                                 )
                             )
@@ -94,27 +107,30 @@ for which_folder in which_folders:
                 print("Something is off!", len(newGroup))
             newline.append(
                 np.concatenate(
-                    ([Z[-1]], [pmz[-1]], [M[-1]], [TPprev], newGroup), axis=0
+                    (
+                        [Z[-1]],
+                        [pmz[-1]],
+                        [M[-1]],
+                        [TPprev],
+                        [age[-1]],
+                        [Mcore[-1]],
+                        newGroup,
+                    ),
+                    axis=0,
                 )
             )
 
 print("next step")
 # Column names
-columns = ["Z", "pmz", "M1tp", "ntp"]
-elements = isotope
+columns = ["Z", "pmz", "M1tp", "ntp", "age", "Mcore"]
+columns = np.concatenate((columns, isotope))
 
-columns = np.concatenate((columns, elements), axis=0)
+df = pd.DataFrame(newline, columns=columns)
 
-df = pd.DataFrame(columns=columns)
-
-print(len(newline))
-for i in range(len(newline)):
-    if i % 100 == 0:
-        print(i)
-    df.loc[len(df)] = newline[i]
+df = df.apply(pd.to_numeric)
 print(df)
-
 print("Finished :)")
+
 # %%
 
 import pickle
@@ -129,8 +145,9 @@ with open(f"data/intershell_pd_df.pkl", "rb") as f:
 
 
 # %%
-interesting = df[df["pmz"] == "2e-3"]
-interesting = interesting[interesting["M1tp"] == "1.49998"]
+interesting = df[df["pmz"] == 2e-3]
+interesting = interesting[interesting["M1tp"] == 1.5]
+interesting
 # %%
 for col in interesting.columns:
     print(col)
@@ -1058,6 +1075,155 @@ df = parse_surf_file(paths)
 
 with open(f"data/env_pd_df.pkl", "wb") as f:
     pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+# %%
+import numpy as np
+import pandas as pd
+import glob
+import re
+
+
+def parse_intershell_file(filename, z, pmz, mass, n_species=328):
+    rows = []
+
+    with open(filename) as f:
+        lines = f.readlines()
+
+    current_header = None
+    abundances = []
+
+    def process_pulse(header, abundance_lines):
+        # nothing to process
+        if header is None or not abundance_lines:
+            return
+
+        abundances = np.concatenate(abundance_lines)
+
+        if len(abundances) % n_species != 0:
+            raise ValueError(
+                f"{filename}: pulse {int(header[0])} has "
+                f"{len(abundances)} abundances, "
+                f"which is not divisible by {n_species}"
+            )
+
+        snapshots = abundances.reshape(-1, n_species)
+
+        for snapshot_number, snapshot in enumerate(snapshots):
+            rows.append(
+                [
+                    z,
+                    pmz,
+                    mass,
+                    int(header[0]),  # ntp
+                    snapshot_number,  # snapshot
+                    snapshot_number == len(snapshots) - 1,  # last
+                    header[1],  # age
+                    header[4],  # Mcore
+                    *snapshot,
+                ]
+            )
+
+    for line in lines:
+        values = np.fromstring(line, sep=" ")
+
+        if len(values) == 0:
+            continue
+
+        # pulse header
+        if len(values) == 8:
+            process_pulse(current_header, abundances)
+
+            current_header = values
+            abundances = []
+
+        # abundance data
+        else:
+            abundances.append(values)
+
+    # process final pulse, if it actually has abundance data
+    process_pulse(current_header, abundances)
+
+    return rows
+
+
+# --------------------------------------------------
+# column names
+# --------------------------------------------------
+
+columns = [
+    "Z",
+    "pmz",
+    "M1tp",
+    "ntp",
+    "snapshot",
+    "last",
+    "age",
+    "Mcore",
+    *isotope,
+]
+
+
+# --------------------------------------------------
+# parse all files
+# --------------------------------------------------
+
+rows = []
+
+for folder in which_folders:
+    print(f"reading {folder}")
+
+    for filename in sorted(glob.glob(folder + "/intershell_*")):
+        print(f"  {filename}")
+
+        # extract numbers from filename
+        numbers = re.findall(
+            r"-?\s*[0-9]+\.?[0-9]*(?:[Ee]\s*-?\s*[0-9]+)?",
+            filename,
+        )
+
+        numbers = [float(x.replace(" ", "")) for x in numbers]
+
+        z = numbers[-3]
+        pmz = numbers[-2]
+        mass = numbers[-1]
+
+        rows.extend(
+            parse_intershell_file(
+                filename,
+                z=z,
+                pmz=pmz,
+                mass=mass,
+            )
+        )
+
+
+# --------------------------------------------------
+# create dataframe
+# --------------------------------------------------
+
+intershell = pd.DataFrame(rows, columns=columns)
+
+intershell = intershell.astype(
+    {
+        "Z": float,
+        "pmz": float,
+        "M1tp": float,
+        "ntp": int,
+        "snapshot": int,
+        "last": bool,
+        "age": float,
+        "Mcore": float,
+    }
+)
+
+print(intershell)
+print("finished :)")
+# %%
+import pickle
+
+with open(f"data/intershell_pd_df.pkl", "wb") as f:
+    pickle.dump(intershell, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 # %%

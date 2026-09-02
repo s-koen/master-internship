@@ -1,0 +1,26 @@
+Files contain:
+
+#pulse = thermal pulse number 
+Mcore = H-exhausted core mass (Msun), sampled at start of thermal pulse 
+M_csh = max. extent of convective zone in He-shell (Msun), calculated during a thermal pulse
+t_csh = duration of convection in He-shell (years), calculated during a thermal pulse
+Ddredge = amount of material dredged from He-shell to envelope (Msun), calculated during a thermal pulse
+lambda = third dredge-up efficiency parameter
+DMh = core mass growth between current thermal pulse and previous (Msun)
+THeshell = max. temperature in the He-shell (K)
+Tbce = max. temperature at the base of the envelope during the preceeding interpulse phase (K)
+THshell = max. temperature in the H-shell during the preceeding interpulse phase (K)
+interpulse = interpulse period (years)
+Mtot = total mass (Msun), sampled at start of thermal pulse
+MaxL = max. surface luminosity (Lsun), from previous interpulse period
+MaxLHe = max. He-shell luminosity (Lsun), from thermal pulse
+maxR = max. radius of star (Rsun), from previous interpulse period
+Mbol = min. bolometric luminosity, from previous interpulse period
+Teff = min. effective temperature (K), from previous interpulse period
+
+Note that these quantities are sampled from one snapshot in time so don't reflect the
+variation in R, L, Mcore, Mbol, Teff etc as a function of time during the thermal pulse
+cycle. A plot showing the variation in radius for a 2Msun, Z = 0.014 model (with Y=0.28)
+is included for comparsion. This plot shows that the radius at the end of the star dramatically
+increases at the end, when convergence difficulties occurred and the code crashed during
+a thermal pulse. This is close to when the star became C-rich (T = 1.1857e9 years).
