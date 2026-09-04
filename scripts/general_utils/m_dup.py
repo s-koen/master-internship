@@ -717,12 +717,57 @@ class Abundances:
 
             return self.df.isotopes[name]
 
+    def _prepare_single_monash_model(self, M, Z):
+
+        intershell = self.df.intershell.query(
+            f"Z == {Z} and pmz == 2e-3 and last == 1 and M1tp == {M}"
+        ).sort_values("ntp")
+
+        tp_info = self.df.tp.query(f"initial_mass == {M} and z == {Z}")
+
+        intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
+
+        # one intershell abundance per pulse
+        i_data = intershell.drop_duplicates("ntp").set_index("ntp")
+
+        # one dredge-up mass per pulse
+        tp_data = tp_info.drop_duplicates("pulse").set_index("pulse")
+
+        # common pulses, in ascending order
+        pulses = i_data.index.intersection(tp_data.index).sort_values()
+
+        Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
+        isotope_abundance = i_data.loc[pulses, isotope.key].to_numpy()
+
+        Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
+        isotope_abundance = np.log10(isotope.mass * isotope_abundance + 1e-20)
+
+        pass
+
+    def _prepare_monash_models(self):
+        """
+        this method combines the Monash Isotope dataset and tp-info dataset and saves it as a collection of simple dicts.
+        it caches the result on disk using pickle.
+
+        the dicts contain:
+            M:     (float)
+            Z:     (float)
+            TPs:   numpy 1D array(floats)
+            M_dup: numpy 1D array(floats)
+            isos:  328 x numpy 1D array(floats)
+
+        """
+
+        self._prepare_single_monash_model(M, Z)
+
     def compute_intershell(self, name):
         # TODO: this needs to be changed to the ACTUAL abundances
         # keep in mind that we need to sum the abundances for the
         # different isotopes separately.
         # it is also important to keep in mind that the abundances
         # here should be MASS RATIOS.
+
+        self.monash_models = self._prepare_monash_models()
 
         intershell = np.zeros(self.total_length)
         for isotope in self.df.elements[name].isotopes:
@@ -836,3 +881,54 @@ class Abundances:
             )
 
         return envelope
+
+
+# %%
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from matplotlib.style import context
+import sys
+import pickle
+
+sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
+from plot_size import set_size
+
+column = 312.98032
+full = 483.69684
+plt.style.use("default")
+plt.style.use("tex rm")
+
+sys.path.insert(1, "/home/koen/master-internship/")
+from scripts.general_utils.cplot import cplot
+from scripts.general_utils.cache import get_star
+
+plt.cplot = cplot
+
+sys.path.insert(1, "/home/koen/master-internship/")
+MASTER = "/home/koen/master-internship/mesa-models/"
+
+import mesa_reader as mr
+from scripts.general_utils.mesa_grid_2 import MesaGrid
+
+grid = MesaGrid(f"{MASTER}/grid-masses-2026-08-14-clean")
+grid2 = MesaGrid(f"{MASTER}/grid-masses-2-2026-08-16-clean")
+grid3 = MesaGrid(f"{MASTER}/grid-masses-3-2026-08-24")
+grid4 = MesaGrid(f"{MASTER}/grid-masses-4-2026-08-25")
+grid.merge(grid2)
+grid.merge(grid3, overwrite=True)
+grid.merge(grid4, overwrite=True)
+
+# %%
+m = grid.models[30]
+
+df = AbundanceTables()
+ab = Abundances(model=m, df=df)
+
+
+# %%
+
+plt.plot(ab.time, ab.ba.envelope)
+plt.show()
+# %%

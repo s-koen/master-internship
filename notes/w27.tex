@@ -1,0 +1,131 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 27}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Correspondence with Amanda Karakas}
+
+
+\begin{minipage}{1.55\textwidth}
+\begin{shadequote}{Koen}
+Hi Amanda,
+
+Thanks for your reply and sharing the folder with all of the pulse files!
+
+After looking through the files and discussing with Onno, we do however have one more question that we hope you can help us with. I will briefly describe how we arrived at the question below.
+
+I took some time to match the pulses in the pulse.dat files with the pulses in the intershell abundances files from Zara for all models. This allows me to associate the dredged-up mass from each pulse with the corresponding intershell abundances. To check that this matching is correct, I plotted a quantity that is present in both datasets for every thermal pulse: the core mass. 
+
+\begin{center}
+\includegraphics[width=0.75\linewidth]{/home/koen/master-internship/scripts/w27/amanda-mass-2.png}
+\end{center}
+
+In the top plot, the thick transparent lines correspond to the core mass per thermal pulse as listed in the intershell files, while the thin opaque lines show the core masses from the pulse.dat files. I think the close agreement between the two shows that the pulses in the two datasets correspond to the same thermal pulses.
+
+This suggests I should be able to combine the dredged-up mass from the pulse.dat files with the corresponding intershell abundances from the intershell files and compare them.
+
+However, when I plot the dredged-up mass per thermal pulse together with the total mass fraction of elements heavier than iron in the intershell, I see something that Onno and I did not expect:
+
+\begin{center}
+\includegraphics[width=0.75\linewidth]{/home/koen/master-internship/scripts/w27/amanda-abundance.png}
+\end{center}
+
+Onno and I expected the intershell to become enriched in s-process elements 1 pulse after the first thermal pulse with significant amounts of dredge up (like what we see for the brown, green, and red models). However, in some models the intershell only becomes enriched after a second TDU (blue and purple models) or even after a third or fourth TDU (pink and orange models). We see similar offsets in the models with different metallicities as well.
+
+Do you happen to know what might cause some models to only experience s-process enrichment in the intershell after multiple TDU events?
+
+Thanks again for your help!
+
+Best regards,
+\end{shadequote}
+\end{minipage}
+
+
+\newsection{Comparing MESA and Monash Dredge up}
+
+My first idea estimate the intershell abundances of the MESA models by parametrising the intershell abundance as a function of cumulative dredge up. This makes little physical sense, but is convenient because the cumulative amount of dredge up is strictly increasing.
+
+However, this is only a good way to approximate the intershell abundances if the dredge up episodes of the MESA models are in good agreement with the dredge up episodes of the Monash models.
+
+\begin{figure}[ht]
+    \marginfignote{0}{It is important to note that I plot the Monash models with \(Z=0.007\) and MESA models with \(Z=0.00557\), so there is a slight difference there.}
+    \marginfignote{7}{It seems like the MESA models generally undergo dredge up earlier. The magnitudes are quite similar, but because the MESA models start dredge up earlier, I think they will in general experience a bit more total dredge up}
+    \centering
+    \incplot{w27-compare-m-dup-per-pulse}
+\end{figure}
+
+Below, I plot the total amount of dredge up for the various Monash and MESA models.
+\begin{figure}[ht]
+    \marginfignote{0}{The MESA models agree very well with the lower \(Z=0.0028\) metallicity Monash models. Obviously, since these are entirely different codes, it is to be expected that they do not predict the same amount of dredge up, but I feel like the difference here and in the previous plot is actually quite significant, especially if I use the cumulative dredged up mass to predict the intershell abdundance.}
+    \centering
+    \incplot{w27-compare-m-dup-per-mass}
+\end{figure}
+
+Since the Monash \(Z=0.0028\) models seem to agree very well with the MESA models when it comes to total dredged up mass, I want to compare them pulse by pulse as well.
+
+\begin{figure}[ht]
+    \marginfignote{0}{It seems like it is a coincidence that the cumulative amount of dredged up mass agrees so well. The MESA models generally experience more thermal pulses with dredge up, while the amount of dredged up mass per pulse is lower.}
+    \centering
+    \incplot{w27-compare-m-dup-per-pulse-low-Z}
+\end{figure}
+
+Apart from the amount of dredged up mass, there are some other properties that we can compare between the models. First, let me show the final core mass as a function of stellar mass:
+\begin{figure}[ht]
+    \marginfignote{0}{The final core mass of the \emph{MESA} models is always lower than that of the Monash models. It think it is not super surprising given the fact that we saw that the \emph{MESA} models experience \emph{more} dredge up, and thus grow their core \emph{slower}.}
+    \marginfignote{10}{I think it is interesting to look at the initial core mass too though, because this is a good check if the pre-TPAGB evolution could be a cause for this difference too.}
+    \centering
+    \incplot{w27-compare-mcore}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The initial core mass is also not identical, but at least for the higher masses, \emph{MESA} and Monash agree well. I do think it is interesting that the core mass of the \emph{MESA} models is much lower for the models that just miss the core Helium flash.}
+    \centering
+    \incplot{w27-compare-initial-mcore}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The core mass evolution of the \emph{MESA} models is \emph{much} more flat than that of the Monash models. This is exactly what we expect based on the lower total dredged up mass.}
+    \centering
+    \incplot{w27-compare-core-mass-evolution}
+\end{figure}
+
+I do think it is a bit surprising that we find such large differences especially in the core mass, since \citet{cinquegrana2022} found only very small differences in the core mass of a \(2\;M_\odot\) \(Z=0.03\) star. However, they did specifically try to match every parameter of Monash to the equivalent \emph{MESA} parameter, which we did not do.
+
+\citet{rees2024b} also looked at the core masses of \emph{MESA} models and Monash models. Just like us, they also find that for low mass TPAGB stars, the \emph{MESA} core masses are lower than those of the Monash models. They do note that \emph{MESA} and Monash have slightly different definitions of the core mass, however, in both cases it is based on the hydrogen burning shell. They note that, since the hydrogen burning shell is very thin in AGB stars, the differences in the core masses are \emph{not} due to different definitions.
+
+The plot below shows the dredge up efficiency parameter \(\lambda\) for the \emph{MESA} models, as well as for the \(Z=0.0028\) and \(Z=0.007\) Monash models.
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-compare-lambda-evolution}
+\end{figure}
+
+The shapes here are actually quite similar for all models. It is just that the MESA models seem to predict higher overall values.
+
+\newsection{Yields}
+
+\newsection{Comparing different Intershell abundance parametrisations}
+
+
+
+\bibliography{master.bib}
+
+\appendix
+
+\newsection{Optimizations}
+
+\end{document}

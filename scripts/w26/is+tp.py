@@ -941,4 +941,3 @@ plt.ylabel("$X(\\textrm{Ba}_{138})$")
 plt.savefig("/home/koen/LaTeX-setup/plots/w26-interp-m-check.pgf", format="pgf")
 plt.show()
 plt.close()
-# %%
