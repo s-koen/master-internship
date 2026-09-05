@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w26"] 1788563328.74514 "w26.aux" "w26.bbl" "w26" 1788563334.15526 0
+["bibtex w26"] 1788563328.74514 "w26.aux" "w26.bbl" "w26" 1788637666.83222 0
   "./master.bib" 1788263248.98063 48736 b10f790b2ba9e9409a3d475aaac693b9 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w26.aux" 1788563333.88914 2717 1d4f2c8eded753fc4f2bf74eadfd0680 "pdflatex"
+  "w26.aux" 1788637666.56438 2717 1d4f2c8eded753fc4f2bf74eadfd0680 "pdflatex"
   (generated)
   "w26.bbl"
   "w26.blg"
   (rewritten before read)
-["pdflatex"] 1788563328.80609 "w26.tex" "w26.pdf" "w26" 1788563334.1554 0
+["pdflatex"] 1788637661.17811 "w26.tex" "w26.pdf" "w26" 1788637666.83234 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -23,7 +23,7 @@
   "/home/koen/LaTeX-setup//plots/w26-check-masses-0.014.pgf" 1788439844.35168 84578 765e266f0a6a2e7ae7f801fcf0b8ba1b ""
   "/home/koen/LaTeX-setup//plots/w26-check-masses.pgf" 1788439712.19615 71680 2a16eacd393050ad6128c501fd54b77b ""
   "/home/koen/LaTeX-setup//plots/w26-co59-metal.pgf" 1788128023.02678 134983 6dcd473a8bda8adb33ab8f8eabe907fe ""
-  "/home/koen/LaTeX-setup//plots/w26-examples.pgf" 1788305668.6444 96334 f1b974902a2725cb0823c11acd90cba3 ""
+  "/home/koen/LaTeX-setup//plots/w26-examples.pgf" 1788637660.0193 96284 7e2ce4ec3c4e4302201ee79502f24e18 ""
   "/home/koen/LaTeX-setup//plots/w26-fe60-metal.pgf" 1788128013.50967 132876 e2257e718c7b04afb0bd01e43cc05e6c ""
   "/home/koen/LaTeX-setup//plots/w26-final-envelope-zoom-mass.pgf" 1788128044.58203 156535 a2944fbcef70078a552c376312f3a957 ""
   "/home/koen/LaTeX-setup//plots/w26-grid-ba-env-img0.png" 1788308735.69565 475 7593af95f0996b463855f466ec25bc33 ""
@@ -445,9 +445,9 @@
   "_minted/D85997256F845C41450A4106166C1DAD.highlight.minted" 1788298165.78077 1120 c6f92ae251771e51c960ae5f3f8c4e59 ""
   "_minted/_92D75FDA1ED7298AD60DA5D14DEF1603.index.minted" 1788308859.68693 774 818cfb5e97da2b6b116f3c6c12577b38 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w26.aux" 1788563333.88914 2717 1d4f2c8eded753fc4f2bf74eadfd0680 "pdflatex"
+  "w26.aux" 1788637666.56438 2717 1d4f2c8eded753fc4f2bf74eadfd0680 "pdflatex"
   "w26.bbl" 1788563328.7971 490 78a8cee8f344e1ec359d1ad4f422df0e "bibtex w26"
-  "w26.out" 1788563333.89014 980 c5c6eb4021c4931b1bfbb5e90a43cbd6 "pdflatex"
+  "w26.out" 1788637666.56686 980 c5c6eb4021c4931b1bfbb5e90a43cbd6 "pdflatex"
   "w26.tex" 1788563321.93574 29077 d3f5fce35bb030d975ccc599fe38c709 ""
   (generated)
   "w26.aux"

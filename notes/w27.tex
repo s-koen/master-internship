@@ -120,6 +120,16 @@ The shapes here are actually quite similar for all models. It is just that the M
 
 \newsection{Comparing different Intershell abundance parametrisations}
 
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-grid-diff-tp}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-grid-diff-tp-2}
+\end{figure}
+
 
 
 \bibliography{master.bib}
@@ -127,5 +137,7 @@ The shapes here are actually quite similar for all models. It is just that the M
 \appendix
 
 \newsection{Optimizations}
+
+Last week, my code to compute the intershell abundances was very unoptimized. It worked but very often computations were repeated when it was not necessary.
 
 \end{document}

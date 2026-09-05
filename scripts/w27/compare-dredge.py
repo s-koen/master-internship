@@ -460,7 +460,7 @@ plt.show()
 plt.close()
 # %%
 fig, axs = plt.subplots(
-    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
 )
 
 z = 0.0028
@@ -471,7 +471,7 @@ intershell_metal = intershell.query(
 ms = np.unique(intershell_metal.M1tp)
 print(ms)
 
-norm = plt.Normalize(1.4, 3)
+norm = plt.Normalize(1.1, 3)
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
@@ -482,13 +482,12 @@ for m_i, m in enumerate(ms[::-1]):
         f"M1tp == {m} and Z == {z} and pmz == 2e-3 and last == 1"
     )
     tp1 = tp_info.query(f"initial_mass == {m} and z == {z}")
-    print(tp1.columns)
     (l1,) = plt.plot(
         tp1.pulse,
         tp1["lambda"],
         c=cmap(norm(m)),
         label="Monash ($Z=0.0028$)",
-        linestyle="-.",
+        linestyle=":",
     )
 
 z = 0.007
@@ -510,11 +509,12 @@ for m_i, m in enumerate(ms[::-1]):
         f"M1tp == {m} and Z == {z} and pmz == 2e-3 and last == 1"
     )
     tp1 = tp_info.query(f"initial_mass == {m} and z == {z}")
-    print(tp1.columns)
-    (l1,) = plt.plot(tp1.pulse, tp1["lambda"], c=cmap(norm(m)), label="Monash")
+    (l2,) = plt.plot(
+        tp1.pulse, tp1["lambda"], c=cmap(norm(m)), label="Monash ($Z=0.007$)"
+    )
 
 
-for m in np.arange(1.4, 3.1, 0.2)[::-1]:
+for m in np.arange(1.2, 3.1, 0.2)[::-1]:
     star = get_star(m=m)
 
     c_masses = []
@@ -527,7 +527,7 @@ for m in np.arange(1.4, 3.1, 0.2)[::-1]:
         max_core_mass = np.nanmax(core_mass)
         c_masses.append(max_core_mass)
 
-    (l2,) = plt.plot(
+    (l3,) = plt.plot(
         tps,
         c_masses,
         c=cmap(norm(m)),
@@ -537,7 +537,13 @@ for m in np.arange(1.4, 3.1, 0.2)[::-1]:
     )
     # plt.plot(star.TP_count, star.lambda_DUP,linewidth=3, alpha=0.5, c=cmap(norm(m)), linestyle="--", zorder=-10)
 
-fig.legend(loc="outside upper center", handles=[l1, l2], ncols=2)
+fig.legend(loc="outside upper center", handles=[l2, l1, l3], ncols=3)
+
+for x in np.arange(0, 1, 0.1):
+    plt.axhline(x, c="C9", linewidth=0.75 / 2, zorder=-100)
+for x in np.arange(0.05, 1, 0.1):
+    plt.axhline(x, c="C9", linewidth=0.75 / 2, alpha=0.5, zorder=-100)
+
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])

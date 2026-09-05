@@ -48,3 +48,92 @@ for m in grid.models:
     break
 plt.show()
 # %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+
+def z(r):
+    print(r)
+    try:
+        r.period_days[-1]
+    except IndexError:
+        return np.nan
+
+    if r.envelope_mass[-1] > 1e-2:
+        return np.nan
+
+    ab = Abundances(model=r, df=df)
+    ac1 = ab.ba.m_accreted[-1]
+    ab = Abundances(model=r, df=df, method="tp")
+    ac2 = ab2.ba.m_accreted[-1]
+    return np.log10(ac2 / ac1)
+    # return r.period_days[-1]
+
+
+fig, axs = plt.subplots(
+    2,
+    2,
+    sharey=True,
+    sharex=True,
+    figsize=set_size(column),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+minn = 1e99
+maxx = -1e99
+
+
+# R, q, ratio = grid.array(z, x="R", y="q")
+
+
+ms = [1.8, 2.2, 2.6, 3.0]
+
+ratios = []
+for m in ms:
+    R, q, ratio = grid.array(z, x="R", y="q", m=m)
+    ratios.append(ratio)
+
+
+for ratio in ratios:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+norm = TwoSlopeNorm(0, -maxx, maxx)
+
+for i, ax in enumerate(axs):
+
+    ax.set_title(f"$M_\\textrm{{TPAGB}} = {ms[i]:.1f}\\;M_\\odot$")
+    ratio = ratios[i]
+
+    c = ax.pcolormesh(
+        R,
+        q,
+        ratio.T,
+        shading="auto",
+        cmap="coolwarm",
+        norm=norm,
+        rasterized=True,
+    )
+
+
+fig.supxlabel(r"Roche lobe radius ($R_\odot$)", fontsize=10)
+fig.supylabel("$q$ ($M_\\textrm{a} / M_\\textrm{d}$)", fontsize=10)
+plt.colorbar(
+    c,
+    ax=axs,
+    orientation="vertical",
+    location="right",
+    label=r"$\Delta M_\textrm{Ba}$ accreted ($M_\odot$)",
+)
+plt.yticks(
+    [0.7, 0.66, 0.63, 0.6, 0.5, 0.44, 0.4][::-1], [f"{q:.2f}" for q in grid.axes["q"]]
+)
+
+# plt.savefig("/home/koen/LaTeX-setup/plots/w26-grid-ba.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%

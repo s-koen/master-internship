@@ -530,6 +530,15 @@ def track_DUP(model):
     }
 
 
+class MonashModel:
+    def __init__(self, M, Z, pulses, m_dup, intershell_isos):
+        self.M = M
+        self.Z = Z
+        self.pulses = pulses
+        self.m_dup = m_dup
+        self.intershell_isos = intershell_isos
+
+
 class Isotope:
     def __init__(self, isotope):
         self.key = isotope
@@ -644,10 +653,12 @@ class Abundances:
     simple binary to determine
     """
 
-    def __init__(self, model, df):
+    def __init__(self, model, df, method="m_dup"):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
         self.df = df
+
+        self.method = method
 
         simple = get_star(full_path=self.model.params["single_star"])
 
@@ -669,6 +680,7 @@ class Abundances:
 
         self.total_length = self.simple_end_idx + len(self.model.age)
         self.m_dup = np.zeros(self.total_length)
+        self.tp_count = np.zeros(self.total_length)
         self.m_env = np.concatenate(
             [simple.m_env[: self.simple_end_idx], self.model.envelope_mass]
         )
@@ -690,6 +702,22 @@ class Abundances:
 
         self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
 
+        m1 = np.concatenate(
+            [
+                -1 * simple.mass[: self.simple_end_idx],
+                -1 * self.model.star_1_mass,
+            ]
+        )
+
+        valid = ~np.isnan(m1)
+
+        m1_filled = np.nan_to_num(m1, nan=0)
+
+        dm = np.diff(m1_filled)
+        dm[~valid[:-1] | ~valid[1:]] = 0
+
+        self.dm = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+
         for key, value in self.dup_simple.items():
             if value["index"] > self.simple_end_idx:
                 break
@@ -697,6 +725,16 @@ class Abundances:
 
         for key, value in self.dup_detailed.items():
             self.m_dup[self.simple_end_idx + value["index"]] = value["mass"]
+
+        self.tp_count[: self.simple_end_idx] = simple.TP_count[: self.simple_end_idx]
+
+        self.tp_count[self.simple_end_idx :] = (
+            self.model.TP_count + simple.TP_count[self.simple_end_idx]
+        )
+
+        self.monash_models = defaultdict(list)
+        self._get_monash_masses_per_metallicity()
+        self._prepare_monash_models()
 
     def __getattr__(self, name):
         if name in self.df.elements:
@@ -710,6 +748,7 @@ class Abundances:
             self.df.elements[name].envelope = envelope
             self.df.elements[name].intershell = intershell
             self.df.elements[name].m_accreted = np.cumsum(envelope * self.dm_acc)
+            self.df.elements[name].m_yield = np.cumsum(envelope * self.dm)
 
             return self.df.elements[name]
 
@@ -717,34 +756,68 @@ class Abundances:
 
             return self.df.isotopes[name]
 
-    def _prepare_single_monash_model(self, M, Z):
+    def _prepare_single_monash_model(self, M, Z, fresh=False):
 
-        intershell = self.df.intershell.query(
-            f"Z == {Z} and pmz == 2e-3 and last == 1 and M1tp == {M}"
-        ).sort_values("ntp")
+        if not fresh:
+            try:
+                with open(
+                    f"/home/koen/master-internship/data/intershell-cache/M{M:.3f}Z{Z:.4f}.pkl",
+                    "rb",
+                ) as f:
+                    monash_model = pickle.load(f)
+                    return monash_model
+            except FileNotFoundError:
+                return self._prepare_single_monash_model(M, Z, True)
 
-        tp_info = self.df.tp.query(f"initial_mass == {M} and z == {Z}")
+        else:
+            intershell = self.df.intershell.query(
+                f"Z == {Z} and pmz == 2e-3 and last == 1 and M1tp == {M}"
+            ).sort_values("ntp")
 
-        intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
+            tp_info = self.df.tp.query(f"initial_mass == {M} and z == {Z}")
 
-        # one intershell abundance per pulse
-        i_data = intershell.drop_duplicates("ntp").set_index("ntp")
+            intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
 
-        # one dredge-up mass per pulse
-        tp_data = tp_info.drop_duplicates("pulse").set_index("pulse")
+            # one intershell abundance per pulse
+            i_data = intershell.drop_duplicates("ntp").set_index("ntp")
 
-        # common pulses, in ascending order
-        pulses = i_data.index.intersection(tp_data.index).sort_values()
+            # one dredge-up mass per pulse
+            tp_data = tp_info.drop_duplicates("pulse").set_index("pulse")
 
-        Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
-        isotope_abundance = i_data.loc[pulses, isotope.key].to_numpy()
+            # common pulses, in ascending order
+            pulses = i_data.index.intersection(tp_data.index).sort_values()
 
-        Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
-        isotope_abundance = np.log10(isotope.mass * isotope_abundance + 1e-20)
+            Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
+            isotope_abundance = np.log10(i_data.iloc[:, 7:].clip(lower=1e-99))
 
-        pass
+            Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
 
-    def _prepare_monash_models(self):
+            monash_model = MonashModel(M, Z, pulses, Mdredge, isotope_abundance)
+
+            with open(
+                f"/home/koen/master-internship/data/intershell-cache/M{M:.3f}Z{Z:.4f}.pkl",
+                "wb",
+            ) as f:
+                pickle.dump(monash_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        return monash_model
+
+    def _get_monash_masses_per_metallicity(self):
+        try:
+            with open(
+                f"/home/koen/master-internship/data/intershell-cache/MZ.pkl",
+                "rb",
+            ) as f:
+                self._mass_Z_dict = pickle.load(f)
+        except FileNotFoundError:
+            self._mass_Z_dict = {}
+            for Z in np.unique(self.df.intershell["Z"]):
+                i = self.df.intershell.query(
+                    f"Z == {Z} and pmz == 2e-3 and last == 1"
+                ).sort_values("ntp")
+                self._mass_Z_dict[Z] = np.unique(i["M1tp"])
+
+    def _prepare_monash_models(self, Z=None):
         """
         this method combines the Monash Isotope dataset and tp-info dataset and saves it as a collection of simple dicts.
         it caches the result on disk using pickle.
@@ -757,8 +830,43 @@ class Abundances:
             isos:  328 x numpy 1D array(floats)
 
         """
+        if Z == None:
+            Z = self.model.params["z"]
+        M = self.model.params["m"]
 
-        self._prepare_single_monash_model(M, Z)
+        if Z in [0.0028, 0.007, 0.014]:
+            masses = self._mass_Z_dict[Z]
+
+            x = M
+            i = np.searchsorted(masses, x)
+
+            if i == 0:
+                lower = None
+                upper = masses[0]
+            elif i == len(masses):
+                lower = masses[-1]
+                upper = None
+            else:
+                lower = masses[i - 1]
+                upper = masses[i]
+
+            if lower != None:
+                self.monash_models[Z].append(
+                    self._prepare_single_monash_model(lower, Z)
+                )
+            if upper != None:
+                self.monash_models[Z].append(
+                    self._prepare_single_monash_model(upper, Z)
+                )
+
+        elif Z < 0.007:
+            self._prepare_monash_models(Z=0.007)
+            self._prepare_monash_models(Z=0.0028)
+        else:
+            self._prepare_monash_models(Z=0.014)
+            self._prepare_monash_models(Z=0.007)
+
+        # self._prepare_single_monash_model(M, Z)
 
     def compute_intershell(self, name):
         # TODO: this needs to be changed to the ACTUAL abundances
@@ -767,49 +875,36 @@ class Abundances:
         # it is also important to keep in mind that the abundances
         # here should be MASS RATIOS.
 
-        self.monash_models = self._prepare_monash_models()
-
         intershell = np.zeros(self.total_length)
+
+        match self.method:
+            case "m_dup":
+                interp_x = np.log10(np.cumsum(self.m_dup) + 1e-12)
+
+            case "tp":
+                interp_x = self.tp_count
+
         for isotope in self.df.elements[name].isotopes:
 
-            intershell += self.get_abundance(
+            intershell += self.df.elements[name].isotopes[
+                isotope
+            ].mass * self.get_abundance(
                 self.df.isotopes[isotope],
                 self.model.params["m"],
                 self.model.params["z"],
-                np.cumsum(self.m_dup + 1e-12),
+                interp_x,
             )
         return intershell
 
-    def get_iso_and_Mdredge(self, isotope, intershell, tp_info):
-        # keep only pulses that exist in both datasets
-        intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
-
-        # one intershell abundance per pulse
-        i_data = intershell.drop_duplicates("ntp").set_index("ntp")
-
-        # one dredge-up mass per pulse
-        tp_data = tp_info.drop_duplicates("pulse").set_index("pulse")
-
-        # common pulses, in ascending order
-        pulses = i_data.index.intersection(tp_data.index).sort_values()
-
-        Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
-        isotope_abundance = i_data.loc[pulses, isotope.key].to_numpy()
-
-        Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
-        isotope_abundance = np.log10(isotope.mass * isotope_abundance + 1e-20)
-
-        return isotope_abundance, Mdredge
-
-    def get_abundance(self, isotope, M, Z, Mdredge_interp, drop=None):
+    def get_abundance(self, isotope, M, Z, interp, drop=None):
 
         if Z in [0.0028, 0.007, 0.014]:
-            return 10 ** self.get_abundance_Z(isotope, M, Z, Mdredge_interp, drop)
+            return 10 ** self.get_abundance_Z(isotope, M, Z, interp, drop)
 
         if Z <= 0.0028:
-            return 10 ** self.get_abundance_Z(isotope, M, 0.0028, Mdredge_interp, drop)
+            return 10 ** self.get_abundance_Z(isotope, M, 0.0028, interp, drop)
         if Z >= 0.014:
-            return 10 ** self.get_abundance_Z(isotope, M, 0.014, Mdredge_interp, drop)
+            return 10 ** self.get_abundance_Z(isotope, M, 0.014, interp, drop)
 
         if Z <= 0.007:
             z_min = 0.0028
@@ -818,45 +913,36 @@ class Abundances:
             z_min = 0.007
             z_max = 0.014
 
-        abundance_min = self.get_abundance_Z(isotope, M, z_min, Mdredge_interp, drop)
-        abundance_max = self.get_abundance_Z(isotope, M, z_max, Mdredge_interp, drop)
+        abundance_min = self.get_abundance_Z(isotope, M, z_min, interp, drop)
+        abundance_max = self.get_abundance_Z(isotope, M, z_max, interp, drop)
         weight = (np.log10(Z) - np.log10(z_min)) / (np.log10(z_max) - np.log10(z_min))
 
         return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
 
-    def get_abundance_Z(self, isotope, M, Z, Mdredge_interp, drop=None):
-        intershell_metal = self.df.intershell.query(
-            f"Z == {Z} and pmz == 2e-3 and last == 1"
-        ).sort_values("ntp")
+    def get_abundance_Z(self, isotope, M, Z, interp_x, drop=None):
 
-        ms = np.unique(intershell_metal.M1tp)
-        ms.sort()
-        if drop != None:
-            for i, m in enumerate(ms):
-                if m == drop:
-                    ms = np.delete(ms, i)
-        try:
-            arg_max = np.where(ms >= M)[0][0]
-            i1_max = intershell_metal.query(f"M1tp == {ms[arg_max]}")
-            tp1_max = self.df.tp.query(f"initial_mass == {ms[arg_max]} and z == {Z}")
-            iso, Mdredge_real = self.get_iso_and_Mdredge(isotope, i1_max, tp1_max)
-            abundance_max = np.interp(np.log10(Mdredge_interp), Mdredge_real, iso)
-        except IndexError:
-            abundance_max = None
-        try:
-            arg_min = np.where(ms < M)[0][-1]
-            i1_min = intershell_metal.query(f"M1tp == {ms[arg_min]}")
-            tp1_min = self.df.tp.query(f"initial_mass == {ms[arg_min]} and z == {Z}")
-            iso, Mdredge_real = self.get_iso_and_Mdredge(isotope, i1_min, tp1_min)
-            abundance_min = np.interp(np.log10(Mdredge_interp), Mdredge_real, iso)
-        except IndexError:
-            abundance_min = None
+        match self.method:
+            case "m_dup":
+                attr = "m_dup"
+            case "tp":
+                attr = "pulses"
 
-        if type(abundance_min) == type(None):
-            return abundance_max
-        if type(abundance_max) == type(None):
-            return abundance_min
-        weight = (M - ms[arg_min]) / (ms[arg_max] - ms[arg_min])
+        if len(self.monash_models[Z]) == 1:
+            abundance = self.monash_models[Z][0].intershell_isos[isotope.key]
+            x = getattr(self.monash_models[Z][0], attr)
+            return np.interp(interp_x, x, abundance)
+
+        else:
+            abundance_min = self.monash_models[Z][0].intershell_isos[isotope.key]
+            x_min = getattr(self.monash_models[Z][0], attr)
+            abundance_min = np.interp(interp_x, x_min, abundance_min)
+            mass_min = self.monash_models[Z][0].M
+            abundance_max = self.monash_models[Z][1].intershell_isos[isotope.key]
+            x_max = getattr(self.monash_models[Z][1], attr)
+            abundance_max = np.interp(interp_x, x_max, abundance_max)
+            mass_max = self.monash_models[Z][1].M
+
+        weight = (M - mass_min) / (mass_max - mass_min)
 
         return abundance_min + weight * (abundance_max - abundance_min)
 
@@ -881,54 +967,3 @@ class Abundances:
             )
 
         return envelope
-
-
-# %%
-
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
-from matplotlib.style import context
-import sys
-import pickle
-
-sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
-from plot_size import set_size
-
-column = 312.98032
-full = 483.69684
-plt.style.use("default")
-plt.style.use("tex rm")
-
-sys.path.insert(1, "/home/koen/master-internship/")
-from scripts.general_utils.cplot import cplot
-from scripts.general_utils.cache import get_star
-
-plt.cplot = cplot
-
-sys.path.insert(1, "/home/koen/master-internship/")
-MASTER = "/home/koen/master-internship/mesa-models/"
-
-import mesa_reader as mr
-from scripts.general_utils.mesa_grid_2 import MesaGrid
-
-grid = MesaGrid(f"{MASTER}/grid-masses-2026-08-14-clean")
-grid2 = MesaGrid(f"{MASTER}/grid-masses-2-2026-08-16-clean")
-grid3 = MesaGrid(f"{MASTER}/grid-masses-3-2026-08-24")
-grid4 = MesaGrid(f"{MASTER}/grid-masses-4-2026-08-25")
-grid.merge(grid2)
-grid.merge(grid3, overwrite=True)
-grid.merge(grid4, overwrite=True)
-
-# %%
-m = grid.models[30]
-
-df = AbundanceTables()
-ab = Abundances(model=m, df=df)
-
-
-# %%
-
-plt.plot(ab.time, ab.ba.envelope)
-plt.show()
-# %%
