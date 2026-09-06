@@ -538,6 +538,9 @@ class MonashModel:
         self.m_dup = m_dup
         self.intershell_isos = intershell_isos
 
+        index = np.where(self.m_dup > -4.5)[0][0]
+        self.pulses_offset = self.pulses - self.pulses[index]
+
 
 class Isotope:
     def __init__(self, isotope):
@@ -884,6 +887,11 @@ class Abundances:
             case "tp":
                 interp_x = self.tp_count
 
+            case "tp offset":
+                index = np.where(self.m_dup > 10.0**-4.5)[0][0]
+                interp_x = self.tp_count - self.tp_count[index]
+                print(interp_x)
+
         for isotope in self.df.elements[name].isotopes:
 
             intershell += self.df.elements[name].isotopes[
@@ -916,7 +924,6 @@ class Abundances:
         abundance_min = self.get_abundance_Z(isotope, M, z_min, interp, drop)
         abundance_max = self.get_abundance_Z(isotope, M, z_max, interp, drop)
         weight = (np.log10(Z) - np.log10(z_min)) / (np.log10(z_max) - np.log10(z_min))
-
         return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
 
     def get_abundance_Z(self, isotope, M, Z, interp_x, drop=None):
@@ -926,21 +933,22 @@ class Abundances:
                 attr = "m_dup"
             case "tp":
                 attr = "pulses"
+            case "tp offset":
+                attr = "pulses_offset"
 
         if len(self.monash_models[Z]) == 1:
             abundance = self.monash_models[Z][0].intershell_isos[isotope.key]
             x = getattr(self.monash_models[Z][0], attr)
             return np.interp(interp_x, x, abundance)
 
-        else:
-            abundance_min = self.monash_models[Z][0].intershell_isos[isotope.key]
-            x_min = getattr(self.monash_models[Z][0], attr)
-            abundance_min = np.interp(interp_x, x_min, abundance_min)
-            mass_min = self.monash_models[Z][0].M
-            abundance_max = self.monash_models[Z][1].intershell_isos[isotope.key]
-            x_max = getattr(self.monash_models[Z][1], attr)
-            abundance_max = np.interp(interp_x, x_max, abundance_max)
-            mass_max = self.monash_models[Z][1].M
+        abundance_min = self.monash_models[Z][0].intershell_isos[isotope.key]
+        x_min = getattr(self.monash_models[Z][0], attr)
+        abundance_min = np.interp(interp_x, x_min, abundance_min)
+        mass_min = self.monash_models[Z][0].M
+        abundance_max = self.monash_models[Z][1].intershell_isos[isotope.key]
+        x_max = getattr(self.monash_models[Z][1], attr)
+        abundance_max = np.interp(interp_x, x_max, abundance_max)
+        mass_max = self.monash_models[Z][1].M
 
         weight = (M - mass_min) / (mass_max - mass_min)
 
@@ -967,3 +975,6 @@ class Abundances:
             )
 
         return envelope
+
+
+# %%

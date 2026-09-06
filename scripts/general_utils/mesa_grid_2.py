@@ -193,6 +193,9 @@ class MesaRun:
         tpagb_age = star.age[star.ntpagb]
         self.age = self.starting_model.star_age + tpagb_age + self.star_age
 
+    def __repr__(self):
+        return f"MesaRun object with m={self.params["m"]:.2f}, q={self.params["q"]:.3f} and RL = {self.params["R"]:.0f}"
+
     def __getattr__(self, name):
         if name == "profiles":
             self.get_profiles(fresh=False)

@@ -553,7 +553,7 @@ cbar.set_label(r"Initial star mass ($M_\odot$)")
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Thermal pulse count")
-plt.ylabel("$M_\\textrm{DUP}$ ($M_\\odot$)")
+plt.ylabel("$\\lambda_\\textrm{DUP}$")
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/w27-compare-lambda-evolution.pgf", format="pgf"
 )

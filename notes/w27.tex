@@ -119,15 +119,91 @@ The shapes here are actually quite similar for all models. It is just that the M
 \newsection{Yields}
 
 \newsection{Comparing different Intershell abundance parametrisations}
+\subsection{Summary of Different Methods}
 
+\begin{enumd}
+    \item  \emph{Dredged-up mass}: This method parametrises the isotope intershell abundance only based on the total amount of dredged-up mass. This is nice because, just like for example the thermal pulse count, this quantity is strictly increasing, and it has some physical meaning since we expect the intershell abundance enrichment to only start increasing after a dredge-up has started. However, it makes little physical sense to say that the intershell abundance is dependent on the \emph{cumulative} amount of dredged up mass. Really, the only important thing is the \emph{first} time significant dredge up occurs.
+
+    \begin{figure}[ht]
+        \marginfignote{2}{We see that this method is quite good at interpolating the latter part of the isotope abundance evolution as a function of cumulative dredged-up mass. However, there is not a very well defined ``start'' of the intershell abundances \emph{because} the abundances increase very quickly after the first or second dredge-up event. These events can dredge up quite different amounts of mass. }
+        \centering
+        \incplot{w27-m_dredge-naive}
+    \end{figure}
+    
+    \item \emph{Naive thermal pulse}: This method only looks at the intershell abundance of an isotope as a function of the thermal pulse number. We then \emph{assume} that the MESA and Monash models agree well on when the intershell abundances change as a function of thermal pulse number.
+
+        This is probably \emph{not} the case, but it is an interesting simple test case. I assume that this method is not very accurate because the MESA and Monash models do not agree on the total number of thermal pulses, and they do not agree on when the first pulse with significant dredge up occurs.
+
+        Another reason why I think this method is not ideal is that we \emph{need} to interpolate intershell abundances of the different monash models, and even these models do not agree well on during which thermal pulse enrichment occurs. This means that interpolation will give ``smoothed-out'' results. 
+        
+        Below I show how a \(M=1.8\;M_\odot, R=500\;R_\odot , q=0.4293\) models gets interpolated:
+
+        \begin{figure}[ht]
+            \marginfignote{2}{Here we see the ``problem'' with this method. Since for the same metallicity, the different masses do not agree on the moment of enrichment, the first interpolation creates a smoothed intershell abundance enrichment profile for the \(Z=0.007\) models. Then when we interpolate the different interpolated \(Z\) models, we get an even more smoothed out profile. This is \emph{not} representative of how the single model intershell enrichment looks.}
+            \centering
+            \incplot{w27-thermal-pulse-naive}
+        \end{figure}
+
+    \item  \emph{Thermal pulse shifted by first significant dredge-up}: Both of the previously noted methods clearly have problems. We can try to take the best parts of both. Let's take the simplicity of the thermal pulse count idea and the physical meaning of the first dredge-up that is so powerful in the first method.
+
+    For now I put a simple lower limit of \(\log M_\text{DUP} = -4.5\;M_\odot \) for the start of dredge up. I then offset the thermal pulse count by the first pulse that satisfies the lower boundary.
+    \begin{figure}[ht]
+        \marginfignote{2}{I think this looks quite good. The models however do not perfectly agree on when the intershell should become enriched. We have already seen this before and I have asked Amanda about this, but at this point I have not gotten a response yet.}
+        \centering
+        \incplot{w27-tp-count}
+    \end{figure}
+    
+\end{enumd}
+
+
+
+\newsubsection{Comparing Naive Thermal Pulse parametrisation with Cumulative Dredged-up Mass parametrisation}
 \begin{figure}[ht]
+    \marginfignote{3}{It is clear that the absolute differences between the two methods for determining the intershell abdundance, and thus the total amount of accreted barium is smallest for the \(M_\text{TPAGB,i} = 3\;M_\odot \) model and largest for the two lightest models. However, we do not know what the absolute values of \(\Delta M_\text{Ba}\) are. Therefore, I also plot the log-divided difference between the methods.}
+    \marginfignote{20}{Here, I plot \(\log (\text{\(M_\text{dup}\) method} - \text{TP count method})\)}
     \centering
     \incplot{w27-grid-diff-tp}
 \end{figure}
 
 \begin{figure}[ht]
+    \marginfignote{3}{This plot shows \(\log (M_\text{dup}\text{ method} / \text{TP count method})\) }
+    \marginfignote{10}{This time it is more obvious that the differences are tiny for the \(M=3\;M_\odot \) models and largest for the \(M=1.8\;M_\odot \) models.}
+    \marginfignote{17}{Now the question is, \emph{why} do these differences exist?}
     \centering
     \incplot{w27-grid-diff-tp-2}
+\end{figure}
+
+First, let me show a \(3\;M_\odot \) model.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Now as we could see in the previous figure, the \(M=3\;M_\odot \) models have very little differences between the amount of accreted barium mass.}
+    \marginfignote{8}{I think this is because in these models, dredge up starts early in both the MESA and the Monash models, such that overall, the differences in the \emph{envelope} abundances remain small after some dredge up events. This also means that as soon as the star starts to lose significant amounts of mass, well after dredge up has begun, the envelope abundances agree well and we are left with roughly the same amount of accreted barium.}
+    \marginfignote{27}{Now this is not only true for barium, but pretty much all s-process elements, because the enrichment happens in the same way.}
+    \centering
+    \incplot{w27-compare-tp-ba-m3}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{In the differences plot above, we see that the \(M=2.6\;M_\odot \) models generally have lower values by about \(1.5\) to \(2\).}
+    \marginfignote{8}{Here, we see that it takes a lot longer for the intershell to become enriched. It also seems like it takes many pulses for the intershell to actually reach its final intershell abundance maximum, while the Monash models reach this maximum in only 1 or 2 pulses. This is a result of the interpolation which is definitely not perfect.}
+    \marginfignote{22}{Luckily, there are \emph{many} pulses after the first TDU event. This way, even though the envelope is initially much less enriched, it can ``catch'' up before significant amounts of mass are transferred. Once the strong winds and RLOF start, the envelope is nearly at the same enrichment as it is for the \(M_\text{DUP}\) interpolation method. }
+    \centering
+    \incplot{w27-compare-tp-ba-m2.6}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This model has the largest fractional difference between the methods. It is quite clear why this is.}
+    \marginfignote{3}{Just like for the \(M=2.6\;M_\odot \) model, the difference between when the intershell becomes enriched is quite large. This means the intershell becomes enriched much earlier in the \(M_\text{DUP}\) method than it does in the TP count method. However, because this model loses most of its mass very quickly after the intershell enrichment of the TP count method, it does not have any time to properly enrich its envelope, while the \(M_\text{DUP}\) method did have time to enrich it.}
+    \centering
+    \incplot{w27-compare-tp-ba-m1.8}
+\end{figure}
+
+
+\newsubsection{Comparing Thermal Pulse Offset parametrisation with Cumulative Dredged-up Mass parametrisation}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-grid-diff-tp-offset-2}
 \end{figure}
 
 
