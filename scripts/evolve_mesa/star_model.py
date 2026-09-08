@@ -124,9 +124,15 @@ class StellarModel:
         self.surf_o16 = track["surface_o16"]
         self.surf_c12 = track["surface_c12"]
         try:
-            self.envelope_o16 = track["envelope_o16"]
+            self.envelope_h1 = track["envelope_h1"]
+            self.envelope_he3 = track["envelope_he3"]
+            self.envelope_he4 = track["envelope_he4"]
             self.envelope_c12 = track["envelope_c12"]
             self.envelope_c13 = track["envelope_c13"]
+            self.envelope_n14 = track["envelope_n14"]
+            self.envelope_o16 = track["envelope_o16"]
+            self.envelope_ne20 = track["envelope_ne20"]
+            self.envelope_mg24 = track["envelope_mg24"]
         except:
             pass
 

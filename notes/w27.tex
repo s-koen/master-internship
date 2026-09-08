@@ -55,6 +55,48 @@ Best regards,
 \end{shadequote}
 \end{minipage}
 
+\hspace{0.1\textwidth}\begin{minipage}{1.45\textwidth}
+\begin{shadequote}{Amanda}
+Hi Koen,
+ 
+\begin{minted}[fontsize=\small,breaklines]{text}
+    I took some time to match the pulses in the pulse.dat files with the pulses in the intershell abundances files from Zara for all models. This allows me to associate the dredged-up mass from each pulse with the corresponding intershell abundances. To check that this matching is correct, I plotted a quantity that is present in both datasets for every thermal pulse: the core mass. 
+\end{minted}
+
+OK one thing to be aware of is that the time when the core mass was sampled may be different in the pulse.dat files and the intershell abundance files. In the pulse.dat files the core mass is sampled at the luminosity maximum, which is during the interpulse but just before the next thermal pulse. In the intershell files I think the core mass is sampled during the thermal pulse itself, so there may be a slight offset. 
+
+\begin{minted}[fontsize=\small,breaklines]{text}
+    <image>
+    In the top plot, the thick transparent lines correspond to the core mass per thermal pulse as listed in the intershell files, while the thin opaque lines show the core masses from the pulse.dat files. I think the close agreement between the two shows that the pulses in the two datasets correspond to the same thermal pulses.
+
+    This suggests I should be able to combine the dredged-up mass from the pulse.dat files with the corresponding intershell abundances from the intershell files and compare them.
+
+    Howevew, when I plot the dredged-up mass per thermal pulse together with the total mass fraction of elements heavier than iron in the intershell, I see something that Onno and I did not expect:
+    <image>
+    Onno and I expected the intershell to become enriched in s-process elements 1 pulse after the first thermal pulse with significant amounts of dredge up (like what we see for the brown, green, and red models). However, in some models the intershell only becomes enriched after a second TDU (blue and purple models) or even after a third or fourth TDU (pink and orange models). We see similar offsets in the models with different metallicities as well.
+
+    Do you happen to know what might cause some models to only experience s-process enrichment in the intershell after multiple TDU events?
+\end{minted}
+I will investigate this for you but one thing does come to mind:
+
+We only get s-process production after we manually include some protons into the top of the He-intershell. This partially mixed zone of protons turns into a c13 pocket. We generally insert protons at the deepest extent of a TDU episode, with the first insertion occurring after the first thermal pulse with TDU. But in some cases I might ignore the first TDU episode if it's not very deep, or, perhaps the algorithm that finds the TDU episodes might miss the first one. That can also happen. 
+
+I will examine the m1.75, m2.75 and m2.5 models (brown, orange and green in your plots above) to verify what is going on.
+ 
+Cheers,
+\end{shadequote}
+\end{minipage}
+
+\hspace{0.2\textwidth}\begin{minipage}{1.35\textwidth}
+\begin{shadequote}{Amanda}
+Hi again,
+
+I meant I will examine the models where the s-process appears after the 2nd or 3rd TDU events! sorry mis-read your email.
+I'm checking now.
+
+cheers,
+\end{shadequote}
+\end{minipage}
 
 \newsection{Comparing MESA and Monash Dredge up}
 
@@ -114,9 +156,8 @@ The plot below shows the dredge up efficiency parameter \(\lambda\) for the \emp
     \incplot{w27-compare-lambda-evolution}
 \end{figure}
 
-The shapes here are actually quite similar for all models. It is just that the MESA models seem to predict higher overall values.
+The shapes here are actually quite similar for all models. It is just that the MESA models seem to predict higher overall values and obviously start during earlier pulses.
 
-\newsection{Yields}
 
 \newsection{Comparing different Intershell abundance parametrisations}
 \subsection{Summary of Different Methods}
@@ -201,11 +242,151 @@ First, let me show a \(3\;M_\odot \) model.
 
 \newsubsection{Comparing Thermal Pulse Offset parametrisation with Cumulative Dredged-up Mass parametrisation}
 
+The first subsection already showed that the offset thermal pulse method produces enrichment profiles that are quite similar to the ones from the cumulative \(M_\text{DUP}\) method. With the plots below, I show that this is true for \emph{all} models from my test grid.
+
 \begin{figure}[ht]
+    \marginfignote{0}{The absolute differences that we see here are \emph{much} smaller than the ones we see in the Naive TP count method. Now, this does not necessarily mean that this method is \emph{better}, it just means it agrees better with the \(M_\text{DUP}\) method. }
+    \marginfignote{10}{I do like the cumulative dredge-up method better than the naive thermal pulse counting method however for the arguments I have given in the first subsection, so the fact that this offset pulse method agrees much better with the \(M_\text{DUP}\) method is quite nice. It means that the precise method for determining the intershell abundance likely is not super important. For agreement, on the first pulse where enrichment occurs seems to be important, and by lining this up with the first TDU event we make sure both methods agree on when this is.}
+    \centering
+    \incplot{w27-grid-diff-tp-offset-1}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here we again see much smaller differences between the two methods.}
     \centering
     \incplot{w27-grid-diff-tp-offset-2}
 \end{figure}
 
+\begin{figure}[ht]
+    \marginfignote{0}{In the \(M=3.0\;M_\odot \) models we see that the \(M_\text{DUP}\) method stars its intershell (only) one thermal pulse before the TP + offset method. This agreement is quite good, and in stark contrast with the naive TP method were we saw much larger discrepancies. }
+    \marginfignote{15}{In the end, the method agrees to within 1 percent on the final amount of accreted barium.}
+    \centering
+    \incplot{w27-compare-tp-offset-ba-m3}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The same is true for the \(M=2.6\;M_\odot \) models. Here, again the \(M_\text{DUP}\) method enriches the intershell one pulse before the TP + offset method.}
+    \marginfignote{7}{Eventually, at the end of the evolution, the differences between the total amount of accreted barium onto the accretor is less than \(1\%\).}
+    \centering
+    \incplot{w27-compare-tp-offset-ba-m2.6}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here, I once again plot the model where the two methods disagree \emph{most}. This is a challenging model because dredge up has only \emph{just} started when significant amounts of mass are lost, so this model is most sensitive differences in the starting pulse of intershell enrichment.}
+    \marginfignote{13}{Again, the methods disagree on the starting pulse by one. In this case however, this leads to quite a big difference in the total amount of accreted matter, \emph{because} mass loss is already strong at the point of intershell enrichment \emph{and} the model undergoes RLOF really quickly after the enrichment. The offset in the start then causes a \emph{significant} lag in the envelope abundance and thus the amount of accreted mass. At the end of the evolution, the difference between the methods is about \(10\%\), which is \emph{significantly} less than it was for the naive thermal pulse method.}
+    \centering
+    \incplot{w27-compare-tp-offset-ba-m1.8}
+\end{figure}
+
+\newsection{Comparing with MESA abundances}
+There are some isotopes for which MESA keeps track of the abundances in the envelope. These are:
+
+\begin{tabular}{lllll}
+\(\text{H}_{1}  \) & \(\text{He}_{4}  \) & \(\text{C}_{13}  \) & \(\text{O}_{16}  \) & \(\text{Mg}_{24}\)\\ 
+\(\text{He}_{3}  \) & \(\text{C}_{12}  \) & \(\text{N}_{14}  \) & \(\text{Ne}_{20}  \) &
+\end{tabular}
+
+These isotopes are interesting, because we can use these to \emph{check} how well the Monash abundance post-processing agrees with the isotopes that MESA keeps track of.
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I think it is important to note that my envelope abundances can only keep track of elements, not individual isotopes. This is because the Monash models only provide elemental abundances in for the envelope, and we \emph{require} an initial envelope abundance which we then enrich based on subsequent dredge-up events.
+\end{questionbox}
+
+For example, the first thing we can do is check if the initial envelope abundances agree. For this, I sum \(\text{He}_{3}\) and \(\text{He}_{4}\) and I sum \(\text{C}_{12}\) and \(\text{C}_{13}\). For the other isotopes, I \emph{assume} these are by far the most abundant isotope for the element, such that \(X(\text{element} ) \approx X(\text{isotope} )\).
+
+\begin{figure}[ht]
+    \marginfignote{2}{I think the Monash initial envelope abundances agree very well with the \emph{MESA} initial envelope abundance.}
+    \marginfignote{8}{We do however see that the magnesium abundance of the \emph{MESA} models is quite a bit larger than it is for the Monash abundances. I think this might be because in the monash models, the magnesium atoms are able to undergo interactions and ultimately become heavier elements. In the \emph{MESA} abundances however, this is not possible because the reaction network only goes up to magnesium.}
+    \centering
+    \incplot{w27-initial-envelope-abundance}
+\end{figure}
+
+Now, let me check how the envelope abundances compare between the \emph{MESA} model and the \emph{Monash} post-processing.
+
+To start, I will look at helium. In this case, all plot are for \(q=0.6,\; R=1000\; R_\odot \):
+
+\begin{figure}[ht]
+    \marginfignote{0}{The initial abundance is off by a little more than a factor 2. Since the intershell abundance is larger than both envelope abundances, the envelope abundances grow with every thermal pulse. It is difficult to say if the actual increase in envelope abundance between the two is consistant however, since the initial abundances are so different.}
+    \centering
+    \incplot{w27-compare-he}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Compared to the Helium abundances, the \emph{MESA} abundances agree much better with the Monash post-processing. The initial abundances are nearly identical. However, the Monash post-processing seems to predict lower enrichment.}
+    \centering
+    \incplot{w27-compare-c}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This one is uninteresting. Because the intershell abundance is much \emph{lower} than the envelope abundance, the intershell values will \emph{slightly} decrease due to dredge-up, but overall, not much happens.}
+    \centering
+    \incplot{w27-compare-n}
+\end{figure}
+
+
+\begin{figure}[ht]
+    \marginfignote{0}{The oxygen abundances are quite different. Initially, the oxygen abundances are slightly higher for the Monash post-processing abundances, but they grow \emph{much} slower than the \emph{MESA} ones. This is surprising. The \emph{MESA} envelope abundance even reaches values close to the Monash intershell abundance values, which seems to imply that the MESA intershell abundance of oxygen is \emph{much} larger than it is for the Monash models.}
+    \centering
+    \incplot{w27-compare-o}
+\end{figure}
+\nextpage
+\begin{figure}[ht]
+    \marginfignote{0}{The Neon abundances are generally slightly larger for the Monash post-processed abundances than they are for the \emph{MESA} models. In this case, the naive thermal pulse method actually produces the abundances that most closely match the \emph{MESA} abundances, but this does not necessarily mean that this is the best method, since I am not sure how accurate the \emph{MESA} abundances are.}
+    \centering
+    \incplot{w27-compare-ne}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The magnesium abundances are very different. Like I have already said, I think this is very much due to the limited reaction network.}
+    \centering
+    \incplot{w27-compare-mg}
+\end{figure}
+
+Now that I have shown all abundances that are present in the \emph{MESA} history data, we can also look at some ratios. The most interesting one is probably the C/O ratio: 
+
+\begin{figure}[ht]
+    \marginfignote{0}{Even though the absolute abundances for oxygen and carbon do not agree \emph{super} well between the Monash abundances and the \emph{MESA} abundances. However, the C/O ratio actually agrees \emph{very} well, especially for \(M=1.8\; M_\odot,\; M=2.2\; M_\odot, \) and \(M=2.6\; M_\odot \).}
+    \centering
+    \incplot{w27-compare-co-ratio}
+\end{figure}
+
+\newsection{Yields}
+
+\citet{karakas2016} define the yields of their Monash models as:
+\begin{equation*}
+    M_{k} = \int_{0}^{\tau } X(k)\frac{\dd{M}}{\dd{t}}\dd{t},
+\end{equation*}
+where \(\tau \) is the lifetime of the stellar model.
+So, as far as I understand, this is simply the amount of mass of an element that is expelled.
+
+It is quite easy to compute the yields with my current setup, and \citet{karakas2016} published their yields so we can quite easily compare the two.
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    I actually modified my Abundance class to also take in \emph{just} the single star evolution from mesa. In this case, we cannot predict the actual accreted amount of mass. The accreted amount of mass is obviously not necessary to compute the yields.
+\end{questionbox}
+
+Below I plot the yields for carbon. 
+\begin{figure}[ht]
+    \marginfignote{0}{There seems to be a clear positive correlation between the stellar mass and the final amount of carbon that the star yields.}
+    \centering
+    \incplot{w27-yield-mesa}
+\end{figure}
+
+Below I plot the same plot, but now for barium:
+
+\begin{figure}[ht]
+    \marginfignote{0}{We see nearly the same shape for the barium yields, however the actual yields are obviously much smaller.}
+    \centering
+    \incplot{w27-yield-mesa-ba}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-all}
+\end{figure}
 
 
 \bibliography{master.bib}
@@ -215,5 +396,466 @@ First, let me show a \(3\;M_\odot \) model.
 \newsection{Optimizations}
 
 Last week, my code to compute the intershell abundances was very unoptimized. It worked but very often computations were repeated when it was not necessary.
+Now I have changed this, which makes the intershell enrichment computations quite quick. I think the speed-up is about a factor 10.
+
+The main speed-up comes from caching the abdundances per thermal pulse / \(M_\text{DUP}\) for every model into a binary file. Reading this file is \emph{much} quicker than querying through the hole intershell abundances dataframe.
+
+Below I give the new code.
+
+\begin{minted}[fontsize=\small,breaklines]{py}
+class MonashModel:
+    def __init__(self, M, Z, pulses, m_dup, intershell_isos):
+        self.M = M
+        self.Z = Z
+        self.pulses = pulses
+        self.m_dup = m_dup
+        self.intershell_isos = intershell_isos
+
+        index = np.where(self.m_dup > -4.5)[0][0]
+        self.pulses_offset = self.pulses - self.pulses[index]
+
+
+class Isotope:
+    def __init__(self, isotope):
+        self.key = isotope
+
+        match isotope:
+            case "n":
+                self.mass = 1
+                self.name = f"$\\textrm{{{isotope}}}$"
+                self.short_name = "neutron"
+            case "p":
+                self.mass = 1
+                self.name = f"$\\textrm{{{isotope}}}^{{+}}$"
+                self.short_name = "proton"
+            case "d":
+                self.mass = 2
+                self.name = f"$\\textrm{{{isotope}}}$"
+                self.short_name = "deuterium"
+            case _:
+                match = re.match(r"([a-zA-Z]+)(\d+)$", isotope)
+                if match:
+                    self.short_name = match.group(1)
+                    self.mass = int(match.group(2))
+                    self.name = (
+                        f"$\\textrm{{{self.short_name.capitalize()}}}_{{{self.mass}}}$"
+                    )
+                else:
+                    self.short_name = None
+                    self.name = None
+                    self.mass = None
+
+    def __str__(self):
+        return f"{self.key} with mass {self.mass}"
+
+    def __repr__(self):
+        return f"{self.key}"
+
+
+class Element:
+    def __init__(self, name):
+        self.key = name
+        self.name = name.capitalize()
+        self.isotopes = {}
+
+    def add_isotope(self, isotope):
+        self.isotopes[isotope.key] = isotope
+
+    def __getitem__(self, isotope):
+        return self.isotopes[isotope]
+
+    def __iter__(self):
+        return iter(self.isotopes.values())
+
+    def __repr__(self):
+        return self.key
+
+    def __getattr__(self, name):
+        if name in self.isotopes:
+            return self.isotopes[name]
+
+
+class AbundanceTables:
+    def __init__(self):
+
+        with open("data/intershell_pd_df.pkl", "rb") as f:
+            self.intershell = pickle.load(f)
+
+        with open("data/env_pd_df.pkl", "rb") as f:
+            self.envelope = pickle.load(f)
+
+        with open("data/tp_info_pd_df.pkl", "rb") as f:
+            self.tp = pickle.load(f)
+
+        species = self.intershell.columns[4:]
+
+        self.isotopes = {spec: Isotope(spec) for spec in species}
+        self.elements = {}
+
+        for isotope in self.isotopes.values():
+            if isotope.short_name is None:
+                continue
+
+            element = self.elements.setdefault(
+                isotope.short_name, Element(isotope.short_name)
+            )
+            element.add_isotope(isotope)
+
+        self.envelope = self.envelope[self.envelope["pmz"] == 2e-3]
+        self.envelope = self.envelope[self.envelope["N_ov"] != 0]
+        self.envelope = self.envelope[self.envelope["Z"].astype(np.float64) == 0.014]
+        self.envelope = self.envelope[self.envelope["M_init"].astype(np.float64) == 2]
+
+    def __getattr__(self, name):
+        try:
+            return self.isotopes[name]
+        except KeyError:
+            raise AttributeError(f"{type(self).__name__} has no attribute {name!r}")
+
+    def get_initial_envelope_abundance(self, element, metallicity):
+        df = self.envelope[self.envelope["element"] == element]
+        return float(df["massfrac"].iloc[0]) * metallicity / 0.014
+
+    def get_pulse_info_specific_model(self, mass, metallicity):
+        df = self.tp[self.tp["initial_mass"] == mass]
+        df = df[df["z"] == metallicity]
+        return df
+
+\end{minted}
+\nextpage
+\begin{minted}[fontsize=\small,breaklines]{py}
+class Abundances:
+    """
+    this class computes and contains the abundances of the envelope of a
+    binary run. it uses the MESA binary simulation, combined with the
+    simple binary to determine
+    """
+
+    def __init__(self, model, df, method="m_dup"):
+        self.model = model
+        df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
+        self.df = df
+
+        self.method = method
+
+        simple = get_star(full_path=self.model.params["single_star"])
+
+        self.dup_simple = compute_m_DUP(simple)
+        self.dup_detailed = compute_m_DUP(model, self.dup_simple)
+
+        binary_start_age = model.age[0]
+
+        simple_age = np.asarray(simple.age)
+
+        self.simple_end_idx = (
+            np.searchsorted(
+                simple_age,
+                binary_start_age,
+                side="right",
+            )
+            - 1
+        )
+
+        self.total_length = self.simple_end_idx + len(self.model.age)
+        self.m_dup = np.zeros(self.total_length)
+        self.tp_count = np.zeros(self.total_length)
+        self.m_env = np.concatenate(
+            [simple.m_env[: self.simple_end_idx], self.model.envelope_mass]
+        )
+        self.time = np.concatenate([simple.age[: self.simple_end_idx], self.model.age])
+
+        m2 = np.concatenate(
+            [
+                self.model.sb.m2[: self.simple_end_idx],
+                self.model.star_2_mass,
+            ]
+        )
+
+        valid = ~np.isnan(m2)
+
+        m2_filled = np.nan_to_num(m2, nan=0)
+
+        dm = np.diff(m2_filled)
+        dm[~valid[:-1] | ~valid[1:]] = 0
+
+        self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+
+        m1 = np.concatenate(
+            [
+                -1 * simple.mass[: self.simple_end_idx],
+                -1 * self.model.star_1_mass,
+            ]
+        )
+
+        valid = ~np.isnan(m1)
+
+        m1_filled = np.nan_to_num(m1, nan=0)
+
+        dm = np.diff(m1_filled)
+        dm[~valid[:-1] | ~valid[1:]] = 0
+
+        self.dm = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+
+        for key, value in self.dup_simple.items():
+            if value["index"] > self.simple_end_idx:
+                break
+            self.m_dup[value["index"]] = value["mass"]
+
+        for key, value in self.dup_detailed.items():
+            self.m_dup[self.simple_end_idx + value["index"]] = value["mass"]
+
+        self.tp_count[: self.simple_end_idx] = simple.TP_count[: self.simple_end_idx]
+
+        self.tp_count[self.simple_end_idx :] = (
+            self.model.TP_count + simple.TP_count[self.simple_end_idx]
+        )
+
+        self.monash_models = defaultdict(list)
+        self._get_monash_masses_per_metallicity()
+        self._prepare_monash_models()
+
+    def __getattr__(self, name):
+        if name in self.df.elements:
+
+            # compute the intershell elemental abundance
+            intershell = self.compute_intershell(name)
+
+            # compute the initial envelope abundance
+            envelope = self.compute_envelope_abundance(name, intershell)
+
+            self.df.elements[name].envelope = envelope
+            self.df.elements[name].intershell = intershell
+            self.df.elements[name].m_accreted = np.cumsum(envelope * self.dm_acc)
+            self.df.elements[name].m_yield = np.cumsum(envelope * self.dm)
+
+            return self.df.elements[name]
+
+        if name in self.df.isotopes:
+
+            return self.df.isotopes[name]
+
+    def _prepare_single_monash_model(self, M, Z, fresh=False):
+
+        if not fresh:
+            try:
+                with open(
+                    f"/home/koen/master-internship/data/intershell-cache/M{M:.3f}Z{Z:.4f}.pkl",
+                    "rb",
+                ) as f:
+                    monash_model = pickle.load(f)
+                    return monash_model
+            except FileNotFoundError:
+                return self._prepare_single_monash_model(M, Z, True)
+
+        else:
+            intershell = self.df.intershell.query(
+                f"Z == {Z} and pmz == 2e-3 and last == 1 and M1tp == {M}"
+            ).sort_values("ntp")
+
+            tp_info = self.df.tp.query(f"initial_mass == {M} and z == {Z}")
+
+            intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
+
+            # one intershell abundance per pulse
+            i_data = intershell.drop_duplicates("ntp").set_index("ntp")
+
+            # one dredge-up mass per pulse
+            tp_data = tp_info.drop_duplicates("pulse").set_index("pulse")
+
+            # common pulses, in ascending order
+            pulses = i_data.index.intersection(tp_data.index).sort_values()
+
+            Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
+            isotope_abundance = np.log10(i_data.iloc[:, 7:].clip(lower=1e-99))
+
+            Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
+
+            monash_model = MonashModel(M, Z, pulses, Mdredge, isotope_abundance)
+
+            with open(
+                f"/home/koen/master-internship/data/intershell-cache/M{M:.3f}Z{Z:.4f}.pkl",
+                "wb",
+            ) as f:
+                pickle.dump(monash_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        return monash_model
+
+    def _get_monash_masses_per_metallicity(self):
+        try:
+            with open(
+                f"/home/koen/master-internship/data/intershell-cache/MZ.pkl",
+                "rb",
+            ) as f:
+                self._mass_Z_dict = pickle.load(f)
+        except FileNotFoundError:
+            self._mass_Z_dict = {}
+            for Z in np.unique(self.df.intershell["Z"]):
+                i = self.df.intershell.query(
+                    f"Z == {Z} and pmz == 2e-3 and last == 1"
+                ).sort_values("ntp")
+                self._mass_Z_dict[Z] = np.unique(i["M1tp"])
+\end{minted}
+\nextpage
+\begin{minted}[fontsize=\small,breaklines]{py}
+    def _prepare_monash_models(self, Z=None):
+        """
+        this method combines the Monash Isotope dataset and tp-info dataset and saves it as a collection of simple dicts.
+        it caches the result on disk using pickle.
+
+        the dicts contain:
+            M:     (float)
+            Z:     (float)
+            TPs:   numpy 1D array(floats)
+            M_dup: numpy 1D array(floats)
+            isos:  328 x numpy 1D array(floats)
+
+        """
+        if Z == None:
+            Z = self.model.params["z"]
+        M = self.model.params["m"]
+
+        if Z in [0.0028, 0.007, 0.014]:
+            masses = self._mass_Z_dict[Z]
+
+            x = M
+            i = np.searchsorted(masses, x)
+
+            if i == 0:
+                lower = None
+                upper = masses[0]
+            elif i == len(masses):
+                lower = masses[-1]
+                upper = None
+            else:
+                lower = masses[i - 1]
+                upper = masses[i]
+
+            if lower != None:
+                self.monash_models[Z].append(
+                    self._prepare_single_monash_model(lower, Z)
+                )
+            if upper != None:
+                self.monash_models[Z].append(
+                    self._prepare_single_monash_model(upper, Z)
+                )
+
+        elif Z < 0.007:
+            self._prepare_monash_models(Z=0.007)
+            self._prepare_monash_models(Z=0.0028)
+        else:
+            self._prepare_monash_models(Z=0.014)
+            self._prepare_monash_models(Z=0.007)
+
+        # self._prepare_single_monash_model(M, Z)
+
+    def compute_intershell(self, name):
+        # TODO: this needs to be changed to the ACTUAL abundances
+        # keep in mind that we need to sum the abundances for the
+        # different isotopes separately.
+        # it is also important to keep in mind that the abundances
+        # here should be MASS RATIOS.
+
+        intershell = np.zeros(self.total_length)
+
+        match self.method:
+            case "m_dup":
+                interp_x = np.log10(np.cumsum(self.m_dup) + 1e-12)
+
+            case "tp":
+                interp_x = self.tp_count
+
+            case "tp offset":
+                index = np.where(self.m_dup > 10.0**-4.5)[0][0]
+                interp_x = self.tp_count - self.tp_count[index]
+                print(interp_x)
+
+        for isotope in self.df.elements[name].isotopes:
+
+            intershell += self.df.elements[name].isotopes[
+                isotope
+            ].mass * self.get_abundance(
+                self.df.isotopes[isotope],
+                self.model.params["m"],
+                self.model.params["z"],
+                interp_x,
+            )
+        return intershell
+
+    def get_abundance(self, isotope, M, Z, interp, drop=None):
+
+        if Z in [0.0028, 0.007, 0.014]:
+            return 10 ** self.get_abundance_Z(isotope, M, Z, interp, drop)
+
+        if Z <= 0.0028:
+            return 10 ** self.get_abundance_Z(isotope, M, 0.0028, interp, drop)
+        if Z >= 0.014:
+            return 10 ** self.get_abundance_Z(isotope, M, 0.014, interp, drop)
+
+        if Z <= 0.007:
+            z_min = 0.0028
+            z_max = 0.007
+        else:
+            z_min = 0.007
+            z_max = 0.014
+
+        abundance_min = self.get_abundance_Z(isotope, M, z_min, interp, drop)
+        abundance_max = self.get_abundance_Z(isotope, M, z_max, interp, drop)
+        weight = (np.log10(Z) - np.log10(z_min)) / (np.log10(z_max) - np.log10(z_min))
+
+        return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
+
+    def get_abundance_Z(self, isotope, M, Z, interp_x, drop=None):
+
+        match self.method:
+            case "m_dup":
+                attr = "m_dup"
+            case "tp":
+                attr = "pulses"
+            case "tp offset":
+                attr = "pulses_offset"
+
+        if len(self.monash_models[Z]) == 1:
+            abundance = self.monash_models[Z][0].intershell_isos[isotope.key]
+            x = getattr(self.monash_models[Z][0], attr)
+            return np.interp(interp_x, x, abundance)
+
+        abundance_min = self.monash_models[Z][0].intershell_isos[isotope.key]
+        x_min = getattr(self.monash_models[Z][0], attr)
+        abundance_min = np.interp(interp_x, x_min, abundance_min)
+        mass_min = self.monash_models[Z][0].M
+        abundance_max = self.monash_models[Z][1].intershell_isos[isotope.key]
+        x_max = getattr(self.monash_models[Z][1], attr)
+        abundance_max = np.interp(interp_x, x_max, abundance_max)
+        mass_max = self.monash_models[Z][1].M
+
+        weight = (M - mass_min) / (mass_max - mass_min)
+
+        return abundance_min + weight * (abundance_max - abundance_min)
+
+    def compute_envelope_abundance(self, name, intershell):
+        # INFO: gets the initial envelope abundance of the element
+        # scaled by the metallicity of the model.
+        initial_envelope_abundance = self.df.get_initial_envelope_abundance(
+            element=name,
+            metallicity=self.model.params["z"],
+        )
+
+        # INFO: computes the elemental abundance in the envelope by
+        # enriching it with intershell abundances.
+        envelope = np.zeros(self.total_length)
+        delta_M_element = intershell * self.m_dup
+        for i in range(self.total_length):
+            if i == 0:
+                envelope[i] = initial_envelope_abundance
+                continue
+            envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
+                self.m_env[i] + self.m_dup[i]
+            )
+
+        return envelope
+
+
+\end{minted}
+
 
 \end{document}

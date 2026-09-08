@@ -956,7 +956,10 @@ def parse_surf_file(paths):
     )
 
     abundance_regex = re.compile(
-        r"^\s*([a-z]{1,2})\s+\d+\s+[\d.E+-]+\s+[\d.E+-]+\s+([\d.E+-]+)\s+[\d.E+-]+\s+([\d.E+-]+)",
+        r"^\s*([a-z]{1,2})\s+(\d+)\s+"
+        r"[\d.E+-]+\s+[\d.E+-]+\s+"
+        r"([\d.E+-]+)\s+[\d.E+-]+\s+"
+        r"([\d.E+-]+)",
         re.IGNORECASE,
     )
 
@@ -1049,7 +1052,6 @@ def parse_surf_file(paths):
                 if final and current_tp_meta:
                     current_tp_meta["ntp"] += 1
                     final = False
-
                 if in_abundance_block and current_tp_meta is not None:
                     a = abundance_regex.match(line)
                     if a:
@@ -1057,11 +1059,11 @@ def parse_surf_file(paths):
                             {
                                 **current_tp_meta,
                                 "element": a.group(1),
-                                "XFe": float(a.group(2)),
-                                "massfrac": float(a.group(3)),
+                                "elemental_mass": int(a.group(2)),
+                                "XFe": float(a.group(3)),
+                                "massfrac": float(a.group(4)),
                             }
                         )
-
     return pd.DataFrame(rows)
 
 
@@ -1071,10 +1073,11 @@ paths = [
     "scripts/w21/surf_z014.dat",
     "scripts/w21/surf_z03.dat",
 ]
-df = parse_surf_file(paths)
+env = parse_surf_file(paths)
+print(env.columns)
 
 with open(f"data/env_pd_df.pkl", "wb") as f:
-    pickle.dump(df, f, protocol=pickle.HIGHEST_PROTOCOL)
+    pickle.dump(env, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 # %%

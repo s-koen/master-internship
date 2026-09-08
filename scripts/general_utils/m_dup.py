@@ -641,7 +641,7 @@ class AbundanceTables:
 
     def get_initial_envelope_abundance(self, element, metallicity):
         df = self.envelope[self.envelope["element"] == element]
-        return float(df["massfrac"].iloc[-1]) * metallicity
+        return float(df["massfrac"].iloc[0]) * metallicity / 0.014
 
     def get_pulse_info_specific_model(self, mass, metallicity):
         df = self.tp[self.tp["initial_mass"] == mass]
@@ -656,84 +656,115 @@ class Abundances:
     simple binary to determine
     """
 
-    def __init__(self, model, df, method="m_dup"):
+    def __init__(self, model, df, method="m_dup", mass=None):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
         self.df = df
 
         self.method = method
 
-        simple = get_star(full_path=self.model.params["single_star"])
+        if mass != None:
+            self.mass = mass
+            simple = get_star(m=self.mass)
+            self.Z = simple.Z_init
+        else:
+            self.mass = self.model.params["m"]
+            self.Z = self.model.params["z"]
+            simple = get_star(full_path=self.model.params["single_star"])
 
         self.dup_simple = compute_m_DUP(simple)
-        self.dup_detailed = compute_m_DUP(model, self.dup_simple)
 
-        binary_start_age = model.age[0]
+        if mass == None:
+            self.dup_detailed = compute_m_DUP(model, self.dup_simple)
 
-        simple_age = np.asarray(simple.age)
+            binary_start_age = model.age[0]
 
-        self.simple_end_idx = (
-            np.searchsorted(
-                simple_age,
-                binary_start_age,
-                side="right",
+            simple_age = np.asarray(simple.age)
+
+            self.simple_end_idx = (
+                np.searchsorted(
+                    simple_age,
+                    binary_start_age,
+                    side="right",
+                )
+                - 1
             )
-            - 1
-        )
 
-        self.total_length = self.simple_end_idx + len(self.model.age)
+            self.total_length = self.simple_end_idx + len(self.model.age)
+
+        else:
+
+            self.simple_end_idx = -1
+            self.total_length = len(simple.age)
+
         self.m_dup = np.zeros(self.total_length)
         self.tp_count = np.zeros(self.total_length)
-        self.m_env = np.concatenate(
-            [simple.m_env[: self.simple_end_idx], self.model.envelope_mass]
-        )
-        self.time = np.concatenate([simple.age[: self.simple_end_idx], self.model.age])
 
-        m2 = np.concatenate(
-            [
-                self.model.sb.m2[: self.simple_end_idx],
-                self.model.star_2_mass,
+        if mass == None:
+            self.m_env = np.concatenate(
+                [simple.m_env[: self.simple_end_idx], self.model.envelope_mass]
+            )
+            self.time = np.concatenate(
+                [simple.age[: self.simple_end_idx], self.model.age]
+            )
+
+            m2 = np.concatenate(
+                [
+                    self.model.sb.m2[: self.simple_end_idx],
+                    self.model.star_2_mass,
+                ]
+            )
+
+            valid = ~np.isnan(m2)
+
+            m2_filled = np.nan_to_num(m2, nan=0)
+
+            dm = np.diff(m2_filled)
+            dm[~valid[:-1] | ~valid[1:]] = 0
+
+            self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+
+            m1 = np.concatenate(
+                [
+                    -1 * simple.mass[: self.simple_end_idx],
+                    -1 * self.model.star_1_mass,
+                ]
+            )
+
+            valid = ~np.isnan(m1)
+
+            m1_filled = np.nan_to_num(m1, nan=0)
+
+            dm = np.diff(m1_filled)
+            dm[~valid[:-1] | ~valid[1:]] = 0
+
+            self.dm = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+
+            for key, value in self.dup_simple.items():
+                if value["index"] > self.simple_end_idx:
+                    break
+                self.m_dup[value["index"]] = value["mass"]
+
+            for key, value in self.dup_detailed.items():
+                self.m_dup[self.simple_end_idx + value["index"]] = value["mass"]
+
+            self.tp_count[: self.simple_end_idx] = simple.TP_count[
+                : self.simple_end_idx
             ]
-        )
 
-        valid = ~np.isnan(m2)
+            self.tp_count[self.simple_end_idx :] = (
+                self.model.TP_count + simple.TP_count[self.simple_end_idx]
+            )
 
-        m2_filled = np.nan_to_num(m2, nan=0)
+        else:
+            self.m_env = simple.m_env
+            self.time = simple.age
+            self.dm_acc = None
+            self.dm = np.concatenate([[0], -1 * np.diff(simple.mass)])
+            for key, value in self.dup_simple.items():
+                self.m_dup[value["index"]] = value["mass"]
 
-        dm = np.diff(m2_filled)
-        dm[~valid[:-1] | ~valid[1:]] = 0
-
-        self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
-
-        m1 = np.concatenate(
-            [
-                -1 * simple.mass[: self.simple_end_idx],
-                -1 * self.model.star_1_mass,
-            ]
-        )
-
-        valid = ~np.isnan(m1)
-
-        m1_filled = np.nan_to_num(m1, nan=0)
-
-        dm = np.diff(m1_filled)
-        dm[~valid[:-1] | ~valid[1:]] = 0
-
-        self.dm = np.concatenate([[0], np.clip(dm, 0, np.inf)])
-
-        for key, value in self.dup_simple.items():
-            if value["index"] > self.simple_end_idx:
-                break
-            self.m_dup[value["index"]] = value["mass"]
-
-        for key, value in self.dup_detailed.items():
-            self.m_dup[self.simple_end_idx + value["index"]] = value["mass"]
-
-        self.tp_count[: self.simple_end_idx] = simple.TP_count[: self.simple_end_idx]
-
-        self.tp_count[self.simple_end_idx :] = (
-            self.model.TP_count + simple.TP_count[self.simple_end_idx]
-        )
+            self.tp_count = simple.TP_count
 
         self.monash_models = defaultdict(list)
         self._get_monash_masses_per_metallicity()
@@ -750,7 +781,8 @@ class Abundances:
 
             self.df.elements[name].envelope = envelope
             self.df.elements[name].intershell = intershell
-            self.df.elements[name].m_accreted = np.cumsum(envelope * self.dm_acc)
+            if self.model != None:
+                self.df.elements[name].m_accreted = np.cumsum(envelope * self.dm_acc)
             self.df.elements[name].m_yield = np.cumsum(envelope * self.dm)
 
             return self.df.elements[name]
@@ -834,8 +866,8 @@ class Abundances:
 
         """
         if Z == None:
-            Z = self.model.params["z"]
-        M = self.model.params["m"]
+            Z = self.Z
+        M = self.mass
 
         if Z in [0.0028, 0.007, 0.014]:
             masses = self._mass_Z_dict[Z]
@@ -890,7 +922,6 @@ class Abundances:
             case "tp offset":
                 index = np.where(self.m_dup > 10.0**-4.5)[0][0]
                 interp_x = self.tp_count - self.tp_count[index]
-                print(interp_x)
 
         for isotope in self.df.elements[name].isotopes:
 
@@ -898,8 +929,8 @@ class Abundances:
                 isotope
             ].mass * self.get_abundance(
                 self.df.isotopes[isotope],
-                self.model.params["m"],
-                self.model.params["z"],
+                self.mass,
+                self.Z,
                 interp_x,
             )
         return intershell
@@ -924,6 +955,7 @@ class Abundances:
         abundance_min = self.get_abundance_Z(isotope, M, z_min, interp, drop)
         abundance_max = self.get_abundance_Z(isotope, M, z_max, interp, drop)
         weight = (np.log10(Z) - np.log10(z_min)) / (np.log10(z_max) - np.log10(z_min))
+
         return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
 
     def get_abundance_Z(self, isotope, M, Z, interp_x, drop=None):
@@ -959,20 +991,27 @@ class Abundances:
         # scaled by the metallicity of the model.
         initial_envelope_abundance = self.df.get_initial_envelope_abundance(
             element=name,
-            metallicity=self.model.params["z"],
+            metallicity=self.Z,
         )
+        print(initial_envelope_abundance)
 
         # INFO: computes the elemental abundance in the envelope by
         # enriching it with intershell abundances.
         envelope = np.zeros(self.total_length)
+        print(intershell)
         delta_M_element = intershell * self.m_dup
         for i in range(self.total_length):
             if i == 0:
                 envelope[i] = initial_envelope_abundance
                 continue
-            envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
-                self.m_env[i] + self.m_dup[i]
-            )
+
+            # envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
+            #     self.m_env[i] + self.m_dup[i]
+            # )
+
+            envelope[i] = (
+                envelope[i - 1] * (self.m_env[i] - self.m_dup[i]) + delta_M_element[i]
+            ) / self.m_env[i]
 
         return envelope
 
