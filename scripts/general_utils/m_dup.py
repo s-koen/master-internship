@@ -554,7 +554,7 @@ class Isotope:
             case "p":
                 self.mass = 1
                 self.name = f"$\\textrm{{{isotope}}}^{{+}}$"
-                self.short_name = "proton"
+                self.short_name = "h"
             case "d":
                 self.mass = 2
                 self.name = f"$\\textrm{{{isotope}}}$"
@@ -626,6 +626,7 @@ class AbundanceTables:
             element = self.elements.setdefault(
                 isotope.short_name, Element(isotope.short_name)
             )
+
             element.add_isotope(isotope)
 
         self.envelope = self.envelope[self.envelope["pmz"] == 2e-3]

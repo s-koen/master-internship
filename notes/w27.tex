@@ -383,11 +383,70 @@ Below I plot the same plot, but now for barium:
     \incplot{w27-yield-mesa-ba}
 \end{figure}
 
+Below I plot the final yields for the MESA models and for the Monash models.
+
 \begin{figure}[ht]
     \centering
     \incplot{w27-yield-all}
 \end{figure}
 
+It looks like the MESA models always predict higher yields for elements lower than about neodymium. After that, the models agree very well.
+The monash yields also leave out Technetium, Promethium and Polonium. These all have no stable isotopes. It makes sense to skip these.
+
+Below I divided the abundances by a chosen reference curve. In this case the purple line.
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-all-diff}
+\end{figure}
+
+It looks like I am about a factor 2 off in the most cases, which seems quite concerning?
+
+Because it looks like the \emph{MESA} models nearly always predict values that are too large, I wonder if the total expelled mass is correct.
+Let me check this:
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-cum}
+\end{figure}
+
+The \emph{MESA} models seem to agree very well. The Monash models on average, overestimate the actual expelled mass. 
+
+\nextpage
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-cum-div}
+\end{figure}
+
+Below I plot the cumulative abundances for elements carbon and higher.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-cum-c-only}
+\end{figure}
+
+Below I plot the cumulative abundances for elements fluorine and higher.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-cum-n-only}
+\end{figure}
+
+Obviously, we can look at other masses too, but I think the pattern holds. Here I plot the expelled masses divided by a reference curve again:
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-all-diff-m1.5}
+\end{figure}
+
+Here I plot \(M=2.5\; M_\odot \).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w27-yield-all-diff-m2.5}
+\end{figure}
+
+We see the same pattern for all models.
+
+I think this all makes sense if we take into account that the \emph{MESA} models have a significantly lower final core mass and significantly more dredge up, so they shed more of their envelope, which will generally be more enriched.
 
 \bibliography{master.bib}
 
@@ -837,24 +896,29 @@ class Abundances:
         # scaled by the metallicity of the model.
         initial_envelope_abundance = self.df.get_initial_envelope_abundance(
             element=name,
-            metallicity=self.model.params["z"],
+            metallicity=self.Z,
         )
+        print(initial_envelope_abundance)
 
         # INFO: computes the elemental abundance in the envelope by
         # enriching it with intershell abundances.
         envelope = np.zeros(self.total_length)
+        print(intershell)
         delta_M_element = intershell * self.m_dup
         for i in range(self.total_length):
             if i == 0:
                 envelope[i] = initial_envelope_abundance
                 continue
-            envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
-                self.m_env[i] + self.m_dup[i]
-            )
+
+            # envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
+            #     self.m_env[i] + self.m_dup[i]
+            # )
+
+            envelope[i] = (
+                envelope[i - 1] * (self.m_env[i] - self.m_dup[i]) + delta_M_element[i]
+            ) / self.m_env[i]
 
         return envelope
-
-
 \end{minted}
 
 

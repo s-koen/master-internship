@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w27"] 1788902451.66826 "w27.aux" "w27.bbl" "w27" 1788908026.88885 0
+["bibtex w27"] 1788952521.34053 "w27.aux" "w27.bbl" "w27" 1788954060.3642 0
   "./master.bib" 1788263248.98063 48736 b10f790b2ba9e9409a3d475aaac693b9 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w27.aux" 1788908026.60859 4466 21ec7775fc4a11f8ad9870ba303e3b2a "pdflatex"
+  "w27.aux" 1788954060.07336 4486 1406a96b33658784e2958a1d3e5ad83e "pdflatex"
   (generated)
   "w27.bbl"
   "w27.blg"
   (rewritten before read)
-["pdflatex"] 1788908020.14882 "w27.tex" "w27.pdf" "w27" 1788908026.88898 0
+["pdflatex"] 1788954052.16632 "w27.tex" "w27.pdf" "w27" 1788954060.36439 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -65,7 +65,14 @@
   "/home/koen/LaTeX-setup//plots/w27-m_dredge-naive.pgf" 1788731902.41773 25363 c806c23d189ffd0062b13a43d0902847 ""
   "/home/koen/LaTeX-setup//plots/w27-thermal-pulse-naive.pgf" 1788730361.66535 29145 6a045b7831a3769ed7f00714883a74f5 ""
   "/home/koen/LaTeX-setup//plots/w27-tp-count.pgf" 1788791866.13861 24698 467d505e2d4d8c6fdf14e95c4e8d6667 ""
-  "/home/koen/LaTeX-setup//plots/w27-yield-all.pgf" 1788908018.89546 46749 f747948094ce1934a3efd1eed22ad9ed ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-all-diff-m1.5.pgf" 1788953301.12357 132321 2decfbbc96d31885e853d74989009ab5 ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-all-diff-m2.5.pgf" 1788953713.5233 137590 6aafd136f30d2918245ac69aedb95e9d ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-all-diff.pgf" 1788947583.8454 147831 74531bd69bfbdeadd0c72a08b7a157cd ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-all.pgf" 1788947542.37563 143601 524f993a8be31982ab2b47cfd321b41f ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-cum-c-only.pgf" 1788948820.36487 143614 a313dcb2c1e35438b4e6541fb9755617 ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-cum-div.pgf" 1788948672.07639 145546 1a2b7abf429a90844789b110ba9d582c ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-cum-n-only.pgf" 1788948947.87299 136677 52fcaf1ca6140f81f8276bb48b0b55b8 ""
+  "/home/koen/LaTeX-setup//plots/w27-yield-cum.pgf" 1788948691.66972 148550 2b94db962e386fde111197954af66513 ""
   "/home/koen/LaTeX-setup//plots/w27-yield-mesa-ba-img0.png" 1788906890.66275 419 797ba0145f8a6477036b1b5abf3f3241 ""
   "/home/koen/LaTeX-setup//plots/w27-yield-mesa-ba.pgf" 1788906890.66876 147328 1d02e2306b5ce11b72fd62e61490dc46 ""
   "/home/koen/LaTeX-setup//plots/w27-yield-mesa-img0.png" 1788906886.80337 419 797ba0145f8a6477036b1b5abf3f3241 ""
@@ -460,17 +467,17 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1783670516 5388821 3a3a435a487e4cbc819e69494cd5514c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1783670470 2968234 d23dd1d939fcf2c5a6fef745ad70030a ""
-  "_minted/24A216093E281A9D2DD779F729545F49.highlight.minted" 1788867804.54336 15993 6e90f67033188caa21ff20eb36b13620 ""
   "_minted/28211EBFD2F1FD4F2B3D0CB2A452F04B.highlight.minted" 1788867759.61944 13449 a3814f8f048ff4477e996ea9db609a7c ""
+  "_minted/785805D97B2D00373B0CE7B8B6643787.highlight.minted" 1788952520.68078 16349 03ebd9c63fb4162a644874d5a46b0a0b ""
   "_minted/A524CFF7B907EC25C2514ADAD1EA02A6.highlight.minted" 1788864079.18749 1459 1bd0f376e7e8f8f1d899d934a6f04035 ""
   "_minted/E28B9B8482741B9DB8643D69C7324FAD.highlight.minted" 1788863978.03104 458 ee3698c1608d829152c13b274643c1d8 ""
   "_minted/E4141353AB97188FBEF2B2A0DC2F0DE9.highlight.minted" 1788867804.04352 17935 5dafd243840869dabce73f0f93f824fa ""
-  "_minted/_434C72957FF9D26A3B9286E07A3A4F9A.index.minted" 1788870322.70757 489 b9b06c2f2e5c504239c3aa5ca7091dc6 ""
+  "_minted/_434C72957FF9D26A3B9286E07A3A4F9A.index.minted" 1788952521.04119 489 2fc26d939b7f31bf83c81e4af991e5ef ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w27.aux" 1788908026.60859 4466 21ec7775fc4a11f8ad9870ba303e3b2a "pdflatex"
-  "w27.bbl" 1788902451.71313 1447 a6b01eea80570608b697d83901b62f9a "bibtex w27"
-  "w27.out" 1788908026.60959 2488 1820b836ae72f2c0a89fd678eb53ce31 "pdflatex"
-  "w27.tex" 1788907897.34495 44387 f2b785f924e40c1202808149c4b88b6c ""
+  "w27.aux" 1788954060.07336 4486 1406a96b33658784e2958a1d3e5ad83e "pdflatex"
+  "w27.bbl" 1788952521.38491 1447 a6b01eea80570608b697d83901b62f9a "bibtex w27"
+  "w27.out" 1788954060.07436 2488 1820b836ae72f2c0a89fd678eb53ce31 "pdflatex"
+  "w27.tex" 1788954051.63198 46589 735ef2b484e5daa7e29b146e7de5f8d5 ""
   (generated)
   "w27.aux"
   "w27.log"
