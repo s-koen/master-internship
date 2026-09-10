@@ -1064,11 +1064,13 @@ def parse_surf_file(paths):
                                 "massfrac": float(a.group(4)),
                             }
                         )
+
     return pd.DataFrame(rows)
 
 
 # %%
 paths = [
+    "scripts/w21/surf_z0028.dat",
     "scripts/w21/surf_z007.dat",
     "scripts/w21/surf_z014.dat",
     "scripts/w21/surf_z03.dat",
@@ -1076,6 +1078,19 @@ paths = [
 env = parse_surf_file(paths)
 print(env.columns)
 
+env.loc[(env["element"] == "p") & (env["elemental_mass"] == 1), "element"] = "h"
+# %%
+env
+# %%
+zlow = env[env["Z"] == 0.0028]
+
+ms = np.unique(zlow["M_init"])
+
+for m in ms:
+    mlow = env[env["M_init"] == m]
+    print(np.shape(mlow)[0] / np.max(mlow["ntp"]))
+
+# %%
 with open(f"data/env_pd_df.pkl", "wb") as f:
     pickle.dump(env, f, protocol=pickle.HIGHEST_PROTOCOL)
 

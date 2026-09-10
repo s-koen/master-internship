@@ -44,3 +44,6 @@ def get_star(
         pickle.dump(star, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     return star
+
+
+# %%

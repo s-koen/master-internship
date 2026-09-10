@@ -98,7 +98,7 @@ class StellarModel:
         self.nwd = n[5] - 1
 
         self.m_init = track["star_mass"][0]
-        self.Z_init = 0.014
+        self.Z_init = 0.00557
         self.Y_init = 0.24 + 2 * self.Z_init
 
         self.age = track["star_age"]

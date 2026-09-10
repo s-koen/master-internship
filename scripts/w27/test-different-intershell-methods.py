@@ -1580,7 +1580,7 @@ for i, (m, ax) in enumerate(zip(ms, axs)):
         c2 = ab.he.intershell[star.ntpagb :]
 
         (l1,) = ax.plot(ab.time[star.ntpagb :], c, label=methods[j], c=f"C{j}")
-        (l1,) = ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
+        ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
         ls.append(l1)
 
     (l1,) = ax.plot(
@@ -1597,7 +1597,7 @@ for i, (m, ax) in enumerate(zip(ms, axs)):
         c="C9",
     )
 
-    ax.set_title(f"$M={m}\\;M_\\odot,\\;q=0.6,\\;R=1000\\;R_\\odot$")
+    ax.set_title(f"$M={m}\\;M_\\odot$")
     if ax.get_ylim()[-1] > 7.5:
         ax.set_ylim(ax.get_ylim()[0], 7.5)
 
@@ -1614,4 +1614,322 @@ plt.show()
 plt.close()
 
 
+# %%
+
+fig, axs = plt.subplots(
+    2, 2, sharex=False, figsize=set_size(column, height=1.25), constrained_layout=True
+)
+
+axs = axs.flatten()
+ms = [1.8, 2.2, 2.6, 3.0]
+
+
+df = AbundanceTables()
+
+for i, (m, ax) in enumerate(zip(ms, axs)):
+
+    for model in grid.filter(m=m, R=1000, q=0.6):
+        print(model)
+        star = get_star(m=m)
+
+    methods = ["TP count", "$M_\\textrm{DUP}$", "TP + offset"]
+
+    ab1 = Abundances(model, df, method="tp")
+    ab2 = Abundances(model, df, method="m_dup")
+    ab3 = Abundances(model, df, method="tp offset")
+
+    ls = []
+    for j, ab in enumerate([ab1, ab2, ab3]):
+        c = ab.c.envelope[star.ntpagb :]
+        c2 = ab.c.intershell[star.ntpagb :]
+
+        (l1,) = ax.plot(ab.time[star.ntpagb :], c, label=methods[j], c=f"C{j}")
+        ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
+        ls.append(l1)
+
+    (l1,) = ax.plot(
+        model.age,
+        model.envelope_c12 + model.envelope_c13,
+        c="C9",
+        label="MESA",
+    )
+    ls.append(l1)
+    ax.plot(
+        star.age[star.ntpagb : ab.simple_end_idx],
+        star.envelope_c12[star.ntpagb : ab.simple_end_idx]
+        + star.envelope_c13[star.ntpagb : ab.simple_end_idx],
+        c="C9",
+    )
+
+    ax.set_title(f"$M={m}\\;M_\\odot$")
+    if ax.get_ylim()[-1] > 7.5:
+        ax.set_ylim(ax.get_ylim()[0], 7.5)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_yscale("log")
+
+fig.legend(loc="outside upper center", ncols=4, handles=ls)
+
+fig.supxlabel("Star age (yr)", fontsize=10)
+fig.supylabel("$X(\\textrm{C})$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w27-compare-c.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 2, sharex=False, figsize=set_size(column, height=1.25), constrained_layout=True
+)
+
+axs = axs.flatten()
+ms = [1.8, 2.2, 2.6, 3.0]
+
+
+df = AbundanceTables()
+
+for i, (m, ax) in enumerate(zip(ms, axs)):
+
+    for model in grid.filter(m=m, R=1000, q=0.6):
+        print(model)
+        star = get_star(m=m)
+
+    methods = ["TP count", "$M_\\textrm{DUP}$", "TP + offset"]
+
+    ab1 = Abundances(model, df, method="tp")
+    ab2 = Abundances(model, df, method="m_dup")
+    ab3 = Abundances(model, df, method="tp offset")
+
+    ls = []
+    for j, ab in enumerate([ab1, ab2, ab3]):
+        c = ab.o.envelope[star.ntpagb :]
+        c2 = ab.o.intershell[star.ntpagb :]
+
+        (l1,) = ax.plot(ab.time[star.ntpagb :], c, label=methods[j], c=f"C{j}")
+        ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
+        ls.append(l1)
+
+    (l1,) = ax.plot(
+        model.age,
+        model.envelope_o16,
+        c="C9",
+        label="MESA",
+    )
+    ls.append(l1)
+    ax.plot(
+        star.age[star.ntpagb : ab.simple_end_idx],
+        star.envelope_o16[star.ntpagb : ab.simple_end_idx],
+        c="C9",
+    )
+
+    ax.set_title(f"$M={m}\\;M_\\odot$")
+    if ax.get_ylim()[-1] > 7.5:
+        ax.set_ylim(ax.get_ylim()[0], 7.5)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_yscale("log")
+
+fig.legend(loc="outside upper center", ncols=4, handles=ls)
+
+fig.supxlabel("Star age (yr)", fontsize=10)
+fig.supylabel("$X(\\textrm{O})$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w27-compare-o.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 2, sharex=False, figsize=set_size(column, height=1.25), constrained_layout=True
+)
+
+axs = axs.flatten()
+ms = [1.8, 2.2, 2.6, 3.0]
+
+
+df = AbundanceTables()
+
+for i, (m, ax) in enumerate(zip(ms, axs)):
+
+    for model in grid.filter(m=m, R=1000, q=0.6):
+        print(model)
+        star = get_star(m=m)
+
+    methods = ["TP count", "$M_\\textrm{DUP}$", "TP + offset"]
+
+    ab1 = Abundances(model, df, method="tp")
+    ab2 = Abundances(model, df, method="m_dup")
+    ab3 = Abundances(model, df, method="tp offset")
+
+    ls = []
+    for j, ab in enumerate([ab1, ab2, ab3]):
+        c = ab.n.envelope[star.ntpagb :]
+        c2 = ab.n.intershell[star.ntpagb :]
+
+        (l1,) = ax.plot(ab.time[star.ntpagb :], c, label=methods[j], c=f"C{j}")
+        ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
+        ls.append(l1)
+
+    (l1,) = ax.plot(
+        model.age,
+        model.envelope_n14,
+        c="C9",
+        label="MESA",
+    )
+    ls.append(l1)
+    ax.plot(
+        star.age[star.ntpagb : ab.simple_end_idx],
+        star.envelope_n14[star.ntpagb : ab.simple_end_idx],
+        c="C9",
+    )
+
+    ax.set_title(f"$M={m}\\;M_\\odot$")
+    if ax.get_ylim()[-1] > 7.5:
+        ax.set_ylim(ax.get_ylim()[0], 7.5)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_yscale("log")
+
+fig.legend(loc="outside upper center", ncols=4, handles=ls)
+
+fig.supxlabel("Star age (yr)", fontsize=10)
+fig.supylabel("$X(\\textrm{N})$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w27-compare-n.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 2, sharex=False, figsize=set_size(column, height=1.25), constrained_layout=True
+)
+
+axs = axs.flatten()
+ms = [1.8, 2.2, 2.6, 3.0]
+
+
+df = AbundanceTables()
+
+for i, (m, ax) in enumerate(zip(ms, axs)):
+
+    for model in grid.filter(m=m, R=1000, q=0.6):
+        print(model)
+        star = get_star(m=m)
+
+    methods = ["TP count", "$M_\\textrm{DUP}$", "TP + offset"]
+
+    ab1 = Abundances(model, df, method="tp")
+    ab2 = Abundances(model, df, method="m_dup")
+    ab3 = Abundances(model, df, method="tp offset")
+
+    ls = []
+    for j, ab in enumerate([ab1, ab2, ab3]):
+        c = ab.ne.envelope[star.ntpagb :]
+        c2 = ab.ne.intershell[star.ntpagb :]
+
+        (l1,) = ax.plot(ab.time[star.ntpagb :], c, label=methods[j], c=f"C{j}")
+        ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
+        ls.append(l1)
+
+    (l1,) = ax.plot(
+        model.age,
+        model.envelope_ne20,
+        c="C9",
+        label="MESA",
+    )
+    ls.append(l1)
+    ax.plot(
+        star.age[star.ntpagb : ab.simple_end_idx],
+        star.envelope_ne20[star.ntpagb : ab.simple_end_idx],
+        c="C9",
+    )
+
+    ax.set_title(f"$M={m}\\;M_\\odot$")
+    if ax.get_ylim()[-1] > 7.5:
+        ax.set_ylim(ax.get_ylim()[0], 7.5)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_yscale("log")
+
+fig.legend(loc="outside upper center", ncols=4, handles=ls)
+
+fig.supxlabel("Star age (yr)", fontsize=10)
+fig.supylabel("$X(\\textrm{Ne})$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w27-compare-ne.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    2, 2, sharex=False, figsize=set_size(column, height=1.25), constrained_layout=True
+)
+
+axs = axs.flatten()
+ms = [1.8, 2.2, 2.6, 3.0]
+
+
+df = AbundanceTables()
+
+for i, (m, ax) in enumerate(zip(ms, axs)):
+
+    for model in grid.filter(m=m, R=1000, q=0.6):
+        print(model)
+        star = get_star(m=m)
+
+    methods = ["TP count", "$M_\\textrm{DUP}$", "TP + offset"]
+
+    ab1 = Abundances(model, df, method="tp")
+    ab2 = Abundances(model, df, method="m_dup")
+    ab3 = Abundances(model, df, method="tp offset")
+
+    ls = []
+    for j, ab in enumerate([ab1, ab2, ab3]):
+        c = ab.mg.envelope[star.ntpagb :]
+        c2 = ab.mg.intershell[star.ntpagb :]
+
+        (l1,) = ax.plot(ab.time[star.ntpagb :], c, label=methods[j], c=f"C{j}")
+        ax.plot(ab.time[star.ntpagb :], c2, c=f"C{j}", alpha=0.5, linewidth=2)
+        ls.append(l1)
+
+    (l1,) = ax.plot(
+        model.age,
+        model.envelope_mg24,
+        c="C9",
+        label="MESA",
+    )
+    ls.append(l1)
+    ax.plot(
+        star.age[star.ntpagb : ab.simple_end_idx],
+        star.envelope_mg24[star.ntpagb : ab.simple_end_idx],
+        c="C9",
+    )
+
+    ax.set_title(f"$M={m}\\;M_\\odot$")
+    if ax.get_ylim()[-1] > 7.5:
+        ax.set_ylim(ax.get_ylim()[0], 7.5)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_yscale("log")
+
+fig.legend(loc="outside upper center", ncols=4, handles=ls)
+
+fig.supxlabel("Star age (yr)", fontsize=10)
+fig.supylabel("$X(\\textrm{Mg})$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w27-compare-mg.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+model.header_names
 # %%

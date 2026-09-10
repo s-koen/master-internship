@@ -531,12 +531,13 @@ def track_DUP(model):
 
 
 class MonashModel:
-    def __init__(self, M, Z, pulses, m_dup, intershell_isos):
+    def __init__(self, M, Z, pulses, m_dup, intershell_isos, envelope_abundance):
         self.M = M
         self.Z = Z
         self.pulses = pulses
         self.m_dup = m_dup
         self.intershell_isos = intershell_isos
+        self.envelope_abundance = envelope_abundance
 
         index = np.where(self.m_dup > -4.5)[0][0]
         self.pulses_offset = self.pulses - self.pulses[index]
@@ -631,8 +632,12 @@ class AbundanceTables:
 
         self.envelope = self.envelope[self.envelope["pmz"] == 2e-3]
         self.envelope = self.envelope[self.envelope["N_ov"] != 0]
-        self.envelope = self.envelope[self.envelope["Z"].astype(np.float64) == 0.014]
-        self.envelope = self.envelope[self.envelope["M_init"].astype(np.float64) == 2]
+        self.envelope_filtered = self.envelope[
+            self.envelope["Z"].astype(np.float64) == 0.014
+        ]
+        self.envelope_filtered = self.envelope_filtered[
+            self.envelope_filtered["M_init"].astype(np.float64) == 2
+        ]
 
     def __getattr__(self, name):
         try:
@@ -641,7 +646,7 @@ class AbundanceTables:
             raise AttributeError(f"{type(self).__name__} has no attribute {name!r}")
 
     def get_initial_envelope_abundance(self, element, metallicity):
-        df = self.envelope[self.envelope["element"] == element]
+        df = self.envelope_filtered[self.envelope_filtered["element"] == element]
         return float(df["massfrac"].iloc[0]) * metallicity / 0.014
 
     def get_pulse_info_specific_model(self, mass, metallicity):
@@ -657,7 +662,7 @@ class Abundances:
     simple binary to determine
     """
 
-    def __init__(self, model, df, method="m_dup", mass=None):
+    def __init__(self, model, df, method="tp offset", mass=None):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
         self.df = df
@@ -770,6 +775,9 @@ class Abundances:
         self.monash_models = defaultdict(list)
         self._get_monash_masses_per_metallicity()
         self._prepare_monash_models()
+        self.initial_envelope_abundances = self._get_initial_envelope_abundance(
+            self.Z, self.mass
+        )
 
     def __getattr__(self, name):
         if name in self.df.elements:
@@ -792,6 +800,63 @@ class Abundances:
 
             return self.df.isotopes[name]
 
+    def _get_initial_envelope_abundance(self, Z, M):
+
+        if self.Z in [0.0028, 0.007, 0.014]:
+            return self._prepare_initial_envelope_abundance_Z(Z, M)
+
+        if self.Z <= 0.0028:
+            return self._prepare_initial_envelope_abundance_Z(0.0028, M)
+
+        if self.Z >= 0.014:
+            return self._prepare_initial_envelope_abundance_Z(0.014, M)
+
+        if self.Z <= 0.007:
+            z_min = 0.0028
+            z_max = 0.007
+        else:
+            z_min = 0.007
+            z_max = 0.014
+
+        abundance_min = self._prepare_initial_envelope_abundance_Z(z_min, M)
+        abundance_max = self._prepare_initial_envelope_abundance_Z(z_max, M)
+
+        abundance_min = abundance_min.set_index("element")
+        abundance_max = abundance_max.set_index("element")
+
+        abundance = abundance_min.copy()
+
+        weight = (Z - z_min) / (z_max - z_min)
+        abundance["massfrac"] = abundance_min["massfrac"] + weight * (
+            abundance_max["massfrac"] - abundance_min["massfrac"]
+        )
+        abundance["massfrac"] = abundance["massfrac"] / sum(abundance["massfrac"])
+        abundance = abundance.reset_index()
+        return abundance
+
+    def _prepare_initial_envelope_abundance_Z(self, Z, M):
+        if len(self.monash_models[Z]) == 1:
+            abundance = self.monash_models[Z][0].envelope_abundance
+            return abundance
+
+        abundance_min = self.monash_models[Z][0].envelope_abundance
+        mass_min = self.monash_models[Z][0].M
+        abundance_max = self.monash_models[Z][1].envelope_abundance
+        mass_max = self.monash_models[Z][1].M
+
+        abundance_min = abundance_min.set_index("element")
+        abundance_max = abundance_max.set_index("element")
+
+        abundance = abundance_min.copy()
+
+        weight = (M - mass_min) / (mass_max - mass_min)
+        abundance["massfrac"] = abundance_min["massfrac"] + weight * (
+            abundance_max["massfrac"] - abundance_min["massfrac"]
+        )
+        abundance["massfrac"] = abundance["massfrac"] / sum(abundance["massfrac"])
+        abundance = abundance.reset_index()
+        return abundance
+
     def _prepare_single_monash_model(self, M, Z, fresh=False):
 
         if not fresh:
@@ -810,6 +875,10 @@ class Abundances:
                 f"Z == {Z} and pmz == 2e-3 and last == 1 and M1tp == {M}"
             ).sort_values("ntp")
 
+            envelope = self.df.envelope.query(
+                f"Z == {Z} and pmz == 2e-3 and N_ov != 0.0 and M_init == {M} and ntp == 1"
+            )
+
             tp_info = self.df.tp.query(f"initial_mass == {M} and z == {Z}")
 
             intershell = intershell[intershell.ntp.isin(tp_info.pulse)]
@@ -824,11 +893,14 @@ class Abundances:
             pulses = i_data.index.intersection(tp_data.index).sort_values()
 
             Mdredge = tp_data.loc[pulses, "Ddredge"].to_numpy()
-            isotope_abundance = np.log10(i_data.iloc[:, 7:].clip(lower=1e-99))
-
             Mdredge = np.log10(np.cumsum(Mdredge) + 1e-12)
 
-            monash_model = MonashModel(M, Z, pulses, Mdredge, isotope_abundance)
+            intershell_abundance = np.log10(i_data.iloc[:, 7:].clip(lower=1e-99))
+            envelope_abundance = envelope[["element", "massfrac", "elemental_mass"]]
+
+            monash_model = MonashModel(
+                M, Z, pulses, Mdredge, intershell_abundance, envelope_abundance
+            )
 
             with open(
                 f"/home/koen/master-internship/data/intershell-cache/M{M:.3f}Z{Z:.4f}.pkl",
@@ -994,12 +1066,14 @@ class Abundances:
             element=name,
             metallicity=self.Z,
         )
-        print(initial_envelope_abundance)
+
+        # initial_envelope_abundance = self.initial_envelope_abundances[
+        #     self.initial_envelope_abundances["element"] == name
+        # ]["massfrac"]
 
         # INFO: computes the elemental abundance in the envelope by
         # enriching it with intershell abundances.
         envelope = np.zeros(self.total_length)
-        print(intershell)
         delta_M_element = intershell * self.m_dup
         for i in range(self.total_length):
             if i == 0:
@@ -1015,6 +1089,3 @@ class Abundances:
             ) / self.m_env[i]
 
         return envelope
-
-
-# %%
