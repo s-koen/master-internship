@@ -25,6 +25,7 @@
 
 ## caches
 **/cache/
+data/single-star-profiles.pkl
 
 ## MESA stuff
 **/LOGS/
