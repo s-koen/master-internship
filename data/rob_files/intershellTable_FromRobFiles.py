@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import glob, os
 import re
+import pickle
 
 # %%
 
@@ -977,6 +978,7 @@ def parse_surf_file(paths):
 
         Z = float("0." + re.search(r"surf_z(\d+)\.dat$", path).group(1))
         with open(path) as f:
+            skip_this = False
             for line in f:
 
                 # -------------------------
@@ -990,6 +992,7 @@ def parse_surf_file(paths):
 
                     current_tp_meta = None
                     in_abundance_block = False
+                    skip_this = False
 
                     last_tp = None
                     continue
@@ -1002,8 +1005,11 @@ def parse_surf_file(paths):
                     tp = int(t.group(1))
 
                     if tp == last_tp:
+                        print(tp)
+                        skip_this = True
                         continue
 
+                    skip_this = False
                     last_tp = tp
 
                     current_tp_meta = {
@@ -1020,6 +1026,9 @@ def parse_surf_file(paths):
 
                     in_abundance_block = False
                     continue
+                else:
+                    if skip_this:
+                        continue
 
                 # -------------------------
                 # ABUNDANCE BLOCK START
@@ -1082,13 +1091,35 @@ env.loc[(env["element"] == "p") & (env["elemental_mass"] == 1), "element"] = "h"
 # %%
 env
 # %%
+filtered = env.query("ntp==1 and M_init == 1.75")
+filtered
+# %%
+res = filtered.groupby(["M_init", "pmz", "N_ov", "Z", "ntp"]).size()
+print(res)
+
+header_regex = re.compile(
+    r"Initial mass =\s*([\d.]+).*M_mix =\s*([\d.E+-]+)(?:.*N_ov =\s*([\d.E+-]+))?"
+)
+
+for path in paths:
+    with open(path) as f:
+        for line in f:
+            h = header_regex.search(line)
+            if h and float(h.group(1)) == 1.75:
+                print(path, repr(line))
+
+# %%
+plt.plot(filtered.massfrac)
+plt.show()
+
+# %%
 zlow = env[env["Z"] == 0.0028]
 
 ms = np.unique(zlow["M_init"])
 
 for m in ms:
-    mlow = env[env["M_init"] == m]
-    print(np.shape(mlow)[0] / np.max(mlow["ntp"]))
+    mlow = zlow[zlow["M_init"] == m]
+    print(m, np.shape(mlow)[0] / np.max(mlow["ntp"]))
 
 # %%
 with open(f"data/env_pd_df.pkl", "wb") as f:

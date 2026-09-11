@@ -1062,14 +1062,10 @@ class Abundances:
     def compute_envelope_abundance(self, name, intershell):
         # INFO: gets the initial envelope abundance of the element
         # scaled by the metallicity of the model.
-        initial_envelope_abundance = self.df.get_initial_envelope_abundance(
-            element=name,
-            metallicity=self.Z,
-        )
 
-        # initial_envelope_abundance = self.initial_envelope_abundances[
-        #     self.initial_envelope_abundances["element"] == name
-        # ]["massfrac"]
+        initial_envelope_abundance = self.initial_envelope_abundances[
+            self.initial_envelope_abundances["element"] == name
+        ]["massfrac"]
 
         # INFO: computes the elemental abundance in the envelope by
         # enriching it with intershell abundances.
@@ -1089,3 +1085,6 @@ class Abundances:
             ) / self.m_env[i]
 
         return envelope
+
+
+# %%

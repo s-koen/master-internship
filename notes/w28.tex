@@ -47,14 +47,123 @@ I made this plot to \emph{confirm} I can simply take the abundance of an element
 Now I think this works great for pretty much all elements, \emph{except} for some of the very light elements, exactly the elements that I was comparing before.
 
 I quickly fixed this by also interpolating the initial envelope abundances.
+
 \begin{figure}[ht]
     \marginfignote{5}{Clearly, this works much better for helium and actually all other isotopes too.}
     \centering
     \incplot{w28-initial-envelope-abundance}
 \end{figure}
 
+\begin{figure}[ht]
+    \marginfignote{0}{This looks much better!}
+    \centering
+    \incplot{w28-compare-he}
+\end{figure}
+
+
 
 \newsection{MESA intershell abundances}
+
+In order to verify the Monash enrichment is working well, we can compare the enrichment of the envelope as predicted by my Monash post-processing code with the abundances from MESA.
+
+I think there are a couple interesting things to do. First, we just want to compare the intershell abundances of the elements that are available to me in the MESA models with the
+predicted Monash intershell abundances. This is already interesting, because this gives us a good idea of it the interpolation is working well.
+
+Then, I think it is interesting to look at the envelope abundances to compare the differences. I have already done this previously, \emph{but} now I have a ``better'' initial envelope abundance, and insight into the intershell abundances of both codes.
+
+Lastly, I want to verify that my envelope enrichment code is working correctly. I will do this by injecting the MESA intershell abundances and the initial envelope abundance into
+my post-processor. I will then compare the envelope abundances it spits out with the actual MESA envelope abundances. If the post-processor is working well, it should reproduce the
+MESA envelope abundances well\sidenote{Although I do not expect it to agree completely, because the dredge up assumed to be instantaneous, and the precise derived dredged up masses
+are slightly different from the MESA internal dredged-up masses.}.
+
+\subsection{Intershell abundances}
+
+To start, I document \emph{how} I obtain the intershell abundances using only a few profiles. 
+\begin{figure}[ht]
+    \marginfignote{0}{For all single stars, I save a model and profile at the start of a thermal pulse, just before things really start to change and the helium burning is just beginning to start up.}
+    \marginfignote{8}{These profiles contain a lot of relevant information, but they are sparse. To see \emph{when} in the lifetime of stars the profiles are saved, I show the core mass and
+    the helium luminosity.}
+    \marginfignote{16}{Clearly, the models are correctly saved at the start of a thermal pulse. I think this is quite a nice time to sample the intershell abundance, since this is roughly also the abundance when dredge up occurs.}
+    \marginfignote{26}{The last profile is an outlier. This is the model that is saved when the envelope mass is below \(0.01\; M_\odot \).}
+    \centering
+    \incplot{w28-profiles-1}
+\end{figure}
+
+Now let me plot something a bit more interesting. By finding the position of the greatest change in the mass fraction of the metals\sidenote{over a small number of zones},
+\begin{minted}[fontsize=\small,breaklines]{py}
+i = np.argmax(
+    np.abs(
+        np.log10(p.z_mass_fraction_metals[10:])
+        - np.log10(p.z_mass_fraction_metals[:-10])
+    )
+)
+\end{minted}
+we get a proxy for the intershell / envelope boundary.
+
+By then simply taking the mass averaged abundance of an element a certain margin before this boundary, we get the envelope abundance.
+Since we also have my MESA implementation of the envelope abundances, we can compare the two.
+
+\begin{figure}[ht]
+    \marginfignote{0}{We clearly see that the two agree very well, even though they are computed with slightly different methods.}
+    \marginfignote{5}{The MESA history data is based on the largest convective region. It then takes a mass average of this region. Luckily, and also unsurprisingly, this agrees well with the method that simply takes the mass averaged value of the abundances past the intershell zone.}
+    \marginfignote{16}{The only difference occurs when the envelope mass is very small.}
+    \centering
+    \incplot{w28-profiles-envelope-check}
+\end{figure}
+
+The shape of the envelope abundance, and very likely also the intershell abundance, is very nicely approximated by a step function.
+
+Using the same criterion, but now taking some average to the intershell side of the intershell / envelope boundary, we can also find the intershell abundances.
+Unfortunately however, we cannot compare this with \emph{MESA} history data.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here we can see all available elements together to see the relative abundances.}
+    \marginfignote{6}{Everything looks normal to me, except for weird nitrogen bump. The nitrogen abundance is constantly }
+    \centering
+    \incplot{w28-profiles-intershell}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This is weird I think. But it is not necessarily something that is wrong with my
+    intershell abundance finding code. There is just something that happens during this specific thermal pulse
+that makes the intershell relatively \emph{very} abundant.}
+    \centering
+    \incplot{w28-profiles-nitrogen}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{Apparently, the \(1.5\; M_\odot \) model just by accident, only has 1 thermal pulse with a significant nitrogen abundance.
+    This however does not mean that all stars have this 1 thermal pulse with a large nitrogen abundance, and it also does not seem like an error since there is quite a clear pattern.}
+    \marginfignote{14}{Clearly, stars with masses larger than \(1.5\; M_\odot \) have multiple pulses with a large
+    nitrogen abundance. Stars with masses less than \(1.5\; M_\odot \) have \emph{no} thermal pulses with a
+large nitrogen abundance.}
+    \marginfignote{23}{I do not know what causes these sudden increases in envelope abundances and why the
+    abundances drop to low values again during the last thermal pulse.}
+    \marginfignote{31}{Maybe it has something to do with the CNO cycle?}
+    \centering
+    \incplot{w28-profiles-intershell-nitrogen}
+\end{figure}
+
+\nextpage
+Obviously, the mass is quite important for the nitrogen abundance. Let me also plot the intershell
+abundances for the \(3\; M_\odot \) MESA model.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Obviously the nitrogen abundance is quite different for this \(3\; M_\odot \) model, but
+    we see differences in the other isotopes too. Especially the neon abundance is much larger in this model.}
+    \marginfignote{10}{Carbon seems \emph{less} abundant in the heavier model.}
+    \centering
+    \incplot{w28-profiles-intershell-m3}
+\end{figure}
+
+This figure below compares the MESA intershell abundances with the Monash post-processed
+intershell abundances for the \(2.8\; M_\odot \) model.
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-profiles-intershell-m2.5-monash}
+\end{figure}
+
+
 
 \subsection{Method}
 \subsection{Results}
