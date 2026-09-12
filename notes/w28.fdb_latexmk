@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w28"] 1789166471.65909 "w28.aux" "w28.bbl" "w28" 1789166715.48605 0
+["bibtex w28"] 1789246576.24675 "w28.aux" "w28.bbl" "w28" 1789246581.48073 0
   "./master.bib" 1788263248.98063 48736 b10f790b2ba9e9409a3d475aaac693b9 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w28.aux" 1789166715.23353 2386 d12aebdcad3a640fa06d807ef5274c74 "pdflatex"
+  "w28.aux" 1789246581.2191 3309 35cc8b331b1eb326b8beb9cb9713d0b0 "pdflatex"
   (generated)
   "w28.bbl"
   "w28.blg"
   (rewritten before read)
-["pdflatex"] 1789166711.99057 "w28.tex" "w28.pdf" "w28" 1789166715.48621 0
+["pdflatex"] 1789246576.30524 "w28.tex" "w28.pdf" "w28" 1789246581.48098 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -16,8 +16,14 @@
   "/home/koen/LaTeX-setup//plots/w26-initial-envelope-zoom.pgf" 1788122701.66777 127793 c633cb1c2a70395a7b50662086bd912e ""
   "/home/koen/LaTeX-setup//plots/w27-compare-he.pgf" 1789134899.72391 121582 17b6ee0072818c292fcc26456f6cd1d8 ""
   "/home/koen/LaTeX-setup//plots/w27-initial-envelope-abundance.pgf" 1788876249.10394 33792 72cad1a307eba820bc21ad3fdf9f1cb2 ""
+  "/home/koen/LaTeX-setup//plots/w28-compare-c-all.pgf" 1789221657.85783 305006 6926ca198acaa3d26ceb07b586e5f908 ""
+  "/home/koen/LaTeX-setup//plots/w28-compare-he-all.pgf" 1789221500.46947 160678 7faf8f8f1c07c7bfdf78a8158cec1adb ""
   "/home/koen/LaTeX-setup//plots/w28-compare-he.pgf" 1789134936.20644 117561 90276b7b5d5a2f7ddcaa297ad7c925cb ""
-  "/home/koen/LaTeX-setup//plots/w28-initial-envelope-abundance.pgf" 1789082756.47013 56787 643e9cb0141a7450b1d4a1359e6985ac ""
+  "/home/koen/LaTeX-setup//plots/w28-compare-mg-all.pgf" 1789224864.62225 170600 819ef1fd3b4ffb664ef68d2064d42add ""
+  "/home/koen/LaTeX-setup//plots/w28-compare-n-all.pgf" 1789222919.53013 135317 517ec35126763b9f1a9d2ee6f0fa7a0c ""
+  "/home/koen/LaTeX-setup//plots/w28-compare-ne-all.pgf" 1789224591.48361 243889 dc159479cf7948a33b22230f2a8e308c ""
+  "/home/koen/LaTeX-setup//plots/w28-compare-o-all.pgf" 1789224606.1268 230824 6be43a96987bb5eb13832bbb027985b8 ""
+  "/home/koen/LaTeX-setup//plots/w28-initial-envelope-abundance.pgf" 1789217836.73042 56787 643e9cb0141a7450b1d4a1359e6985ac ""
   "/home/koen/LaTeX-setup//plots/w28-profiles-1.pgf" 1789141915.26123 75739 28c6ffe96e965949d789f134a0beb784 ""
   "/home/koen/LaTeX-setup//plots/w28-profiles-envelope-check.pgf" 1789151159.78821 25476 99fbfbcd78afdafeff086773676c277e ""
   "/home/koen/LaTeX-setup//plots/w28-profiles-intershell-m2.5-monash.pgf" 1789166629.28067 94598 897ca0ecbce327f7eff192b03d8377dd ""
@@ -26,6 +32,8 @@
   "/home/koen/LaTeX-setup//plots/w28-profiles-intershell-nitrogen.pgf" 1789158401.40371 94406 614faceedb2f66c494afed2a672d8037 ""
   "/home/koen/LaTeX-setup//plots/w28-profiles-intershell.pgf" 1789153543.72143 53321 7f142a280625a534c8d99c3783741b09 ""
   "/home/koen/LaTeX-setup//plots/w28-profiles-nitrogen.pgf" 1789154631.55439 93537 7b36cacd3b93240bc4791bff9ca580fe ""
+  "/home/koen/LaTeX-setup//plots/w28-reconstruct-intershell-c.pgf" 1789246232.85413 60322 9862dbe99c8b0385c5bfcc399589b26c ""
+  "/home/koen/LaTeX-setup//plots/w28-test-envelope.pgf" 1789245802.77647 313821 b0c87403b51f1614ca8e5a3eaa639d57 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1775415801 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/share/texmf-dist/fonts/enc/dvips/sourcecodepro/a_rzhnou.enc" 1775415801 2853 35e797fe15a6254cee914dbc5dbd5292 ""
@@ -402,10 +410,10 @@
   "_minted/FCDB7D816109191A86CD3F99FB0D8BC0.highlight.minted" 1789150318.78929 579 ca20e853c056375684ab9ccbb9e54642 ""
   "_minted/_5F7866D67946227E37CB7E4CE9F32BD0.index.minted" 1789150319.0949 261 b1c73f337c3fcb189b23dcc777a182c9 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w28.aux" 1789166715.23353 2386 d12aebdcad3a640fa06d807ef5274c74 "pdflatex"
-  "w28.bbl" 1789166471.70944 121 176ef3ab05ccef1cd7a1f3b4a71ca9dc "bibtex w28"
-  "w28.out" 1789166715.23467 1108 e90e52afc7d51cc060300fbde2aeb3d3 "pdflatex"
-  "w28.tex" 1789166710.38383 8927 c7c48156df7b1bb85abdaa05ab7e6921 ""
+  "w28.aux" 1789246581.2191 3309 35cc8b331b1eb326b8beb9cb9713d0b0 "pdflatex"
+  "w28.bbl" 1789246576.29541 121 176ef3ab05ccef1cd7a1f3b4a71ca9dc "bibtex w28"
+  "w28.out" 1789246581.22058 1325 30fbe9624c20c8fbba0d12c9836095ab "pdflatex"
+  "w28.tex" 1789246571.00733 14541 371aecf0a3f23518c75f6266113a7403 ""
   (generated)
   "w28.aux"
   "w28.log"

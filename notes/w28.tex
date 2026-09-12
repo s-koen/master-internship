@@ -159,14 +159,136 @@ abundances for the \(3\; M_\odot \) MESA model.
 This figure below compares the MESA intershell abundances with the Monash post-processed
 intershell abundances for the \(2.8\; M_\odot \) model.
 \begin{figure}[ht]
+    \marginfignote{0}{The nitrogen abundance is very different between the two codes. The magnesium abundances initially are a bit different, but end up at nearly the same value.}
     \centering
     \incplot{w28-profiles-intershell-m2.5-monash}
 \end{figure}
 
+\newsubsection{Envelope abundances}
+Now let me take a closer look at the intershell and envelope abundances
+for specific elements.
 
+\begin{figure}[ht]
+    \marginfignote{2}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{11}{The helium envelope abundances agree very well. Because of the new initial envelope abundance method, the initial values are very similar and because the intershell abundances are not much larger than the envelope abundances, dredge-up does not significantly impact the envelope abundances.}
+    \centering
+    \incplot{w28-compare-he-all}
+\end{figure}
 
-\subsection{Method}
-\subsection{Results}
+\begin{figure}[ht]
+    \marginfignote{2}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{11}{The carbon abundances are a lot more interesting. The initial abundances are \emph{very} similar. Just like last week however, we see that the carbon
+    abundances in the envelope are lower for the Monash post-processed abundances. It makes sense because the intershell abundances are \emph{also} lower for the Monash abundances.}
+    \centering
+    \incplot{w28-compare-c-all}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{4}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{13}{The intershell values are very different for the \emph{MESA} and Monash abundances. I do not know why they are so different?}
+    \centering
+    \incplot{w28-compare-n-all}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{2}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{11}{The initial oxygen envelope abundances once again agree very well. \emph{However}, the intershell abundances are very different between the two codes.
+    Because the Monash intershell abundances are much lower, the Monash post-processed envelope abundances do not increase with dredge-up as much as the MESA abundances.}
+    \marginfignote{26}{The question is: \emph{why} are the MESA intershell abundances so different from the Monash intershell abundances? }
+    \centering
+    \incplot{w28-compare-o-all}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{2}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{11}{I think the neon abundances are not very interesting. Overall both the envelope and intershell abundances agree pretty well. Just the shape of the Monash intershell abundance profiles rise earlier and more sharply which makes the Monash envelope abundances increase slightly more.}
+    \centering
+    \incplot{w28-compare-ne-all}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{4}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{13}{The magnesium abundances are not very interesting because the initial MESA abundances are \emph{so} much larger than the Monash initial abundances.}
+    \centering
+    \incplot{w28-compare-mg-all}
+\end{figure}
+
+\newsubsection{Post-processor with MESA abundances}
+Lastly, I want to test if my post-processing code reproduces the MESA envelope abundances if we supply it with the initial MESA envelope abundances with the MESA intershell
+abundances.
+
+\begin{figure}[ht]
+    \marginfignote{2}{Firstly, I need to accurately reproduce the intershell abundance as a function
+    of star model number. Now, since I only have the profiles, I need to make sure i correctly relate
+the sparse intershell abundances to the very densely spaces model numbers because my post-processing
+code expects this format.}
+\marginfignote{17}{I test that I correctly reproduce the envelope abundances.}
+\marginfignote{22}{Then I also produce the intershell values in the same way.}
+    \centering
+    \incplot{w28-reconstruct-intershell-c}
+\end{figure}
+
+Now, let me give my post-processing code these intershell values and the initial envelope abundance.
+
+\begin{figure}[ht]
+    \marginfignote{4}{
+        \(M_\text{TPAGB} = \)\\\(
+        \begin{matrix}
+        1.4 & 1.6 & 1.8 \phantom{\; M_\odot }\\
+        2.0 & 2.2 & 2.4 \phantom{\; M_\odot }\\
+        2.6 & 2.8 & 3.0\; M_\odot 
+        \end{matrix}
+    \)}
+    \marginfignote{13}{Clearly, the envelope value, \emph{which} the post-processing code tries to
+    reproduce, matches very well. This convinces me that my post-processor is correctly
+enriching the ``fake'' envelope.}
+\marginfignote{24}{This also means that the differences we saw in the plots above are
+only due to the differences in initial envelope abundance and intershell abundance evolution.}
+    \centering
+    \incplot{w28-test-envelope}
+\end{figure}
 
 \newsection{Investigating Monash Yields}
 % why are the mesa abundances structurally about a factor 2 larger? and why is there a difference between elements before say element pr

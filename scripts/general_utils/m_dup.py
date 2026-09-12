@@ -662,7 +662,15 @@ class Abundances:
     simple binary to determine
     """
 
-    def __init__(self, model, df, method="tp offset", mass=None):
+    def __init__(
+        self,
+        model,
+        df,
+        method="tp offset",
+        mass=None,
+        intershell=None,
+        initial_abundance=None,
+    ):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
         self.df = df
@@ -672,7 +680,8 @@ class Abundances:
         if mass != None:
             self.mass = mass
             simple = get_star(m=self.mass)
-            self.Z = simple.Z_init
+            # NOTE: CHANGE THIS TO THE ACTUAL METALLICITY
+            self.Z = 0.00557
         else:
             self.mass = self.model.params["m"]
             self.Z = self.model.params["z"]
@@ -779,11 +788,19 @@ class Abundances:
             self.Z, self.mass
         )
 
+        self.intershell = intershell
+        self.initial_abundance = initial_abundance
+
     def __getattr__(self, name):
         if name in self.df.elements:
 
             # compute the intershell elemental abundance
-            intershell = self.compute_intershell(name)
+
+            # quick hack to test MESA abundances
+            if type(self.intershell) == type(None):
+                intershell = self.compute_intershell(name)
+            else:
+                intershell = self.intershell
 
             # compute the initial envelope abundance
             envelope = self.compute_envelope_abundance(name, intershell)
@@ -1063,9 +1080,21 @@ class Abundances:
         # INFO: gets the initial envelope abundance of the element
         # scaled by the metallicity of the model.
 
-        initial_envelope_abundance = self.initial_envelope_abundances[
-            self.initial_envelope_abundances["element"] == name
-        ]["massfrac"]
+        # INFO: THIS is the naive method that just uses a scaled metallicity
+
+        # initial_envelope_abundance = self.df.get_initial_envelope_abundance(
+        #     element=name,
+        #     metallicity=self.Z,
+        # )
+
+        # INFO: THIS is the linearly interpolated method
+
+        if self.initial_abundance != None:
+            initial_envelope_abundance = self.initial_envelope_abundances[
+                self.initial_envelope_abundances["element"] == name
+            ]["massfrac"]
+        else:
+            initial_envelope_abundance = self.initial_abundance
 
         # INFO: computes the elemental abundance in the envelope by
         # enriching it with intershell abundances.
@@ -1075,6 +1104,9 @@ class Abundances:
             if i == 0:
                 envelope[i] = initial_envelope_abundance
                 continue
+
+            # INFO: this is WRONG because the envelope mass is taken AFTER dredge-up
+            # already occurred.
 
             # envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
             #     self.m_env[i] + self.m_dup[i]
