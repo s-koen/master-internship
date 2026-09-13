@@ -1089,7 +1089,7 @@ class Abundances:
 
         # INFO: THIS is the linearly interpolated method
 
-        if self.initial_abundance != None:
+        if type(self.initial_abundance) == type(None):
             initial_envelope_abundance = self.initial_envelope_abundances[
                 self.initial_envelope_abundances["element"] == name
             ]["massfrac"]
@@ -1117,6 +1117,3 @@ class Abundances:
             ) / self.m_env[i]
 
         return envelope
-
-
-# %%
