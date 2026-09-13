@@ -681,7 +681,8 @@ class Abundances:
             self.mass = mass
             simple = get_star(m=self.mass)
             # NOTE: CHANGE THIS TO THE ACTUAL METALLICITY
-            self.Z = 0.00557
+            self.Z = simple.Z_init
+
         else:
             self.mass = self.model.params["m"]
             self.Z = self.model.params["z"]
