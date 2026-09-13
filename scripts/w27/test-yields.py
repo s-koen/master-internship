@@ -50,12 +50,15 @@ cmap = plt.cm.viridis
 for m in np.arange(1.0, 3.1, 0.2):
     ab = Abundances(None, df, method="tp offset", mass=m)
     star = get_star(m=m)
+    print(star)
     plt.plot(
         (ab.time[star.ntpagb :] - ab.time[star.ntpagb])
         / (ab.time[-1] - ab.time[star.ntpagb]),
         ab.c.m_yield[star.ntpagb :],
         c=cmap(norm(m)),
     )
+    print(ab.c.envelope[star.ntpagb :])
+    print(ab.c.m_yield[star.ntpagb :])
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
