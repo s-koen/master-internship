@@ -25,6 +25,7 @@
 
 ## caches
 **/cache/
+**/__pycache__/
 data/single-star-profiles.pkl
 
 ## MESA stuff
