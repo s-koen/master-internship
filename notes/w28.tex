@@ -293,8 +293,40 @@ only due to the differences in initial envelope abundance and intershell abundan
 \newsection{Investigating Monash Yields}
 % why are the mesa abundances structurally about a factor 2 larger? and why is there a difference between elements before say element pr
 
+First things first, I made an error last week which quite drastically changed the results for the yields.
+However, the other results where all unaffected. The problem was in my implementation of the post-processor
+when it just uses the single star model. In this case, the post-processor does not have the parameters dict
+that the binary models do contain and the post-processor has to infer some of the relevant information itself.
+
+Most importantly, it has to find the mass and the metallicity of the star. Now, I thought I would simply use
+the star property information for this, \emph{but} apparently I had hardcoded a solar metallicity into the
+star model, which caused the post-processor to wrongly identify the models as solar metallicity models.
+It then used this metallicity to compute the interpolation and obtain the initial envelope abundances.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-yield-all}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-yield-all-diff-m2.5}
+\end{figure}
+
+Compared to the plots from last week, this is \emph{clearly} a much better match,
+and the offset is now actually.
+
+There are however a few isotopes with big differences in the abundances between MESA and the different Monash models.
+One example is Niobium, where we see a very big drop in the yield for the MESA models.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-check-nb}
+\end{figure}
+
+
 \newsection{Envelope abundances}
 % compare the envelope abundances per pulse of the Monash models from the paper with the MESA abundances.
 
-\bibliography{master.bib}
+% \bibliography{master.bib}
 \end{document}
