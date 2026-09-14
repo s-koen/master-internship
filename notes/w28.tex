@@ -320,13 +320,94 @@ There are however a few isotopes with big differences in the abundances between 
 One example is Niobium, where we see a very big drop in the yield for the MESA models.
 
 \begin{figure}[ht]
+    \marginfignote{4}{It seems like the envelope abundances of the Monash models are not \emph{only} enriched by dredge-up. If this would have been the case,
+    we would see a much straighter line for the envelope abundance, line in the MESA post-processed models. I think there must be some additional reactions
+that take place in the envelope after dredge-up.}
     \centering
     \incplot{w28-check-nb}
 \end{figure}
+
+Below, I plot part of the chart of nuclides adapted from \citet{wikimedia2022}).
+
+\begin{minipage}{1.55\textwidth}
+    \incfig{nuclides-table}
+\end{minipage}
+
+I think the interesting isotope here might be \(^{93}\text{Zr} \), which has a long halflife, but it decays to a stable isotope of our underrepresented element.
+It is a bit difficult to look at the \emph{envelope} abundances of \(^{93}\text{Zr}\), because we only have information on the \emph{element} Zr, not the individual
+isotopes.
+
+In the paper from \citet{karakas2016}, they write the following about \(^{93}\text{Zr}\):
+\begin{shadequote}{\citet{karakas2016}}
+Note that we do not decay
+the abundances of radioactive isotopes (e.g.,  \(^{26}\)Al, \(^{60}\)Fe)
+in the isotopic or elemental surface abundance files, but
+they are assumed to have all decayed in the yield tables.
+However, we do decay the isotope \(^{93}\)Zr to \(^{93}\)Nb because
+Nb obtains essentially all of its production via this decay.
+\end{shadequote}
+
+I think I can do the same, but I am not quite sure why they do this. The half-life time
+is about 1.6 million years and this, at least to to the same order of magnitude, about the same
+duration of the TPAGB phase of stars with masses between \(1.5\; M_\odot \) and \(3.0\; M_\odot \).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-fix-nb}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-yield-all-diff-m2.5-fix-nb}
+\end{figure}
+This looks quite good and I think this is what \citet{karakas2016} did as well. It makes sense since we would
+expect that, even if the material is expelled as \(^{93}\text{Zr}\), it will eventually become
+ \(^{93}\text{Nb}  \). However, I am curious about
+actually simulating the decay
+\emph{in the envelope}. For this, I assume that
+\(^{93}\text{Zr}\) has \emph{no} initial abundance in the envelope, since it is an unstable isotope.
+
+\nextpage
+\begin{figure}[ht]
+    \marginfignote{4}{Clearly, at least during the lifetime of the TPAGB, a bit of the envelope
+    \(^{93}\text{Zr}\) abundance decays to \(^{93}\text{Nb} \). At the end of the TPAGB, 80\% of the 
+\(^{93}\text{Zr}\) is still intact, and about \(20\%\) has decayed.}
+    \centering
+    \incplot{w28-envelope-decay}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{4}{We see a quite clearly lower envelope abundance of Nb.}
+    \centering
+    \incplot{w28-fix-nb-2}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-yield-all-diff-m2.5-fix-nb-2}
+\end{figure}
+
+The yield fits a lot worse this time. With the previous method, I would say that the differences
+between the individual Monash models are bigger than the differences between the \emph{MESA} model and the
+reference Monash model, which means we are probably at a good spot.
+
+There are however a few other elements that are
+still a bit ``weird''. With the exception of Cs, these are all elements that quite significantly
+underrepresented in the MESA yields. I think here the story is similar to the story of Nb.
+There is some isotope that decays to the underrepresented element, probably with quite a long decay time.
+
+For these isotopes, I could implement a similar procedure. This however requires a lot of manual work, or
+quite a bit of setup work to load some nuclides table, compare every isotope with this decay process
+in the table and implement the correct decay.
+
+I think my interpolation probably introduces more uncertainty than the reactions that happen in the envelope
+or in the interstellar medium after the mass has been expelled.
+
+However, this problem is obviously not only there for the yields, but also for the envelope abundances as a
+function of time, which is easy to see if we look at the \(^{93}\text{Zr}\) abundance plot above.
 
 
 \newsection{Envelope abundances}
 % compare the envelope abundances per pulse of the Monash models from the paper with the MESA abundances.
 
-% \bibliography{master.bib}
+\bibliography{master.bib}
 \end{document}
