@@ -1024,6 +1024,19 @@ class Abundances:
                 self.Z,
                 interp_x,
             )
+
+            if name == "nb":
+                isos = self.df.elements["zr"].isotopes
+                intershell += 93 * self.get_abundance(
+                    self.df.isotopes["zr93"], self.mass, self.Z, interp_x
+                )
+
+            if name == "zr":
+                isos = self.df.elements["zr"].isotopes
+                intershell -= 93 * self.get_abundance(
+                    self.df.isotopes["zr93"], self.mass, self.Z, interp_x
+                )
+
         return intershell
 
     def get_abundance(self, isotope, M, Z, interp, drop=None):
@@ -1118,3 +1131,6 @@ class Abundances:
             ) / self.m_env[i]
 
         return envelope
+
+
+# %%
