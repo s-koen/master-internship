@@ -308,13 +308,20 @@ It then used this metallicity to compute the interpolation and obtain the initia
     \incplot{w28-yield-all}
 \end{figure}
 
+Let's also look at the differences.
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    It is important to note that I also plot the \(M_\text{mix} = 0.004\; M_\odot \) model here. The MESA abundances are interpolated with the \(M_\text{mix} = 0.002\; M_\odot \) abundances, which is the standard value of the mixing parameter according to \citet{karakas2016}. Thus, the \emph{orange} line is much more relevant than the green one. 
+\end{questionbox}
+
 \begin{figure}[ht]
     \centering
     \incplot{w28-yield-all-diff-m2.5}
 \end{figure}
 
 Compared to the plots from last week, this is \emph{clearly} a much better match,
-and the offset is now actually.
+and the offset is now actually much more in line with differences between the Monash models.
 
 There are however a few isotopes with big differences in the abundances between MESA and the different Monash models.
 One example is Niobium, where we see a very big drop in the yield for the MESA models.
@@ -405,9 +412,90 @@ or in the interstellar medium after the mass has been expelled.
 However, this problem is obviously not only there for the yields, but also for the envelope abundances as a
 function of time, which is easy to see if we look at the \(^{93}\text{Zr}\) abundance plot above.
 
+The last thing I want to investigate is the effects of the total expelled mass.
 
-\newsection{Envelope abundances}
-% compare the envelope abundances per pulse of the Monash models from the paper with the MESA abundances.
+Naively, one would expect that models with the same initial mass would expel roughly
+the same amount of mass.
+\emph{However}, differences in the core mass do change the total amount a little bit.
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-yield-cum}
+\end{figure}
+
+These differences however are so small that after "correcting" for this, the abundances
+distributions changes are minimal.
+
+We see that the especially for s-process elements, the MESA model predicts slightly
+\emph{higher} yields than both the Monash models. I think this makes sense if we take into
+account the fact that the MESA models often experience the first-dredge up \emph{earlier}.
+This means the stars will have more thermal pulses to dredge-up enriched intershell material
+to the envelope. If the star has higher envelope abundances at the end of the evolution when
+mass losses become important, we will obviously see \emph{larger} yields for these elements.
+
+\newsection{Envelope and Intershell Abundance Changes}
+\subsection{Intershell}
+Below, I show the fraction of the final intershell abundance over the initial intershell abundance.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-intershell-change}
+\end{figure}
+
+I think this quite clearly matches \emph{very} well for the \emph{MESA} models and the Monash models,
+which is unsurprising because the MESA intershell abundances should just be the interpolated between
+the two shown Monash intershell values. The only reason they \emph{could} deviate a lot is if for some
+reason, the MESA model \emph{with} offset, does not manage to reach the last thermal pulse index in
+each of the Monash models. In this case, the final MESA abundances will correspond to the abundances
+of a \emph{not} final Monash model pulse. This still would only change the intershell abundances a lot
+if for some reason, the Monash abundances change a lot after already a lot of dredge up occurred, which
+I cannot imagine being the case.
+
+We see that the MESA models generally follow the \(Z=0.007\) models better than the \(Z=0.0028\) models.
+
+\subsection{Envelope}
+Now, obviously we can make the same plot for the \emph{envelope}. In this case, we \emph{expect} the MESA
+model abundances to become slightly higher than the \(Z=0.007\) models, simply because the star will dredge up more
+of the intershell abundances, which will generally be much more abundant in heavy elements.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-envelope-change}
+\end{figure}
+
+This is exactly what we see, because the MESA models now much closer to the \(Z=0.0028\) models.
+
+Also, for basically all elements between magnesium and iron, nothing changes between in the 
+envelope due to dredge-up.
+
+Let me now just divide the lines we see in the plot above. This way we see more clearly the ratio between them.
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-envelope-change-diff}
+\end{figure}
+
+Now lastly, we can just look at the final envelope abundances. In this case, I compare it to a reference
+model again.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w28-envelope-diff}
+\end{figure}
+
+We obtain the same shape as we do for the yields. 
+
+Because we already saw that the elements magnesium through iron are not enriched, these elements only
+have comparably \emph{lower} final mass fractions in the envelope because of their initially \emph{lower} 
+mass fraction purely due to the lower metallicity.
+
+We also saw that dredge-up is more powerfull for metal poor Monash models, and my MESA models, which
+together with the intershell enrichment, causes the final envelope abundances of s-process elements to
+become \emph{larger} for the MESA models and even the lower metallicity Monash models.
+
+I feel like I now understand the shape of the yield and envelope abundance plots quite well.
+The differences between the models for individual models require looking into specific s-process
+reactions, which I have not done except for Nb.
+
+\newsection{Accretion and Mixing in MS stars}
 
 \bibliography{master.bib}
 \end{document}
