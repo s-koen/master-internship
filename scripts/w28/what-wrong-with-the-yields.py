@@ -71,7 +71,7 @@ for m in np.arange(2.5, 2.501, 0.1):
     plt.plot(z, final, label=f"MESA $M={m:.1f}\\;M_\\odot,\\;Z=0.00557$", linewidth=1)
 
 m_yield = yields.query(
-    "`Initial mass` == 2.5 and metallicity == 0.0028 and M_mix == 0.004"
+    "`Initial mass` == 2.5 and metallicity == 0.0028 and M_mix == 0.002"
 )
 # plt.plot(m_yield["El"], m_yield["Mass(i)"])
 plt.plot(
@@ -1187,19 +1187,6 @@ plt.plot(
 )
 
 
-m_yield_new = yields.query(
-    "`Initial mass` == 2.5 and metallicity == 0.0028 and M_mix == 0.004"
-)
-
-# plt.plot(m_yield["El"], m_yield["Mass(i)"])
-plt.plot(
-    m_yield["Z"],
-    (np.array(m_yield_new["Mass(i)"]) / np.sum(np.array(m_yield_new["Mass(i)"])))
-    / (np.array(m_yield["Mass(i)"]) / np.sum(np.array(m_yield["Mass(i)"]))),
-    label="$M=2.5\\;M_\\odot,\\;Z=0.0028,\\;M_\\textrm{mix} = 0.004$",
-    linewidth=1,
-)
-
 m_yield_new = yields.query("`Initial mass` == 2.5 and metallicity == 0.007")
 # plt.plot(m_yield["El"], m_yield["Mass(i)"])
 plt.plot(
@@ -1268,3 +1255,4 @@ plt.yscale("log")
 plt.savefig("/home/koen/LaTeX-setup/plots/w28-yield-mass-correction.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
