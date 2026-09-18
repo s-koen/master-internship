@@ -1,0 +1,161 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 29}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Thermohaline Mixing}
+
+I simulate a bunch of MS stars with different initial masses. I save profiles depending on the 
+central hydrogen fraction to get an even coverage of the \(\mu\) profiles throughout the
+MS evolution of the stars. This is important because the \(\mu\) profiles change quite a lot
+throughout the MS evolution. We obviously know the age of the MS star when it accretes
+mass and thus we can make a pretty good assumation about the mixing.
+
+The problem is then that we could possibly observe the MS stars billions of years after the mass
+has been accreted. At this point the \(\mu\) profiles could change and it becomes uncertain.
+
+However, since the abundances are quite uncertain anyway, I think it is okay to just take the
+\(\mu\) profile at the time of accretion.
+
+To start, let me plot the \(\mu\) profile from the envelope to the center.
+\begin{figure}[ht]
+    \marginfignote{0}{Here, we quite clearly see that outer layers of the envelope, which have
+    very low density, are not fully ionized. This obviously causes the mean molecular weight to
+increase.}
+\marginfignote{7}{However, I think this is an unimportant effect. Accreted material will just
+the envelope layer further outwards, and the previously unionized material will become ionized.}
+\marginfignote{15}{The much more interesting part is close to the core.}
+    \centering
+    \incplot{w29-mu-env-1}
+\end{figure}
+
+Let's look at the profile going from the core outwards.
+
+\begin{figure}[ht]
+    \marginfignote{0}{For this particular mass, we see a nearly perfectly diagonal line from the
+    mean molecular weight in the core to the mean mean molecular weight in the envelope.}
+    \marginfignote{7}{The diagonal line does not shift with the changing core composition, only
+    the final height changes. }
+    \marginfignote{12}{However, just before the ``diagonal'' line starts, the \(\mu\) profile
+    already starts to rise a bit. I think this is pretty interesting, as this seems to change
+quite a bit depending on the core composition, and could thus be important for the moment of
+accretion.}
+    \centering
+    \incplot{w29-mu-core-1}
+\end{figure}
+
+Below I plot all \(\mu\) profiles for all models, zooming in on this lower portion.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-mu-core-2}
+\end{figure}
+
+Clearly, not only the mass position of the rise in \(\mu\) changes with mass, but also
+the slow rise before the diagonal line.
+
+However, I have no intuition for the mean molecular weight of some strongly enriched material,
+so before I do a bunch of calculations, let me make a really simple estimate for \(\mu\).
+
+\begin{questionbox}{}{}
+\textbf{\textcolor{keywordscolor}{NOTE:}}
+    Simple derivation for myself to refresh how the mean molecular weight is calculated.
+\end{questionbox}
+
+The mean molecular weight is defined as:
+\begin{equation*}
+\mu = \frac{\rho}{nm_{u}}.
+\end{equation*}
+Here,
+\begin{citemize}
+    \item  \(\mu\) is the mean molecular weight of a gas.
+    \item  \(\rho \) is the mass density of a gas.
+    \item  \(n\) is the number density of a gas.
+    \item  \(m_{u}\) is the atomic mass unit.
+\end{citemize}
+
+For one element, the mass density contributed is
+\begin{equation*}
+    \rho_{i} = X_{i} \rho.
+\end{equation*}
+The number density of nuclei is then simply
+\begin{equation*}
+    n_{i}^\textrm{nuc}  = \frac{\rho_{i}}{A_{i}m_{u}}  .
+\end{equation*}
+
+However, if we assume full ionization, we will have 1 nucleus + \(Z_{i} \) electrons.
+
+The ``real'' number density is simply
+\begin{equation*}
+    n_{i} = (1 + Z_{i})n_{i}^\textrm{nuc}.
+\end{equation*}
+Now, let me expand and sum over all elements:
+\begin{align*}
+    n &= \sum_{i} (1 + Z_{i})\frac{\rho X_{i}}{A_{i}m_{u}}\\
+      &= \frac{\rho}{m_{u} }\sum_{i} \frac{X_{i}(1 + Z_{i})}{A_{i}}\\
+    \frac{nm_{u} }{\rho } &= \sum_{i} \frac{X_{i}(1 + Z_{i})}{A_{i}}\\
+    \frac{1}{\mu} &= \sum_{i} \frac{X_{i}(1 + Z_{i})}{A_{i}}\\
+\end{align*}
+
+Cool! I am \emph{assuming} full ionization here, which I think is fine. I am pretty sure nearly
+the whole MS star is ionized anyway.
+
+Now to compute the mean molecular weight of the accreted gas, we need
+\begin{citemize}
+    \item  \(X_{i}\), the mass fraction of every element in the accreted gas. We have this.
+    \item  \(Z_{i}\), the proton number of every accreted element. We also have this.
+    \item  \(A_{i}\), the mass number of every element in the accreted gas. We need to make an
+        \emph{assumption} here.
+\end{citemize}
+Especially for heavy elements, it is quite possible that the element has a few isotopes with
+different masses that are all stable and relatively abundant. In this case, the elemental mass
+should be the averaged mass of the isotopes.
+
+I think it is fine to take the \href{https://en.wikipedia.org/wiki/Standard_atomic_weight}
+{standard atomic weight} in this case. The differences
+will be small anyway, especially for the heavy elements.
+
+I will use the package \lstinline[style=output, breaklines=true]|periodictable| written by \citet{kienzle2026} based on data from \citet{meija2013}.
+
+It is then quite straightforward to \(\mu\).
+
+Below I plot the \(\mu\) I calculated from my MESA model with the Monash Abundances.
+\begin{figure}[ht]
+    \marginfignote{0}{There are a couple of important things here.
+\begin{enumd}
+    \item  The first elements contribute by far the most to \(\mu\), which is to be expected due
+        to their much larger abundances.
+    \item  The \(\mu\) computed with the final abundances is larger than for the initial
+        envelope abundances.
+    \item  \(\mu\) computed from the initial envelope abundances is a bit larger than 
+        \(\mu\) in the envelope of the MESA MS models, which have \(\mu \approx 0.60\).
+\end{enumd}
+    }
+    \centering
+    \incplot{w28-mu-approx-1}
+\end{figure}
+
+I am unsure if the differences in \(\mu\) between the initial models is due to evolution after
+the MS, or due to differences between MESA and Monash abundances. But,
+in the end, the differences for the predicted abundances in the MS star would probably be small.
+
+The idea is now to use this \(\mu\) and mix the accreted mass, thereby changing \(\mu\) as well,
+until the mixed \(\mu\) is equal to the \(\mu\) in the star.
+
+\bibliography{master.bib}
+\end{document}
