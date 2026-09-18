@@ -739,6 +739,7 @@ class Abundances:
             dm[~valid[:-1] | ~valid[1:]] = 0
 
             self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
+            self.total_mass_accreted = m2[-1] - m2[0]
 
             m1 = np.concatenate(
                 [
@@ -776,12 +777,14 @@ class Abundances:
             self.m_env = simple.m_env
             self.time = simple.age
             self.dm_acc = None
+            self.total_mass_accreted = None
             self.dm = np.concatenate([[0], -1 * np.diff(simple.mass)])
             for key, value in self.dup_simple.items():
                 self.m_dup[value["index"]] = value["mass"]
 
             self.tp_count = simple.TP_count
 
+        self.total_mass_expelled = simple.mass[0] - simple.mass[-1]
         self.monash_models = defaultdict(list)
         self._get_monash_masses_per_metallicity()
         self._prepare_monash_models()
