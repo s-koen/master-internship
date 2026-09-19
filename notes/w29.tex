@@ -71,7 +71,7 @@ the slow rise before the diagonal line.
 
 However, I have no intuition for the mean molecular weight of some strongly enriched material,
 so before I do a bunch of calculations, let me make a really simple estimate for \(\mu\).
-
+\newsubsection{Simple Derivation}
 \begin{questionbox}{}{}
 \textbf{\textcolor{keywordscolor}{NOTE:}}
     Simple derivation for myself to refresh how the mean molecular weight is calculated.
@@ -156,6 +156,148 @@ in the end, the differences for the predicted abundances in the MS star would pr
 
 The idea is now to use this \(\mu\) and mix the accreted mass, thereby changing \(\mu\) as well,
 until the mixed \(\mu\) is equal to the \(\mu\) in the star.
+\newsubsection{Simple Derivation 2}
+To see how this mixing would work, let me look at the definition of \(\mu\) again.
+
+\begin{equation*}
+    \mu = \frac{\rho}{n m_{u} } = \frac{m / V}{Nm_{u} / V} = \frac{m}{Nm_{u}}.
+\end{equation*}
+Say we mix \(m_{1}\) of gas with mean molecular weight \(\mu_{1} \) with \(m_{2}\) of a gas with \(\mu_{2}\).
+We want to know what the resulting \(\mu \) is of the mixed whole.
+
+We would calculate \(N\) using \(\mu \) and \(m\) to obtain:
+\begin{equation*}
+    N_{i} = \frac{m_{i}}{\mu_{i} m_{u}} \implies \mu_\text{mix} = \frac{m_{1} + m_{2}}{(N_{1}+N_{2})m_{u}} = \frac{m_{1} + m_{2}}{\frac{m_{1}}{\mu_{1}} + \frac{m_{2}}{\mu_{2} } }
+\end{equation*}
+
+Or, more conveniently:
+\begin{equation*}
+    \mu_\text{mix}^{-1}  = \frac{m_{1}\mu_{1}^{-1} + m_{2}\mu_{2}^{-1}  }{m_{1}+m_{2} }\qq{,} m_\text{mix} = m_{1} +m_{2}.
+\end{equation*}
+
+I think it should be pretty easy to implement this logic for simulating the dilution of \(\mu \) as the
+accreted material starts to mix.
+
+Here is a minimal working example:
+\begin{minted}[fontsize=\small]{py}
+def effective_mu(profile, M_acc, mu_acc):
+    ms = -np.diff(profile.mass)
+    mus = (profile.mu[1:] + profile.mu[:-1]) / 2
+    arg = np.argmin(mus)
+    mus[:arg] = mus[arg]
+    mu_current = mu_acc
+    m_current = M_acc
+
+    mu_profile = [mu_acc]
+
+    crossing_index = None
+    for m, mu in zip(ms, mus):
+        mu_last = mu_current
+        mu_current = (m + m_current) / ((m / mu) + (m_current / mu_current))
+        m_current = m + m_current
+        mu_profile.append(mu_current)
+
+    mus = np.concatenate([[mus[0]], mus])
+    mu_profile_original = mus
+    return mu_profile, mu_profile_original
+\end{minted}
+
+Below I show an example of \(0.5\; M_\odot \) being accreted by a \(1.9\; M_\odot \) MS star at various times throughout the MS.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here, accreted mass gets added to the top of the envelope
+    of the original star.}
+    \marginfignote{5}{As mixing extends into the envelope, the mean molecular weight
+    of the mixed material decreases from the initial accreted mean molecular weight
+to lower values until at some point, the mean molecular weight of the mixed material
+is \emph{lower} than the mean molecular weight of the envelope of the original star.}
+    \marginfignote{18}{This critical point roughly determines how deep mixing
+    extends.}
+    \centering
+    \incplot{w28-test-mu-mixing}
+\end{figure}
+
+To me, this seems like it works as expected. Another test would be to see how
+mixing works with much less accretion. In this case, mixing should cause the
+mean molecular weight to drop much quicker.
+
+\begin{figure}[ht]
+    \marginfignote{0}{This plot show the same \(1.9\; M_\odot \) model accreting
+    ``only'' 0.025 \(M_\odot \) of strongly enriched mass.}
+    \marginfignote{4}{And indeed, we see a much quicker drop-off and
+    \emph{less} mixing.}
+    \marginfignote{7}{We also see that the age of the MS star does change the mixing
+    depth a bit. In both case I have shown here, the mixing depth decreases with
+age.}
+    \marginfignote{13}{This is a nice property, because by using the \(\mu \)
+    profile at the time of accretion, we are making an \emph{optimistic} estimate
+for the amount of mixing, and thus a \emph{conservative} estimate for the
+abundances.}
+    \centering
+    \incplot{w28-test-mu-mixing-2}
+\end{figure}
+
+Now we are quite easily able to obtain the mixing mass. In combination with the
+amount of accreted mass and the mass fraction of the elements in the accreted mass,
+we are almost ready to compute the envelope abundances in the main sequence stars.
+
+The last thing we need is the envelope abundances of every element in the envelope
+of the MS star. I think this is a bit difficult.
+
+\subsection{Interpolated mean molecular weight calculations.}
+
+The basic idea is very similar to the interpolation of the abundances.
+First, I interpolate the \(\mu \) profiles for different ages\sidenote{Behind the
+scenes, this is then converted to the central hydrogen fraction to remove the
+vastly different main-sequence lifetimes of stars with different masses.}.
+Then I interpolate these profiles between the masses.
+
+\subsubsection{Main sequence age to central Hydrogen composition.}
+
+This is just a simple linear interpolation as well.
+
+\subsubsection{Interpolated Age and Mass}
+
+I have now created some code that can quickly generate interpolated profiles.
+Below, I show two examples. In the first example, I change the age of a MS star
+to see how the \(\mu \) profile changes.
+
+\begin{figure}[ht]
+    \marginfignote{0}{We can clearly see that, as the star becomes older, the mean
+    molecular weight of the star in the core rises. This is to be expected as 
+hydrogen turns into helium.}
+\marginfignote{8}{We can also see that the slow sharp rise happens at the same
+masses for all ages. However, the slow rise before the sharp rise to the core mean
+molecular weight value does depend on age. In the next figure, I zoom in on this.}
+    \centering
+    \incplot{w29-interpolated-age}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{The zoom very clearly shows the sharp boundary between the
+    slow and fast rise of the mean molecular weight \emph{and} the effect of age.}
+    \marginfignote{8}{This is really the regime that we are interested in, because
+    the mean molecular weight of the accreted mass will in all cases be pretty close
+to my estimated value of 0.64.}
+    \centering
+    \incplot{w29-interpolated-age-zoom}
+\end{figure}
+
+We can also look different masses at a constant age.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Now, we can very clearly see that the mass position of the
+    rise in molecular weight changes with mass. This makes perfect sense. It is
+really just a proxy for the core mass of the star anyway, and lighter stars will have
+lighter cores.}
+\marginfignote{10}{Since we are comparing stars of different masses at the same
+age, we also see that the maximum \(\mu \) in the core increases with mass too. This
+also makes perfect sense, since heavier stars have shorter main-sequence lifetimes,
+and thus, at the same age will have burned through more of their core hydrogen.}
+    \centering
+    \incplot{w29-interpolated-mass}
+\end{figure}
+
 
 \bibliography{master.bib}
 \end{document}

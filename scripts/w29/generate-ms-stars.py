@@ -27,11 +27,11 @@ def change_inlist_common(m, inlist_path):
         f.writelines(new)
 
 
-reference_star = "/home/koen/master-internship/mesa-models/single-ms-stars/reference/"
+reference_star = "/home/koen/master-internship/mesa-models/single-ms-stars-2/reference/"
 
 ms = np.linspace(0.4, 4.4, 41)
 for m in ms:
-    run_dir = f"/home/koen/master-internship/mesa-models/single-ms-stars/M{m:.1f}/"
+    run_dir = f"/home/koen/master-internship/mesa-models/single-ms-stars-2/M{m:.1f}/"
     shutil.copytree(reference_star, run_dir)
 
     inlist_path = run_dir + "inlist_common"
