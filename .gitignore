@@ -27,6 +27,7 @@
 **/cache/
 **/__pycache__/
 data/single-star-profiles.pkl
+data/accretor-cache/
 
 ## MESA stuff
 **/LOGS/
