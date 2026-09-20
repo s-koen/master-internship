@@ -739,7 +739,7 @@ class Abundances:
             dm[~valid[:-1] | ~valid[1:]] = 0
 
             self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
-            self.total_mass_accreted = m2[-1] - m2[0]
+            self.total_mass_accreted = m2[-1]
 
             m1 = np.concatenate(
                 [

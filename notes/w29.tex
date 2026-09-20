@@ -241,10 +241,7 @@ Now we are quite easily able to obtain the mixing mass. In combination with the
 amount of accreted mass and the mass fraction of the elements in the accreted mass,
 we are almost ready to compute the envelope abundances in the main sequence stars.
 
-The last thing we need is the envelope abundances of every element in the envelope
-of the MS star. I think this is a bit difficult.
-
-\subsection{Interpolated mean molecular weight calculations.}
+\newsubsection{Interpolated mean molecular weight calculations.}
 
 The basic idea is very similar to the interpolation of the abundances.
 First, I interpolate the \(\mu \) profiles for different ages\sidenote{Behind the
@@ -256,9 +253,59 @@ Then I interpolate these profiles between the masses.
 
 This is just a simple linear interpolation as well.
 
+Below I print the implementation. The only important thing here is that
+it is interpolated over the mass as well. This means I get a central hydrogen
+composition based on the mass and age of the main sequence star.
+
+We only need the mass and the age if we assume mass-transfer happens
+much quicker than the evolution of the MS star\sidenote{Which I am pretty sure is a valid assumption in all cases.}.
+We simply use the mass of the main sequence star before mass transfer, so \(q\times M_\text{TPAGB,i}\) and the age of the
+TPAGB star at the moment of RLOF. We implicitly assume that the stars are born at the same time\sidenote{Which I think is a fair assumption as well.}.
+
+
+\begin{minted}[fontsize=\small]{py}
+class Accretor:
+    ...
+
+    def __get_center_h1(self) -> float:
+        interp_ages: list[float] = []
+        for mass in self.masses:
+            mass_profiles: list[AccretorProfile] = self.profiles[mass]
+            h1s: list[float] = []
+            ages: list[float] = []
+            for profile in mass_profiles:
+                h1s.append(profile.center_h1)
+                ages.append(profile.age)
+
+            interp_ages.append(np.interp(self.age, ages, h1s))
+
+        return np.interp(self.mass, self.masses, interp_ages)
+    
+    ...
+\end{minted}
+
+This is the result of the interpolation:
+\begin{figure}[ht]
+    \marginfignote{0}{I think it works well. There are some blocky artifacts for the lower masses, but
+    I do not expect this error to significantly propagate through to the abundances.}
+    \marginfignote{8}{We can also clearly see that the Main Sequence lifetime decreases with initial mass.
+    I have plotted the simple relation \(\tau_\text{MS} \approx 10^{9.75}\cdot M^{-2.8}\), where I
+    manually fit the factor \(10^{9.75}\) to the interpolation results.}
+    \marginfignote{17}{The bottom plot shows that the interpolation also works quite well for early ages, even though we have relatively few profiles in this region.}
+    \centering
+    \incplot{w29-central-h1}
+\end{figure}
+
+
 \subsubsection{Interpolated Age and Mass}
 
-I have now created some code that can quickly generate interpolated profiles.
+Now that we have the mass and central hydrogen composition at the moment of mass transfer, we can use these values to generate an
+interpolated mass-mean molecular weight profile. The idea is quite simple.
+We interpolate 4 profiles of the surrounding masses and central hydrogen
+compositions.
+
+I have created a bit of code\sidenote{See Appendix \ref{app:code}}
+ that can quickly generate interpolated profiles.
 Below, I show two examples. In the first example, I change the age of a MS star
 to see how the \(\mu \) profile changes.
 
@@ -298,6 +345,279 @@ and thus, at the same age will have burned through more of their core hydrogen.}
     \incplot{w29-interpolated-mass}
 \end{figure}
 
+\nextpage
+\subsubsection{Inspect Mixing}
+If we hook this interpolation up to the mixing propagation calculation, we can
+compute the mixing depth for any profile in combination with any accreted material.
+Below I show an example:
+
+\begin{figure}[ht]
+    \marginfignote{0}{Here I show with how much MS envelope mass the accreted material is mixed before the mean molecular weight is equal to the increased
+    mean molecular weight towards the core.}
+    \marginfignote{8}{There are clearly two regimes. 
+        \begin{citemize}
+            \item  The regime where the core is not enriched enough yet, and we mix throughout the entire star.
+            \item  The regime where the core has burned enough hydrogen, and we stop mixing before or at the core boundary.
+        \end{citemize}
+    }
+    \centering
+    \incplot{w29-m_mix-grid}
+\end{figure}
+
+The final abundances of the MS star obviously depend both on the amount of accreted mass \emph{and} the amount of mixing.
+To show this effect, we look at a grid of different \(\mu_\text{acc}\) and \(M_\text{acc}\) and compare \(M_\text{acc} / M_\text{mix}\).
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-effects-of-mu-and-m_acc}
+\end{figure}
+
+It is very clear that the amount of accreted mass is very important for the final abundances. In one of the plots above, we saw that accreting a smaller amount of mass
+means we mix less as well, but this effect does not in any way compensate the fact that more accretion simply means there are more heavy elements in the MS star.
+
+This makes intuitive sense too. When accreting more enriched material, we expect larger final abundances. We also see that the actual mean molecular weight of the
+accreted material makes \emph{very little} difference for the ratio between the accreted mass and the mixed mass.
+
+\subsection{Main Sequence Composition}
+
+To compute the abundances after accretion, we need to know the abundances of the accreted material. We also need to know how much this material is mixed with the 
+main sequence star. Lastly, we need to know the abundances of the mixing material.
+
+However, as is clear from the \(\mu \)-profiles, the abundances are not constant in the envelope of the main sequence star.
+
 
 \bibliography{master.bib}
+\nextpage
+\appendix
+\section{Code}\label{app:code}
+\begin{minted}[fontsize=\small,breaklines]{py}
+class AccretionResult:
+    def __init__(self, index, mixing_mass, final_mu) -> None:
+        self.index = index
+        self.mixing_mass = mixing_mass
+        self.final_mu = final_mu
+        self.mass_profile: None | NDArray[np.float64] = None
+        self.mu_profile_mix:None | NDArray[np.float64] = None
+        self.mu_profile_original: None | NDArray[np.float64] = None
+
+    def add_integration_result(self, mass: NDArray[np.float64], mu_profile: NDArray[np.float64], mu_profile_original: NDArray[np.float64]) -> None:
+        self.mass_profile = mass
+        self.mu_profile_mix = mu_profile
+        self.mu_profile_original = mu_profile_original
+
+
+class AccretorProfile:
+    def __init__(self, profile: mr.MesaData) -> None:
+        self.center_h1 = float(profile.center_h1)
+        self.age = float(profile.star_age)
+        self.profile = profile
+        self.mass = np.array(profile.mass,dtype=np.float64)
+        self.mu = np.array(profile.mu,dtype=np.float64)
+        arg = np.argmin(self.mu)
+        self.mu[:arg] = self.mu[arg]
+
+
+class AccretorProfiles:
+    def __init__(self) -> None:
+        self.profiles = self.__get_profiles()
+
+    def __get_profiles(self, fresh = False) -> dict[float, list[AccretorProfile]]:
+        if fresh:
+            print("In Accretor.__get_profiles:\n\tloading profiles")
+            profiles_dict: dict[float, list[AccretorProfile]] = {} 
+            for i, _ in enumerate(range(37)):
+                profiles: list[AccretorProfile] = []
+                mass = np.round(0.8+0.1*i,1)
+                print(f"\tloading mass {mass}")
+                for j in range(1, 41):
+                    profile = mr.MesaData(
+                        f"/home/koen/master-internship/mesa-models/single-ms-stars/"+
+                        f"M{mass}/LOGS/MS/profile{j}.data"
+                        )
+                    profiles.append(AccretorProfile(profile))
+                profiles_dict[mass] = profiles
+
+            with open(
+                f"/home/koen/master-internship/data/accretor-cache/profiles.pkl",
+                "wb",
+            ) as f:
+                pickle.dump(profiles_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+            return profiles_dict
+
+
+        else:
+            try:
+                with open(
+                f"/home/koen/master-internship/data/accretor-cache/profiles.pkl",
+                "rb",
+            ) as f:
+                    return pickle.load(f)
+
+            except FileNotFoundError:
+                return self.__get_profiles(fresh = True)
+\end{minted}
+\nextpage
+\begin{minted}[fontsize=\small,breaklines]{py}
+class Accretor:
+    def __init__(self, profiles:AccretorProfiles,age: float, mass: float) -> None:
+        self.mass = mass
+        self.age  = age
+
+        self.profiles = profiles.profiles
+        self.masses = self.__determine_profile_masses()
+        self.central_h1 = self.__get_center_h1()
+        self.mu_curve, self.mass_curve = self.__get_mu_mass_curve()
+    
+    def __get_center_h1(self) -> float:
+        interp_ages: list[float] = []
+        for mass in self.masses:
+            mass_profiles: list[AccretorProfile] = self.profiles[mass]
+            h1s: list[float] = []
+            ages: list[float] = []
+            for profile in mass_profiles:
+                h1s.append(profile.center_h1)
+                ages.append(profile.age)
+
+            interp_ages.append(np.interp(self.age, ages, h1s))
+
+        return np.interp(self.mass, self.masses, interp_ages)
+
+    def __determine_profile_masses(self) -> list[float]:
+        masses: list[float] = []
+
+        profile_masses: list[float] = list(self.profiles.keys())
+
+        x: float = self.mass
+        i: np.intp = np.searchsorted(profile_masses, x)
+
+        lower: None | float
+        upper: None | float
+
+        if i == 0:
+            lower = None
+            upper = profile_masses[0]
+        elif i == len(profile_masses):
+            lower = profile_masses[-1]
+            upper = None
+        else:
+            lower = profile_masses[i - 1]
+            upper = profile_masses[i]
+
+        if lower != None:
+            masses.append(lower)
+        if upper != None:
+            masses.append(upper)
+
+        return masses
+
+    def __get_mu_mass_curve(self) -> tuple[NDArray[np.float64], NDArray[np.float64]] :
+
+        if len(self.masses) == 1:
+            mu, mass = self.__get_mu_mass_curve_per_mass(self.masses[0])
+            mu = mu[::-1]
+            # arg = np.argmin(mu)
+            # mu[:arg] = mu[arg]
+            return mu , mass[::-1]
+
+        mu_lower, mass_lower = self.__get_mu_mass_curve_per_mass(self.masses[0])
+        mu_upper, mass_upper = self.__get_mu_mass_curve_per_mass(self.masses[1])
+
+        mass = np.unique(np.concatenate([mass_lower, mass_upper]))
+        mu_lower = np.interp(mass, mass_lower, mu_lower)
+        mu_upper = np.interp(mass, mass_upper, mu_upper)
+
+        # Interpolation fraction in central H
+        f = (self.mass - self.masses[0]) / (self.masses[1] - self.masses[0])
+
+        # Interpolate evolutionary state
+        mu = (1 - f) * mu_lower + f * mu_upper
+        mu = mu[::-1]
+        # arg = np.argmin(mu)
+        # mu[:arg] = mu[arg]
+        return mu, mass[::-1]
+    
+    def __get_mu_mass_curve_per_mass(self, mass) -> tuple[NDArray[np.float64], NDArray[np.float64]] :
+        surrounding_profiles: list[AccretorProfile] = []
+
+        profiles = self.profiles[mass][::-1]
+        all_center_h1s: list[float] = []
+        for profile in profiles:
+            all_center_h1s.append(profile.center_h1)
+
+        x: float = self.central_h1
+        i: np.intp = np.searchsorted(all_center_h1s, x)
+
+        lower: None | AccretorProfile
+        upper: None | AccretorProfile
+
+        if i == 0:
+            lower = None
+            upper = profiles[0]
+        elif i == len(all_center_h1s):
+            lower = profiles[-1]
+            upper = None
+        else:
+            lower = profiles[i - 1]
+            upper = profiles[i]
+
+        if lower != None:
+            surrounding_profiles.append(lower)
+        if upper != None:
+            surrounding_profiles.append(upper)
+
+        if len(surrounding_profiles) == 1:
+            profile = surrounding_profiles[0]
+            return np.array(profile.mu[::-1]), np.array(profile.mass[::-1])
+
+
+        mass_lower = np.array(surrounding_profiles[0].mass)[::-1]
+        mu_lower = np.array(surrounding_profiles[0].mu)[::-1]
+        mass_upper = np.array(surrounding_profiles[1].mass)[::-1]
+        mu_upper = np.array(surrounding_profiles[1].mu)[::-1]
+        mass = np.unique(np.concatenate([mass_lower, mass_upper]))
+
+        mu_lower = np.interp(mass, mass_lower, mu_lower)
+        mu_upper = np.interp(mass, mass_upper, mu_upper)
+
+        # Interpolation fraction in central H
+        f = (self.central_h1 - surrounding_profiles[0].center_h1) / (surrounding_profiles[1].center_h1 - surrounding_profiles[0].center_h1)
+
+        # Interpolate evolutionary state
+        mu = (1 - f) * mu_lower + f * mu_upper
+
+        return mu, mass
+
+    def effective_mu_vs_depth(self, M_acc: float, mu_acc: float, save_profile: bool = False):
+        ms = self.mass_curve
+
+        ms = -np.diff(self.mass_curve)
+        mus = (self.mu_curve[1:] + self.mu_curve[:-1]) / 2
+        mu_current = mu_acc
+        m_current = M_acc
+
+        mu_profile = [mu_acc]
+
+        crossing_index: int = 0
+        for i, (m, mu) in enumerate(zip(ms, mus)):
+            mu_last = mu_current
+            mu_current = (m + m_current) / ((m / mu) + (m_current / mu_current))
+            m_current = m + m_current
+            mu_profile.append(mu_current)
+            if mu < mu_current:
+                crossing_index = np.min([i + 3, len(mus)])
+        mu_profile = np.array(mu_profile, dtype=np.float64)
+
+        mu_start = np.array([mus[0], mus[0]], dtype=np.float64)
+        mu_profile_original = np.concatenate([mu_start, mus])
+        mu_profile = np.concatenate([[mu_acc], mu_profile])
+        mass = np.concatenate([[self.mass_curve[0] + M_acc], self.mass_curve])
+        result = AccretionResult(crossing_index, self.mass_curve[0] -mass[crossing_index], mu_profile[crossing_index])
+
+        if save_profile:
+            result.add_integration_result(mass, mu_profile, mu_profile_original)
+
+        return result
+\end{minted}
+
 \end{document}

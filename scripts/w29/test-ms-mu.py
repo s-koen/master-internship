@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.style import context
@@ -437,6 +438,21 @@ for profile in profiles_profiles[0]:
     print(profile.star_age, profile.center_h1)
 # %%
 
+class AccretionResult:
+    def __init__(self, index, mixing_mass, final_mu) -> None:
+        self.index = index
+        self.mixing_mass = mixing_mass
+        self.final_mu = final_mu
+        self.mass_profile: None | NDArray[np.float64] = None
+        self.mu_profile_mix:None | NDArray[np.float64] = None
+        self.mu_profile_original: None | NDArray[np.float64] = None
+
+    def add_integration_result(self, mass: NDArray[np.float64], mu_profile: NDArray[np.float64], mu_profile_original: NDArray[np.float64]) -> None:
+        self.mass_profile = mass
+        self.mu_profile_mix = mu_profile
+        self.mu_profile_original = mu_profile_original
+
+
 class AccretorProfile:
     def __init__(self, profile: mr.MesaData) -> None:
         self.center_h1 = float(profile.center_h1)
@@ -496,6 +512,7 @@ class Accretor:
         self.profiles = profiles.profiles
         self.masses = self.__determine_profile_masses()
         self.central_h1 = self.__get_center_h1()
+        self.mu_curve, self.mass_curve = self.__get_mu_mass_curve()
     
     def __get_center_h1(self) -> float:
         interp_ages: list[float] = []
@@ -539,17 +556,17 @@ class Accretor:
 
         return masses
 
-    def get_mu_mass_curve(self) -> tuple[np.ndarray, np.ndarray] :
+    def __get_mu_mass_curve(self) -> tuple[NDArray[np.float64], NDArray[np.float64]] :
 
         if len(self.masses) == 1:
-            mu, mass = self.get_mu_mass_curve_per_mass(self.masses[0])
+            mu, mass = self.__get_mu_mass_curve_per_mass(self.masses[0])
             mu = mu[::-1]
             # arg = np.argmin(mu)
             # mu[:arg] = mu[arg]
-            return mu[::-1] , mass[::-1]
+            return mu , mass[::-1]
 
-        mu_lower, mass_lower = self.get_mu_mass_curve_per_mass(self.masses[0])
-        mu_upper, mass_upper = self.get_mu_mass_curve_per_mass(self.masses[1])
+        mu_lower, mass_lower = self.__get_mu_mass_curve_per_mass(self.masses[0])
+        mu_upper, mass_upper = self.__get_mu_mass_curve_per_mass(self.masses[1])
 
         mass = np.unique(np.concatenate([mass_lower, mass_upper]))
         mu_lower = np.interp(mass, mass_lower, mu_lower)
@@ -565,8 +582,7 @@ class Accretor:
         # mu[:arg] = mu[arg]
         return mu, mass[::-1]
     
-
-    def get_mu_mass_curve_per_mass(self, mass) -> tuple[np.ndarray, np.ndarray] :
+    def __get_mu_mass_curve_per_mass(self, mass) -> tuple[NDArray[np.float64], NDArray[np.float64]] :
         surrounding_profiles: list[AccretorProfile] = []
 
         profiles = self.profiles[mass][::-1]
@@ -617,6 +633,38 @@ class Accretor:
 
         return mu, mass
 
+    def effective_mu_vs_depth(self, M_acc: float, mu_acc: float, save_profile: bool = False):
+        ms = self.mass_curve
+
+        ms = -np.diff(self.mass_curve)
+        mus = (self.mu_curve[1:] + self.mu_curve[:-1]) / 2
+        mu_current = mu_acc
+        m_current = M_acc
+
+        mu_profile = [mu_acc]
+
+        crossing_index: int = 0
+        for i, (m, mu) in enumerate(zip(ms, mus)):
+            mu_last = mu_current
+            mu_current = (m + m_current) / ((m / mu) + (m_current / mu_current))
+            m_current = m + m_current
+            mu_profile.append(mu_current)
+            if mu < mu_current:
+                crossing_index = np.min([i + 3, len(mus)])
+        mu_profile = np.array(mu_profile, dtype=np.float64)
+
+        mu_start = np.array([mus[0], mus[0]], dtype=np.float64)
+        mu_profile_original = np.concatenate([mu_start, mus])
+        mu_profile = np.concatenate([[mu_acc], mu_profile])
+        mass = np.concatenate([[self.mass_curve[0] + M_acc], self.mass_curve])
+        result = AccretionResult(crossing_index, self.mass_curve[0] -mass[crossing_index], mu_profile[crossing_index])
+
+        if save_profile:
+            result.add_integration_result(mass, mu_profile, mu_profile_original)
+
+        return result
+
+
 
 
 # %%
@@ -641,7 +689,8 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"Main Sequence age log$_{10}$(yr)")
 
-plt.text(0.95,0.95,r"$M=1.95\;M_\odot$", transform = axs.transAxes, ha="right",)
+plt.text(0.95,0.95,r"$M=1.8\;M_\odot$", transform = axs.transAxes, ha="right",
+         va="top")
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$m$ ($M_\\odot$)")
@@ -671,6 +720,8 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"Main Sequence age log$_{10}$(yr)")
 
+plt.text(0.95,0.95,r"$M=1.8\;M_\odot$", transform = axs.transAxes, ha="right",
+         va="top")
 
 plt.ylim(0.597, 0.65)
 
@@ -703,6 +754,9 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"$M$ ($M_\odot$)")
 
+plt.text(0.95,0.95,r"$t=600\;\textrm{Myr}$", transform = axs.transAxes, ha="right",
+         va="top")
+
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$m$ ($M_\\odot$)")
 plt.ylabel("$\\mu$")
@@ -710,5 +764,137 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w29-interpolated-mass.pgf", format="pg
 plt.show()
 plt.close()
 
+# %%
+
+norm = plt.Normalize(0.8, 4.4)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+ms = np.linspace(0.8,4.4,100)
+ages = np.logspace(6.5,10,100)
+
+res = np.zeros((len(ms), len(ages)))
+
+for i, m in enumerate(ms):
+    print(i)
+    for j, a in enumerate(ages):
+        ac = Accretor(profiles = profiles, age = a, mass = m)
+        mix = ac.effective_mu_vs_depth(0.5,0.64).mixing_mass
+        res[i,j] = mix
+# %%
+
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+
+plt.pcolormesh(ms, np.log10(ages), res.T, cmap="viridis", rasterized=True)
+
+plt.colorbar(label="$M_\\textrm{mix}$ ($M_\\odot$)")
+
+plt.xlabel("$M$ ($M_\\odot$)")
+plt.ylabel("Main Sequence age log$_{10}$(yr)")
+plt.title("$M_\\textrm{acc} = 0.5\\;M_\\odot,\\;\\mu_\\textrm{acc} = 0.64$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w29-m_mix-grid.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+
+# %%
+
+ress = []
+norm = plt.Normalize(0.8, 4.4)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+ms = np.linspace(0.8,4.4,50)
+ages = np.logspace(6.5,10,50)
+
+res = np.zeros((len(ms), len(ages)))
+
+m_mixs = [0.05, 0.1,0.25,0.5]
+mu_mixs = [0.61, 0.65, 0.70]
+
+for m_mix in m_mixs:
+    for mu_mix in mu_mixs:
+        for i, m in enumerate(ms):
+            print(i)
+            for j, a in enumerate(ages):
+                ac = Accretor(profiles = profiles, age = a, mass = m)
+                mix = ac.effective_mu_vs_depth(m_mix,mu_mix).mixing_mass
+                res[i,j] = mix
+        ress.append(res)
+# %%
+
+fig, axs = plt.subplots(4, 3, sharex=True, sharey=True, figsize=set_size(full, height=1), constrained_layout=True)
+
+axs = axs.flatten()
+
+vmin= 1e99
+vmax = -1e99
+
+for i, res in enumerate(ress):
+    x = np.log10(m_mixs[i//3] / res)
+    if np.min(x) < vmin:
+        vmin = np.min(x)
+    if np.max(x) > vmax:
+        vmax = np.max(x)
+
+for i, (ax, res) in enumerate(zip(axs, ress)):
+    c = ax.pcolormesh(ms, np.log10(ages), np.log10(m_mixs[i//3] / res.T) , cmap="viridis", rasterized=True, vmin=vmin,
+                   vmax=vmax)
+    ax.set_title(f"$M_\\textrm{{acc}} = {m_mixs[i//3]}\\;M_\\odot,\\;\\mu_\\textrm{{acc}} = {mu_mixs[i%3]}$")
+
+plt.colorbar(c, ax=axs, label="$M_\\textrm{acc} / M_\\textrm{mix}$", aspect=50)
+fig.supxlabel("$M$ ($M_\\odot$)", fontsize=10)
+fig.supylabel("Main Sequence age log$_{10}$(yr)", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w29-effects-of-mu-and-m_acc.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+ms = np.linspace(0.8,4.4,200)
+ages = np.logspace(6.5,10,200)
+
+res = np.zeros((len(ms), len(ages)))
+
+for i, m in enumerate(ms):
+    print(i)
+    for j, a in enumerate(ages):
+        ac = Accretor(profiles = profiles, age = a, mass = m)
+        res[i,j] = ac.central_h1
+
+fig, axs = plt.subplots(2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True)
+
+c = axs[0].pcolormesh(ms, np.log10(ages), res.T , cmap="viridis", rasterized=True)
+
+plt.colorbar(c, ax=axs[0], label="$X(\\textrm{H})_\\textrm{center}$", aspect=20)
+
+axs[0].set_ylim(axs[0].get_ylim())
+axs[0].plot(ms, np.log10(10**9.75*ms**-2.8), c="k", linewidth=1)
+
+ms = np.linspace(0.8,4.4,200)
+ages = np.logspace(6.5,10,200)
+
+res = np.zeros((len(ms), len(ages)))
+
+for i, m in enumerate(ms):
+    print(i)
+    for j, a in enumerate(ages):
+        ac = Accretor(profiles = profiles, age = a, mass = m)
+        res[i,j] = ac.central_h1
+
+res = np.max(res) - res + 1e-20
+
+c = axs[1].pcolormesh(ms, np.log10(ages), np.log10(res.T) , cmap="viridis", rasterized=True, vmin=-4)
+axs[1].set_ylim(axs[1].get_ylim())
+axs[1].plot(ms, np.log10(10**9.75*ms**-2.8), c="k", linewidth=1)
+
+plt.colorbar(c, ax=axs[1], label="$\\textrm{log}_{10}[X(H)_\\textrm{center,i} - X(H)_\\textrm{center}]$", aspect=20)
+
+fig.supxlabel("$M$ ($M_\\odot$)", fontsize=10)
+axs[0].set_ylabel("Main Sequence age log$_{10}$(yr)", fontsize=10)
+axs[1].set_ylabel("Main Sequence age log$_{10}$(yr)", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w29-central-h1.pgf", format="pgf")
+plt.show()
+plt.close()
 # %%
 
