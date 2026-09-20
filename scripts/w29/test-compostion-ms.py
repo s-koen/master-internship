@@ -58,16 +58,20 @@ fig, axs = plt.subplots(
 
 for i, profile in enumerate(profiles):
     alpha = i / len(profiles)
-    alpha = alpha * 0.75 + 0.25
-    plt.plot(profile.mass, profile.h1, c="C1", alpha=alpha)
-    plt.plot(profile.mass, profile.he4, c="C2", alpha=alpha)
-    plt.plot(profile.mass, profile.z_mass_fraction_metals, c="C3", alpha=alpha)
+    alpha = alpha * 0.85 + 0.15
+    (l1,) = plt.plot(profile.mass, profile.h1, c="C1", alpha=alpha, label="X")
+    (l2,) = plt.plot(profile.mass, profile.he4, c="C2", alpha=alpha, label="Y")
+    (l3,) = plt.plot(
+        profile.mass, profile.z_mass_fraction_metals, c="C3", alpha=alpha, label="Z"
+    )
 
+fig.legend(loc="outside upper center", ncols=3, handles=[l1, l2, l3])
+plt.ylim(1e-3)
 plt.yscale("log")
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$m$")
 plt.ylabel("Mass fraction")
-plt.savefig("/home/koen/LaTeX-setup/plots/.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w29-change-in-Z-envelope.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%

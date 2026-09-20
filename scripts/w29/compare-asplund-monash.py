@@ -23,24 +23,28 @@ from scripts.general_utils.m_dup import (
     MonashModel,
 )
 from scripts.general_utils.asplund import Element, Asplund
+import matplotlib.transforms as mtransforms
 
 plt.cplot = cplot
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
 
 with open(f"data/env_pd_df.pkl", "rb") as f:
     env = pickle.load(f)
 
-asplund = Asplund(z=0.014)
+asplund = Asplund(z=0.01337)
 
-zs = []
+z = []
 massfracs = []
 els = []
 for Z, element in asplund.elements.items():
-    zs.append(Z)
+    z.append(Z)
     els.append(element.name)
     massfracs.append(element.massfrac)
 
-plt.plot(zs, massfracs)
+plt.plot(z, massfracs, label="Asplund (2009) $Z=0.014$", linewidth=1)
 
 
 labels = els
@@ -105,7 +109,7 @@ elements = None
 dat = interesting[interesting["Z"] == 0.014]
 
 mass = np.unique(dat["M_init"].astype(np.float64))
-ind = np.argmin(np.abs(mass - 2.5))
+ind = np.argmin(np.abs(mass - 1.5))
 data = dat[dat["M_init"].astype(np.float64) == mass[ind]]
 
 # preserve the order from the original file
@@ -131,8 +135,18 @@ print(z)
 table = np.array(table)
 
 # plot each metallicity
-plt.plot(z, el_init)
+plt.plot(z, el_init, label="Karakas (2016) $M=1.5$, $Z=0.014$", linewidth=1)
 
+
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Element")
+plt.ylabel("$X$")
+fig.legend(loc="outside upper center", ncols=2)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w29-compare-asplund-karakas.pgf", format="pgf"
+)
 plt.show()
 plt.close()
 # %%

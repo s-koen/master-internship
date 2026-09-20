@@ -366,7 +366,7 @@ plt.annotate(
     (1.25, 0.5975),
     (1.55, 0.597),
     arrowprops=dict(arrowstyle="-|>", linewidth=0.75, color="k"),
-    fontsize=8
+    fontsize=8,
 )
 plt.ylim(0.595, 0.645)
 plt.xlim(plt.gca().get_xlim()[0], mass[0])
@@ -429,8 +429,6 @@ plt.close()
 
 # %%
 
-mixing mass = np.linspace(0,1,100)
-
 
 # %%
 
@@ -438,16 +436,22 @@ for profile in profiles_profiles[0]:
     print(profile.star_age, profile.center_h1)
 # %%
 
+
 class AccretionResult:
     def __init__(self, index, mixing_mass, final_mu) -> None:
         self.index = index
         self.mixing_mass = mixing_mass
         self.final_mu = final_mu
         self.mass_profile: None | NDArray[np.float64] = None
-        self.mu_profile_mix:None | NDArray[np.float64] = None
+        self.mu_profile_mix: None | NDArray[np.float64] = None
         self.mu_profile_original: None | NDArray[np.float64] = None
 
-    def add_integration_result(self, mass: NDArray[np.float64], mu_profile: NDArray[np.float64], mu_profile_original: NDArray[np.float64]) -> None:
+    def add_integration_result(
+        self,
+        mass: NDArray[np.float64],
+        mu_profile: NDArray[np.float64],
+        mu_profile_original: NDArray[np.float64],
+    ) -> None:
         self.mass_profile = mass
         self.mu_profile_mix = mu_profile
         self.mu_profile_original = mu_profile_original
@@ -458,8 +462,8 @@ class AccretorProfile:
         self.center_h1 = float(profile.center_h1)
         self.age = float(profile.star_age)
         self.profile = profile
-        self.mass = np.array(profile.mass,dtype=np.float64)
-        self.mu = np.array(profile.mu,dtype=np.float64)
+        self.mass = np.array(profile.mass, dtype=np.float64)
+        self.mu = np.array(profile.mu, dtype=np.float64)
         arg = np.argmin(self.mu)
         self.mu[:arg] = self.mu[arg]
 
@@ -468,18 +472,18 @@ class AccretorProfiles:
     def __init__(self) -> None:
         self.profiles = self.__get_profiles()
 
-    def __get_profiles(self, fresh = False) -> dict[float, list[AccretorProfile]]:
+    def __get_profiles(self, fresh=False) -> dict[float, list[AccretorProfile]]:
         if fresh:
             print("In Accretor.__get_profiles:\n\tloading profiles")
-            profiles_dict: dict[float, list[AccretorProfile]] = {} 
+            profiles_dict: dict[float, list[AccretorProfile]] = {}
             for i, _ in enumerate(range(37)):
                 profiles: list[AccretorProfile] = []
-                mass = np.round(0.8+0.1*i,1)
+                mass = np.round(0.8 + 0.1 * i, 1)
                 print(f"\tloading mass {mass}")
                 for j in range(1, 41):
                     profile = mr.MesaData(
-                            f"/home/koen/master-internship/mesa-models/single-ms-stars/M{mass}/LOGS/MS/profile{j}.data"
-                        )
+                        f"/home/koen/master-internship/mesa-models/single-ms-stars/M{mass}/LOGS/MS/profile{j}.data"
+                    )
                     profiles.append(AccretorProfile(profile))
                 profiles_dict[mass] = profiles
 
@@ -491,29 +495,28 @@ class AccretorProfiles:
 
             return profiles_dict
 
-
         else:
             try:
                 with open(
-                f"/home/koen/master-internship/data/accretor-cache/profiles.pkl",
-                "rb",
-            ) as f:
+                    f"/home/koen/master-internship/data/accretor-cache/profiles.pkl",
+                    "rb",
+                ) as f:
                     return pickle.load(f)
 
             except FileNotFoundError:
-                return self.__get_profiles(fresh = True)
+                return self.__get_profiles(fresh=True)
 
 
 class Accretor:
-    def __init__(self, profiles:AccretorProfiles,age: float, mass: float) -> None:
+    def __init__(self, profiles: AccretorProfiles, age: float, mass: float) -> None:
         self.mass = mass
-        self.age  = age
+        self.age = age
 
         self.profiles = profiles.profiles
         self.masses = self.__determine_profile_masses()
         self.central_h1 = self.__get_center_h1()
         self.mu_curve, self.mass_curve = self.__get_mu_mass_curve()
-    
+
     def __get_center_h1(self) -> float:
         interp_ages: list[float] = []
         for mass in self.masses:
@@ -556,14 +559,14 @@ class Accretor:
 
         return masses
 
-    def __get_mu_mass_curve(self) -> tuple[NDArray[np.float64], NDArray[np.float64]] :
+    def __get_mu_mass_curve(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
         if len(self.masses) == 1:
             mu, mass = self.__get_mu_mass_curve_per_mass(self.masses[0])
             mu = mu[::-1]
             # arg = np.argmin(mu)
             # mu[:arg] = mu[arg]
-            return mu , mass[::-1]
+            return mu, mass[::-1]
 
         mu_lower, mass_lower = self.__get_mu_mass_curve_per_mass(self.masses[0])
         mu_upper, mass_upper = self.__get_mu_mass_curve_per_mass(self.masses[1])
@@ -581,8 +584,10 @@ class Accretor:
         # arg = np.argmin(mu)
         # mu[:arg] = mu[arg]
         return mu, mass[::-1]
-    
-    def __get_mu_mass_curve_per_mass(self, mass) -> tuple[NDArray[np.float64], NDArray[np.float64]] :
+
+    def __get_mu_mass_curve_per_mass(
+        self, mass
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         surrounding_profiles: list[AccretorProfile] = []
 
         profiles = self.profiles[mass][::-1]
@@ -615,7 +620,6 @@ class Accretor:
             profile = surrounding_profiles[0]
             return np.array(profile.mu[::-1]), np.array(profile.mass[::-1])
 
-
         mass_lower = np.array(surrounding_profiles[0].mass)[::-1]
         mu_lower = np.array(surrounding_profiles[0].mu)[::-1]
         mass_upper = np.array(surrounding_profiles[1].mass)[::-1]
@@ -626,14 +630,18 @@ class Accretor:
         mu_upper = np.interp(mass, mass_upper, mu_upper)
 
         # Interpolation fraction in central H
-        f = (self.central_h1 - surrounding_profiles[0].center_h1) / (surrounding_profiles[1].center_h1 - surrounding_profiles[0].center_h1)
+        f = (self.central_h1 - surrounding_profiles[0].center_h1) / (
+            surrounding_profiles[1].center_h1 - surrounding_profiles[0].center_h1
+        )
 
         # Interpolate evolutionary state
         mu = (1 - f) * mu_lower + f * mu_upper
 
         return mu, mass
 
-    def effective_mu_vs_depth(self, M_acc: float, mu_acc: float, save_profile: bool = False):
+    def effective_mu_vs_depth(
+        self, M_acc: float, mu_acc: float, save_profile: bool = False
+    ):
         ms = self.mass_curve
 
         ms = -np.diff(self.mass_curve)
@@ -657,7 +665,11 @@ class Accretor:
         mu_profile_original = np.concatenate([mu_start, mus])
         mu_profile = np.concatenate([[mu_acc], mu_profile])
         mass = np.concatenate([[self.mass_curve[0] + M_acc], self.mass_curve])
-        result = AccretionResult(crossing_index, self.mass_curve[0] -mass[crossing_index], mu_profile[crossing_index])
+        result = AccretionResult(
+            crossing_index,
+            self.mass_curve[0] - mass[crossing_index],
+            mu_profile[crossing_index],
+        )
 
         if save_profile:
             result.add_integration_result(mass, mu_profile, mu_profile_original)
@@ -665,23 +677,23 @@ class Accretor:
         return result
 
 
-
-
 # %%
 
 profiles = AccretorProfiles()
 # %%
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
 norm = plt.Normalize(np.log10(5e7), np.log10(1.1e9))
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
 
-for i, m in enumerate(np.logspace(np.log10(1e6),np.log10(1.1e9),5000)):
-    ac = Accretor(profiles = profiles, age = m, mass = 1.8)
+for i, m in enumerate(np.logspace(np.log10(1e6), np.log10(1.1e9), 5000)):
+    ac = Accretor(profiles=profiles, age=m, mass=1.8)
     mu, mass = ac.get_mu_mass_curve()
-    plt.plot(mass, mu, c=cmap(norm(np.log10(m))),linewidth=1.5, rasterized=True)
+    plt.plot(mass, mu, c=cmap(norm(np.log10(m))), linewidth=1.5, rasterized=True)
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
@@ -689,30 +701,32 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"Main Sequence age log$_{10}$(yr)")
 
-plt.text(0.95,0.95,r"$M=1.8\;M_\odot$", transform = axs.transAxes, ha="right",
-         va="top")
+plt.text(0.95, 0.95, r"$M=1.8\;M_\odot$", transform=axs.transAxes, ha="right", va="top")
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$m$ ($M_\\odot$)")
 plt.ylabel("$\\mu$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w29-interpolated-age.pgf", format="pgf",
-            dpi=600)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w29-interpolated-age.pgf", format="pgf", dpi=600
+)
 plt.show()
 plt.close()
 
 # %%
 
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
 norm = plt.Normalize(np.log10(5e7), np.log10(1.1e9))
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
 
-for i, m in enumerate(np.logspace(np.log10(1e6),np.log10(1.1e9),5000)):
-    ac = Accretor(profiles = profiles, age = m, mass = 1.8)
+for i, m in enumerate(np.logspace(np.log10(1e6), np.log10(1.1e9), 5000)):
+    ac = Accretor(profiles=profiles, age=m, mass=1.8)
     mu, mass = ac.get_mu_mass_curve()
-    plt.plot(mass, mu, c=cmap(norm(np.log10(m))),linewidth=1.5, rasterized=True)
+    plt.plot(mass, mu, c=cmap(norm(np.log10(m))), linewidth=1.5, rasterized=True)
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
@@ -720,33 +734,35 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"Main Sequence age log$_{10}$(yr)")
 
-plt.text(0.95,0.95,r"$M=1.8\;M_\odot$", transform = axs.transAxes, ha="right",
-         va="top")
+plt.text(0.95, 0.95, r"$M=1.8\;M_\odot$", transform=axs.transAxes, ha="right", va="top")
 
 plt.ylim(0.597, 0.65)
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$m$ ($M_\\odot$)")
 plt.ylabel("$\\mu$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w29-interpolated-age-zoom.pgf", format="pgf",
-            dpi=600)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w29-interpolated-age-zoom.pgf", format="pgf", dpi=600
+)
 plt.show()
 plt.close()
 
 
 # %%
 
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
 norm = plt.Normalize(0.8, 4.4)
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
 
-for i, m in enumerate(np.linspace(0.8,4.4,2000)):
-    ac = Accretor(profiles = profiles, age = 6e8, mass = m)
+for i, m in enumerate(np.linspace(0.8, 4.4, 2000)):
+    ac = Accretor(profiles=profiles, age=6e8, mass=m)
     mu, mass = ac.get_mu_mass_curve()
-    plt.plot(mass, mu, c=cmap(norm(m)),linewidth=3, rasterized=True)
+    plt.plot(mass, mu, c=cmap(norm(m)), linewidth=3, rasterized=True)
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
@@ -754,13 +770,16 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"$M$ ($M_\odot$)")
 
-plt.text(0.95,0.95,r"$t=600\;\textrm{Myr}$", transform = axs.transAxes, ha="right",
-         va="top")
+plt.text(
+    0.95, 0.95, r"$t=600\;\textrm{Myr}$", transform=axs.transAxes, ha="right", va="top"
+)
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$m$ ($M_\\odot$)")
 plt.ylabel("$\\mu$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w29-interpolated-mass.pgf", format="pgf", dpi=600)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w29-interpolated-mass.pgf", format="pgf", dpi=600
+)
 plt.show()
 plt.close()
 
@@ -770,20 +789,22 @@ norm = plt.Normalize(0.8, 4.4)
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
-ms = np.linspace(0.8,4.4,100)
-ages = np.logspace(6.5,10,100)
+ms = np.linspace(0.8, 4.4, 100)
+ages = np.logspace(6.5, 10, 100)
 
 res = np.zeros((len(ms), len(ages)))
 
 for i, m in enumerate(ms):
     print(i)
     for j, a in enumerate(ages):
-        ac = Accretor(profiles = profiles, age = a, mass = m)
-        mix = ac.effective_mu_vs_depth(0.5,0.64).mixing_mass
-        res[i,j] = mix
+        ac = Accretor(profiles=profiles, age=a, mass=m)
+        mix = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
+        res[i, j] = mix
 # %%
 
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
 plt.pcolormesh(ms, np.log10(ages), res.T, cmap="viridis", rasterized=True)
 
@@ -804,12 +825,12 @@ norm = plt.Normalize(0.8, 4.4)
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
-ms = np.linspace(0.8,4.4,50)
-ages = np.logspace(6.5,10,50)
+ms = np.linspace(0.8, 4.4, 50)
+ages = np.logspace(6.5, 10, 50)
 
 res = np.zeros((len(ms), len(ages)))
 
-m_mixs = [0.05, 0.1,0.25,0.5]
+m_mixs = [0.05, 0.1, 0.25, 0.5]
 mu_mixs = [0.61, 0.65, 0.70]
 
 for m_mix in m_mixs:
@@ -817,78 +838,105 @@ for m_mix in m_mixs:
         for i, m in enumerate(ms):
             print(i)
             for j, a in enumerate(ages):
-                ac = Accretor(profiles = profiles, age = a, mass = m)
-                mix = ac.effective_mu_vs_depth(m_mix,mu_mix).mixing_mass
-                res[i,j] = mix
+                ac = Accretor(profiles=profiles, age=a, mass=m)
+                mix = ac.effective_mu_vs_depth(m_mix, mu_mix).mixing_mass
+                res[i, j] = mix
         ress.append(res)
 # %%
 
-fig, axs = plt.subplots(4, 3, sharex=True, sharey=True, figsize=set_size(full, height=1), constrained_layout=True)
+fig, axs = plt.subplots(
+    4,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
 
 axs = axs.flatten()
 
-vmin= 1e99
+vmin = 1e99
 vmax = -1e99
 
 for i, res in enumerate(ress):
-    x = np.log10(m_mixs[i//3] / res)
+    x = np.log10(m_mixs[i // 3] / res)
     if np.min(x) < vmin:
         vmin = np.min(x)
     if np.max(x) > vmax:
         vmax = np.max(x)
 
 for i, (ax, res) in enumerate(zip(axs, ress)):
-    c = ax.pcolormesh(ms, np.log10(ages), np.log10(m_mixs[i//3] / res.T) , cmap="viridis", rasterized=True, vmin=vmin,
-                   vmax=vmax)
-    ax.set_title(f"$M_\\textrm{{acc}} = {m_mixs[i//3]}\\;M_\\odot,\\;\\mu_\\textrm{{acc}} = {mu_mixs[i%3]}$")
+    c = ax.pcolormesh(
+        ms,
+        np.log10(ages),
+        np.log10(m_mixs[i // 3] / res.T),
+        cmap="viridis",
+        rasterized=True,
+        vmin=vmin,
+        vmax=vmax,
+    )
+    ax.set_title(
+        f"$M_\\textrm{{acc}} = {m_mixs[i//3]}\\;M_\\odot,\\;\\mu_\\textrm{{acc}} = {mu_mixs[i%3]}$"
+    )
 
 plt.colorbar(c, ax=axs, label="$M_\\textrm{acc} / M_\\textrm{mix}$", aspect=50)
 fig.supxlabel("$M$ ($M_\\odot$)", fontsize=10)
 fig.supylabel("Main Sequence age log$_{10}$(yr)", fontsize=10)
-plt.savefig("/home/koen/LaTeX-setup/plots/w29-effects-of-mu-and-m_acc.pgf", format="pgf")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w29-effects-of-mu-and-m_acc.pgf", format="pgf"
+)
 plt.show()
 plt.close()
 
 # %%
 
-ms = np.linspace(0.8,4.4,200)
-ages = np.logspace(6.5,10,200)
+ms = np.linspace(0.8, 4.4, 200)
+ages = np.logspace(6.5, 10, 200)
 
 res = np.zeros((len(ms), len(ages)))
 
 for i, m in enumerate(ms):
     print(i)
     for j, a in enumerate(ages):
-        ac = Accretor(profiles = profiles, age = a, mass = m)
-        res[i,j] = ac.central_h1
+        ac = Accretor(profiles=profiles, age=a, mass=m)
+        res[i, j] = ac.central_h1
 
-fig, axs = plt.subplots(2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True)
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
 
-c = axs[0].pcolormesh(ms, np.log10(ages), res.T , cmap="viridis", rasterized=True)
+c = axs[0].pcolormesh(ms, np.log10(ages), res.T, cmap="viridis", rasterized=True)
 
 plt.colorbar(c, ax=axs[0], label="$X(\\textrm{H})_\\textrm{center}$", aspect=20)
 
 axs[0].set_ylim(axs[0].get_ylim())
-axs[0].plot(ms, np.log10(10**9.75*ms**-2.8), c="k", linewidth=1)
+axs[0].plot(ms, np.log10(10**9.75 * ms**-2.8), c="k", linewidth=1)
 
-ms = np.linspace(0.8,4.4,200)
-ages = np.logspace(6.5,10,200)
+ms = np.linspace(0.8, 4.4, 200)
+ages = np.logspace(6.5, 10, 200)
 
 res = np.zeros((len(ms), len(ages)))
 
 for i, m in enumerate(ms):
     print(i)
     for j, a in enumerate(ages):
-        ac = Accretor(profiles = profiles, age = a, mass = m)
-        res[i,j] = ac.central_h1
+        ac = Accretor(profiles=profiles, age=a, mass=m)
+        res[i, j] = ac.central_h1
 
 res = np.max(res) - res + 1e-20
 
-c = axs[1].pcolormesh(ms, np.log10(ages), np.log10(res.T) , cmap="viridis", rasterized=True, vmin=-4)
+c = axs[1].pcolormesh(
+    ms, np.log10(ages), np.log10(res.T), cmap="viridis", rasterized=True, vmin=-4
+)
 axs[1].set_ylim(axs[1].get_ylim())
-axs[1].plot(ms, np.log10(10**9.75*ms**-2.8), c="k", linewidth=1)
+axs[1].plot(ms, np.log10(10**9.75 * ms**-2.8), c="k", linewidth=1)
 
-plt.colorbar(c, ax=axs[1], label="$\\textrm{log}_{10}[X(H)_\\textrm{center,i} - X(H)_\\textrm{center}]$", aspect=20)
+plt.colorbar(
+    c,
+    ax=axs[1],
+    label="$\\textrm{log}_{10}[X(H)_\\textrm{center,i} - X(H)_\\textrm{center}]$",
+    aspect=20,
+)
 
 fig.supxlabel("$M$ ($M_\\odot$)", fontsize=10)
 axs[0].set_ylabel("Main Sequence age log$_{10}$(yr)", fontsize=10)
@@ -897,4 +945,3 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w29-central-h1.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%
-

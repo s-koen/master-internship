@@ -384,7 +384,55 @@ To compute the abundances after accretion, we need to know the abundances of the
 main sequence star. Lastly, we need to know the abundances of the mixing material.
 
 However, as is clear from the \(\mu \)-profiles, the abundances are not constant in the envelope of the main sequence star.
+Let me investigate if this is only Helium leaking out from the core. In that case, I am not too worried about the abundances of
+heavier elements changing much inside the envelope and with time.
 
+\begin{figure}[ht]
+    \marginfignote{0}{Compared to the changes in the hydrogen and helium mass fraction,
+    the metal mass fraction hardly changes with time and internal mass.}
+    \marginfignote{8}{Although this is not a strict proof that the abundances of the
+    individual elements will not change much either, I think it is good evidence.}
+    \marginfignote{16}{I therefore feel comfortable to just use the surface abundances
+    from \citet{asplund2009}, which we use in \emph{MESA} as well.}
+    \centering
+    \incplot{w29-change-in-Z-envelope}
+\end{figure}
+
+I used the elemental abundances table from \citet{asplund2009} for the elemental abundances
+at the surface of the sun. I then scale the abundances to a different metallicity.
+
+For this, I use the convention that \(Y = 0.24 + 2Z\) and \(X = 1 - Y - Z\), which my \emph{MESA}
+models all use as well.
+This means we \emph{know} the mass fraction of helium in our stars.
+We also \emph{know} the mass fraction of hydrogen in our stars.
+We also know \(Z\) in our stars, and we can compute \(Z\) in the
+\citet{asplund2009} abundances. To obtain the scaled elemental
+abundances of the other elements, I simply scale these by
+the metallicity.
+
+Below, I plot the original mass fractions and the scaled mass fractions.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-ms-asplund-2009-scaled}
+\end{figure}
+
+Looks like it works to me.
+
+Now, let me compare with the initial envelope abundances of the Monash models.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-compare-asplund-karakas}
+\end{figure}
+
+The two seem to agree very well, which makes sense, as \citet{karakas2016} explicitly mention that
+they use \citet{asplund2009} abundances.
+
+This also means that\sidenote{At least under the assumptions from \citet{karakas2016}}, the envelope
+abundances really do not change between the MS and the TPAGB.
+
+I think the easiest way to proceed is to simply reuse the initial envelope abundances when computing dilution due to mixing.
 
 \bibliography{master.bib}
 \nextpage

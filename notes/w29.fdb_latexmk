@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w29"] 1789934240.88047 "w29.aux" "w29.bbl" "w29" 1789935114.04439 0
+["bibtex w29"] 1789947407.15299 "w29.aux" "w29.bbl" "w29" 1789948005.54067 0
   "./master.bib" 1789832265.93051 50798 b45f6b1de5a5d310bce14aa6e5f211d2 ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w29.aux" 1789935113.73931 3474 aafdefaf4f2ffb590ea549caf51a8ac9 "pdflatex"
+  "w29.aux" 1789948005.20818 3944 5e32f60623efe98db838b4768021bcb3 "pdflatex"
   (generated)
   "w29.bbl"
   "w29.blg"
   (rewritten before read)
-["pdflatex"] 1789935108.21925 "w29.tex" "w29.pdf" "w29" 1789935114.04454 0
+["pdflatex"] 1789947999.48253 "w29.tex" "w29.pdf" "w29" 1789948005.54083 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -23,6 +23,8 @@
   "/home/koen/LaTeX-setup//plots/w29-central-h1-img2.png" 1789926590.54547 362 856f7413288ff84386ce0eb043086a3d ""
   "/home/koen/LaTeX-setup//plots/w29-central-h1-img3.png" 1789926590.55189 365 35d109e8e9f259dd1ab5b58ccb37a65a ""
   "/home/koen/LaTeX-setup//plots/w29-central-h1.pgf" 1789926590.55746 59024 2d3f79e0ceacc9c5470c7f6f6ff572f1 ""
+  "/home/koen/LaTeX-setup//plots/w29-change-in-Z-envelope.pgf" 1789943035.09388 255791 3501a845af91f55f1c213664cfb7dbe9 ""
+  "/home/koen/LaTeX-setup//plots/w29-compare-asplund-karakas.pgf" 1789947082.71714 96510 49d0485f7350542288552cb74cfeb808 ""
   "/home/koen/LaTeX-setup//plots/w29-effects-of-mu-and-m_acc-img0.png" 1789914868.12954 1251 64c64b8d81e27b53a58693c85a218e06 ""
   "/home/koen/LaTeX-setup//plots/w29-effects-of-mu-and-m_acc-img1.png" 1789914868.14054 1259 5a494131b4ba8e8a52c6476ab13a86cd ""
   "/home/koen/LaTeX-setup//plots/w29-effects-of-mu-and-m_acc-img10.png" 1789914868.23354 1420 ab42c06396dd3d58e62b5ee4f3b93bcf ""
@@ -49,6 +51,7 @@
   "/home/koen/LaTeX-setup//plots/w29-m_mix-grid-img0.png" 1789912484.62984 16193 f0483e539d48b331a033ebd18058720d ""
   "/home/koen/LaTeX-setup//plots/w29-m_mix-grid-img1.png" 1789912484.64984 1907 cc20a6c74247ffbbc9fbe0507f6c30f4 ""
   "/home/koen/LaTeX-setup//plots/w29-m_mix-grid.pgf" 1789912484.65584 29826 dd6dce0690dec7af2f5a7b42e1c7bff7 ""
+  "/home/koen/LaTeX-setup//plots/w29-ms-asplund-2009-scaled.pgf" 1789941359.09762 98530 ee4d3c2257ab221002daa52786b78c5e ""
   "/home/koen/LaTeX-setup//plots/w29-mu-core-1-img0.png" 1789765850.365 401 aef96d389e475886c76509aeed244161 ""
   "/home/koen/LaTeX-setup//plots/w29-mu-core-1.pgf" 1789765850.37048 142601 2fd5f299328143102ac8014cc7a79446 ""
   "/home/koen/LaTeX-setup//plots/w29-mu-core-2-img0.png" 1789745229.43428 28538 ca8e9addbeab9de62bc946db87d13a5e ""
@@ -479,10 +482,10 @@
   "_minted/82BD5CCA0BC628DD861D80419F541672.highlight.minted" 1789927870.72694 18123 85ecba1be22016dd54c29d3b6854a5a5 ""
   "_minted/_EF843F083F1CEE1283A79068FA912FDA.index.minted" 1789927963.7557 432 b1b40f8b4d3d1b44263ac626680d009a ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w29.aux" 1789935113.73931 3474 aafdefaf4f2ffb590ea549caf51a8ac9 "pdflatex"
-  "w29.bbl" 1789934240.92948 809 2fac82704a43695b1ba9c3ef6bdd76d5 "bibtex w29"
-  "w29.out" 1789935113.74031 1681 99db6dda0efe77dec7d31f949dcc10cb "pdflatex"
-  "w29.tex" 1789935106.96623 25866 736fb3bd1899a92a1bc00a7667aa6887 ""
+  "w29.aux" 1789948005.20818 3944 5e32f60623efe98db838b4768021bcb3 "pdflatex"
+  "w29.bbl" 1789947407.19836 1604 325a5ae06b8235c6e021323bbf9c0fee "bibtex w29"
+  "w29.out" 1789948005.21057 1681 99db6dda0efe77dec7d31f949dcc10cb "pdflatex"
+  "w29.tex" 1789947998.55715 28056 70895d1820bc900a8c507c8a6e00b4aa ""
   (generated)
   "w29.aux"
   "w29.log"
