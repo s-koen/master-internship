@@ -1,3 +1,4 @@
+import time
 import sys
 import numpy as np
 import pickle
@@ -9,7 +10,7 @@ sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 from scripts.general_utils.cache import get_star
 
 
-def compute_m_DUP(model, combined=None):
+def compute_m_DUP(model, combined=None, sampling=1):
     """
     Compute the dredged-up mass and the timestep at which it is injected.
 
@@ -23,12 +24,12 @@ def compute_m_DUP(model, combined=None):
         dup[tp]["time"]  = corresponding model time
     """
 
-    lambda_DUP = np.asarray(model.lambda_DUP)
+    lambda_DUP = np.asarray(model.lambda_DUP)[::sampling]
     try:
-        he_core_mass = np.asarray(model.he_core_mass)
+        he_core_mass = np.asarray(model.he_core_mass)[::sampling]
     except:
-        he_core_mass = np.asarray(model.m_core)
-    TP_count = np.asarray(model.TP_count)
+        he_core_mass = np.asarray(model.m_core)[::sampling]
+    TP_count = np.asarray(model.TP_count)[::sampling]
 
     dup = {}
 
@@ -48,7 +49,7 @@ def compute_m_DUP(model, combined=None):
                 dup[tp] = {
                     "mass": combined[model.params["TP"]]["mass"],
                     "index": dup_index,
-                    "time": model.age[dup_index],
+                    "time": model.age[::sampling][dup_index],
                 }
             continue
 
@@ -111,423 +112,10 @@ def compute_m_DUP(model, combined=None):
         dup[tp] = {
             "mass": M_DUP,
             "index": dup_index,
-            "time": model.age[dup_index],
+            "time": model.age[::sampling][dup_index],
         }
 
     return dup
-
-
-def track_DUP(model):
-    """
-    Track material dredged up during the TP-AGB of a combined star
-    and subsequently during the binary evolution.
-
-    The combined star is obtained from:
-
-        get_star(m=model.params["m"])
-
-    The combined-star evolution is followed until the start of the
-    binary model. Existing tracers are then carried continuously into
-    the binary calculation.
-
-    Returns
-    -------
-    result : dict
-        Full tracer histories and mass-budget information.
-    """
-
-    # ==============================================================
-    # 1. get combined star
-    # ==============================================================
-
-    combined = get_star(m=model.params["m"])
-
-    # ==============================================================
-    # 2. compute dredge-up events
-    # ==============================================================
-
-    dup_combined = compute_m_DUP(combined)
-    dup_binary = compute_m_DUP(model, dup_combined)
-
-    # ==============================================================
-    # 3. determine when binary starts in combined-star evolution
-    # ==============================================================
-
-    binary_start_age = model.age[0]
-
-    combined_age = np.asarray(combined.age)
-
-    combined_start_idx = (
-        np.searchsorted(
-            combined_age,
-            binary_start_age,
-            side="right",
-        )
-        - 1
-    )
-
-    if combined_start_idx < 0:
-        raise ValueError("binary model starts before the combined-star track")
-
-    if combined_start_idx >= len(combined_age):
-        raise ValueError("binary model starts after the combined-star track")
-
-    # ==============================================================
-    # 4. truncate combined star at binary starting point
-    # ==============================================================
-
-    time_c = combined.age[: combined_start_idx + 1]
-
-    env_c = combined.m_env[: combined_start_idx + 1]
-
-    core_c = combined.m_core[: combined_start_idx + 1]
-
-    tp_c = combined.TP_count[: combined_start_idx + 1]
-
-    wind_c = combined.Mdot[: combined_start_idx + 1]
-
-    transfer_c = np.zeros_like(wind_c)
-
-    # ==============================================================
-    # 5. binary arrays
-    # ==============================================================
-
-    time_b = np.asarray(model.age)
-
-    env_b = np.asarray(model.envelope_mass)
-
-    core_b = np.asarray(model.he_core_mass)
-
-    tp_b_local = np.asarray(model.TP_count)
-
-    wind_b = 10 ** np.asarray(model.lg_wind_mdot_1)
-
-    total_b = 10 ** np.asarray(model.lg_mstar_dot_1)
-
-    transfer_b = total_b - wind_b
-
-    # ==============================================================
-    # 6. determine TP-number offset
-    #
-    # The binary TP_count may restart at 1.
-    #
-    # Example:
-    #
-    # combined ends at TP 15
-    # binary starts at local TP 1
-    #
-    # therefore:
-    #
-    # local TP 1 -> global TP 15
-    # local TP 2 -> global TP 16
-    # ...
-    # ==============================================================
-
-    combined_start_tp = int(tp_c[-1])
-    binary_start_tp = int(tp_b_local[0])
-
-    tp_offset = combined_start_tp - binary_start_tp
-
-    def global_binary_tp(local_tp):
-        return int(local_tp) + tp_offset
-
-    # ==============================================================
-    # 7. construct global list of dredge-up events
-    # ==============================================================
-
-    dup = {}
-
-    # combined-star TPs
-    for tp, event in dup_combined.items():
-
-        # only events that occur before binary starts
-        if event["time"] <= time_c[-1]:
-
-            dup[tp] = {
-                "mass": event["mass"],
-                "combined_index": event["index"],
-                "combined_time": event["time"],
-                "phase": "combined",
-            }
-
-    # binary TPs
-    for local_tp, event in dup_binary.items():
-
-        global_tp = global_binary_tp(local_tp)
-
-        dup[global_tp] = {
-            "mass": event["mass"],
-            "binary_index": event["index"],
-            "binary_time": event["time"],
-            "phase": "binary",
-        }
-
-    # ==============================================================
-    # 8. allocate tracer arrays
-    # ==============================================================
-
-    global_tps = np.array(
-        sorted(dup.keys()),
-        dtype=int,
-    )
-
-    tp_to_index = {tp: i for i, tp in enumerate(global_tps)}
-
-    n_tp = len(global_tps)
-
-    # ==============================================================
-    # 9. storage
-    # ==============================================================
-
-    n_c = len(time_c)
-    n_b = len(time_b)
-
-    tracer = np.zeros(n_tp)
-
-    core_lost = np.zeros(n_tp)
-    wind_lost = np.zeros(n_tp)
-    accreted = np.zeros(n_tp)
-
-    tracer_history_c = np.zeros((n_tp, n_c))
-
-    tracer_history_b = np.zeros((n_tp, n_b))
-
-    core_history_c = np.zeros((n_tp, n_c))
-    wind_history_c = np.zeros((n_tp, n_c))
-
-    core_history_b = np.zeros((n_tp, n_b))
-    wind_history_b = np.zeros((n_tp, n_b))
-    accreted_history_b = np.zeros((n_tp, n_b))
-
-    # ==============================================================
-    # 10. helper for injecting dredge-up material
-    # ==============================================================
-
-    def inject_combined(j):
-
-        for tp, event in dup.items():
-
-            if event["phase"] != "combined":
-                continue
-
-            if event["combined_index"] != j:
-                continue
-
-            i = tp_to_index[tp]
-
-            tracer[i] += event["mass"]
-
-    def inject_binary(j):
-
-        local_tp = int(tp_b_local[j])
-
-        # only inject when this timestep is the beginning of
-        # a new dredge-up event
-        global_tp = global_binary_tp(local_tp)
-
-        if global_tp not in dup:
-            return
-
-        event = dup[global_tp]
-
-        if event["binary_index"] != j:
-            return
-
-        i = tp_to_index[global_tp]
-
-        tracer[i] += event["mass"]
-
-    # ==============================================================
-    # 11. combined-star evolution
-    # ==============================================================
-
-    for j in range(1, n_c):
-
-        dt = time_c[j] - time_c[j - 1]
-
-        # ----------------------------------------------------------
-        # inject dredged-up material
-        # ----------------------------------------------------------
-
-        inject_combined(j)
-
-        # ----------------------------------------------------------
-        # physical mass changes
-        # ----------------------------------------------------------
-
-        dm_wind = wind_c[j] * dt
-
-        dm_transfer = transfer_c[j] * dt
-
-        dm_core = max(
-            core_c[j] - core_c[j - 1],
-            0.0,
-        )
-
-        # ----------------------------------------------------------
-        # tracer composition
-        # ----------------------------------------------------------
-
-        if env_c[j - 1] <= 0:
-            raise ValueError("combined-star envelope mass became non-positive")
-
-        fraction = tracer / env_c[j - 1]
-
-        # ----------------------------------------------------------
-        # tracer losses
-        # ----------------------------------------------------------
-
-        dcore = fraction * dm_core
-        dwind = fraction * dm_wind
-        dtransfer = fraction * dm_transfer
-
-        tracer -= dcore + dwind + dtransfer
-
-        tracer = np.maximum(tracer, 0.0)
-
-        core_lost += dcore
-        wind_lost += dwind
-        accreted += dtransfer
-
-        # ----------------------------------------------------------
-        # history
-        # ----------------------------------------------------------
-
-        tracer_history_c[:, j] = tracer
-        core_history_c[:, j] = core_lost
-        wind_history_c[:, j] = wind_lost
-
-    # ==============================================================
-    # 12. save handover state
-    # ==============================================================
-
-    tracer_at_binary_start = tracer.copy()
-
-    core_at_binary_start = core_lost.copy()
-
-    wind_at_binary_start = wind_lost.copy()
-
-    accreted_at_binary_start = accreted.copy()
-
-    # ==============================================================
-    # 13. binary evolution
-    # ==============================================================
-
-    for j in range(1, n_b):
-
-        dt = time_b[j] - time_b[j - 1]
-
-        # ----------------------------------------------------------
-        # inject new binary dredge-up material
-        # ----------------------------------------------------------
-
-        inject_binary(j)
-
-        # ----------------------------------------------------------
-        # mass changes
-        # ----------------------------------------------------------
-
-        dm_wind = wind_b[j] * dt
-
-        dm_transfer = transfer_b[j] * dt
-
-        dm_core = max(
-            core_b[j] - core_b[j - 1],
-            0.0,
-        )
-
-        # ----------------------------------------------------------
-        # tracer fractions
-        # ----------------------------------------------------------
-
-        if env_b[j - 1] <= 0:
-            raise ValueError("binary envelope mass became non-positive")
-
-        fraction = tracer / env_b[j - 1]
-
-        # ----------------------------------------------------------
-        # losses
-        # ----------------------------------------------------------
-
-        dcore = fraction * dm_core
-
-        dwind = fraction * dm_wind
-
-        dtransfer = fraction * dm_transfer
-
-        tracer -= dcore + dwind + dtransfer
-
-        tracer = np.maximum(tracer, 0.0)
-
-        # ----------------------------------------------------------
-        # accumulate
-        # ----age------------------------------------------------------
-
-        core_lost += dcore
-
-        wind_lost += dwind
-
-        accreted += dtransfer
-
-        # ----------------------------------------------------------
-        # history
-        # ----------------------------------------------------------
-
-        tracer_history_b[:, j] = tracer
-
-        core_history_b[:, j] = core_lost
-
-        wind_history_b[:, j] = wind_lost
-
-        accreted_history_b[:, j] = accreted
-
-    # ==============================================================
-    # 14. mass conservation
-    # ==============================================================
-
-    M_DUP = np.array([dup[tp]["mass"] for tp in global_tps])
-
-    final_mass = tracer + core_lost + wind_lost + accreted
-
-    conservation_error = final_mass - M_DUP
-
-    # ==============================================================
-    # 15. return everything
-    # ==============================================================
-
-    return {
-        # TP information
-        "TP": global_tps,
-        "M_DUP": M_DUP,
-        "dup": dup,
-        # final fate
-        "tracer_final": tracer,
-        "core_lost": core_lost,
-        "wind_lost": wind_lost,
-        "accreted": accreted,
-        # histories
-        "tracer_history_combined": tracer_history_c,
-        "tracer_history_binary": tracer_history_b,
-        "core_history_combined": core_history_c,
-        "core_history_binary": core_history_b,
-        "wind_history_combined": wind_history_c,
-        "wind_history_binary": wind_history_b,
-        "accreted_history_binary": accreted_history_b,
-        # handover
-        "tracer_at_binary_start": tracer_at_binary_start,
-        "core_at_binary_start": core_at_binary_start,
-        "wind_at_binary_start": wind_at_binary_start,
-        "accreted_at_binary_start": accreted_at_binary_start,
-        # times
-        "time_combined": time_c,
-        "time_binary": time_b,
-        "combined_start_age": time_c[-1],
-        "binary_start_age": time_b[0],
-        # TP bookkeeping
-        "tp_offset": tp_offset,
-        # conservation
-        "conservation_error": conservation_error,
-    }
 
 
 class MonashModel:
@@ -544,8 +132,9 @@ class MonashModel:
 
 
 class Isotope:
-    def __init__(self, isotope):
+    def __init__(self, isotope, i):
         self.key = isotope
+        self.index = i
 
         match isotope:
             case "n":
@@ -615,9 +204,12 @@ class AbundanceTables:
         with open("data/tp_info_pd_df.pkl", "rb") as f:
             self.tp = pickle.load(f)
 
-        species = self.intershell.columns[4:]
+        species = self.intershell.columns[8:]
 
-        self.isotopes = {spec: Isotope(spec) for spec in species}
+        self.isotopes = {}
+        for i, spec in enumerate(species):
+            self.isotopes[spec] = Isotope(spec, i)
+
         self.elements = {}
 
         for isotope in self.isotopes.values():
@@ -670,6 +262,7 @@ class Abundances:
         mass=None,
         intershell=None,
         initial_abundance=None,
+        sampling=100,
     ):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
@@ -688,14 +281,14 @@ class Abundances:
             self.Z = self.model.params["z"]
             simple = get_star(full_path=self.model.params["single_star"])
 
-        self.dup_simple = compute_m_DUP(simple)
+        self.dup_simple = compute_m_DUP(simple, sampling=sampling)
 
         if mass == None:
-            self.dup_detailed = compute_m_DUP(model, self.dup_simple)
+            self.dup_detailed = compute_m_DUP(model, self.dup_simple, sampling=sampling)
 
             binary_start_age = model.age[0]
 
-            simple_age = np.asarray(simple.age)
+            simple_age = np.asarray(simple.age)[::sampling]
 
             self.simple_end_idx = (
                 np.searchsorted(
@@ -706,28 +299,34 @@ class Abundances:
                 - 1
             )
 
-            self.total_length = self.simple_end_idx + len(self.model.age)
+            self.total_length = self.simple_end_idx + len(self.model.age[::sampling])
 
         else:
 
             self.simple_end_idx = -1
-            self.total_length = len(simple.age)
+            self.total_length = len(simple.age[::sampling])
 
         self.m_dup = np.zeros(self.total_length)
         self.tp_count = np.zeros(self.total_length)
 
         if mass == None:
             self.m_env = np.concatenate(
-                [simple.m_env[: self.simple_end_idx], self.model.envelope_mass]
+                [
+                    simple.m_env[::sampling][: self.simple_end_idx],
+                    self.model.envelope_mass[::sampling],
+                ]
             )
             self.time = np.concatenate(
-                [simple.age[: self.simple_end_idx], self.model.age]
+                [
+                    simple.age[::sampling][: self.simple_end_idx],
+                    self.model.age[::sampling],
+                ]
             )
 
             m2 = np.concatenate(
                 [
-                    self.model.sb.m2[: self.simple_end_idx],
-                    self.model.star_2_mass,
+                    self.model.sb.m2[::sampling][: self.simple_end_idx],
+                    self.model.star_2_mass[::sampling],
                 ]
             )
 
@@ -743,8 +342,8 @@ class Abundances:
 
             m1 = np.concatenate(
                 [
-                    -1 * simple.mass[: self.simple_end_idx],
-                    -1 * self.model.star_1_mass,
+                    -1 * simple.mass[::sampling][: self.simple_end_idx],
+                    -1 * self.model.star_1_mass[::sampling],
                 ]
             )
 
@@ -765,24 +364,24 @@ class Abundances:
             for key, value in self.dup_detailed.items():
                 self.m_dup[self.simple_end_idx + value["index"]] = value["mass"]
 
-            self.tp_count[: self.simple_end_idx] = simple.TP_count[
+            self.tp_count[: self.simple_end_idx] = simple.TP_count[::sampling][
                 : self.simple_end_idx
             ]
 
             self.tp_count[self.simple_end_idx :] = (
-                self.model.TP_count + simple.TP_count[self.simple_end_idx]
+                self.model.TP_count[::sampling] + simple.TP_count[self.simple_end_idx]
             )
 
         else:
-            self.m_env = simple.m_env
-            self.time = simple.age
+            self.m_env = simple.m_env[::sampling]
+            self.time = simple.age[::sampling]
             self.dm_acc = None
             self.total_mass_accreted = None
-            self.dm = np.concatenate([[0], -1 * np.diff(simple.mass)])
+            self.dm = np.concatenate([[0], -1 * np.diff(simple.mass[::sampling])])
             for key, value in self.dup_simple.items():
                 self.m_dup[value["index"]] = value["mass"]
 
-            self.tp_count = simple.TP_count
+            self.tp_count = simple.TP_count[::sampling]
 
         self.total_mass_expelled = simple.mass[0] - simple.mass[-1]
         self.monash_models = defaultdict(list)
@@ -791,6 +390,13 @@ class Abundances:
         self.initial_envelope_abundances = self._get_initial_envelope_abundance(
             self.Z, self.mass
         )
+        self.elements_mass = []
+        for element in self.initial_envelope_abundances["elemental_mass"]:
+            self.elements_mass.append(element)
+
+        self.elements_name = []
+        for element in self.initial_envelope_abundances["element"]:
+            self.elements_name.append(element)
 
         self.intershell = intershell
         self.initial_abundance = initial_abundance
@@ -1018,15 +624,6 @@ class Abundances:
                 index = np.where(self.m_dup > 10.0**-4.5)[0][0]
                 interp_x = self.tp_count - self.tp_count[index]
 
-        if isotope:
-            intershell += 93 * self.get_abundance(
-                self.df.isotopes["zr93"],
-                self.mass,
-                self.Z,
-                interp_x,
-            )
-            return intershell
-
         for isotope in self.df.elements[name].isotopes:
 
             intershell += self.df.elements[name].isotopes[
@@ -1075,6 +672,45 @@ class Abundances:
 
         return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
 
+    def get_all_abundances(self, M, Z, interp):
+
+        if Z in [0.0028, 0.007, 0.014]:
+            return 10 ** self.get_all_abundances_Z(M, Z, interp)
+
+        if Z <= 0.0028:
+            return 10 ** self.get_all_abundances_Z(M, 0.0028, interp)
+        if Z >= 0.014:
+            return 10 ** self.get_all_abundances_Z(M, 0.014, interp)
+
+        if Z <= 0.007:
+            z_min = 0.0028
+            z_max = 0.007
+        else:
+            z_min = 0.007
+            z_max = 0.014
+
+        abundance_min = self.get_all_abundances_Z(M, z_min, interp)
+        abundance_max = self.get_all_abundances_Z(M, z_max, interp)
+        weight = (np.log10(Z) - np.log10(z_min)) / (np.log10(z_max) - np.log10(z_min))
+
+        return 10 ** (abundance_min + weight * (abundance_max - abundance_min))
+
+    def __interp2d(
+        self,
+        x_interp: np.ndarray,
+        x: np.ndarray,
+        y: np.ndarray,
+    ) -> np.ndarray:
+        y = np.asarray(y)
+        idx = np.searchsorted(x, x_interp, side="right") - 1
+        idx = np.clip(idx, 0, len(x) - 2)
+
+        weight = np.array(((x_interp - x[idx]) / (x[idx + 1] - x[idx])))[:, None]
+        weight = np.clip(weight, 0, 1)
+
+        result = y[idx] + weight * (y[idx + 1] - y[idx])
+        return result
+
     def get_abundance_Z(self, isotope, M, Z, interp_x, drop=None):
 
         match self.method:
@@ -1102,6 +738,32 @@ class Abundances:
         weight = (M - mass_min) / (mass_max - mass_min)
 
         return abundance_min + weight * (abundance_max - abundance_min)
+
+    def get_all_abundances_Z(self, M, Z, interp_x):
+        match self.method:
+            case "m_dup":
+                attr = "m_dup"
+            case "tp":
+                attr = "pulses"
+            case "tp offset":
+                attr = "pulses_offset"
+
+        if len(self.monash_models[Z]) == 1:
+            abundances = self.monash_models[Z][0].intershell_isos
+            x = getattr(self.monash_models[Z][0], attr)
+            return self.__interp2d(interp_x, x, abundances)
+
+        abundances_min = self.monash_models[Z][0].intershell_isos
+        x_min = getattr(self.monash_models[Z][0], attr)
+        abundances_min = self.__interp2d(interp_x, x_min, abundances_min)
+        mass_min = self.monash_models[Z][0].M
+        abundances_max = self.monash_models[Z][1].intershell_isos
+        x_max = getattr(self.monash_models[Z][1], attr)
+        abundances_max = self.__interp2d(interp_x, x_max, abundances_max)
+        mass_max = self.monash_models[Z][1].M
+
+        weight = (M - mass_min) / (mass_max - mass_min)
+        return abundances_min + weight * (abundances_max - abundances_min)
 
     def compute_envelope_abundance(self, name, intershell, initial=None):
         # INFO: gets the initial envelope abundance of the element
@@ -1146,3 +808,82 @@ class Abundances:
             ) / self.m_env[i]
 
         return envelope
+
+    def compute_all_envelope_abundances(self, intershell):
+        initial_envelope_abundances = self.initial_envelope_abundances
+
+        envelope = np.zeros((self.total_length, len(self.initial_envelope_abundances)))
+        delta_M_element = intershell * self.m_dup[:, None]
+
+        for i in range(self.total_length):
+            if i == 0:
+                envelope[i, :] = initial_envelope_abundances.massfrac
+                continue
+
+            # INFO: this is WRONG because the envelope mass is taken AFTER dredge-up
+            # already occurred.
+
+            # envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
+            #     self.m_env[i] + self.m_dup[i]
+            # )
+
+            envelope[i, :] = (
+                envelope[i - 1, :] * (self.m_env[i] - self.m_dup[i])
+                + delta_M_element[i, :]
+            ) / self.m_env[i]
+
+        return envelope
+
+    def compute_all_intershell(self):
+
+        intershell = np.zeros(
+            (self.total_length, len(self.initial_envelope_abundances))
+        )
+
+        match self.method:
+            case "m_dup":
+                interp_x = np.log10(np.cumsum(self.m_dup) + 1e-12)
+
+            case "tp":
+                interp_x = self.tp_count
+
+            case "tp offset":
+                index = np.where(self.m_dup > 10.0**-4.5)[0][0]
+                interp_x = self.tp_count - self.tp_count[index]
+
+        isotopic_abundances = self.get_all_abundances(self.mass, self.Z, interp_x)
+
+        for i, name in enumerate(self.initial_envelope_abundances["element"]):
+            for isotope in self.df.elements[name].isotopes:
+                intershell[:, i] += (
+                    self.df.elements[name].isotopes[isotope].mass
+                    * isotopic_abundances[
+                        :, self.df.elements[name].isotopes[isotope].index
+                    ]
+                )
+
+            # logic for zr93 decay to nb93
+            if name == "nb":
+                for isotope in self.df.elements["zr"].isotopes:
+                    if self.df.elements["zr"].isotopes[isotope].mass == 93:
+                        intershell[:, i] += (
+                            93
+                            * isotopic_abundances[
+                                :, self.df.elements["zr"].isotopes[isotope].index
+                            ]
+                        )
+
+            if name == "zr":
+                for isotope in self.df.elements["zr"].isotopes:
+                    if self.df.elements["zr"].isotopes[isotope].mass == 93:
+                        intershell[:, i] -= (
+                            93
+                            * isotopic_abundances[
+                                :, self.df.elements["zr"].isotopes[isotope].index
+                            ]
+                        )
+
+        return intershell
+
+
+# %%
