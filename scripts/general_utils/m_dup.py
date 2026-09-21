@@ -4,6 +4,7 @@ import numpy as np
 import pickle
 import re
 from collections import defaultdict
+import periodictable as pt
 
 sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 
@@ -400,6 +401,24 @@ class Abundances:
 
         self.intershell = intershell
         self.initial_abundance = initial_abundance
+
+        intershell = self.compute_all_intershell()
+        envelope = self.compute_all_envelope_abundances(intershell)
+        if mass == None:
+            yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
+            self.accreted_abundances = yields / self.total_mass_accreted
+
+        else:
+            yields = np.cumsum(envelope * self.dm[:, None], axis=0)[-1, :]
+            self.accreted_abundances = yields / self.total_mass_expelled
+
+        mu_inv = 0
+        for i, ab in enumerate(self.accreted_abundances):
+            X_i = ab
+            Z_i = self.elements_mass[i]
+            A_i = pt.elements[Z_i].mass
+            mu_inv += X_i * (1 + Z_i) / A_i
+        self.mu = 1 / mu_inv
 
     def __getattr__(self, name):
 
