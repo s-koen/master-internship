@@ -797,22 +797,6 @@ class Abundances:
 
     def __getattr__(self, name):
 
-        if name in ["zr93"]:
-            intershell = self.compute_intershell(name, isotope=True)
-            envelope = self.compute_envelope_abundance(name, intershell, initial=0)
-            envelope_decay = self.compute_envelope_abundance_decay(
-                name, intershell, initial=0
-            )
-
-            self.df.isotopes[name].envelope = envelope
-            self.df.isotopes[name].envelope_decay = envelope_decay
-            self.df.isotopes[name].intershell = intershell
-            if self.model != None:
-                self.df.isotopes[name].m_accreted = np.cumsum(envelope * self.dm_acc)
-            self.df.isotopes[name].m_yield = np.cumsum(envelope * self.dm)
-
-            return self.df.isotopes[name]
-
         if name in self.df.elements:
 
             # compute the intershell elemental abundance
@@ -1162,56 +1146,3 @@ class Abundances:
             ) / self.m_env[i]
 
         return envelope
-
-    def compute_envelope_abundance_decay(self, name, intershell, initial=None):
-        # INFO: gets the initial envelope abundance of the element
-        # scaled by the metallicity of the model.
-
-        # INFO: THIS is the naive method that just uses a scaled metallicity
-
-        # initial_envelope_abundance = self.df.get_initial_envelope_abundance(
-        #     element=name,
-        #     metallicity=self.Z,
-        # )
-
-        # INFO: THIS is the linearly interpolated method
-        if initial == None:
-            if type(self.initial_abundance) == type(None):
-                initial_envelope_abundance = self.initial_envelope_abundances[
-                    self.initial_envelope_abundances["element"] == name
-                ]["massfrac"]
-            else:
-                initial_envelope_abundance = self.initial_abundance
-        else:
-            initial_envelope_abundance = initial
-
-        # INFO: computes the elemental abundance in the envelope by
-        # enriching it with intershell abundances.
-        envelope = np.zeros(self.total_length)
-        delta_M_element = intershell * self.m_dup
-        dt = np.concatenate([[0], np.diff(self.time)])
-        t_half = 1.61e6
-        lam = np.log(2) / t_half
-
-        for i in range(self.total_length):
-            if i == 0:
-                envelope[i] = initial_envelope_abundance
-                continue
-
-            # INFO: this is WRONG because the envelope mass is taken AFTER dredge-up
-            # already occurred.
-
-            # envelope[i] = (envelope[i - 1] * self.m_env[i] + delta_M_element[i]) / (
-            #     self.m_env[i] + self.m_dup[i]
-            # )
-
-            envelope[i] = (
-                envelope[i - 1] * (self.m_env[i] - self.m_dup[i]) + delta_M_element[i]
-            ) / self.m_env[i]
-
-            envelope[i] *= np.exp(-lam * dt[i])
-
-        return envelope
-
-
-# %%
