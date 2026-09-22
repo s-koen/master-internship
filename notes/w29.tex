@@ -154,6 +154,18 @@ I am unsure if the differences in \(\mu\) between the initial models is due to e
 the MS, or due to differences between MESA and Monash abundances. But,
 in the end, the differences for the predicted abundances in the MS star would probably be small.
 
+I have also implemented this computation in the \lstinline[style=output, breaklines=true]|Abundance| class that handles all
+ abundance post-processing for me.
+
+Below I show the averaged \(\mu\) of all expelled material of the single star TPAGB models.
+\begin{figure}[ht]
+    \marginfignote{0}{We clearly see that the average mean molecular weight of the expelled
+    material rises with mass. I think this makes sense, as we also see more dredge-up at higher masses,
+and thus on average, more heavy elements in the envelope of these stars.}
+    \centering
+    \incplot{w29-mu-m}
+\end{figure}
+
 The idea is now to use this \(\mu\) and mix the accreted mass, thereby changing \(\mu\) as well,
 until the mixed \(\mu\) is equal to the \(\mu\) in the star.
 \newsubsection{Simple Derivation 2}
@@ -433,6 +445,69 @@ This also means that\sidenote{At least under the assumptions from \citet{karakas
 abundances really do not change between the MS and the TPAGB.
 
 I think the easiest way to proceed is to simply reuse the initial envelope abundances when computing dilution due to mixing.
+
+\newsection{Optimizations}
+
+\subsection{Numpy matrices}
+Since I now need to compute every element for every binary model to compute \(\mu \) and properly
+infer the amount of mixing, it became important to optimize my abundance post-processor.
+
+Before, I interpolated every isotope individually. However, if I allow numpy to work on arrays of
+abundances, I can interpolate every isotope at the same time, which should in theory be quicker.
+
+I have implemented this, and it seems to be around \(3\) to \(4\) times quicker this way without
+any loss in quality. I also still have access to the methods to obtain the abundances for a
+single element if this may be required.
+
+Although this does not give us any interesting results now, it will definitely help me later when
+I will need to compute all abundances for a bunch of stars.
+\subsection{Downsampling}
+
+Another really easy optimization is to downsample the input models. Since I am using
+the MESA models with history data saved at \emph{every} timestep for accurate and consistent
+orbital evolution, the models contain many thousands of steps\sidenote{Sometimes more than 100k}.
+This level of resolution is absolute overkill for the abundance computations, and I think we can get
+away with downsampling by a factor 10 to 100.
+
+To show the effect of downsampling, let me show the effect on the final yields.
+In the figure below, I plot several final yields with different subsampling settings.
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-effect-of-subsampling}
+\end{figure}
+
+I think it is quite clear that, even for quite large subsampling values of 1/100, the resulting
+accuracy is more than enough to not matter in the end.
+
+The speed-up of the subsampling however is important for quickly analysing results:
+\begin{figure}[ht]
+    \marginfignote{0}{Clearly, initially, subsampling by a factor \(x\) directly leads to a speed-up
+    by this same factor \(x\). At some point, this relation no longer holds as we approach the
+regime where the length of the arrays is no longer the bottleneck in the computation time.}
+\marginfignote{10}{This also shows that, by taking a subsampling factor of \(1/100\), we can analyse
+quickly analyse even very large MESA grids.}
+    \centering
+    \incplot{w29-subsampling-time}
+\end{figure}
+
+\section{Combining everything}
+
+\begin{figure}[ht]
+    \marginfignote{0}{I think the figure makes sense. However, we should be careful to interpret the
+    lower masses. Here, I do not have main sequence models because \emph{MESA} was not able to simulate
+these stars using the \AE SOPUS table. Therefore, I think we should just use the assumption that
+the mass is mixed throughout the whole star in this case.}
+    \centering
+    \incplot{w29-m_mix-real}
+\end{figure}
+
+\begin{figure}[ht]
+    \marginfignote{0}{This might not work so well for TPAGB masses below \(1.5\; M_\odot \),
+    but I think these will not be so important for the barium star production anyway.}
+    \centering
+    \incplot{w29-m_mix-real-fix}
+\end{figure}
+
 
 \bibliography{master.bib}
 \nextpage

@@ -22,6 +22,15 @@ plt.style.use("default")
 plt.style.use("tex rm")
 # %%
 
+tpagb = mr.MesaData(
+    "/home/koen/master-internship/mesa-models/tpagb-test-high-mass/LOGS/TPAGB/history.data"
+)
+# %%
+
+plt.plot(tpagb.model_number, tpagb.TP_count)
+
+plt.show()
+# %%
 mkipp.kipp_plot(
     mkipp.Kipp_Args(
         logs_dirs=[
