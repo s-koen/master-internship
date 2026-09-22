@@ -5,6 +5,7 @@ import pickle
 import re
 from collections import defaultdict
 import periodictable as pt
+from scripts.general_utils.accretor import *
 
 sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 
@@ -232,6 +233,8 @@ class AbundanceTables:
             self.envelope_filtered["M_init"].astype(np.float64) == 2
         ]
 
+        self.accretor_profiles = AccretorProfiles()
+
     def __getattr__(self, name):
         try:
             return self.isotopes[name]
@@ -264,6 +267,7 @@ class Abundances:
         intershell=None,
         initial_abundance=None,
         sampling=100,
+        m_acc=None,
     ):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
@@ -412,6 +416,8 @@ class Abundances:
             yields = np.cumsum(envelope * self.dm[:, None], axis=0)[-1, :]
             self.accreted_abundances = yields / self.total_mass_expelled
 
+        self.accreted_abundances /= np.sum(self.accreted_abundances)
+
         mu_inv = 0
         for i, ab in enumerate(self.accreted_abundances):
             X_i = ab
@@ -419,6 +425,18 @@ class Abundances:
             A_i = pt.elements[Z_i].mass
             mu_inv += X_i * (1 + Z_i) / A_i
         self.mu = 1 / mu_inv
+
+        if mass == None:
+            pass
+
+        else:
+            if m_acc != None:
+                accretor = Accretor(
+                    profiles=self.df.accretor_profiles, age=self.time[-1], mass=m_acc
+                )
+                self.mixing_mass = accretor.effective_mu_vs_depth(
+                    M_acc=self.total_mass_expelled, mu_acc=self.mu
+                ).mixing_mass
 
     def __getattr__(self, name):
 
