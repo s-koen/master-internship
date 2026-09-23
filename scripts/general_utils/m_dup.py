@@ -268,6 +268,8 @@ class Abundances:
         initial_abundance=None,
         sampling=100,
         m_acc=None,
+        mass_transfer_efficiency=None,
+        full_mixing=False,
     ):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
@@ -380,8 +382,6 @@ class Abundances:
         else:
             self.m_env = simple.m_env[::sampling]
             self.time = simple.age[::sampling]
-            self.dm_acc = None
-            self.total_mass_accreted = None
             self.dm = np.concatenate([[0], -1 * np.diff(simple.mass[::sampling])])
             for key, value in self.dup_simple.items():
                 self.m_dup[value["index"]] = value["mass"]
@@ -407,7 +407,9 @@ class Abundances:
         self.initial_abundance = initial_abundance
 
         intershell = self.compute_all_intershell()
+        self.all_intershell = np.max(intershell, axis=0)
         envelope = self.compute_all_envelope_abundances(intershell)
+
         if mass == None:
             yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
             self.accreted_abundances = yields / self.total_mass_accreted
@@ -427,7 +429,22 @@ class Abundances:
         self.mu = 1 / mu_inv
 
         if mass == None:
-            pass
+
+            # accretor mass is simply q * TPAGB mass because this is the mass BEFORE accretion
+            m_acc = self.model.params["q"] * self.mass
+
+            # accretor age is less obvious, but i think taking the time where R_RL < R_star is fine.
+            # TPAGB mass transfer is a really short duration event when compared to MS lifetimes.
+            age_arg = np.argmax(self.dm)
+            age = self.time[age_arg]
+            accretor = Accretor(
+                profiles=self.df.accretor_profiles,
+                age=self.time[-1],
+                mass=m_acc,
+            )
+            self.mixing_mass = accretor.effective_mu_vs_depth(
+                M_acc=self.total_mass_accreted, mu_acc=self.mu
+            ).mixing_mass
 
         else:
             if m_acc != None:
@@ -437,6 +454,22 @@ class Abundances:
                 self.mixing_mass = accretor.effective_mu_vs_depth(
                     M_acc=self.total_mass_expelled, mu_acc=self.mu
                 ).mixing_mass
+            else:
+                raise Exception(
+                    "need to provide m_acc when not providing a binary model"
+                )
+
+        # clip mixing mass
+        self.mixing_mass = np.clip(self.mixing_mass, 0, m_acc)
+
+        # TODO: implement proper low mass MESA models
+        if m_acc < 0.8:
+            self.mixing_mass = m_acc
+
+        if full_mixing:
+            self.mixing_mass = m_acc
+
+        self.MS_abundances = self.__compute_MS_abundances(mass_transfer_efficiency)
 
     def __getattr__(self, name):
 
@@ -464,6 +497,32 @@ class Abundances:
         if name in self.df.isotopes:
 
             return self.df.isotopes[name]
+
+    def __compute_MS_abundances(
+        self, mass_transfer_efficiency=None
+    ) -> NDArray[np.float64]:
+        initial_ms_abundances = self.initial_envelope_abundances["massfrac"]
+        initial_ms_masses = initial_ms_abundances * self.mixing_mass
+        accreted_abundances = self.accreted_abundances
+
+        if self.model != None:
+            accreted_masses = self.total_mass_accreted * self.accreted_abundances
+            m_acc = self.total_mass_accreted
+        else:
+            accreted_masses = (
+                self.total_mass_expelled
+                * mass_transfer_efficiency
+                * self.accreted_abundances
+            )
+            m_acc = self.total_mass_expelled * mass_transfer_efficiency
+
+        # computing the final mass fractions is simple. just add the total masses and
+        # the masses of the individual elements and divide :)
+        ms_abundances = (initial_ms_masses + accreted_masses) / (
+            self.mixing_mass + m_acc
+        )
+
+        return ms_abundances
 
     def _get_initial_envelope_abundance(self, Z, M):
 
