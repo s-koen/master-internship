@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+import matplotlib.transforms as mtransforms
 
 
 def cplot(
@@ -82,3 +83,44 @@ def cplot(
     ax.autoscale_view()
 
     return lc
+
+
+def element_labels(fig, z, names):
+
+    labels = names
+    for i, _ in enumerate(labels):
+        labels[i] = labels[i].capitalize()
+
+    axs = plt.gca()
+
+    axs.set_xlabel("Element")
+    axs.set_xticks(z[::2], labels=labels[::2])
+
+    ax_t = axs.secondary_xaxis("top")
+    ax_t.set_xticks(z[1::2])
+    ax_t.set_xticklabels(labels[1::2])
+
+    for label in axs.get_xticklabels():
+        label.set_verticalalignment("baseline")
+
+    for label in ax_t.get_xticklabels():
+        label.set_verticalalignment("baseline")
+
+    for i, label in enumerate(axs.get_xticklabels()):
+        label.set_y(-0.00 if i % 2 == 0 else -0.03)
+
+    for i, tick in enumerate(ax_t.xaxis.get_major_ticks()):
+        tick.tick2line.set_markersize(7 if i % 2 else 0)
+
+        label = tick.label2
+
+        offset = 10 if i % 2 else 3
+
+        label.set_transform(
+            ax_t.get_xaxis_transform()
+            + mtransforms.ScaledTranslation(
+                0,
+                offset / 72,
+                fig.dpi_scale_trans,
+            )
+        )
