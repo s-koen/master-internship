@@ -508,6 +508,90 @@ the mass is mixed throughout the whole star in this case.}
     \incplot{w29-m_mix-real-fix}
 \end{figure}
 
+We can obviously also use the binary models as input. Here is an example.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-1-model-test}
+\end{figure}
+
+Below I plot the final barium mass fraction for my large grid specifically made to
+only include models with significant amounts of dredge up.
+
+\begin{figure}[ht]
+    \marginfignote{0}{We see some clear variations here, especially with mass.}
+    \marginfignote{4}{The lowest mass donor produces the lowest final abundances. I think this
+    makes sense. This star can accrete less material and it has experienced the least amount of 
+dredge up.}
+\marginfignote{12}{We also see that the moment of interaction (or the initial Roche lobe radius)
+can change the abundances too. Especially for the lower radii, but we do not have many models
+here.}
+    \centering
+    \incplot{w29-large-grid}
+\end{figure}
+
+Maybe another, more intuitive way to look at it is like this:
+\begin{figure}[ht]
+    \marginfignote{0}{Now, instead of the absolute massfractions of barium in the MS accretor, we
+    look at the enrichment factor.}
+    \centering
+    \incplot{w29-large-grid-2}
+\end{figure}
+
+Lastly, I want to look at the effects of my mixing procedure.
+\begin{figure}[ht]
+    \marginfignote{0}{Here I compare the final barium mass fraction in the envelope of the
+    MS accretor for my thermohaline mixing and a naive full star mixing.}
+    \marginfignote{10}{The differences are small, but I still think what I have done now with
+    the \(\mu\) profiles is nice.}
+    \centering
+    \incplot{w29-large-grid-3}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+    \marginfignote{0}{The gray line corresponds to the initial envelope abundance of the
+    MS and TPAGB star. The solid lines are the final envelope abundance of the MS stars. 
+    The dotted lines are the averaged abundances of the accreted material and the dashed
+    lines are the maximum intershell abundances of the TPAGB star.
+}
+    \marginfignote{12}{This plot shows a few interesting things. To start, and most importantly,
+    we see that differences between binary models can change the final MS abundances quite a lot.
+In this case, the final MS star even has roughly the same final mass of about \(1.2\; M_\odot \).
+}
+\marginfignote{23}{We see that the differences in final abundances in this case are mostly due to
+changes in their initial Roche Lobe radius. This makes sense. Stars with lower Roche lobe radii
+interact earlier on the TPAGB when the star has not had a lot of time to enrich its envelope.
+Without enrichment, the abundances on the MS star will be lower too.}
+    \centering
+    \incplot{w29-test-multiple}
+\end{figure}
+
+I show that this is really what is going on by looking at the total amount of dredged-up
+mass at the time of RLOF.
+
+\begin{figure}[ht]
+    \marginfignote{0}{Clearly, the total amount of dredged up mass plays a key role in
+    the final enrichment of the MS star.}
+    \centering
+    \incplot{w29-moment-of-interaction}
+\end{figure}
+
+I think it will be interesting to do a simulation where the binary interacts before
+a lot of dredge up. This will be a good test to see if we really just get the 
+MS envelope mass fractions back.
+
+\section{Spectroscopic Abundances}
+
+For some time now, I have been calling the mass fractions the ``abundances''. From observations,
+we typically get the spectroscopic abundances defined like
+\begin{equation*}
+    \varepsilon_{i} = \log_{10}\l(\frac{N_{i}}{N_\text{H} } + 12\r)  .
+\end{equation*}
+
+It is actually quite easy to convert my mass fractions to these spectroscopic abundances.
+The only assumption we need to make here is again the mass of the elements. I think I will use the standard atomic weight again for this.
 
 \bibliography{master.bib}
 \nextpage
