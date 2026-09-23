@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import json
 from pathlib import Path
 import mesa_reader as mr
@@ -130,7 +131,51 @@ class MesaGrid:
             if keep:
                 yield run
 
-    def array(self, value, x, y, **filters):
+    def array(
+        self,
+        value: Callable | str,
+        x: str,
+        y: str,
+        **filters,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Return a 2D array of run values on a parameter grid.
+
+        The array is indexed by the values of the parameters specified by
+        ``x`` and ``y``. Runs are selected using ``filters`` and the value
+        stored at each grid point is either obtained as an attribute of the
+        run or computed by a callable.
+
+        For ``beta`` and ``delta``, the values stored in ``run.params`` are
+        normalized by ``1 - eps`` before matching them to the corresponding
+        axis values.
+
+        Parameters
+        ----------
+        value : str or callable
+            Attribute name to retrieve from each run, or a callable taking
+            a run and returning the value to store in the array.
+        x : str
+            Name of the parameter corresponding to the first array axis.
+        y : str
+            Name of the parameter corresponding to the second array axis.
+        **filters
+            Additional parameter filters passed to :meth:`filter`.
+
+        Returns
+        -------
+        xs : numpy.ndarray
+            Values of the ``x`` axis.
+        ys : numpy.ndarray
+            Values of the ``y`` axis.
+        arr : numpy.ndarray
+            Two-dimensional array with shape ``(len(xs), len(ys))``.
+            Entries for which no matching run exists are ``NaN``.
+
+        Notes
+        -----
+        Parameter values are rounded to three decimal places when matching
+        runs to the grid axes.
+        """
 
         xs = self.axes[x]
         ys = self.axes[y]
