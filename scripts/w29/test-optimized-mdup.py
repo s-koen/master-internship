@@ -328,24 +328,7 @@ plt.pcolormesh(ms, qs, res.T, cmap="viridis")
 plt.colorbar()
 plt.show()
 
-# %%
-m_donor = np.repeat(ms, len(qs))
-m_acc = (ms[:, None] * qs[None, :]).ravel()
-values = res.ravel()
 
-plt.scatter(
-    m_donor,
-    m_acc,
-    c=values,
-    marker="s",
-    s=50,
-    cmap="viridis",
-)
-
-plt.colorbar(label=r"$m_\mathrm{mix}$")
-plt.xlabel(r"$M_\mathrm{donor}\;[M_\odot]$")
-plt.ylabel(r"$M_\mathrm{acc}\;[M_\odot]$")
-plt.show()
 # %%
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
@@ -353,27 +336,75 @@ fig, axs = plt.subplots(
 
 m_donor = np.repeat(ms, len(qs))
 m_acc = (ms[:, None] * qs[None, :]).ravel()
+print(m_acc)
 values = res.ravel()
 
 plt.tripcolor(
-    m_donor,
-    m_acc,
-    values,
-    shading="flat",  # or "flat"
-    cmap="viridis",
+    m_donor, m_acc, values, shading="flat", cmap="viridis", rasterized=True  # or "flat"
 )
+
+axs.yaxis.set_label_position("right")
+axs.yaxis.tick_right()
 
 plt.colorbar(label=r"$M_\textrm{mix}$ ($M_\odot$)")
 plt.xlabel(r"$M_\textrm{don}$ $(M_\odot)$")
 plt.ylabel(r"$M_\textrm{acc}$ $(M_\odot)$")
 
 plt.xlim(1, 3)
-plt.ylim(1, 3)
+plt.ylim(0, 3)
 
-
-axs.spines[["right", "top"]].set_visible(False)
-plt.savefig("/home/koen/LaTeX-setup/plots/w29-m_mix-real.pgf", format="pgf")
+axs.spines[["left", "top"]].set_visible(False)
+plt.savefig("/home/koen/LaTeX-setup/plots/w29-m_mix-real.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
+
+# %%
+
+ms = np.arange(1, 3.01, 0.1)
+qs = np.linspace(0.1, 1.01, 30)
+
+res = np.zeros((len(ms), len(qs)))
+
+for i, m in enumerate(ms):
+    print(m)
+    for j, q in enumerate(qs):
+        if m * q > 0.8:
+            ab = Abundances(None, df, mass=m, sampling=100, m_acc=m * q)
+            res[i, j] = ab.mixing_mass
+        else:
+            res[i, j] = m * q
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+m_donor = np.repeat(ms, len(qs))
+m_acc = (ms[:, None] * qs[None, :]).ravel()
+print(m_acc)
+values = res.ravel()
+
+plt.tripcolor(
+    m_donor, m_acc, values, shading="flat", cmap="viridis", rasterized=True  # or "flat"
+)
+
+axs.yaxis.set_label_position("right")
+axs.yaxis.tick_right()
+
+plt.colorbar(label=r"$M_\textrm{mix}$ ($M_\odot$)")
+plt.xlabel(r"$M_\textrm{don}$ $(M_\odot)$")
+plt.ylabel(r"$M_\textrm{acc}$ $(M_\odot)$")
+
+plt.xlim(1, 3)
+plt.ylim(0, 3)
+
+axs.spines[["left", "top"]].set_visible(False)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w29-m_mix-real-fix.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
 
 # %%
