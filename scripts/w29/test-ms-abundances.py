@@ -353,3 +353,81 @@ plt.close()
 
 
 # %%
+
+m = grid.models[30]
+
+df = AbundanceTables()
+ab = Abundances(model=m, df=df)
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+ab = Abundances(model=m, df=df)
+z = ab.elements_mass
+plt.plot(
+    z,
+    ab.MS_spectroscopic,
+    linewidth=1,
+)
+
+# plt.plot(z, ab.initial_envelope_abundances["massfrac"], c=f"C9", zorder=-10)
+element_labels(fig, ab.elements_mass, ab.elements_name)
+
+for z in [38, 40, 56, 58]:
+    plt.axvline(z, c="C9", linewidth=0.75 / 2, zorder=-10)
+
+
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.ylabel("$\\varepsilon_i$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w29-test-spec.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+asplund = Asplund()
+
+# %%
+
+specs = ab.MS_spectroscopic
+print(ab.elements_name[52])
+fe_star = specs[22]
+
+sr_fe_star = specs[34] - fe_star
+y_fe_star = specs[35] - fe_star
+zr_fe_star = specs[36] - fe_star
+ba_fe_star = specs[52] - fe_star
+la_fe_star = specs[53] - fe_star
+ce_fe_star = specs[54] - fe_star
+nd_fe_star = specs[56] - fe_star
+
+
+fe_sun = asplund.elements[26].abundance
+sr_fe_sun = asplund.elements[38].abundance - fe_sun
+y_fe_sun = asplund.elements[39].abundance - fe_sun
+zr_fe_sun = asplund.elements[40].abundance - fe_sun
+ba_fe_sun = asplund.elements[56].abundance - fe_sun
+la_fe_sun = asplund.elements[57].abundance - fe_sun
+ce_fe_sun = asplund.elements[58].abundance - fe_sun
+nd_fe_sun = asplund.elements[60].abundance - fe_sun
+
+s_fe = (
+    1
+    / 7
+    * (
+        sr_fe_star / sr_fe_sun
+        + y_fe_star / y_fe_sun
+        + zr_fe_star / zr_fe_sun
+        + ba_fe_star / ba_fe_sun
+        + la_fe_star / la_fe_sun
+        + ce_fe_star / ce_fe_sun
+        + nd_fe_star / nd_fe_sun
+    )
+)
+
+# %%

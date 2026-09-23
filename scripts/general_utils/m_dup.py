@@ -398,10 +398,17 @@ class Abundances:
         self.elements_mass = []
         for element in self.initial_envelope_abundances["elemental_mass"]:
             self.elements_mass.append(element)
+        self.elements_mass = np.array(self.elements_mass)
 
         self.elements_name = []
         for element in self.initial_envelope_abundances["element"]:
             self.elements_name.append(element)
+        self.elements_name = np.array(self.elements_name)
+
+        self.atomic_weight = []
+        for el_mass in self.elements_mass:
+            self.atomic_weight.append(pt.elements[el_mass].mass)
+        self.atomic_weight = np.array(self.atomic_weight)
 
         self.intershell = intershell
         self.initial_abundance = initial_abundance
@@ -469,7 +476,8 @@ class Abundances:
         if full_mixing:
             self.mixing_mass = m_acc
 
-        self.MS_abundances = self.__compute_MS_abundances(mass_transfer_efficiency)
+        self.MS_massfrac = self.__compute_MS_abundances(mass_transfer_efficiency)
+        self.MS_spectroscopic = self.__compute_MS_spectroscopic()
 
     def __getattr__(self, name):
 
@@ -523,6 +531,13 @@ class Abundances:
         )
 
         return ms_abundances
+
+    def __compute_MS_spectroscopic(self):
+        N_i = self.MS_massfrac / self.atomic_weight
+        N_H = N_i[0]
+        eps = np.log10(N_i / N_H) + 12
+
+        return eps
 
     def _get_initial_envelope_abundance(self, Z, M):
 

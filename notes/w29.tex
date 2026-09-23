@@ -587,11 +587,34 @@ MS envelope mass fractions back.
 For some time now, I have been calling the mass fractions the ``abundances''. From observations,
 we typically get the spectroscopic abundances defined like
 \begin{equation*}
-    \varepsilon_{i} = \log_{10}\l(\frac{N_{i}}{N_\text{H} } + 12\r)  .
+    \varepsilon_{i} = \log_{10}\l(\frac{N_{i}}{N_\text{H} }\r) + 12  .
 \end{equation*}
 
 It is actually quite easy to convert my mass fractions to these spectroscopic abundances.
 The only assumption we need to make here is again the mass of the elements. I think I will use the standard atomic weight again for this.
+
+\begin{figure}[ht]
+    \centering
+    \incplot{w29-test-spec}
+\end{figure}
+
+To me, it looks like it works well.
+
+One important measurement is \([\text{s} / \text{Fe} ]\). The s-abundance of a star refers to the
+mean value of Sr, Y, Zr, Ba, La, Ce and Nd abundances \citep{yang2024}.
+
+We can compute this using the spectroscopic abundances quite easily:
+\begin{equation*}
+    [\text{s} / \text{Fe}] = \frac{1}{7} \sum_{X = \text{Sr, Y, Zr, Ba, La, Ce, Nd}} [X / \text{Fe} ] ,
+\end{equation*}
+where
+\begin{equation*}
+    [X / \text{Fe}  ] = (\varepsilon_X - \varepsilon_\text{Fe})_\text{star} / (\varepsilon_X - \varepsilon_\text{Fe})_\odot   .
+\end{equation*}
+
+For the binary model I show above, this results in \([\text{s} / \text{Fe}  ] \approx 0.72\).
+A value of \([\text{s} / \text{Fe}  ] = 0.25\) is used as a threshold for determining whether
+a star is s-process rich \citep{yang2024}.
 
 \bibliography{master.bib}
 \nextpage
