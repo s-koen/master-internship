@@ -40,7 +40,6 @@ class MesaGrid:
 
         self.grid_dir = Path(grid_dir)
         self.fresh = fresh
-        print(self.fresh)
         self.loc = loc
 
         with open(f"{grid_dir }/grid_settings.json") as f:
