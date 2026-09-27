@@ -19,10 +19,20 @@ class Element:
 
 
 class Asplund:
-    def __init__(self, z: float = 0.005573) -> None:
+    def __init__(self, z: float = 0.005573, he_method="MESA") -> None:
         self.elements: dict[int, Element] = {}
         self.z = z
-        self.y = 0.24 + 2 * self.z
+
+        self.he_method = he_method
+        match self.he_method.lower():
+            case "mesa":
+                self.y = 0.24 + 2 * self.z
+            case "monash" | "karakas":
+                self.y = 0.2485 + 2.1 * self.z
+            case _:
+                print("did not recognise He abundance method, using MESA")
+                self.y = 0.24 + 2 * self.z
+
         self.x = 1 - self.y - self.z
 
         self.__add_all()
@@ -142,3 +152,6 @@ class Asplund:
                 continue
 
             element.massfrac *= self.z / original_z
+
+
+# %%
