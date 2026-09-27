@@ -1,0 +1,166 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 30}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Checking differences between mixing methods}
+
+Last week, I showed \emph{this} plot
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w29-large-grid-3}
+\end{figure}
+
+We would expect larger differences if we have a significant accretor core that is not mixed.
+Let me investigate.
+
+I quite quickly found the issue, which actually changes the results for every plot I showed last week that
+was related to the binary abundance post-processing.
+
+I accidentally took the final accretor mass \(M_\text{acc, f}\) as the total amount of accreted mass,
+while this \emph{obviously} should be \(\Delta M_\text{acc} = M_\text{acc, f} - M_\text{acc, i}\).
+This is an easy fix and now the plot above looks like this:
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w29-large-grid-3-fix}
+\end{figure}
+
+\section{Mean Molecular weight MESA vs Monash}
+
+We saw that there is a difference between the mean molecular weight of the MESA
+models and the initial mean molecular weight of the Monash models.
+
+I want to understand where these differences come from.
+
+Let me start by computing \(\mu \) from the \citet{asplund2009} solar abundances for the \emph{MESA} initial
+Helium mass-fraction.
+
+Then I will modify my \citet{asplund2009} abundances to the ``canonical'' helium mass-fraction as explained
+in \citet{karakas2014}.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The mean molecular weights of the \emph{MESA} models on the main sequence agree
+		\emph{very} well with the mean molecular weights of the \citet{asplund2009} for both the
+		standard \emph{MESA} initial helium mass-fraction as well as the ``canonical'' \citet{karakas2014}
+		mass-fraction.
+	}
+	\marginfignote{12}{The \emph{MESA} models do not however, agree that well with the
+		\citet{karakas2016} mean molecular weights.}
+	\centering
+	\incplot{w30-re}
+\end{figure}
+
+I plotted \emph{two} values for the initial TPAGB MESA model.
+Below, I show some profiles during the
+evolution of the \emph{MESA} model with the \citet{karakas2014} helium mass-fraction.
+
+\begin{figure}[ht]
+	\marginfignote{0}{There is a little dip just past the helium core boundary.
+		The bottom blue dot in the
+		plot above is sampled from this dip.
+		The upper blue dot is sampled at \(R=1\), which is the value of
+		most of the envelope, and probably the most relevant parameter.
+	}
+	\marginfignote{10}{The dip first forms towards the end of the GB already.
+		This is \emph{after} the first dredge-up.
+	}
+	\centering
+	\incplot{w30-mu-profiles}
+\end{figure}
+
+We can obviously also plot it with mass on the horizontal axis.
+Then it becomes very
+clear that the small dip is not the relevant value to use.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The minimum is barely visible here.
+		We can also clearly see the growth of the
+		core between the GB and the TPAGB.
+	}
+	\centering
+	\incplot{w30-mu-profiles-mass}
+\end{figure}
+
+I feel like the best thing to do would be to simulate everything with the \citet{karakas2014} initial helium
+mass fraction.
+This would however mean that I would need to simulate the single stars again, which
+takes some time and manual help.
+
+An easy first thing to do though is to simulate the accretors with the \citet{karakas2014} initial helium abundances.
+
+This would at least ensure that the mean molecular weight profile of the main sequence stars should
+align with the mean molecular weight of the Monash models.
+
+However, the actual MESA binary models would still evolve with a different helium mass fraction.
+I also think I should use the \citet{asplund2009} MS abundances for the accretor \emph{instead of}, what I do not,
+use the initial envelope abundances of the TPAGB stars.
+
+This is quite easy.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-ms-vs-tpagb-ab}
+\end{figure}
+
+\nextpage
+
+I simulated the main sequence stars with the canonical helium fractions from \citet{karakas2014}.
+
+Here is the zoom on the mean molecular weight of the MESA helium mass fractions in gray,
+and the new ones in color.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-mu-core-2}
+\end{figure}
+
+The envelope has slightly larger mean molecular weight values.
+This \emph{should} mean we get slightly lower mixing masses.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-effects-of-mu-and-m_acc}
+\end{figure}
+
+This is indeed what we see.
+It is much clearer for the second and third column if we zoom in the colors a bit.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-effects-of-mu-and-m_acc-colorzoom}
+\end{figure}
+
+However, we also see that only certain regions are affected.
+
+Below, I zoom in on a particular case of \(M_\text{acc}\) and \(\mu_\text{acc}\).
+I also plot the approximate ages for the pre-MS and the MS.
+Lastly, I
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-m_mix-grid-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-show-differences-mu-profiles}
+\end{figure}
+
+\bibliography{master.bib}
+\end{document}
