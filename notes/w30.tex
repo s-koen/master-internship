@@ -150,9 +150,11 @@ It is much clearer for the second and third column if we zoom in the colors a bi
 However, we also see that only certain regions are affected.
 
 Below, I zoom in on a particular case of \(M_\text{acc}\) and \(\mu_\text{acc}\).
-I also plot the approximate ages for the pre-MS and the MS.
 Lastly, I
 \begin{figure}[ht]
+	\marginfignote{0}{The diagonal lines show the approximate ages for the pre-MS and the MS.}
+	\marginfignote{5}{I show the \(\mu \)-profiles of the cross formation of dots in the figure below.}
+	\marginfignote{9}{The profiles clearly show where the differences between the two comes from.}
 	\centering
 	\incplot{w30-m_mix-grid-2}
 \end{figure}
@@ -160,6 +162,71 @@ Lastly, I
 \begin{figure}[ht]
 	\centering
 	\incplot{w30-show-differences-mu-profiles}
+\end{figure}
+\nextpage
+
+There are also these thin lines.
+I zoom in one those below.
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-m_mix-grid-3}
+\end{figure}
+
+Again, the dots from a cross formation and the profiles are shown below.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-show-differences-mu-profiles-2}
+\end{figure}
+
+I think I have the most important features in the difference plots.
+I do not really know where the small bump
+in the core composition comes from though.
+
+\newsection{[X/Fe] abundances}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-fe-ab}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-fe-ab-mass}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-fe-ab-mass-q}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{1}{All of these models have \([s/ \text{Fe}] \gg 0.25\) and would be classified
+		as \(s\)-process enhanced star.}
+	\marginfignote{6}{Clearly the lowest mass star has the lowest \([s/ \text{Fe}]\), which makes sense.}
+	\centering
+	\incplot{w30-grid-s-fe}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-hslss}
+\end{figure}
+
+\newsection{Broad radius grid}
+I think it is interesting to look into the effects of dredge up on the final abundances of the accretor.
+I want to simulate a MESA model for (nearly) every thermal pulse.
+This should give me a good idea
+of the effects of early RLOF interactions on the final abundances.
+
+Below, I show the simple binary evolutions on which I based my MESA grid.
+\begin{figure}[ht]
+	\marginfignote{0}{Nearly every pulse should have a binary model.
+		The last few models have multiple,
+		because here the radius increases a lot.
+	}
+	\centering
+	\incplot{w30-broad-R-grid-setup}
 \end{figure}
 
 \bibliography{master.bib}
