@@ -85,15 +85,12 @@ def cplot(
     return lc
 
 
-def element_labels(fig, z, names):
+def element_labels(fig, z, names, axs=plt.gca()):
 
     labels = names
     for i, _ in enumerate(labels):
         labels[i] = labels[i].capitalize()
 
-    axs = plt.gca()
-
-    axs.set_xlabel("Element")
     axs.set_xticks(z[::2], labels=labels[::2])
 
     ax_t = axs.secondary_xaxis("top")
