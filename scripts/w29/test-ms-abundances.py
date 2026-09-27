@@ -395,7 +395,6 @@ asplund = Asplund()
 # %%
 
 specs = ab.MS_spectroscopic
-print(ab.elements_name[52])
 fe_star = specs[22]
 
 sr_fe_star = specs[34] - fe_star
@@ -430,4 +429,5 @@ s_fe = (
     )
 )
 
+print(s_fe)
 # %%
