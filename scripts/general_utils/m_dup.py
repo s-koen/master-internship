@@ -6,6 +6,7 @@ import re
 from collections import defaultdict
 import periodictable as pt
 from scripts.general_utils.accretor import *
+import scripts.general_utils.asplund as asp
 
 sys.path.insert(1, "/home/koen/LaTeX-setup/python-files/")
 
@@ -268,8 +269,9 @@ class Abundances:
         initial_abundance=None,
         sampling=100,
         m_acc=None,
-        mass_transfer_efficiency=None,
+        mass_transfer_efficiency=1,
         full_mixing=False,
+        save_accretor=False,
     ):
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
@@ -345,7 +347,7 @@ class Abundances:
             dm[~valid[:-1] | ~valid[1:]] = 0
 
             self.dm_acc = np.concatenate([[0], np.clip(dm, 0, np.inf)])
-            self.total_mass_accreted = m2[-1]
+            self.total_mass_accreted = m2[-1] - np.nanmin(m2)
 
             m1 = np.concatenate(
                 [
@@ -449,18 +451,24 @@ class Abundances:
                 age=self.time[-1],
                 mass=m_acc,
             )
-            self.mixing_mass = accretor.effective_mu_vs_depth(
-                M_acc=self.total_mass_accreted, mu_acc=self.mu
-            ).mixing_mass
+            self.accretor_res = accretor.effective_mu_vs_depth(
+                M_acc=self.total_mass_accreted,
+                mu_acc=self.mu,
+                save_profile=save_accretor,
+            )
 
+            self.mixing_mass = self.accretor_res.mixing_mass
         else:
             if m_acc != None:
                 accretor = Accretor(
                     profiles=self.df.accretor_profiles, age=self.time[-1], mass=m_acc
                 )
-                self.mixing_mass = accretor.effective_mu_vs_depth(
-                    M_acc=self.total_mass_expelled, mu_acc=self.mu
-                ).mixing_mass
+                self.accretor_res = accretor.effective_mu_vs_depth(
+                    M_acc=self.total_mass_expelled,
+                    mu_acc=self.mu,
+                    save_profile=save_accretor,
+                )
+                self.mixing_mass = self.accretor_res.mixing_mass
             else:
                 raise Exception(
                     "need to provide m_acc when not providing a binary model"
@@ -509,7 +517,19 @@ class Abundances:
     def __compute_MS_abundances(
         self, mass_transfer_efficiency=None
     ) -> NDArray[np.float64]:
-        initial_ms_abundances = self.initial_envelope_abundances["massfrac"]
+
+        ms = self.initial_envelope_abundances.copy()
+        asplund = asp.Asplund(he_method="karakas")
+
+        def get_massfrac(element):
+            try:
+                return asplund.elements[element].massfrac
+            except:
+                return 1e-99
+
+        ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+        initial_ms_abundances = ms["massfrac"]
         initial_ms_masses = initial_ms_abundances * self.mixing_mass
         accreted_abundances = self.accreted_abundances
 
@@ -712,8 +732,6 @@ class Abundances:
         else:
             self._prepare_monash_models(Z=0.014)
             self._prepare_monash_models(Z=0.007)
-
-        # self._prepare_single_monash_model(M, Z)
 
     def compute_intershell(self, name, isotope=False):
         # TODO: this needs to be changed to the ACTUAL abundances

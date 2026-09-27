@@ -38,8 +38,17 @@ class AccretorProfile:
 class AccretorProfiles:
     def __init__(self) -> None:
         self.profiles = self.__get_profiles()
+        self.profiles_old = self.__get_profiles(new=False)
 
-    def __get_profiles(self, fresh=False) -> dict[float, list[AccretorProfile]]:
+    def __get_profiles(
+        self, fresh=False, new=True
+    ) -> dict[float, list[AccretorProfile]]:
+        if new:
+            dir = "single-ms-stars-3"
+            name = "profiles_new"
+        else:
+            dir = "single-ms-stars"
+            name = "profiles_old"
         if fresh:
             print("In Accretor.__get_profiles:\n\tloading profiles")
             profiles_dict: dict[float, list[AccretorProfile]] = {}
@@ -49,13 +58,13 @@ class AccretorProfiles:
                 print(f"\tloading mass {mass}")
                 for j in range(1, 41):
                     profile = mr.MesaData(
-                        f"/home/koen/master-internship/mesa-models/single-ms-stars/M{mass}/LOGS/MS/profile{j}.data"
+                        f"/home/koen/master-internship/mesa-models/{dir}/M{mass}/LOGS/MS/profile{j}.data"
                     )
                     profiles.append(AccretorProfile(profile))
                 profiles_dict[mass] = profiles
 
             with open(
-                f"/home/koen/master-internship/data/accretor-cache/profiles.pkl",
+                f"/home/koen/master-internship/data/accretor-cache/{name}.pkl",
                 "wb",
             ) as f:
                 pickle.dump(profiles_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -65,7 +74,7 @@ class AccretorProfiles:
         else:
             try:
                 with open(
-                    f"/home/koen/master-internship/data/accretor-cache/profiles.pkl",
+                    f"/home/koen/master-internship/data/accretor-cache/{name}.pkl",
                     "rb",
                 ) as f:
                     return pickle.load(f)
@@ -75,11 +84,16 @@ class AccretorProfiles:
 
 
 class Accretor:
-    def __init__(self, profiles: AccretorProfiles, age: float, mass: float) -> None:
+    def __init__(
+        self, profiles: AccretorProfiles, age: float, mass: float, new=True
+    ) -> None:
         self.mass = mass
         self.age = age
 
-        self.profiles = profiles.profiles
+        if new:
+            self.profiles = profiles.profiles
+        else:
+            self.profiles = profiles.profiles_old
         self.masses = self.__determine_profile_masses()
         self.central_h1 = self.__get_center_h1()
         self.mu_curve, self.mass_curve = self.__get_mu_mass_curve()
