@@ -80,7 +80,7 @@ class AccretorProfiles:
                     return pickle.load(f)
 
             except FileNotFoundError:
-                return self.__get_profiles(fresh=True)
+                return self.__get_profiles(fresh=True, new=new)
 
 
 class Accretor:
