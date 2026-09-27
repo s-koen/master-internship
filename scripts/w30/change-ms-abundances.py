@@ -185,25 +185,41 @@ plt.close()
 # %%
 profiles = AccretorProfiles()
 
-# %%
-norm = plt.Normalize(0.8, 4.4)
-cmap = plt.cm.viridis
-# color = cmap(norm(x))
+from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
 
-ms = np.linspace(0.8, 4.4, 100)
-ages = np.logspace(6.5, 10, 100)
+# %%
+ms = np.linspace(0.8, 4.4, 500)
+ages = np.logspace(6.5, 10, 500)
 
 a_res = np.zeros((len(ms), len(ages)))
 
-for i, m in enumerate(ms):
-    print(i)
-    for j, a in enumerate(ages):
-        ac = Accretor(profiles=profiles, age=a, mass=m)
-        mix = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
 
-        ac = Accretor(profiles=profiles, age=a, mass=m, new=False)
-        mix2 = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
-        a_res[i, j] = mix / mix2
+def calculate(args):
+    i, j = args
+
+    m = ms[i]
+    a = ages[j]
+
+    ac = Accretor(profiles=profiles, age=a, mass=m)
+    mix = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
+
+    ac = Accretor(profiles=profiles, age=a, mass=m, new=False)
+    mix2 = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
+
+    return i, j, mix / mix2
+
+
+tasks = ((i, j) for i in range(len(ms)) for j in range(len(ages)))
+
+with ProcessPoolExecutor(max_workers=11) as executor:
+    for i, j, result in tqdm(
+        executor.map(calculate, tasks, chunksize=100),
+        total=len(ms) * len(ages),
+        desc="calculating",
+    ):
+        a_res[i, j] = result
+
 
 # %%
 
@@ -223,6 +239,7 @@ plt.show()
 plt.close()
 
 # %%
+from matplotlib.patches import Rectangle
 
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
@@ -270,6 +287,7 @@ plt.annotate(
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->"),
 )
+
 
 plt.xscale("log")
 
@@ -585,3 +603,266 @@ plt.savefig(
 plt.show()
 plt.close()
 # %%
+from concurrent.futures import ProcessPoolExecutor
+from tqdm import tqdm
+
+profiles = AccretorProfiles()
+
+# %%
+
+ms_zoom = np.linspace(1, 1 + 0.79, 500)
+ages_zoom = np.logspace(7.75, 7.75 + 0.79, 500)
+
+a_res_zoom = np.zeros((len(ms_zoom), len(ages_zoom)))
+
+
+def calculate(args):
+    i, j = args
+
+    m = ms_zoom[i]
+    a = ages_zoom[j]
+
+    ac = Accretor(profiles=profiles, age=a, mass=m)
+    mix = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
+
+    ac = Accretor(profiles=profiles, age=a, mass=m, new=False)
+    mix2 = ac.effective_mu_vs_depth(0.5, 0.64).mixing_mass
+
+    return i, j, mix / mix2
+
+
+tasks = ((i, j) for i in range(len(ms_zoom)) for j in range(len(ages_zoom)))
+
+with ProcessPoolExecutor(max_workers=11) as executor:
+    for i, j, result in tqdm(
+        executor.map(calculate, tasks, chunksize=100),
+        total=len(ms_zoom) * len(ages_zoom),
+        desc="calculating",
+    ):
+        a_res_zoom[i, j] = result
+
+# %%
+from matplotlib.patches import Rectangle
+
+fig, axs = plt.subplots(
+    1, 2, sharex=False, figsize=set_size(full, height=0.5), constrained_layout=True
+)
+
+c = axs[0].pcolormesh(
+    ms, np.log10(ages), a_res.T, cmap="viridis", rasterized=True, vmin=0.94
+)
+
+c = axs[1].pcolormesh(
+    ms_zoom,
+    np.log10(ages_zoom),
+    a_res_zoom.T,
+    cmap="viridis",
+    rasterized=True,
+    vmin=0.94,
+)
+
+
+mline = np.logspace(np.log10(0.6), np.log10(4.4), 100)
+mline_look = np.array([1.35, 1.45, 1.53, 1.57, 1.62]) - 0.11
+age_look = np.array([7.8, 8, 8.1, 8.25, 8.5])
+mline_look_2 = np.array([1.5, 1.58, 1.7, 1.8, 1.9])
+
+axs[0].set_ylim(axs[0].get_ylim())
+axs[0].set_xlim(axs[0].get_xlim())
+axs[0].plot(mline, 9.75 + np.log10(mline**-2.8), c="w", linewidth=1.5)
+axs[0].plot(mline, 9.75 + np.log10(mline**-2.8), c="k", linewidth=1)
+axs[0].plot(mline, 7 + np.log10(mline**-2.5), c="w", linewidth=1.5)
+axs[0].plot(mline, 7 + np.log10(mline**-2.5), c="k", linewidth=1)
+
+
+axs[1].scatter(
+    mline_look, 8.1 + 0 * np.log10(mline_look**-2.8), c="w", linewidth=1, s=15
+)
+axs[1].scatter(
+    mline_look, 8.1 + 0 * np.log10(mline_look**-2.8), c="k", linewidth=1, s=10
+)
+axs[1].scatter(1.46 + 0 * mline_look_2, age_look, c="w", linewidth=1, s=15)
+axs[1].scatter(1.46 + 0 * mline_look_2, age_look, c="k", linewidth=1, s=10)
+
+axs[0].annotate(
+    "PMS age",
+    xy=(0.9, 7.15),
+    xycoords="data",
+    xytext=(0, 15),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+axs[0].annotate(
+    "MS age",
+    xy=(2.22, 8.75),
+    xycoords="data",
+    xytext=(0, 15),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+axs[0].add_patch(Rectangle((1, 7.75), 0.79, 0.79, edgecolor="black", lw=1, fill=None))
+
+axs[0].set_xscale("log")
+
+
+plt.colorbar(
+    c, label="$M_\\textrm{mix, Karakas (2016)} / M_\\textrm{mix, MESA}$", ax=axs[:]
+)
+
+axs[0].set_xlabel("$M$ ($M_\\odot$)")
+axs[0].set_ylabel("Main Sequence age log$_{10}$(yr)")
+fig.suptitle(
+    "$M_\\textrm{acc} = 0.5\\;M_\\odot,\\;\\mu_\\textrm{acc} = 0.64$", fontsize=10
+)
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-m_mix-grid-3.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    5,
+    5,
+    sharex="col",
+    sharey="row",
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+axs = axs.flatten()
+
+
+mline_look = np.array([1, 1.45, 1.7, 2, 3])
+age_look = 10 ** (9.1 + np.log10(mline_look**-2.8))
+
+mline_look = np.array([1.35, 1.45, 1.53, 1.57, 1.62]) - 0.11
+age_look = 10 ** (8.1 + 0 * mline_look)
+
+for i, (m, age) in enumerate(zip(mline_look, age_look)):
+
+    ac = Accretor(profiles=profiles, age=age, mass=m)
+    mix = ac.effective_mu_vs_depth(0.5, 0.64, save_profile=True)
+
+    axs[i + 10].plot(mix.mass_profile, mix.mu_profile_original, linewidth=1, c="C0")
+    axs[i + 10].plot(mix.mass_profile, mix.mu_profile_mix, linewidth=1, c="C2")
+
+    ac = Accretor(profiles=profiles, age=age, mass=m, new=False)
+    mix = ac.effective_mu_vs_depth(0.5, 0.64, save_profile=True)
+
+    axs[i + 10].plot(mix.mass_profile, mix.mu_profile_original, linewidth=1, c="C1")
+    axs[i + 10].plot(mix.mass_profile, mix.mu_profile_mix, linewidth=1, c="C3")
+
+
+mline_look = 1.57 + 0 * np.array([1.35, 1.45, 1.53, 1.57, 1.62]) - 0.11
+age_look = 10 ** np.array([7.8, 8, 8.1, 8.25, 8.5])[::-1]
+print(mline_look)
+
+for i, (m, age) in enumerate(zip(mline_look, age_look)):
+    print(i, m, age)
+    if i == 2:
+        continue
+
+    ac = Accretor(profiles=profiles, age=age, mass=m)
+    mix = ac.effective_mu_vs_depth(0.5, 0.64, save_profile=True)
+
+    (l1,) = axs[3 + 5 * i].plot(
+        mix.mass_profile,
+        mix.mu_profile_original,
+        linewidth=1,
+        label="$\\mu$-profile Karakas (2016)",
+        c="C0",
+    )
+    (l2,) = axs[3 + 5 * i].plot(
+        mix.mass_profile,
+        mix.mu_profile_mix,
+        linewidth=1,
+        label="$\\mu$-mix Karakas (2016)",
+        c="C2",
+    )
+
+    ac = Accretor(profiles=profiles, age=age, mass=m, new=False)
+    mix = ac.effective_mu_vs_depth(0.5, 0.64, save_profile=True)
+
+    (l3,) = axs[3 + 5 * i].plot(
+        mix.mass_profile,
+        mix.mu_profile_original,
+        linewidth=1,
+        label="$\\mu$-profile MESA",
+        c="C1",
+    )
+    (l4,) = axs[3 + 5 * i].plot(
+        mix.mass_profile,
+        mix.mu_profile_mix,
+        linewidth=1,
+        label="$\\mu$-mix MESA",
+        c="C3",
+    )
+
+for i in [0, 1, 2, 4, 5, 6, 7, 9, 15, 16, 17, 19, 20, 21, 22, 24]:
+    axs[i].axis("off")
+
+fig.legend(handles=[l1, l2, l3, l4], ncols=1, loc="upper left")
+
+
+from matplotlib.ticker import StrMethodFormatter
+from matplotlib.ticker import LinearLocator
+
+# show y tick labels on the left-most horizontal panels
+for i in range(25):
+    if i == 10:
+        continue
+
+    if i not in [3, 8, 18, 23]:
+        axs[i].tick_params(labelbottom=False, labelleft=False)
+        continue
+
+    ax = axs[i]
+    fake_ax = axs[i - 1]
+    ax.yaxis.set_major_locator(LinearLocator(5))
+    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:.3f}"))
+    ticks = ax.get_yticks()
+
+    ax.tick_params(labelleft=False)
+
+    formatter = ax.yaxis.get_major_formatter()
+
+    fake_ax.text(0.6, 0.5, "$\\mu$", transform=fake_ax.transAxes)
+
+    for tick in ticks[1:-1]:
+        label = formatter.format_data(tick)
+        print(label)
+
+        fake_ax.text(
+            1.0,
+            tick,
+            rf"${label}$",
+            transform=fake_ax.get_yaxis_transform(),
+            ha="right",
+            va="center",
+            fontsize=8,
+        )
+    # show x tick labels on the bottom-most vertical panel
+
+for i in [10, 11, 12, 23, 14]:
+    axs[i].tick_params(labelbottom=True)
+    if i == 23:
+        continue
+
+    axs[i + 5].text(
+        0.5,
+        1,
+        "$m$ ($M_\\odot$)",
+        transform=axs[i + 5].transAxes,
+        va="top",
+        ha="center",
+    )
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+plt.xlabel("")
+plt.ylabel("")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w30-show-differences-mu-profiles-2.pgf", format="pgf"
+)
+plt.show()
+plt.close()
