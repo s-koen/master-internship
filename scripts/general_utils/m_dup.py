@@ -269,10 +269,11 @@ class Abundances:
         initial_abundance=None,
         sampling=100,
         m_acc=None,
-        mass_transfer_efficiency=1,
+        mass_transfer_efficiency: float = 1.0,
         full_mixing=False,
         save_accretor=False,
     ):
+
         self.model = model
         df_mix = df.intershell[df.intershell["pmz"] == "2e-3"]
         self.df = df
@@ -464,7 +465,7 @@ class Abundances:
                     profiles=self.df.accretor_profiles, age=self.time[-1], mass=m_acc
                 )
                 self.accretor_res = accretor.effective_mu_vs_depth(
-                    M_acc=self.total_mass_expelled,
+                    M_acc=self.total_mass_expelled * mass_transfer_efficiency,
                     mu_acc=self.mu,
                     save_profile=save_accretor,
                 )
@@ -486,6 +487,7 @@ class Abundances:
 
         self.MS_massfrac = self.__compute_MS_abundances(mass_transfer_efficiency)
         self.MS_spectroscopic = self.__compute_MS_spectroscopic()
+        self.iron_abundance = self.__compute_iron_abundance()
 
     def __getattr__(self, name):
 
@@ -558,6 +560,31 @@ class Abundances:
         eps = np.log10(N_i / N_H) + 12
 
         return eps
+
+    def __compute_iron_abundance(self):
+
+        asplund = asp.Asplund(he_method="karakas")
+
+        specs = self.MS_spectroscopic
+        fe_star = specs[22]
+        fe_sun = asplund.elements[26].abundance
+
+        fe_abundance_sun = []
+        fe_abundance_star = []
+        for i in range(len(self.MS_spectroscopic)):
+            try:
+                fe_abundance_sun.append(
+                    asplund.elements[self.elements_mass[i]].abundance - fe_sun
+                )
+            except:
+                fe_abundance_sun.append(-100 - fe_sun)
+
+            fe_abundance_star.append(specs[i] - fe_star)
+
+        fe_abundance_sun = np.array(fe_abundance_sun)
+        fe_abundance_star = np.array(fe_abundance_star)
+
+        return fe_abundance_star - fe_abundance_sun
 
     def _get_initial_envelope_abundance(self, Z, M):
 
