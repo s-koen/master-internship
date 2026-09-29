@@ -213,6 +213,31 @@ in the core composition comes from though.
 	\incplot{w30-hslss}
 \end{figure}
 
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-fe-final-period}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-hs-ls-final-period}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-fe-delta-accretor-mass}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-fe-delta-accretor-mass-diff-colors}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-fe-m_dup}
+\end{figure}
+
 \newsection{Broad radius grid}
 I think it is interesting to look into the effects of dredge up on the final abundances of the accretor.
 I want to simulate a MESA model for (nearly) every thermal pulse.
@@ -228,6 +253,80 @@ Below, I show the simple binary evolutions on which I based my MESA grid.
 	\centering
 	\incplot{w30-broad-R-grid-setup}
 \end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-fe-RL}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-hs-ls-RL}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-hs-ls-s-RL}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-dup}
+\end{figure}
+Let me take a look at the time evolution of the intershell and envelope enrichment of the models in the gray band.
+
+\begin{figure}[ht]
+	\marginfignote{4}{It looks like the \(305\; R_\odot \) model does not follow
+		the single star model in terms of enrichment.
+		This is obviously wrong.
+	}
+	\marginfignote{11}{The difficulty lies in finding \emph{why} the model
+		does not follow the single star.}
+	\centering
+	\incplot{w30-show-wrong-1}
+\end{figure}
+
+It took me some time to find the cause, but I the plot below shows the problem.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The binary models start with the wrong thermal pulse count.
+		They are offset by exactly 1, which makes sense since the MESA TPAGB routine
+		starts a binary with TP 1, not 0.
+		If I then add the MESA count to the single star
+		count at the starting time of the binary, we get a mismatch.
+	}
+	\marginfignote{10}{Towards the end of the evolution, this mismatch does not
+		significantly affect envelope abundances anymore.
+		Therefore, the accreted abundances will also not be affected much.
+		However, when dredge up
+		is just starting we can get quite large differences.
+		Luckily the fix is quite easy.
+	}
+	\centering
+	\incplot{w-30-show-wrong-2}
+\end{figure}
+
+\begin{minted}[fontsize=\small,breaklines]{py}
+from:
+    self.tp_count[self.simple_end_idx :] = self.model.TP_count[::sampling] + simple.TP_count[self.simple_end_idx]
+to:
+    self.tp_count[self.simple_end_idx :] = self.model.TP_count[::sampling] -self.model.TP_count[0]  + simple.TP_count[self.simple_end_idx]
+\end{minted}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-show-right-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-s-dup-2}
+\end{figure}
+
+The effects are really only clearly visible for the \(305\; R_\odot \) model,
+also in the other graphs.
+I will not recreate these.
+The general trends still hold.
 
 \bibliography{master.bib}
 \end{document}
