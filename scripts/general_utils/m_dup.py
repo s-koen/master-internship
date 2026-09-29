@@ -272,6 +272,8 @@ class Abundances:
         mass_transfer_efficiency: float = 1.0,
         full_mixing=False,
         save_accretor=False,
+        new=True,
+        save_full=False,
     ):
 
         self.model = model
@@ -333,6 +335,8 @@ class Abundances:
                 ]
             )
 
+            self.dt = np.concatenate([[0], np.diff(self.time)])
+
             m2 = np.concatenate(
                 [
                     self.model.sb.m2[::sampling][: self.simple_end_idx],
@@ -379,12 +383,15 @@ class Abundances:
             ]
 
             self.tp_count[self.simple_end_idx :] = (
-                self.model.TP_count[::sampling] + simple.TP_count[self.simple_end_idx]
+                self.model.TP_count[::sampling]
+                - self.model.TP_count[0]
+                + simple.TP_count[self.simple_end_idx]
             )
 
         else:
             self.m_env = simple.m_env[::sampling]
             self.time = simple.age[::sampling]
+            self.dt = np.concatenate([[0], np.diff(self.time)])
             self.dm = np.concatenate([[0], -1 * np.diff(simple.mass[::sampling])])
             for key, value in self.dup_simple.items():
                 self.m_dup[value["index"]] = value["mass"]
@@ -420,6 +427,10 @@ class Abundances:
         self.all_intershell = np.max(intershell, axis=0)
         envelope = self.compute_all_envelope_abundances(intershell)
 
+        if save_full:
+            self.intershell = intershell
+            self.envelope = envelope
+
         if mass == None:
             yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
             self.accreted_abundances = yields / self.total_mass_accreted
@@ -438,6 +449,7 @@ class Abundances:
             mu_inv += X_i * (1 + Z_i) / A_i
         self.mu = 1 / mu_inv
 
+        self.age_arg = np.argmax(self.dm[1:] / self.dt[1:])
         if mass == None:
 
             # accretor mass is simply q * TPAGB mass because this is the mass BEFORE accretion
@@ -445,12 +457,12 @@ class Abundances:
 
             # accretor age is less obvious, but i think taking the time where R_RL < R_star is fine.
             # TPAGB mass transfer is a really short duration event when compared to MS lifetimes.
-            age_arg = np.argmax(self.dm)
-            age = self.time[age_arg]
+            age = self.time[self.age_arg]
             accretor = Accretor(
                 profiles=self.df.accretor_profiles,
                 age=self.time[-1],
                 mass=m_acc,
+                new=new,
             )
             self.accretor_res = accretor.effective_mu_vs_depth(
                 M_acc=self.total_mass_accreted,
@@ -462,7 +474,10 @@ class Abundances:
         else:
             if m_acc != None:
                 accretor = Accretor(
-                    profiles=self.df.accretor_profiles, age=self.time[-1], mass=m_acc
+                    profiles=self.df.accretor_profiles,
+                    age=self.time[-1],
+                    mass=m_acc,
+                    new=new,
                 )
                 self.accretor_res = accretor.effective_mu_vs_depth(
                     M_acc=self.total_mass_expelled * mass_transfer_efficiency,
@@ -488,6 +503,10 @@ class Abundances:
         self.MS_massfrac = self.__compute_MS_abundances(mass_transfer_efficiency)
         self.MS_spectroscopic = self.__compute_MS_spectroscopic()
         self.iron_abundance = self.__compute_iron_abundance()
+
+        # just some quantities useful for plotting
+        self.m_dup_av = np.sum(self.m_dup)
+        self.t_av = np.sum(self.time * self.dm) / self.total_mass_expelled
 
     def __getattr__(self, name):
 
@@ -1004,8 +1023,13 @@ class Abundances:
                 interp_x = self.tp_count
 
             case "tp offset":
-                index = np.where(self.m_dup > 10.0**-4.5)[0][0]
-                interp_x = self.tp_count - self.tp_count[index]
+                try:
+                    index = np.where(self.m_dup > 10.0**-4.5)[0][0]
+                    # index = np.where(np.cumsum(self.m_dup) > 10.0**-4.5)[0][0]
+                    interp_x = self.tp_count - self.tp_count[index]
+                    self.interp_x = interp_x
+                except IndexError:
+                    interp_x = self.tp_count - 1000000
 
         isotopic_abundances = self.get_all_abundances(self.mass, self.Z, interp_x)
 
