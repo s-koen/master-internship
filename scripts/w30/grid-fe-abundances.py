@@ -54,6 +54,7 @@ grid.merge(grid2)
 grid.merge(grid3, overwrite=True)
 grid.merge(grid4, overwrite=True)
 
+df = AbundanceTables()
 # %%
 
 q = 0.6
@@ -261,6 +262,7 @@ for i, marker in enumerate(np.unique(markers)):
         s=10,
     )
 
+plt.colorbar(label="$R_\\textrm{RL,i}$ ($R_\\odot$)")
 fig.legend(loc="outside upper center", ncols=2)
 
 axs.spines[["right", "top"]].set_visible(False)
@@ -280,4 +282,241 @@ for m in grid.filter(m=3, R=[500, 600]):
 star = get_star(m=3)
 plt.plot(star.age, 10**star.log_R, c="C9", zorder=-1)
 plt.show()
+# %%
+
+df = AbundanceTables()
+
+for m in grid.models:
+    print(m.params["m"])
+    mass = m.params["m"]
+    ab = Abundances(model=m, df=df)
+    m.ab = ab.iron_abundance
+    m.elements_mass = ab.elements_mass
+    m.elements_name = ab.elements_name
+    m.t_av = ab.t_av
+    m.m_dup_av = ab.m_dup_av
+
+
+def get_ls(r):
+    if r.envelope_mass[-1] > 0.02:
+        return np.nan
+    fe = 0
+    for i, name in enumerate(r.elements_name):
+
+        if name in ["sr", "y", "zr"]:
+            fe += r.ab[i]
+
+    return fe / 3
+
+
+def get_hs(r):
+    if r.envelope_mass[-1] > 0.02:
+        return np.nan
+    fe = 0
+    for i, name in enumerate(r.elements_name):
+
+        if name in [
+            "ba",
+            "la",
+            "ce",
+            "nd",
+        ]:
+            fe += r.ab[i]
+
+    return fe / 4
+
+
+def get_s(r):
+    if r.envelope_mass[-1] > 0.02:
+        return np.nan
+    fe = 0
+    for i, name in enumerate(r.elements_name):
+
+        if name in ["ba", "la", "ce", "nd", "sr", "y", "zr"]:
+            fe += r.ab[i]
+
+    return fe / 7
+
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for i, mass in enumerate([1.8, 2.2, 2.6, 3.0]):
+
+    for m in grid.filter(m=mass):
+
+        per.append(m.period_days[-1])
+        s.append(get_s(m))
+        plt.scatter(
+            per,
+            s,
+            s=10,
+        )
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("[s/Fe]")
+plt.xscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-s-fe-final-period.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 2, sharey=True, figsize=set_size(column, height=0.75), constrained_layout=True
+)
+
+
+for i, mass in enumerate([1.8, 2.2, 2.6, 3.0]):
+
+    per = []
+    s = []
+    for m in grid.filter(m=mass):
+
+        per.append(m.star_2_mass[-1])
+        s.append(get_s(m))
+    axs[0].scatter(
+        per,
+        s,
+        s=10,
+    )
+
+for i, mass in enumerate([1.8, 2.2, 2.6, 3.0]):
+
+    per = []
+    s = []
+    for m in grid.filter(m=mass):
+
+        per.append(m.star_2_mass[-1] - m.params["q"] * m.params["m"])
+        s.append(get_s(m))
+    axs[1].scatter(
+        per,
+        s,
+        s=10,
+        label=f"$M_\\textrm{{TPAGB}} = {mass:.1f}\\;M_\\odot$",
+    )
+
+fig.legend(loc="outside upper center", ncols=2)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+axs[0].set_xlabel("$M_\\textrm{acc}$ ($M_\\odot$)")
+axs[1].set_xlabel("$\\Delta M_\\textrm{acc}$ ($M_\\odot$)")
+axs[0].set_ylabel("[s/Fe]")
+# plt.xscale("log")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w30-s-fe-delta-accretor-mass.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 2, sharey=True, figsize=set_size(column, height=0.75), constrained_layout=True
+)
+
+print(grid.axes["q"])
+
+markers = ["*", "^", "o", "s"]
+
+for j, mass in enumerate(grid.axes["m"]):
+    for i, q in enumerate(grid.axes["R"]):
+
+        per = []
+        s = []
+        for m in grid.filter(R=q, m=mass):
+
+            per.append(m.star_2_mass[-1])
+            s.append(get_s(m))
+        if i == 0:
+            axs[0].scatter(
+                per,
+                s,
+                c=f"C{i}",
+                s=10,
+                label=f"$M_\\textrm{{TPAGB}} = {mass:.1f}\\;M_\\odot$",
+                marker=markers[j],
+            )
+        else:
+            axs[0].scatter(
+                per,
+                s,
+                c=f"C{i}",
+                s=10,
+                marker=markers[j],
+            )
+
+
+for j, mass in enumerate(grid.axes["m"]):
+    for i, q in enumerate(grid.axes["R"]):
+
+        per = []
+        s = []
+        for m in grid.filter(R=q, m=mass):
+
+            per.append(m.star_2_mass[-1] - m.params["q"] * m.params["m"])
+            s.append(get_s(m))
+        if j == 0:
+            axs[1].scatter(
+                per,
+                s,
+                c=f"C{i}",
+                s=10,
+                label=f"$R_\\textrm{{RL,i}} = {q:.0f}\\;R_\\odot$",
+                marker=markers[j],
+            )
+        else:
+            axs[1].scatter(
+                per,
+                s,
+                c=f"C{i}",
+                s=10,
+                marker=markers[j],
+            )
+
+
+fig.legend(loc="outside upper center", ncols=3)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+axs[0].set_xlabel("$M_\\textrm{acc}$ ($M_\\odot$)")
+axs[1].set_xlabel("$\\Delta M_\\textrm{acc}$ ($M_\\odot$)")
+axs[0].set_ylabel("[s/Fe]")
+# plt.xscale("log")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w30-s-fe-delta-accretor-mass-diff-colors.pgf",
+    format="pgf",
+)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for i, mass in enumerate([1.8, 2.2, 2.6, 3.0]):
+
+    per = []
+    s = []
+    for m in grid.filter(m=mass):
+
+        per.append(m.m_dup_av)
+        s.append(get_s(m))
+    plt.scatter(per, s, s=10, label=f"$M_\\textrm{{TPAGB}} = {mass:.1f}\\;M_\\odot$")
+
+fig.legend(loc="outside upper center", ncols=2)
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$\\langle M_\\textrm{DUP} \\rangle$ ($M_\\odot$)")
+plt.ylabel("[s/Fe]")
+# plt.xscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-s-fe-m_dup.pgf", format="pgf")
+plt.show()
+plt.close()
 # %%
