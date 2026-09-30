@@ -1123,3 +1123,43 @@ plt.savefig(
 )
 plt.show()
 plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+per = []
+s = []
+for m in grid.models:
+    if m.envelope_mass[-1] > 0.01:
+        continue
+
+    per.append(m.params["R"])
+    s.append(m.star_2_mass[-1] - m.params["m"] * m.params["q"])
+
+per = np.array(per)
+s = np.array(s)
+idx = np.argsort(per)
+
+per = per[idx]
+s = s[idx]
+
+
+plt.plot(per, s, c="k", linewidth=1)
+plt.scatter(per, s, s=75, c="k", marker=".", zorder=20)
+plt.scatter(per, s, s=150, c="w", marker=".", zorder=10)
+
+plt.axhline(0.25 * m.envelope_mass[0], c="C9", linewidth=0.75, zorder=-10)
+
+plt.title("$M_\\textrm{TPAGB,i} = 2.2\\;M_\\odot$, $q=0.6$, $\\epsilon=0.25$")
+fig.legend(loc="outside upper center", ncols=2)
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$R_\\textrm{RL,i}$ ($R_\\odot$)")
+plt.ylabel("$\\Delta M_\\textrm{acc}$ ($M_\\odot$)")
+plt.xscale("log")
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-macc-RL.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
