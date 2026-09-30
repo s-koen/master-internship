@@ -328,5 +328,45 @@ also in the other graphs.
 I will not recreate these.
 The general trends still hold.
 
+\newsection{Failing models}
+
+Unfortunately, quite a large portion of my grid to run until the full envelope
+had been expelled.
+These models used my automatic restarting script, but they
+all hit a barrier during a similar part of their evolution which they are
+unable to move past.
+\begin{figure}[ht]
+	\marginfignote{0}{The failing models are \emph{all} smaller than some critical
+		initial Roche lobe radius.
+		In this case, since we have constant \(q\),
+		this is very closely related to the initial binary separation as well, which I plot below.
+	}
+	\marginfignote{9}{The vertical axis is a measure for the timescale of envelope stripping at the moment of most extreme mass transfer.}
+	\marginfignote{15}{For the failing models however, they \emph{probably} have not reached the mass transfer rate that they would get
+		if they continued their evolution.}
+	\centering
+	\incplot{w30-failing-models-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-failing-models-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-failing-models-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-failing-models-4}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w30-failing-models-5}
+\end{figure}
+
 \bibliography{master.bib}
 \end{document}

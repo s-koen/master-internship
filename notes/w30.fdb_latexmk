@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w30"] 1790720480.58994 "w30.aux" "w30.bbl" "w30" 1790722652.24347 0
+["bibtex w30"] 1790757767.40961 "w30.aux" "w30.bbl" "w30" 1790762887.5262 0
   "./master.bib" 1790377118.23513 52371 da3e7c52698b45b6fae138f489d4e3ee ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w30.aux" 1790722651.95846 2195 0ca4a7513c175ca860e3e753cdcfcb70 "pdflatex"
+  "w30.aux" 1790762887.24986 2452 e77efe98be68ef4daf8fa7dce79b99e7 "pdflatex"
   (generated)
   "w30.bbl"
   "w30.blg"
   (rewritten before read)
-["pdflatex"] 1790722643.37405 "w30.tex" "w30.pdf" "w30" 1790722652.24362 0
+["pdflatex"] 1790762877.2363 "w30.tex" "w30.pdf" "w30" 1790762887.52633 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -48,6 +48,18 @@
   "/home/koen/LaTeX-setup//plots/w30-effects-of-mu-and-m_acc-img8.png" 1790458922.0785 2420 de9323d1e3fe41b9760685880aed3884 ""
   "/home/koen/LaTeX-setup//plots/w30-effects-of-mu-and-m_acc-img9.png" 1790458922.08828 4080 6d22a2a436cabb5c28de0b482c7d2587 ""
   "/home/koen/LaTeX-setup//plots/w30-effects-of-mu-and-m_acc.pgf" 1790458922.12528 116238 41fe476388e9cd42163dc7eed61d804f ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-1.pgf" 1790757487.38918 60555 83594543460985258120851435837334 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-2.pgf" 1790757467.3209 58300 7b003e763c916b082a6ecaf7ec370403 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-3.pgf" 1790759364.61609 37764 8bcc903e55db11c44577b3aa61ca974f ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-4-img0.png" 1790762857.94938 439969 158d8925a70a4d49f13bf81a7ea9d9df ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-4-img1.png" 1790762857.95738 1058 4a288ee79f71b0b9e59f2fd27bc129c4 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-4-img2.png" 1790762857.97138 1104 7177ff8d4628a4c98a232f697a730947 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-4.pgf" 1790762857.97238 25147 069385cc02852b2a77f4d81e6aa4ad95 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-5-img0.png" 1790762868.55755 709728 271698c912ee7bdd868f93a8062bf624 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-5-img1.png" 1790762868.56555 1115 ce3c726fe855fbab71a3d7ec2d48f266 ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-5-img2.png" 1790762868.57855 1047 a44a3bbb9154f1b0c28a74fc6eaee4ab ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-5-img3.png" 1790762868.58755 1050 59c7a2aa713fb800463aef631c745e6d ""
+  "/home/koen/LaTeX-setup//plots/w30-failing-models-5.pgf" 1790762868.58855 32212 22f7e17fb2ce31d70b8c303c76dc2efc ""
   "/home/koen/LaTeX-setup//plots/w30-fe-ab-img0.png" 1790531649.57823 445 96b392c4b14332ef9e3460e45dee6fc0 ""
   "/home/koen/LaTeX-setup//plots/w30-fe-ab-mass-img0.png" 1790531629.04058 445 96b392c4b14332ef9e3460e45dee6fc0 ""
   "/home/koen/LaTeX-setup//plots/w30-fe-ab-mass-q-img0.png" 1790531606.18297 445 96b392c4b14332ef9e3460e45dee6fc0 ""
@@ -542,10 +554,10 @@
   "_minted/11CED82E0A3B61B941A9CF8BDA58514A.highlight.minted" 1790720479.90219 1100 734e02ff70ed07ac16f156eacdbfdcbf ""
   "_minted/_122A7D810153643AFC0801C65781968D.index.minted" 1790720480.2762 261 13e3c0457ad3cc272acb1edc0eca8a41 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w30.aux" 1790722651.95846 2195 0ca4a7513c175ca860e3e753cdcfcb70 "pdflatex"
-  "w30.bbl" 1790720480.64022 1264 783f4f1e8aa05fe866cb5e748d8b7be3 "bibtex w30"
-  "w30.out" 1790722651.96013 773 b3198f2dfc95c90f07e4ec9278915e95 "pdflatex"
-  "w30.tex" 1790722642.93831 9800 5a766bc48a72c36c43c5c2fad2d6e9c5 ""
+  "w30.aux" 1790762887.24986 2452 e77efe98be68ef4daf8fa7dce79b99e7 "pdflatex"
+  "w30.bbl" 1790757767.45609 1264 783f4f1e8aa05fe866cb5e748d8b7be3 "bibtex w30"
+  "w30.out" 1790762887.25086 889 1684f6be15e7684f1a9d50de251edb7f "pdflatex"
+  "w30.tex" 1790762687.2206 11024 ccb539ce9d7029e1eee53e516b567c9c ""
   (generated)
   "w30.aux"
   "w30.log"
