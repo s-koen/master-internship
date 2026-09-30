@@ -1027,3 +1027,99 @@ plt.close()
 
 
 # %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+suc_rs = []
+fail_rs = []
+suc_ys = []
+fail_ys = []
+
+grid_sorted = []
+rs = []
+for model in grid.models:
+    rs.append(model.params["R"])
+    grid_sorted.append(model)
+
+rs = np.array(rs)
+grid_sorted = np.array(grid_sorted)
+
+sort_idx = np.argsort(rs)
+grid_sorted = grid_sorted[sort_idx]
+
+for model in grid_sorted[36:][::-1]:
+    if model.envelope_mass[-1] > 0.01:
+        c1 = plt.cplot(
+            model.envelope_mass,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Reds",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+    else:
+        try:
+            arg_end = np.where(model.R > model.rl_1)[0][-1]
+            arg_start = np.where(model.R > model.rl_1)[0][0]
+        except IndexError:
+            continue
+        if len(model.envelope_mass[arg_start:arg_end]) == 0:
+            continue
+        c3 = plt.cplot(
+            model.envelope_mass,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Blues",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+for model in grid_sorted[:36][::-1]:
+    if model.envelope_mass[-1] > 0.01:
+        c1 = plt.cplot(
+            model.envelope_mass,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Reds",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+    else:
+        try:
+            arg_end = np.where(model.R > model.rl_1)[0][-1]
+            arg_start = np.where(model.R > model.rl_1)[0][0]
+        except IndexError:
+            continue
+        if len(model.envelope_mass[arg_start:arg_end]) == 0:
+            continue
+        c2 = plt.cplot(
+            model.envelope_mass,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Greens",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+
+plt.colorbar(c1, label="log$(M_\\textrm{env} / M_\\odot)$", pad=0.01, aspect=50)
+cbar = plt.colorbar(c3, pad=0.01, aspect=50)
+cbar.set_ticks(ticks=[], labels=[])
+cbar = plt.colorbar(c2, pad=0.01, aspect=50)
+cbar.set_ticks(ticks=[], labels=[])
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$R_\\textrm{star}$ ($R_\\odot$)")
+plt.ylabel("$\\dot{M} / \\dot{M}_\\textrm{crit}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w30-failing-models-6.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
