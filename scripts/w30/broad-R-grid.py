@@ -618,3 +618,412 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w30-s-fe-RL-fix.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+suc_rs = []
+fail_rs = []
+suc_ys = []
+fail_ys = []
+
+for model in grid.models:
+    if model.envelope_mass[-1] > 0.01:
+        fail_rs.append(model.params["R"])
+        arg = np.argmax(model.lg_mstar_dot_1)
+        fail_ys.append(1 / (10 ** model.lg_mstar_dot_1[arg] / model.envelope_mass[arg]))
+
+    else:
+        suc_rs.append(model.params["R"])
+        arg = np.argmax(model.lg_mstar_dot_1)
+        suc_ys.append(1 / (10 ** model.lg_mstar_dot_1[arg] / model.envelope_mass[arg]))
+
+suc_rs = np.array(suc_rs)
+fail_rs = np.array(fail_rs)
+suc_ys = np.array(suc_ys)
+fail_ys = np.array(fail_ys)
+
+
+indx_fail = np.argsort(fail_rs)
+fail_rs = fail_rs[indx_fail]
+fail_ys = fail_ys[indx_fail]
+
+indx_suc = np.argsort(suc_rs)
+suc_rs = suc_rs[indx_suc]
+suc_ys = suc_ys[indx_suc]
+
+plt.scatter(suc_rs, suc_ys, zorder=10, c="w", marker=".", s=150)
+plt.scatter(suc_rs, suc_ys, zorder=11, c="C2", marker=".", s=75)
+plt.plot(suc_rs, suc_ys, c="C2")
+plt.scatter(fail_rs, fail_ys, zorder=10, c="w", marker=".", s=150)
+plt.scatter(fail_rs, fail_ys, zorder=11, c="C3", marker=".", s=75)
+plt.plot(fail_rs, fail_ys, c="C3")
+
+
+axs.annotate(
+    "Failing models",
+    xy=(170, 20),
+    xycoords="data",
+    xytext=(0, 30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+axs.annotate(
+    "Succesful models",
+    xy=(600, 20),
+    xycoords="data",
+    xytext=(-50, 30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+
+plt.yscale("log")
+plt.xscale("log")
+
+plt.xlim(100)
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$R_\\textrm{RL,i}$ ($R_\\odot$)")
+plt.ylabel("$M_\\textrm{env} / \\textrm{max}(\\dot{M})$ (yr$^{-1}$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-failing-models-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+model.bulk_names
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+suc_rs = []
+fail_rs = []
+suc_ys = []
+fail_ys = []
+
+for model in grid.models:
+    if model.envelope_mass[-1] > 0.01:
+
+        fail_rs.append(model.sb.a[np.isfinite(model.sb.a)][0])
+        arg = np.argmax(model.lg_mstar_dot_1)
+        fail_ys.append(1 / (10 ** model.lg_mstar_dot_1[arg] / model.envelope_mass[arg]))
+
+    else:
+        suc_rs.append(model.sb.a[np.isfinite(model.sb.a)][0])
+        arg = np.argmax(model.lg_mstar_dot_1)
+        suc_ys.append(1 / (10 ** model.lg_mstar_dot_1[arg] / model.envelope_mass[arg]))
+
+suc_rs = np.array(suc_rs)
+fail_rs = np.array(fail_rs)
+suc_ys = np.array(suc_ys)
+fail_ys = np.array(fail_ys)
+
+
+indx_fail = np.argsort(fail_rs)
+fail_rs = fail_rs[indx_fail]
+fail_ys = fail_ys[indx_fail]
+
+indx_suc = np.argsort(suc_rs)
+suc_rs = suc_rs[indx_suc]
+suc_ys = suc_ys[indx_suc]
+
+plt.scatter(suc_rs, suc_ys, zorder=10, c="w", marker=".", s=150)
+plt.scatter(suc_rs, suc_ys, zorder=11, c="C2", marker=".", s=75)
+plt.plot(suc_rs, suc_ys, c="C2")
+plt.scatter(fail_rs, fail_ys, zorder=10, c="w", marker=".", s=150)
+plt.scatter(fail_rs, fail_ys, zorder=11, c="C3", marker=".", s=75)
+plt.plot(fail_rs, fail_ys, c="C3")
+
+
+axs.annotate(
+    "Failing models",
+    xy=(450, 20),
+    xycoords="data",
+    xytext=(0, 30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+axs.annotate(
+    "Succesful models",
+    xy=(1700, 20),
+    xycoords="data",
+    xytext=(-50, 30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$a_\\textrm{i}$ ($R_\\odot$)")
+plt.ylabel("$M_\\textrm{env} / \\textrm{max}(\\dot{M})$ (yr$^{-1}$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-failing-models-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+suc_rs = []
+fail_rs = []
+suc_ys = []
+fail_ys = []
+
+for model in grid.models:
+    arg_M = np.argmax(10**model.lg_mstar_dot_1 / model.star_mass)
+    M = np.max(10**model.lg_mstar_dot_1 / model.star_mass)
+    arg_a = np.argmax(
+        np.abs(np.diff(model.binary_separation) / np.diff(model.age))
+        / model.binary_separation[1:]
+    )
+    a = np.max(
+        np.abs(np.diff(model.binary_separation) / np.diff(model.age))
+        / model.binary_separation[1:]
+    )
+
+    res = [M, a]
+    arg_res = [arg_M, arg_a]
+
+    arg_max = np.argmax(res)
+    print(res[arg_max])
+    y = res[arg_max] * model.period_days[arg_res[arg_max]] / 365
+
+    if model.envelope_mass[-1] > 0.01:
+
+        fail_rs.append(model.sb.a[np.isfinite(model.sb.a)][0])
+        fail_ys.append(y)
+
+    else:
+        suc_rs.append(model.sb.a[np.isfinite(model.sb.a)][0])
+        suc_ys.append(y)
+
+suc_rs = np.array(suc_rs)
+fail_rs = np.array(fail_rs)
+suc_ys = np.array(suc_ys)
+fail_ys = np.array(fail_ys)
+
+
+indx_fail = np.argsort(fail_rs)
+fail_rs = fail_rs[indx_fail]
+fail_ys = fail_ys[indx_fail]
+
+indx_suc = np.argsort(suc_rs)
+suc_rs = suc_rs[indx_suc]
+suc_ys = suc_ys[indx_suc]
+
+plt.scatter(suc_rs, suc_ys, zorder=10, c="w", marker=".", s=150)
+plt.scatter(suc_rs, suc_ys, zorder=11, c="C2", marker=".", s=75)
+plt.plot(suc_rs, suc_ys, c="C2")
+plt.scatter(fail_rs, fail_ys, zorder=10, c="w", marker=".", s=150)
+plt.scatter(fail_rs, fail_ys, zorder=11, c="C3", marker=".", s=75)
+plt.plot(fail_rs, fail_ys, c="C3")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$a_\\textrm{i}$ ($R_\\odot$)")
+plt.ylabel(
+    "$\\textrm{max}(|\\dot{M}_\\textrm{d} / M_\\textrm{d}|,\\; |\\dot{a}/ a|) \\cdot P$"
+)
+plt.savefig("/home/koen/LaTeX-setup/plots/w30-failing-models-3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+suc_rs = []
+fail_rs = []
+suc_ys = []
+fail_ys = []
+
+grid_sorted = []
+rs = []
+for model in grid.models:
+    rs.append(model.params["R"])
+    grid_sorted.append(model)
+
+rs = np.array(rs)
+grid_sorted = np.array(grid_sorted)
+
+sort_idx = np.argsort(rs)
+grid_sorted = grid_sorted[sort_idx]
+
+for model in grid_sorted[::-1]:
+    if model.envelope_mass[-1] > 0.01:
+        c1 = plt.cplot(
+            model.R,
+            model.min_T,
+            np.log10(model.envelope_mass),
+            cmap="Reds",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+    else:
+        try:
+            arg_end = np.where(model.R > model.rl_1)[0][-1]
+            arg_start = np.where(model.R > model.rl_1)[0][0]
+        except IndexError:
+            continue
+        if len(model.envelope_mass[arg_start:arg_end]) == 0:
+            continue
+        c2 = plt.cplot(
+            model.R[arg_start:arg_end],
+            model.min_T[arg_start:arg_end],
+            np.log10(model.envelope_mass[arg_start:arg_end]),
+            cmap="Greens",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+
+plt.colorbar(c1, label="log$(M_\\textrm{env} / M_\\odot)$", pad=0.01, aspect=50)
+cbar = plt.colorbar(c2, pad=0.01, aspect=50)
+cbar.set_ticks(ticks=[], labels=[])
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$R_\\textrm{star}$ ($R_\\odot$)")
+plt.ylabel("min$(T)$ (K)")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w30-failing-models-4.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+model.bulk_names
+# %%
+
+for model in grid_sorted:
+    if model.envelope_mass[-1] > 0.01:
+        plt.plot(model.age, model.rl_1, c="C3")
+    else:
+        plt.plot(model.age, model.rl_1, c="C2")
+
+star = get_star(m=2.2)
+plt.plot(star.age, 10**star.log_R, c="C9", zorder=-1)
+plt.show()
+# %%
+
+for i, model in enumerate(grid_sorted[:9]):
+    plt.plot(model.age - 0.146e8, model.binary_separation, c=f"C{i}")
+    plt.plot(star.age, model.sb.a, c=f"C{i}")
+
+star = get_star(m=2.2)
+plt.plot(star.age, 10**star.log_R, c="C9", zorder=-1)
+plt.show()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+suc_rs = []
+fail_rs = []
+suc_ys = []
+fail_ys = []
+
+grid_sorted = []
+rs = []
+for model in grid.models:
+    rs.append(model.params["R"])
+    grid_sorted.append(model)
+
+rs = np.array(rs)
+grid_sorted = np.array(grid_sorted)
+
+sort_idx = np.argsort(rs)
+grid_sorted = grid_sorted[sort_idx]
+
+for model in grid_sorted[36:][::-1]:
+    if model.envelope_mass[-1] > 0.01:
+        c1 = plt.cplot(
+            model.R,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Reds",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+    else:
+        try:
+            arg_end = np.where(model.R > model.rl_1)[0][-1]
+            arg_start = np.where(model.R > model.rl_1)[0][0]
+        except IndexError:
+            continue
+        if len(model.envelope_mass[arg_start:arg_end]) == 0:
+            continue
+        c3 = plt.cplot(
+            model.R,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Blues",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+for model in grid_sorted[:36][::-1]:
+    if model.envelope_mass[-1] > 0.01:
+        c1 = plt.cplot(
+            model.R,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Reds",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+    else:
+        try:
+            arg_end = np.where(model.R > model.rl_1)[0][-1]
+            arg_start = np.where(model.R > model.rl_1)[0][0]
+        except IndexError:
+            continue
+        if len(model.envelope_mass[arg_start:arg_end]) == 0:
+            continue
+        c2 = plt.cplot(
+            model.R,
+            10**model.lg_mstar_dot_1 / model.quasi_adiabatic_Mdot,
+            np.log10(model.envelope_mass),
+            cmap="Greens",
+            vmin=-3,
+            vmax=np.log10(1.7),
+            linewidth=1,
+        )
+
+plt.colorbar(c1, label="log$(M_\\textrm{env} / M_\\odot)$", pad=0.01, aspect=50)
+cbar = plt.colorbar(c3, pad=0.01, aspect=50)
+cbar.set_ticks(ticks=[], labels=[])
+cbar = plt.colorbar(c2, pad=0.01, aspect=50)
+cbar.set_ticks(ticks=[], labels=[])
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$R_\\textrm{star}$ ($R_\\odot$)")
+plt.ylabel("$\\dot{M} / \\dot{M}_\\textrm{crit}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w30-failing-models-5.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
+
+# %%
