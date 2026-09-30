@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 import matplotlib.transforms as mtransforms
+import matplotlib.patheffects as path_effects
 
 
 def cplot(
@@ -73,6 +74,7 @@ def cplot(
         cmap=cmap,
         norm=norm,
         rasterized=rasterized,
+        path_effects=[path_effects.Stroke(capstyle="round")],
         **kwargs,
     )
 
