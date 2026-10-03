@@ -1,0 +1,48 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 31}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Fully Ionized Mean Molecular Weight}
+
+Since we are using the fully ionized mean molecular weights for the accreted material, it is only fair to compare this with the
+fully ionized mean molecular weights of MESA abundances.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-computed-mu}
+\end{figure}
+
+The gray lines are the \(\mu \) values as reported by \emph{MESA}.
+The colored lines are the
+computed values from the abundances and the horizontal line is \(\mu \) from \citet{asplund2009}.
+I \emph{really} do not understand why the computed mean molecular weights from the \emph{MESA}
+models are lower than reported \(\mu \) from \emph{MESA} and the computed \citet{asplund2009} \(\mu \)
+values.
+
+I feel like the \(\mu \) values reported from \emph{MESA} are more representative because they
+agree with \citet{asplund2009}(?
+)
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-min-entropy}
+\end{figure}
+
+\bibliography{master.bib}
+\end{document}
