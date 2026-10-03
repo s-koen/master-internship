@@ -329,12 +329,7 @@ for Z in ZS:
 plt.plot(ZS, mus, label="Asplund (2009) with Karakas (2016) $Y$")
 
 ab = Abundances(
-    None,
-    df,
-    mass=1,
-    m_acc=1,
-    mass_transfer_efficiency=1,
-    save_accretor=True,
+    None, df, mass=1, m_acc=1, mass_transfer_efficiency=1, save_accretor=True, new=False
 )
 
 
@@ -387,7 +382,7 @@ plt.annotate(
     fontsize=8,
 )
 plt.annotate(
-    "Minimum MESA TPAGB$\\phantom{\\textrm{tandard }Y}$",
+    "Minimum MESA TPAGB$\\phantom{\\textrm{standard }Y}$",
     xy=(ab.Z / Z_sun, nanmin),
     xycoords="data",
     xytext=(-100, 30),
@@ -402,7 +397,7 @@ fig.legend(loc="outside upper center", ncols=2)
 
 axs.spines[["right", "top"]].set_visible(False)
 axs.set_xscale("log")
-axs.set_xlabel("$Z$")
+axs.set_xlabel("$Z / Z_\\odot$")
 axs.set_ylabel("$\\mu$")
 plt.savefig("/home/koen/LaTeX-setup/plots/w30-re.pgf", format="pgf")
 plt.show()
