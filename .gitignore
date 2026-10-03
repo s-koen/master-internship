@@ -41,3 +41,4 @@ data/accretor-cache/
 **/*.o
 **/reference-histories/
 mesa-models/**
+/scripts/w31/profiles.pkl
