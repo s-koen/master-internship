@@ -39,6 +39,17 @@ from scripts.general_utils.mesa_grid_2 import MesaGrid, SimpleBinary
 grid = MesaGrid(f"{MASTER}/grid-broad-R-2026-09-27")
 df = AbundanceTables()
 
+grid_sorted = []
+rs = []
+for model in grid.models:
+    rs.append(model.params["R"])
+    grid_sorted.append(model)
+
+rs = np.array(rs)
+grid_sorted = np.array(grid_sorted)
+
+sort_idx = np.argsort(rs)
+grid_sorted = grid_sorted[sort_idx]
 # %%
 
 fig, axs = plt.subplots(
@@ -243,7 +254,7 @@ for model in grid_sorted[:26][::-1]:
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
 
-plt.xlabel("$m$ ($M_\\odot$)")
+plt.xlabel("$m_\\textrm{env}$ ($M_\\odot$)")
 plt.ylabel("Minimum entropy in envelope")
 
 cbar = plt.colorbar(sm, ax=plt.gca())
@@ -254,5 +265,335 @@ axs.spines[["right", "top"]].set_visible(False)
 plt.savefig("/home/koen/LaTeX-setup/plots/w31-min-entropy.pgf", format="pgf")
 plt.show()
 plt.close()
+
+# %%
+
+norm = plt.Normalize(150, 404)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted[:26][::-1]:
+    print(model.params["R"])
+    ents = []
+    ms = []
+    ts = []
+
+    profiles = model.profiles
+    for p in profiles:
+        args = np.argmax(p.entropy)
+        mass = p.R[:args]
+        entropy = p.entropy[:args]
+        argmin = np.argmin(entropy)
+        ents.append(entropy[argmin])
+        ms.append(mass[argmin])
+        # ents.append(p.entropy[0])
+        # ms.append(p.mass[0] - p.he_core_mass)
+    if model.envelope_mass[-1] > 0.01:
+        c = "C3"
+        plt.plot(ms, ents, c=c, linewidth=3, alpha=0.5, zorder=-1)
+    c = cmap(norm(model.params["R"]))
+    plt.plot(ms, ents, c=c)
+
+
+# for model in grid_sorted[40:41]:
+#     profiles = model.profiles
+#     for p in profiles:
+#         plt.plot(p.mass[0] - p.mass, p.entropy, c="C1")
+#
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+plt.xlabel("$m_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("Minimum entropy in envelope")
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"Initial Roche lobe radius ($R_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-min-entropy.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+profiles = grid_sorted[16].profiles[::2]
+
+norm = plt.Normalize(np.log10(0.001), np.log10(1.6))
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+for p in profiles:
+    argmax = np.argmax(p.entropy)
+    plt.plot(
+        p.mass[0] - p.mass[:argmax],
+        p.entropy[:argmax],
+        c=cmap(norm(np.log10(p.star_mass - p.he_core_mass))),
+    )
+    args = np.argwhere(p.gradT[:argmax] - p.grada[:argmax] > 0.1)
+    plt.plot(
+        p.mass[0] - p.mass[:argmax][args],
+        p.entropy[:argmax][args],
+        c="C9",
+        alpha=0.5,
+        linewidth=5,
+    )
+
+plt.xscale("log")
+plt.ylim(21, 23)
+plt.xlim(1e-8)
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"label")
+
+plt.show()
+print(p.bulk_names)
+
+# %%
+
+profiles = grid_sorted[17].profiles[1:5]
+for p in profiles:
+    plt.plot(p.R, p.gradT - p.grada)
+plt.show()
+
+print(p.bulk_names)
+
+
+# %%
+
+norm = plt.Normalize(150, 404)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted[:26][::-1]:
+    print(model.params["R"])
+    ents = []
+    ms = []
+    ts = []
+
+    profiles = model.profiles
+    for p in profiles:
+        args = np.argmax(p.entropy)
+        mass = p.R[:args]
+        entropy = p.entropy[:args]
+        argmin = np.argmin(entropy)
+        ents.append(entropy[argmin])
+        # ms.append(mass[argmin])
+        # ents.append(p.entropy[0])
+        ms.append(p.star_age)
+    if model.envelope_mass[-1] > 0.01:
+        c = "C3"
+        plt.plot(ms, ents, c=c, linewidth=3, alpha=0.5, zorder=-1)
+    c = cmap(norm(model.params["R"]))
+    plt.plot(ms, ents, c=c)
+
+
+# for model in grid_sorted[40:41]:
+#     profiles = model.profiles
+#     for p in profiles:
+#         plt.plot(p.mass[0] - p.mass, p.entropy, c="C1")
+#
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+plt.xlabel("$m_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("Minimum entropy in envelope")
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"Initial Roche lobe radius ($R_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-min-entropy.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+norm = plt.Normalize(150, 404)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted[:26][::-1]:
+    print(model.params["R"])
+    ents = []
+    ms = []
+    ts = []
+
+    profiles = model.profiles
+    for p in profiles:
+        args = np.argmax(p.entropy)
+        mass = p.mass[:args]
+        entropy = p.entropy[:args]
+        tt = p.thermal_time_to_surface[:args]
+        argmin = np.argmin(entropy)
+        ents.append(tt[argmin])
+        ms.append(mass[argmin])
+        # ents.append(p.entropy[0])
+        # ms.append(p.star_age)
+    if model.envelope_mass[-1] > 0.01:
+        c = "C3"
+        plt.plot(ms, ents, c=c, linewidth=3, alpha=0.5, zorder=-1)
+    c = cmap(norm(model.params["R"]))
+    plt.plot(ms, ents, c=c)
+
+
+# for model in grid_sorted[40:41]:
+#     profiles = model.profiles
+#     for p in profiles:
+#         plt.plot(p.mass[0] - p.mass, p.entropy, c="C1")
+#
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+plt.xlabel("$m_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("Minimum entropy in envelope")
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"Initial Roche lobe radius ($R_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-min-entropy.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+def rol(history):
+    q = history.star_2_mass / history.star_1_mass
+    return history.rl_1 * (1 + (0.441 * q ** (-0.325)) / (1 + 0.412 * q ** (-0.8)))
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted:
+    if model.envelope_mass[-1] > 0.01:
+        plt.plot(model.envelope_mass, model.R / rol(model), c="C3", linewidth=0.75)
+    else:
+        plt.plot(model.envelope_mass, model.R / rol(model), c="C2", linewidth=0.75)
+
+
+plt.axhline(1, c="C9", linewidth=0.75, zorder=-1)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{outer lobe}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w31-ROL.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+
+def radial_response(history):
+
+    argument_of_RLOF = np.argwhere(history.R / history.rl_1 > 1)[0][0]
+    r0 = history.R[argument_of_RLOF]
+    mdot = 10 ** history.lg_mstar_dot_1[argument_of_RLOF:]
+    ts = history.star_age[argument_of_RLOF:] - history.star_age[argument_of_RLOF]
+    dts = np.diff(ts)
+
+    v0 = 4 / 3 * np.pi * r0**3
+    m0 = history.star_mass[argument_of_RLOF]
+    rho0 = m0 / v0
+
+    rs = history.R[argument_of_RLOF:]
+
+    return ts, r0 + mdot / (4 * np.pi * r0**2 * rho0) * ts, rs
+
+
+ts, r, rr = radial_response(grid_sorted[14])
+
+plt.plot(ts, r)
+plt.plot(ts, rr)
+plt.show()
+# %%
+model.bulk_names
+# %%
+
+norm = plt.Normalize(150, 404)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted[:26][::-1]:
+    print(model.params["R"])
+    xs = []
+    ys = []
+
+    profiles = model.profiles
+    for p in profiles:
+
+        k_max = 0
+        k_min = 99999999
+        for k in p.zone:
+            if p.gradT[k] - p.grada[k] > 0.1:
+                if k > k_max:
+                    k_max = k
+                if k < k_min:
+                    k_min = k
+
+        dm = p.mass[k_min] - p.mass[k_max]
+        xs.append(p.mass[0] - p.envelope_mass)
+        ys.append(dm)
+
+    if model.envelope_mass[-1] > 0.01:
+        c = "C3"
+        plt.plot(xs, ys, c=c, linewidth=3, alpha=0.5, zorder=-1)
+    c = cmap(norm(model.params["R"]))
+    plt.plot(xs, ys, c=c)
+
+
+# for model in grid_sorted[40:41]:
+#     profiles = model.profiles
+#     for p in profiles:
+#         plt.plot(p.mass[0] - p.mass, p.entropy, c="C1")
+#
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+plt.xlabel("$m_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("Minimum entropy in envelope")
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"Initial Roche lobe radius ($R_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-min-entropy.pgf", format="pgf")
+plt.show()
+plt.close()
+
 
 # %%
