@@ -269,6 +269,7 @@ class Abundances:
         initial_abundance=None,
         sampling=100,
         m_acc=None,
+        sb=None,
         mass_transfer_efficiency: float = 1.0,
         full_mixing=False,
         save_accretor=False,
@@ -313,10 +314,15 @@ class Abundances:
 
             self.total_length = self.simple_end_idx + len(self.model.age[::sampling])
 
-        else:
+        elif type(sb) == type(None):
 
             self.simple_end_idx = -1
             self.total_length = len(simple.age[::sampling])
+
+        else:
+
+            self.simple_end_idx = (len(sb.age)) // sampling
+            self.total_length = self.simple_end_idx
 
         self.m_dup = np.zeros(self.total_length)
         self.tp_count = np.zeros(self.total_length)
@@ -388,7 +394,7 @@ class Abundances:
                 + simple.TP_count[self.simple_end_idx]
             )
 
-        else:
+        elif type(sb) == type(None):
             self.m_env = simple.m_env[::sampling]
             self.time = simple.age[::sampling]
             self.dt = np.concatenate([[0], np.diff(self.time)])
@@ -397,6 +403,31 @@ class Abundances:
                 self.m_dup[value["index"]] = value["mass"]
 
             self.tp_count = simple.TP_count[::sampling]
+
+        else:
+            self.m_env = simple.m_env[::sampling][: self.simple_end_idx]
+            self.time = simple.age[::sampling][: self.simple_end_idx]
+            self.dt = np.concatenate([[0], np.diff(self.time)])
+            valid = ~np.isnan(sb.m2[::sampling])
+            dm = np.diff(sb.m2[::sampling])
+            dm[~valid[:-1] | ~valid[1:]] = 0
+            self.dm_acc = np.concatenate(
+                [np.clip(dm, 0, np.inf), [self.m_env[-1] * mass_transfer_efficiency]]
+            )
+            print(len(self.dm_acc))
+            print(len(self.m_env))
+            self.total_mass_accreted = (
+                sb.m2[-1] + self.m_env[-1] * mass_transfer_efficiency - np.nanmin(sb.m2)
+            )
+            self.dm = np.concatenate(
+                [[0], -1 * np.diff(simple.mass[::sampling][: self.simple_end_idx])]
+            )
+            for key, value in self.dup_simple.items():
+                if value["index"] > self.simple_end_idx:
+                    break
+                self.m_dup[value["index"]] = value["mass"]
+
+            self.tp_count = simple.TP_count[::sampling][: self.simple_end_idx]
 
         self.total_mass_expelled = simple.mass[0] - simple.mass[-1]
         self.monash_models = defaultdict(list)
@@ -435,9 +466,12 @@ class Abundances:
             yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
             self.accreted_abundances = yields / self.total_mass_accreted
 
-        else:
+        elif type(sb) == type(None):
             yields = np.cumsum(envelope * self.dm[:, None], axis=0)[-1, :]
             self.accreted_abundances = yields / self.total_mass_expelled
+        else:
+            yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
+            self.accreted_abundances = yields / self.total_mass_accreted
 
         self.accreted_abundances /= np.sum(self.accreted_abundances)
 
@@ -460,7 +494,7 @@ class Abundances:
             age = self.time[self.age_arg]
             accretor = Accretor(
                 profiles=self.df.accretor_profiles,
-                age=self.time[-1],
+                age=age,
                 mass=m_acc,
                 new=new,
             )
@@ -472,7 +506,25 @@ class Abundances:
 
             self.mixing_mass = self.accretor_res.mixing_mass
         else:
-            if m_acc != None:
+            if type(sb) != None:
+                # accretor age is less obvious, but i think taking the time where R_RL < R_star is fine.
+                # TPAGB mass transfer is a really short duration event when compared to MS lifetimes.
+
+                m_acc = sb.m2[0]
+                accretor = Accretor(
+                    profiles=self.df.accretor_profiles,
+                    age=self.time[-1],
+                    mass=m_acc,
+                    new=new,
+                )
+                self.accretor_res = accretor.effective_mu_vs_depth(
+                    M_acc=self.total_mass_accreted,
+                    mu_acc=self.mu,
+                    save_profile=save_accretor,
+                )
+                self.mixing_mass = self.accretor_res.mixing_mass
+
+            elif m_acc != None:
                 accretor = Accretor(
                     profiles=self.df.accretor_profiles,
                     age=self.time[-1],
