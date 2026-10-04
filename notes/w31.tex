@@ -20,6 +20,8 @@
 \setuplayout
 \section{Fully Ionized Mean Molecular Weight}
 
+\subsection{Main Sequence}
+
 Since we are using the fully ionized mean molecular weights for the accreted material, it is only fair to compare this with the
 fully ionized mean molecular weights of MESA abundances.
 
@@ -39,10 +41,121 @@ I feel like the \(\mu \) values reported from \emph{MESA} are more representativ
 agree with \citet{asplund2009}(?
 )
 
+\subsection{Giant branch and Thermally Pulsing Asymptotic Giant Branch}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-GB-mu}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{The mean molecular weights reported by the \emph{MESA} models on the main sequence agree
+		\emph{very} well with the mean molecular weights of the \citet{asplund2009}.
+	}
+	\marginfignote{9}{
+		On the TPAGB, it is exactly opposite.
+		Here, the computed values
+		from the abundances agrees much better with the \(\mu \) computed from the \citet{karakas2016} abundances.
+	}
+	\centering
+	\incplot{w31-re}
+\end{figure}
+
+\newsection{Failing models II}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-ROL}
+\end{figure}
+
 \begin{figure}[ht]
 	\centering
 	\incplot{w31-min-entropy}
 \end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-entropy-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-dm-sad}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{The large jumps towards lower envelope masses are artificial and
+		originate only from the wavey nature of the superadiabicity profile.
+		I show this
+		in the plot below.
+	}
+	\marginfignote{7}{We do see though that the superadiabatic region is smallest in the
+		models that crash.
+		From the plot above, it also looks like the relative
+		with also increases quite a lot with the age of the TPAGB star, or the initial Roche
+		lobe radius, which is very similar in this case.
+	}
+	\centering
+	\incplot{w31-sad-m-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-superadiabatic-1}
+\end{figure}
+
+I want to return to this plot I made a while ago:
+
+\begin{figure}[ht]
+	\marginfignote{0}{This is a grid with a \(M=2.0\; M_\odot \) TPAGB-star, \(\gamma =1\)
+		and \(\delta =0.5\).
+		The pink squares are models that fail due to convergence problems.
+		The green models end because the models spiral in.
+	}
+	\centering
+	\incplot{w15-grid-1}
+\end{figure}
+
+I am curious if the models that fail, all happen in during the same thermal pulses.
+If however, it is possible to survive RLOF during a thermal pulse with a certain \(q\), but
+not with another \(q\).
+
+\begin{figure}[ht]
+	\marginfignote{0}{Clearly there are models that interact at roughly the same time (same
+		color), but some of them crash, (dashed) while others do not.}
+	\centering
+	\incplot{w31-grid-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I explicitly show this.
+		The models interact during the same pulse,
+		however, only the green lines, with the largest \(q\), survive.
+	}
+	\centering
+	\incplot{w31-see-same-pulse}
+\end{figure}
+
+I guess the mass loss rate is another important consideration.
+
+\begin{figure}[ht]
+	\marginfignote{0}{I show that here.
+		The models with the largest \(q\) have the
+		smallest \(\dot{M}\) and thus strip the star slower.
+		The differences here might seem minor, but this is a log scale so differences are
+		actually quite large.
+	}
+	\centering
+	\incplot{w31-see-same-pulse-2}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-see-same-pulse-3}
+\end{figure}
+
+\section{Grids}
 
 \bibliography{master.bib}
 \end{document}
