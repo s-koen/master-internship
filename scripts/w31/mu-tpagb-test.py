@@ -423,15 +423,26 @@ plt.scatter(ab.Z / Z_sun, np.nanmin(prof_heavy.mu), s=20)
 plt.scatter(ab.Z / Z_sun, np.nanmin(compute_mu_profile(prof_heavy)), s=20, c="C1")
 plt.plot(
     [ab.Z / Z_sun, ab.Z / Z_sun],
-    np.nanmin(compute_mu_profile(prof_heavy)),
-    s=20,
+    [np.nanmin(prof_heavy.mu), np.nanmin(compute_mu_profile(prof_heavy))],
     c="C1",
+    linewidth=1,
 )
 plt.annotate(
-    "MESA MS Karakas $Y$",
+    "MESA MS reported",
     xy=(ab.Z / Z_sun, np.nanmin(prof_heavy.mu)),
     xycoords="data",
-    xytext=(70, -15),
+    xytext=(40, -5),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->", color="C9", linewidth=0.75),
+    ha="left",
+    fontsize=8,
+)
+
+plt.annotate(
+    "MESA MS computed",
+    xy=(ab.Z / Z_sun, np.nanmin(compute_mu_profile(prof_heavy))),
+    xycoords="data",
+    xytext=(40, 0),
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->", color="C9", linewidth=0.75),
     ha="left",
@@ -444,13 +455,13 @@ prof_heavy_2 = mr.MesaData(
 )
 
 nanmin = np.nanmin(prof_heavy_2.mu)
-plt.scatter(ab.Z / Z_sun, nanmin, c="C0", s=20)
 ind = np.searchsorted(prof_heavy_2.logR[::-1], 0, "right")
 nanmax = prof_heavy_2.mu[::-1][ind]
+plt.scatter(ab.Z / Z_sun, compute_mu_profile(prof_heavy_2)[::-1][ind], c="C0", s=20)
 plt.scatter(ab.Z / Z_sun, nanmax, c="C0", s=20)
 plt.plot([ab.Z / Z_sun, ab.Z / Z_sun], [nanmin, nanmax], c="C0", linewidth=1)
 plt.annotate(
-    "Average MESA TPAGB Karakas $Y$",
+    "MESA TPAGB reported$\phantom{MESAaaa}$",
     xy=(ab.Z / Z_sun, nanmax),
     xycoords="data",
     xytext=(-100, 30),
@@ -460,7 +471,7 @@ plt.annotate(
     fontsize=8,
 )
 plt.annotate(
-    "Minimum MESA TPAGB$\\phantom{\\textrm{standard }Y}$",
+    "MESA TPAGB computed$\phantom{MESAaaa}$",
     xy=(ab.Z / Z_sun, nanmin),
     xycoords="data",
     xytext=(-100, 30),
@@ -477,7 +488,7 @@ axs.spines[["right", "top"]].set_visible(False)
 axs.set_xscale("log")
 axs.set_xlabel("$Z / Z_\\odot$")
 axs.set_ylabel("$\\mu$")
-# plt.savefig("/home/koen/LaTeX-setup/plots/w30-re.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w31-re.pgf", format="pgf")
 plt.show()
 plt.close()
 # %%

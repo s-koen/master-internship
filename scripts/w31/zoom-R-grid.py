@@ -262,8 +262,11 @@ plt.ylabel("$T_\\textrm{eff}$ (K)")
 plt.show()
 plt.close()
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
-norm = plt.Normalize(np.log10(0.01), np.log10(1.6))
+norm = plt.Normalize(np.log10(0.001), np.log10(1.6))
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
@@ -274,17 +277,29 @@ for p in model.profiles:
         p.logT,
         p.gradT - p.grada,
         c=cmap(norm(np.log10(p.mass[0] - p.he_core_mass))),
+        linewidth=0.75,
+        rasterized=True,
     )
 
 sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
+plt.axhline(0.1, c="C9", linewidth=0.75)
 
 cbar = plt.colorbar(sm, ax=plt.gca())
-cbar.set_label(r"label")
+cbar.set_label(r"log($M_\textrm{envelope} / M_\odot$)")
 plt.yscale("log")
 plt.ylim(1e-3, 1e1)
 
 plt.xlim(3.4, 5.4)
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("log$(T/\\textrm{K})$")
+plt.ylabel("$\\chi_\\textrm{sad} = \\nabla - \\nabla\\textrm{ad}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-superadiabatic-1.pgf", format="pgf", dpi=600
+)
 plt.show()
+plt.close()
 
 # %%

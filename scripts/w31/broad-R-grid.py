@@ -537,7 +537,7 @@ plt.show()
 model.bulk_names
 # %%
 
-norm = plt.Normalize(150, 404)
+norm = plt.Normalize(np.log10(150), np.log10(1000))
 cmap = plt.cm.viridis
 # color = cmap(norm(x))
 
@@ -546,7 +546,7 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-for model in grid_sorted[:26][::-1]:
+for model in grid_sorted[:-2][::-1]:
     print(model.params["R"])
     xs = []
     ys = []
@@ -557,20 +557,21 @@ for model in grid_sorted[:26][::-1]:
         k_max = 0
         k_min = 99999999
         for k in p.zone:
+            k = k - 1
             if p.gradT[k] - p.grada[k] > 0.1:
                 if k > k_max:
                     k_max = k
                 if k < k_min:
                     k_min = k
 
-        dm = p.mass[k_min] - p.mass[k_max]
-        xs.append(p.mass[0] - p.envelope_mass)
+        dm = (p.mass[k_min] - p.mass[k_max]) / (p.mass[0] - p.he_core_mass)
+        xs.append(p.mass[0] - p.he_core_mass)
         ys.append(dm)
 
     if model.envelope_mass[-1] > 0.01:
         c = "C3"
         plt.plot(xs, ys, c=c, linewidth=3, alpha=0.5, zorder=-1)
-    c = cmap(norm(model.params["R"]))
+    c = cmap(norm(np.log10(model.params["R"])))
     plt.plot(xs, ys, c=c)
 
 
@@ -584,16 +585,17 @@ sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 sm.set_array([])
 
 plt.xlabel("$m_\\textrm{env}$ ($M_\\odot$)")
-plt.ylabel("Minimum entropy in envelope")
+plt.ylabel("$M_\\textrm{sad} / M_\\textrm{env}$")
+plt.axhline(1, c="C9", linewidth=0.75)
 
+plt.yscale("log")
 cbar = plt.colorbar(sm, ax=plt.gca())
-cbar.set_label(r"Initial Roche lobe radius ($R_\odot$)")
+cbar.set_label(r"log($R_\textrm{RL} / R_\odot$)")
 
 
 axs.spines[["right", "top"]].set_visible(False)
-# plt.savefig("/home/koen/LaTeX-setup/plots/w31-min-entropy.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w31-dm-sad.pgf", format="pgf")
 plt.show()
 plt.close()
-
 
 # %%
