@@ -408,22 +408,29 @@ class Abundances:
             self.m_env = simple.m_env[::sampling][: self.simple_end_idx]
             self.time = simple.age[::sampling][: self.simple_end_idx]
             self.dt = np.concatenate([[0], np.diff(self.time)])
-            valid = ~np.isnan(sb.m2[::sampling])
-            dm = np.diff(sb.m2[::sampling])
+            valid = ~np.isnan(sb.m2[::sampling][: self.simple_end_idx])
+            dm = np.diff(sb.m2[::sampling][: self.simple_end_idx])
             dm[~valid[:-1] | ~valid[1:]] = 0
-            self.dm_acc = np.concatenate(
-                [np.clip(dm, 0, np.inf), [self.m_env[-1] * mass_transfer_efficiency]]
-            )
-            print(len(self.dm_acc))
-            print(len(self.m_env))
-            self.total_mass_accreted = (
-                sb.m2[-1] + self.m_env[-1] * mass_transfer_efficiency - np.nanmin(sb.m2)
-            )
+            if self.m_env[-1] > 0.04:
+                self.dm_acc = np.concatenate(
+                    [
+                        np.clip(dm, 0, np.inf),
+                        [self.m_env[-1] * mass_transfer_efficiency],
+                    ]
+                )
+                self.total_mass_accreted = (
+                    sb.m2[-1]
+                    + self.m_env[-1] * mass_transfer_efficiency
+                    - np.nanmin(sb.m2)
+                )
+            else:
+                self.dm_acc = np.concatenate([np.clip(dm, 0, np.inf), [0]])
+                self.total_mass_accreted = sb.m2[-1] - np.nanmin(sb.m2)
             self.dm = np.concatenate(
                 [[0], -1 * np.diff(simple.mass[::sampling][: self.simple_end_idx])]
             )
             for key, value in self.dup_simple.items():
-                if value["index"] > self.simple_end_idx:
+                if value["index"] >= self.simple_end_idx:
                     break
                 self.m_dup[value["index"]] = value["mass"]
 
@@ -505,6 +512,7 @@ class Abundances:
             )
 
             self.mixing_mass = self.accretor_res.mixing_mass
+            self.real = True
         else:
             if type(sb) != None:
                 # accretor age is less obvious, but i think taking the time where R_RL < R_star is fine.
@@ -524,6 +532,8 @@ class Abundances:
                 )
                 self.mixing_mass = self.accretor_res.mixing_mass
 
+                self.real = True
+
             elif m_acc != None:
                 accretor = Accretor(
                     profiles=self.df.accretor_profiles,
@@ -537,6 +547,7 @@ class Abundances:
                     save_profile=save_accretor,
                 )
                 self.mixing_mass = self.accretor_res.mixing_mass
+                self.real = False
             else:
                 raise Exception(
                     "need to provide m_acc when not providing a binary model"
@@ -606,7 +617,7 @@ class Abundances:
         initial_ms_masses = initial_ms_abundances * self.mixing_mass
         accreted_abundances = self.accreted_abundances
 
-        if self.model != None:
+        if self.real:
             accreted_masses = self.total_mass_accreted * self.accreted_abundances
             m_acc = self.total_mass_accreted
         else:
