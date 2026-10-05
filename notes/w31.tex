@@ -157,5 +157,126 @@ I guess the mass loss rate is another important consideration.
 
 \section{Grids}
 
+Using a very simple assumption, it is possible to quite accurately estimate the final accretor
+abundances of the detailed \emph{MESA} simulations using only the simple direct binary evolution
+in python with \lstinline[style=output, breaklines=true]|evolve.py|.
+The idea is this:
+
+Follow the simple binary evolution as predicted by \lstinline[style=output, breaklines=true]|evolve.py| exactly up to the point of RLOF.
+Once RLOF happens, assume that \emph{all} of the remaining envelope mass is expelled instantly and accreted with a certain efficiency.
+To match \emph{MESA} models, we should let \(\varepsilon_\text{MT}\) be this efficiency parameter.
+We then say that this material is accreted instantly at the last simple binary evolution step.
+
+Below, I show this assumption and compare it to the \(R_\text{RL}\) grid that I simulated last week.
+These all have \(M_\text{TPAGB,i} = 2.2\; M_\odot \), \(q=0.6\) and \(\varepsilon =0.25\).
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-simple-vs-detailed}
+\end{figure}
+
+Clearly, the two match very well, and the small differences are probably due to the final assumption that there is \emph{no} wind during RLOF and the small
+differences between the orbital evolution of the detailed \emph{MESA} models and the simple binary models.
+
+It is also very easy to simulate large binaries that miss RLOF.
+
+Below, I show the effects of the mass transfer efficiency on the final abundances.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-change-eps}
+\end{figure}
+
+Interestingly, it seems like it is very easy to create barium stars even \emph{without any} RLOF
+accretion.
+The enrichment for the purple line comes only from the wind accretion.
+
+If we do have \emph{RLOF} accretion, we can get higher abundances for smaller binaries.
+These binaries will also have smaller final periods.
+It also seems like we can create barium stars in very large binaries, just using wind accretion.
+
+Lastly, we see a quite sharp drop between the models that undergo RLOF and those that do not.
+I \emph{think} this is due to the envelope mass remaining during the last thermal pulse.
+If the star has, say \(0.5\; M_\odot \) of envelope remaining, this will be accreted with RLOF
+for models that \emph{just} undergo RLOF, while this will \emph{not} be accreted with the same
+efficiency for models that just barely miss RLOF.
+
+To test this, we can look at different masses, since this will shift the amount of
+envelope mass remaining during the last thermal pulse.
+
+Here again, we have \(q=0.6\) and \(\varepsilon =0.25\).
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-change-m}
+\end{figure}
+
+Here, it looks like the \(1.6\; M_\odot \) model has much more mass during the last thermal pulse
+then for example, the \(2.8\; M_\odot \) star.
+
+I confirm this below.
+\begin{figure}[ht]
+	\marginfignote{0}{Clearly, when plotting the radius as a fraction of the envelope (and also, but less clearly, just as
+		the envelope mass), we can see that the last thermal pulses for the various models happen
+		at different remaining envelope fractions.}
+	\marginfignote{10}{The \(1.6\; M_\odot \) model has relatively a lot more envelope mass remaining
+		when the last pulse happens then the \(2.8\; M_\odot \) model.
+		I think it then makes sense why
+		we see the sharp drop when the models miss RLOF and why the hight of this drop can depend quite
+		strongly on the mass.
+		It is really an effect of how much mass is remaining during the last TP.
+	}
+	\centering
+	\incplot{w31-env-mass-r}
+\end{figure}
+
+We can also change the initial mass ratio \(q\).
+This should have some interesting effects.
+In particular, the \citet{saladino2018, saladino2019} wind prescription is dependent on \(q\), \(q\) shifts
+the Roche lobe radius in an non-trivial way.
+A smaller \(q\) will mean that \(R_\text{RL}/a\) is
+larger, which means for the same initial \(R_\text{RL}\), the initial separation \(a_\text{i}\)
+is larger.
+
+Lastly, the RLOF mass transfer is depends on the initial mass ratio due to the fraction
+\(\Delta M_\text{acc} / M_\text{acc}\).
+In this simple case, \(\Delta M_\text{acc}\) is constant,
+while \(M_\text{acc} = q \cdot M_\text{TPAGB}\).
+So for smaller \(q\), we expect larger abundances
+during RLOF.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-change-q}
+\end{figure}
+
+We indeed see that the dependence on \(q\) is quite important.
+In this simple case, a smaller
+\(q\) will lead to \emph{higher} abundances during RLOF, but \emph{lower} abundances during the
+wind mass loss regime.
+
+In reality, the effect is probably more nuanced.
+I would not at all be surprised
+if there is some effect of \(q\) on the mass transfer efficiency.
+Since models with lower
+\(q\) tend to experience much more extreme RLOF, with higher mass loss rates, it would not
+surprise me if more of this mass is lost, which would counteract the effect of higher abundances
+due to the lower accretor mass.
+
+We also see that the discontinueity between the RLOF and the wind regime is much more pronounced
+for the lower \(q\) models.
+I think this is probably because the mass transfer effiency of
+wind is lowered with lower \(q\), while this is not the case during RLOF.
+
+\nextpage
+Let me explicitly test this.
+Below, I show the amount of accreted mass for the different \(q\) models.
+\begin{figure}[ht]
+	\marginfignote{0}{We can indeed clearly see that the models with lower \(q\) experience
+		much less wind accretion.}
+	\marginfignote{8}{There also exists a nice powerlaw between the accreted material due
+		to wind and the initial Roche lobe radius (or initial binary separation).}
+	\centering
+	\incplot{w31-change-q-macc}
+\end{figure}
+
 \bibliography{master.bib}
 \end{document}
