@@ -278,5 +278,134 @@ Below, I show the amount of accreted mass for the different \(q\) models.
 	\incplot{w31-change-q-macc}
 \end{figure}
 
+Since it is \emph{much} cheaper to compute the abundances of binary models using this simple approach
+then using detailed \emph{MESA} simulations, it makes sense to explore the parameter space using
+these simple models to get an \emph{estimate} for the abundances of the accretor.
+
+I decided to use the following parameters:
+\begin{itemize}
+	\item  48 logspaced initial Roche lobe radii from \(125\; R_\odot \) to \(1250\; R_\odot \).
+	\item  21 linearly spaced initial TPAGB masses from \(1.0\; M_\odot \) to \(3.0\; M_\odot \).
+	\item 19 linearly spaced initial mass ratios from \(q = 0.1\) to \(1.0\).
+	\item 20 logspaced RLOF accretion efficiencies from \(0.001\) to \(1\).
+\end{itemize}
+
+In total, this gives a grid of 383040 models, which only took a couple of hours to simulate\sidenote{Also because I used multithreading.
+}
+.
+
+Obviously, because this is a 4D grid, it is impossible to show in its entirety at once.
+To start, let me fix \(\varepsilon \) to \(\varepsilon \approx 0.113\).
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial TPAGB age in every panel.
+		The different panels have different initial mass-ratios.
+		The colors represent the expected final observed [s/Fe] for the accretor.
+
+		We can see clear differences between the different panels, but (as expected), the minimum mass for significant s-process enrichment is independent of \(q\).
+		It seems like we need at least a TPAGB star that is \(1.3\; M_\odot \) to get significantly large abundances.
+		We then also see that the highest abundances occur in systems with the heaviest donors.
+
+		This makes sense, these systems can donate more mass, \emph{and} they have more dredge-up then systems with lighter TPAGB donors.
+		Lastly, we see that the initial mass ratio changes the \emph{width} of the enriched region quite significantly.
+		This has two reasons:
+		\begin{enumd}
+			\item  The smaller \(q\) leads to faster orbital shrinkage due to winds, which shifts the boundary between RLOF and wind-only MT to lower initial Roche lobe radii.
+			\item  Wind mass transfer is much less efficient for low \(q\) than it is for high \(q\).
+			This means enrichment drops off much quicker in the wind-only regime for systems with small \(q\) then for systems with large \(q\).
+		\end{enumd}
+	}
+	\centering
+	\incplot{w31-R-M-s-q-panels}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial TPAGB age in every panel.
+		The different panels have different initial mass-ratios.
+		The colors represent the expected final observed [Ba/Fe] for the accretor.
+	}
+	\marginfignote{16}{There is only a small difference between these plots and the ones for [s/Fe].
+		In general [Ba/Fe] is a bit larger, only because of the 7 most important \(s\)-process elements,
+		barium is slightly more abundant than average.
+	}
+	\centering
+	\incplot{w31-R-M-ba-q-panels}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial TPAGB age in every panel.
+		The different panels have different initial mass-ratios.
+		The colors represent the expected final observed [hs/ls] for the accretor.
+	}
+	\marginfignote{16}{I do not think this plot is very important.
+		It seems to mostly be linked with the general [s/Fe] abundances.
+		If I would have to say something about this, it \emph{seems} like the get slightly lower [hs/ls] for the most massive stars compared to the [s/Fe] abundances, which do not show this decrease with mass.
+		This is consistent with \citet[][Figure 17]{karakas2016} where [hs/ls] rises to about 0.6 from \(M = 1.3\; M_\odot \) to \(\sim 2.4\; M_\odot \).
+		Then it decreases to about \(0.3\) for \(M=3.0\; M_\odot \).
+		Now since I am interpolating between these models, and slightly lower metallicity ones, we expect roughly the same properties, although maybe slightly higher because [hs/ls] seems to grow quite significantly with decreasing metallicity.
+	}
+	\centering
+	\incplot{w31-R-M-hsls-q-panels}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial TPAGB age in every panel.
+		The different panels have different initial mass-ratios.
+		The colors represent the expected final \(\Delta M_\text{acc}\) for the accretor.
+	}
+	\marginfignote{16}{These panels very clearly show the boundary between the RLOF (+ wind) regime and the winds only regime.
+		This is so visible because the winds, at least for the very large roche lobe radii, have a much lower accretion efficiency than the fixed value of \(0.113\) that I am plotting for RLOF.
+		However, this is not the full picture.
+
+		We can also see that for the larger \(q\)'s, there are 3 visible regimes.
+		The lowest accretion regime is still the winds only regime, but the regime to the left of that now clearly shows
+		the divide between systems that undergo significant amounts of wind before undergoing RLOF and systems that do not.
+		The systems that \emph{do} experience a lot of winds will generally have
+		slightly \emph{more} accreted material.
+		At first, this might seem at odds with the lower accretion in the winds only regime, but it is actually not, because the accretion efficiency of the
+		winds strongly depends on the size of the orbit.
+		The much smaller orbits during this wind RLOF + wind regime can lead to \emph{larger} wind accretion efficiencies than the fixed \(0.113\) for RLOF.
+	}
+	\centering
+	\incplot{w31-R-M-m2-q-panels}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial mass ratio \(q\) in every panel.
+		The different panels have different initial TPAGB masses.
+		The colors represent the expected final observed [s/Fe] values.
+	}
+	\marginfignote{16}{One thing that is immediately clear is that the lower mass models, up to say \(1.3\; M_\odot \) can \emph{not} or only under very specific circumstances create a barium star.
+		It then also seems like once you reach a certain TPAGB mass, say something like \(2.2\; M_\odot \), the final s-process abundances of the accretor do not change a lot.
+	}
+	\marginfignote{30}{The increase in [s/Fe] towards lower \(q\) in the RLOF regime is due to the lower accretor mass, while the decrease in width is due to the less efficient wind mass transfer.
+		This creates the general South-America shaped regions.
+	}
+	\marginfignote{40}{Lastly, there are quite clear horizontal lines visible in the abundances at
+		the wind only regime.
+		They seem to shift to lower \(q\) for larger donor masses.
+		It took me a \emph{long} time to realise this is due to the ``full mixing'' that gets enabled for companion stars
+		below \(0.8\; M_\odot \).
+	}
+	\centering
+	\incplot{w31-R-q-s-M-panels}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed mass \(M_\text{TPAGB,i} = 2.2\; M_\odot \).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial mass ratio \(q\) in every panel.
+		The different panels have different \(\varepsilon_\text{MT}\) values during RLOF.
+		The color represents the final [s/Fe] abundance.
+	}
+	\centering
+	\incplot{w31-R-q-s-eps-panels}
+\end{figure}
+
 \bibliography{master.bib}
 \end{document}

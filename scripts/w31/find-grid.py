@@ -49,6 +49,11 @@ from concurrent.futures import ProcessPoolExecutor
 
 # %%
 
+with open(
+    f"/home/koen/master-internship/scripts/w31/cache/df.pkl",
+    "rb",
+) as f:
+    df_results = pickle.load(f)
 df = AbundanceTables()
 
 
@@ -858,10 +863,10 @@ from concurrent.futures import ProcessPoolExecutor
 
 df = AbundanceTables()
 
-ms = np.arange(1, 3.01, 1)
+ms = np.arange(1, 3.01, 0.1)
 rs = np.logspace(np.log10(125), np.log10(12500), 48)
 
-qs = np.linspace(0.1, 1.0, 1)
+qs = np.linspace(0.1, 1.0, 19)
 epss = np.logspace(-3, 0, 20)
 
 
@@ -909,6 +914,12 @@ def run_model(ri):
                         "ba": get_ba(ab),
                     }
                 )
+
+    with open(
+        f"/home/koen/master-internship/scripts/w31/cache/df_{ri}.pkl",
+        "wb",
+    ) as f:
+        pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
     return results
 
 
@@ -933,7 +944,6 @@ if __name__ == "__main__":
 
 df_results = pd.DataFrame(results)
 print(df_results)
-# %%
 
 with open(
     f"/home/koen/master-internship/scripts/w31/cache/df.pkl",
@@ -943,7 +953,7 @@ with open(
 # %%
 from matplotlib.colors import TwoSlopeNorm
 
-subset = df_results[(df_results["m1i"] == 2) & (df_results["qi"] == 0.1)]
+subset = df_results[(df_results["eps"] == 2) & (df_results["qi"] == 0.6)]
 subset
 
 s_grid = subset.pivot(
@@ -1054,8 +1064,9 @@ def run_model(ri):
             m2f = bin.m2[-1]
 
         m2i = mi * q
+        ss.append(m2f - m2i)
 
-    return m2f - m2i
+    return ss
 
 
 if __name__ == "__main__":
@@ -1078,11 +1089,12 @@ with open(
     abss = pickle.load(f)
 print(abss)
 
+print(np.shape(abss))
 
 # %%
 
 fig, axs = plt.subplots(
-    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
 norm = plt.Normalize(0.2, 1)
@@ -1102,27 +1114,7 @@ sm.set_array([])
 cbar = plt.colorbar(sm, ax=plt.gca())
 cbar.set_label(r"$q_\textrm{i} = M_\textrm{a,i} / M_\textrm{d,i}$")
 
-plt.annotate(
-    "barium star",
-    xy=(600.65, 0.25),
-    xycoords="data",
-    xytext=(-26, 25),
-    textcoords="offset points",
-    arrowprops=dict(arrowstyle="<-", color="C9", linewidth=0.75),
-    c="C9",
-)
-
-plt.annotate(
-    "no barium star",
-    xy=(600.65, 0.25),
-    xycoords="data",
-    xytext=(-32, -30),
-    textcoords="offset points",
-    arrowprops=dict(arrowstyle="<-", color="C9", linewidth=0.75),
-    c="C9",
-)
-
-plt.axhline(0.25, linewidth=0.75, c="C9", zorder=-1)
+plt.yscale("log")
 
 plt.xscale("log")
 plt.xlabel("$R_\\textrm{RL,i}$ ($R_\\odot$)")
@@ -1130,3 +1122,475 @@ plt.ylabel("$\\Delta M_\\textrm{acc}$ ($M_\\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w31-change-q-macc.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+np.unique(df_results["eps"])
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+subset
+
+# %%
+
+
+subset = df_results[(np.abs(df_results["eps"] - 0.11288379) < 0.01)]
+
+
+norm = TwoSlopeNorm(
+    vcenter=0.25,
+    vmin=np.min(subset["s"]),
+    vmax=np.max(subset["s"]),
+)
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.11288379) < 0.01) & (df_results["qi"] == qs[i])
+    ]
+
+    s_grid = subset.pivot(
+        index="m1i",
+        columns="r_init",
+        values="s",
+    )
+
+    im = ax.pcolormesh(
+        s_grid.columns,
+        s_grid.index,
+        s_grid.values,
+        norm=norm,
+        cmap="coolwarm",
+        rasterized=True,
+    )
+
+    ax.set_xscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$[\mathrm{s}/\mathrm{Fe}]$",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
+fig.supylabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-R-M-s-q-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
+
+
+subset = df_results[(np.abs(df_results["eps"] - 0.11288379) < 0.01)]
+
+
+vmin = np.min(subset["hs"] - subset["ls"])
+vmax = np.max(subset["hs"] - subset["ls"])
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.11288379) < 0.01) & (df_results["qi"] == qs[i])
+    ]
+
+    hs_grid = subset.pivot(
+        index="m1i",
+        columns="r_init",
+        values="hs",
+    )
+    ls_grid = subset.pivot(
+        index="m1i",
+        columns="r_init",
+        values="ls",
+    )
+
+    im = ax.pcolormesh(
+        s_grid.columns,
+        s_grid.index,
+        hs_grid.values - ls_grid.values,
+        cmap="viridis",
+        rasterized=True,
+        vmin=vmin,
+        vmax=vmax,
+    )
+
+    ax.set_xscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$[\mathrm{hs}/\mathrm{ls}]$",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
+fig.supylabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-R-M-hsls-q-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
+
+
+subset = df_results[(np.abs(df_results["eps"] - 0.11288379) < 0.01)]
+
+
+vmin = np.min(subset["ba"])
+vmax = np.max(subset["ba"])
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.11288379) < 0.01) & (df_results["qi"] == qs[i])
+    ]
+
+    hs_grid = subset.pivot(
+        index="m1i",
+        columns="r_init",
+        values="ba",
+    )
+
+    im = ax.pcolormesh(
+        hs_grid.columns,
+        hs_grid.index,
+        hs_grid.values,
+        cmap="viridis",
+        rasterized=True,
+        vmin=vmin,
+        vmax=vmax,
+    )
+
+    ax.set_xscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$[\mathrm{Ba}/\mathrm{Fe}]$",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
+fig.supylabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-R-M-ba-q-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
+
+subset = df_results[(np.abs(df_results["eps"] - 0.11288379) < 0.01)]
+
+
+vmin = np.min(subset["m2f"] - subset["m1i"] * subset["qi"])
+vmax = np.max(subset["m2f"] - subset["m1i"] * subset["qi"])
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.11288379) < 0.01) & (df_results["qi"] == qs[i])
+    ]
+
+    mf_grid = subset.pivot(
+        index="m1i",
+        columns="r_init",
+        values="m2f",
+    )
+
+    mi_grid = subset.pivot(
+        index="m1i",
+        columns="r_init",
+        values="m1i",
+    )
+
+    im = ax.pcolormesh(
+        mf_grid.columns,
+        mf_grid.index,
+        mf_grid.values - mi_grid.values * qs[i],
+        cmap="viridis",
+        rasterized=True,
+        vmin=vmin,
+        vmax=vmax,
+    )
+
+    ax.set_xscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$\Delta M_\textrm{acc}$ ($M_\odot$)",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
+fig.supylabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-R-M-m2-q-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
+df_results.columns
+
+# %%
+
+
+subset = df_results[(np.abs(df_results["eps"] - 0.11288379) < 0.01)]
+
+
+norm = TwoSlopeNorm(
+    vcenter=0.25,
+    vmin=np.min(subset["s"]),
+    vmax=np.max(subset["s"]),
+)
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+ms = np.unique(df_results["m1i"])
+for i, ax in enumerate(axs):
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.11288379) < 0.01) & (df_results["m1i"] == ms[i])
+    ]
+
+    s_grid = subset.pivot(
+        index="qi",
+        columns="r_init",
+        values="s",
+    )
+
+    im = ax.pcolormesh(
+        s_grid.columns,
+        s_grid.index,
+        s_grid.values,
+        norm=norm,
+        cmap="coolwarm",
+        rasterized=True,
+    )
+
+    ax.set_xscale("log")
+    ax.set_title(f"$M = {ms[i]:.1f}\\;M_\\odot$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$[\mathrm{s}/\mathrm{Fe}]$",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
+fig.supylabel("$q$", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-R-q-s-M-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
+
+df_results
+# %%
+
+
+ms = np.unique(df_results["m1i"])
+subset = df_results[df_results["m1i"] == ms[12]]
+
+
+norm = TwoSlopeNorm(
+    vcenter=0.25,
+    vmin=np.min(subset["s"]),
+    vmax=np.max(subset["s"]),
+)
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+epss = np.unique(df_results["eps"])
+print(epss)
+for i, ax in enumerate(axs):
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - epss[i]) < 0.0001) & (df_results["m1i"] == ms[12])
+    ]
+
+    s_grid = subset.pivot(
+        index="qi",
+        columns="r_init",
+        values="s",
+    )
+
+    im = ax.pcolormesh(
+        s_grid.columns,
+        s_grid.index,
+        s_grid.values,
+        norm=norm,
+        cmap="coolwarm",
+        rasterized=True,
+    )
+
+    ax.set_xscale("log")
+    ax.set_title(f"$\\varepsilon = {epss[i]:.3f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$[\mathrm{s}/\mathrm{Fe}]$",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
+fig.supylabel("$q$", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w31-R-q-s-eps-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+# %%
+
+mi = 2.6
+ri = 3000
+
+ss = []
+qs = np.linspace(0.25, 0.5, 20)
+for q in qs:
+    print(q)
+    star = get_star(m=mi)
+
+    a_init = inv_roche_lobe(ri, q)
+    star, Options, q_init, a_init, e_init, Bins = call_evolution(
+        star, q, a_init, simple_only=True
+    )
+
+    bin = Bins[0]
+    plt.plot(bin.age, bin.beta)
+
+plt.show()
+# %%
