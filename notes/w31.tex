@@ -63,25 +63,101 @@ agree with \citet{asplund2009}(?
 
 \newsection{Failing models II}
 
+I wanted to look into the models that fail when undergoing RLOF early on in the evolution.
+
+Below, I start by plotting the ratio between the star radius and the outer Roche lobe radius as
+a function of the envelope mass.
+
 \begin{figure}[ht]
+	\marginfignote{0}{Clearly the models that fail all \emph{would} obtain very large outer lobe
+		overfill ratios.
+		However, this is clearly not \emph{the} reason that the models crash.
+	}
 	\centering
 	\incplot{w31-ROL}
 \end{figure}
 
+I read \citet{temmink2022} again carefully and there is one thing that I think could be important.
+If I understand the assumptions in the paper correctly, the idea is the following:
+
+If the mass loss rate is lower than a critical mass loss rate \(\dot{M}_\text{crit}\), the local
+thermal timescale of outer layers is able to ''keep up`` with the envelope stripping and it
+can maintain its local thermal equilibrium.
+This thermal equilibrium is also what allows the star
+to maintain its superadiabatic surface layers.
+
+\citet{temmink2022} then writes: ``In this scenario, the new sub-surface layers have a lower entropy than before the mass loss.
+Thus, similar to what happens in a radiative star, the sub-surface layers occupy a smaller volume after decompression.
+''
+
+If I understand this correctly, any \(\delta S < 0\) for a layer would mean the radius of that layer decreases?
+Is that right?
+
+I noticed some interesting things in the entropy profiles of the stars.
+Below, I plot the minimum entropy that the stars have in their envelope.
+This is generally
+at the end of the superadiabatic sub-surface layers.
+After this minimum, the entropy slightly
+increases again towards the surface.
+
 \begin{figure}[ht]
+	\marginfignote{0}{Unfortunately, I have a limited amount of models, so the lines are not
+		very smooth, \emph{but}, it should be clear that the models that crash actually increase
+		their minimum entropy when they are stripped.
+		At some point, when the initial Roche lobe radius
+		becomes large enough, this is no longer the case and the minimum entropy stays pretty constant.
+	}
 	\centering
 	\incplot{w31-min-entropy}
 \end{figure}
 
+I decided to simulate a grid of models with initial Roche lobe radii between the last model that
+failed at the first model that succeeded.
+I saved a bunch of custom additional history data to
+hopefully help diagnose this.
+
 \begin{figure}[ht]
+	\marginfignote{0}{This first plot simply shows the Roche lobe radius and the radius of the stars
+		as a function of time.
+		We can see that all of the failing models interact during 1 thermal pulse,
+		while all of the succeeding models interact 1 thermal pulse later.
+	}
+	\marginfignote{20}{The bottom panel again shows the minimum entropy as a function of envelope mass.
+		This time the resolution is much better because I compute this for every history step.
+		We can now even more clearly see that the failing models tend to get much larger
+		minimum entropies when losing their envelope.
+	}
 	\centering
 	\incplot{w31-entropy-2}
 \end{figure}
 
+I also tried to create a similar plot for the entropy in the convective part of the envelope,
+but my code for selecting this was not great.
+Instead, I show the entropy profiles for a star that completed RLOF:
 \begin{figure}[ht]
+	\marginfignote{0}{Clearly, not only the minimum entropy changes, but the average entropy
+		in the convective envelope changes too.
+		I am not sure how this would change the
+		mass transfer stability criterion.
+		I think larger entropy should mean a more extended star, but
+		I am not sure.
+	}
+	\centering
+	\incplot{w31-full-S-profile}
+\end{figure}
+
+I then also looked at the width of the superadiabatic region.
+\begin{figure}[ht]
+	\marginfignote{0}{I am not super sure \emph{why} this
+		would be important, but there is again a clear distinction between the models that fail and those that do not.
+		In general, the larger initial Roche lobe radii have larger superadiabatic regions when losing mass.
+		This is probably due to their later evolutionary state when interacting.
+	}
 	\centering
 	\incplot{w31-dm-sad}
 \end{figure}
+
+The figure below shows the more detailed values
 
 \begin{figure}[ht]
 	\marginfignote{0}{The large jumps towards lower envelope masses are artificial and
@@ -92,7 +168,7 @@ agree with \citet{asplund2009}(?
 	\marginfignote{7}{We do see though that the superadiabatic region is smallest in the
 		models that crash.
 		From the plot above, it also looks like the relative
-		with also increases quite a lot with the age of the TPAGB star, or the initial Roche
+		width also increases quite a lot with the age of the TPAGB star, or the initial Roche
 		lobe radius, which is very similar in this case.
 	}
 	\centering
@@ -100,6 +176,11 @@ agree with \citet{asplund2009}(?
 \end{figure}
 
 \begin{figure}[ht]
+	\marginfignote{0}{The horizontal line shows the criterion that \citet{temmink2022} uses for superadiabicity.
+		The waves can cause models to show large jumps in the plot above.
+		These are not "real".
+	}
+	\marginfignote{10}{This is a \(R_\text{RL,i =236.875}\; R_\odot \), \(M_\text{TAPGB,i} = 2.2\; M_\odot \), \(q=0.6\) and \(\varepsilon =0.25\) model.}
 	\centering
 	\incplot{w31-superadiabatic-1}
 \end{figure}
@@ -126,6 +207,7 @@ not with another \(q\).
 	\centering
 	\incplot{w31-grid-1}
 \end{figure}
+\nextpage
 
 \begin{figure}[ht]
 	\marginfignote{0}{Here, I explicitly show this.
@@ -149,7 +231,6 @@ I guess the mass loss rate is another important consideration.
 	\incplot{w31-see-same-pulse-2}
 \end{figure}
 
-\nextpage
 \begin{figure}[ht]
 	\centering
 	\incplot{w31-see-same-pulse-3}
@@ -243,6 +324,8 @@ while \(M_\text{acc} = q \cdot M_\text{TPAGB}\).
 So for smaller \(q\), we expect larger abundances
 during RLOF.
 
+\nextpage
+
 \begin{figure}[ht]
 	\centering
 	\incplot{w31-change-q}
@@ -266,7 +349,6 @@ for the lower \(q\) models.
 I think this is probably because the mass transfer effiency of
 wind is lowered with lower \(q\), while this is not the case during RLOF.
 
-\nextpage
 Let me explicitly test this.
 Below, I show the amount of accreted mass for the different \(q\) models.
 \begin{figure}[ht]
@@ -351,6 +433,7 @@ To start, let me fix \(\varepsilon \) to \(\varepsilon \approx 0.113\).
 	\incplot{w31-R-M-hsls-q-panels}
 \end{figure}
 
+\nextpage
 \begin{figure}[ht]
 	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
 	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial TPAGB age in every panel.
@@ -374,7 +457,6 @@ To start, let me fix \(\varepsilon \) to \(\varepsilon \approx 0.113\).
 	\incplot{w31-R-M-m2-q-panels}
 \end{figure}
 
-\nextpage
 \begin{figure}[ht]
 	\marginfignote{4}{Fixed \(\varepsilon \approx 0.113\).}
 	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial mass ratio \(q\) in every panel.
@@ -403,8 +485,53 @@ To start, let me fix \(\varepsilon \) to \(\varepsilon \approx 0.113\).
 		The different panels have different \(\varepsilon_\text{MT}\) values during RLOF.
 		The color represents the final [s/Fe] abundance.
 	}
+	\marginfignote{16}{We quite clearly see that, even for near-zero RLOF accretion efficiency, a large part of the parameter space can still create barium stars.
+		This is quite surprising to me!
+		Wind accretion alone (even in the RLOF regime) seems to be enough to create mild s-process enriched stars already.
+	}
+	\marginfignote{30}{Obviously, as we move to larger accretion efficiencies, the enhancements increase as well.
+		There is however not \emph{much} difference between no RLOF accretion and something like \(\varepsilon_\text{RL} = 0.234\).
+	}
+	\marginfignote{40}{A last important difference is on the left sides of the panels.
+		This regime consists of systems that only experience RLOF with \emph{very little to no} wind mass transfer.
+		Therefore, a RLOF accretion efficiency of near-zero would just mean no mass is transferred to the accretor at all.
+		This shifts the region of possible s-process enhanced stars from the \(M_\text{DUP}\) region to the RLOF + wind region.
+	}
 	\centering
 	\incplot{w31-R-q-s-eps-panels}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed mass \(M_\text{TPAGB,i} = 2.2\; M_\odot \).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial mass ratio \(q\) in every panel.
+		The different panels have different \(\varepsilon_\text{MT}\) values during RLOF.
+		The color represents the amount of accreted mass.
+	}
+	\marginfignote{16}{This plot makes the effect I was describing above visible.
+		We can see that, for
+		low accretion efficiencies, there is an island of systems that can get mass strictly due to wind,
+		while for higher accretion efficiencies, the parameter space is divided into 2 where there is the
+		RLOF (+ wind) regime and the wind-only regime.
+	}
+	\centering
+	\incplot{w31-R-q-dm-eps-panels}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{4}{Fixed mass \(M_\text{TPAGB,i} = 1.3\; M_\odot \).}
+	\marginfignote{6}{This grid shows the initial Roche lobe radius versus the initial mass ratio \(q\) in every panel.
+		The different panels have different \(\varepsilon_\text{MT}\) values during RLOF.
+		The color represents the final [s/Fe] abundance.
+	}
+	\marginfignote{16}{Since these panels are all for a much lower mass star, we can see that it is
+		now much more difficult to create an s-process enhanced star.
+		The value of \(\varepsilon \) is
+		also not very dependent on the shape of the region again.
+		We only really see major differences
+		in a very small part of the parameter space, at Roche lobe radii that do not experience any wind, \emph{but} have already achieved some envelope enrichment.
+	}
+	\centering
+	\incplot{w31-R-q-s-eps-2-panels}
 \end{figure}
 
 \bibliography{master.bib}
