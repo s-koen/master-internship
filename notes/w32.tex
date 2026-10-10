@@ -25,7 +25,7 @@
 	\incplot{w32-R-M-s-q-panels}
 \end{figure}
 
-\section{Mean Molecular Weight}
+\newsection{Mean Molecular Weight}
 
 \subsection{Giant Branch Dip}
 
@@ -45,6 +45,100 @@ an evolved RGB star over these tables.
 	}
 	\centering
 	\incplot{w32-eos}
+\end{figure}
+
+Now that the regions of the different equations of state tables are clear, and we know that
+our giant branch models cross into the Skye EOS just before the core, we can again make a plot
+of the \(\mu \) as a function of depth in the star.
+For the sake of clarity, I chose \(\log R\) for
+the horizontal axis, but obviously one could chose various different quantities such as internal mass,
+temperature or pressure.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This plot \emph{clearly} shows that the pit in the \(\mu \) profile is not real.
+		The Skye EOS \citep{jermyn2021} \emph{assumes} complete ionization, which, according to the \href{https://freeeos.sourceforge.net}{FreeEOS}, is clearly not
+		true up until the deepest parts of its influence.
+		The cyan blending region just ensures the two
+		different tables do not produce discontinuous profiles.
+	}
+	\marginfignote{13}{We also clearly see that my naive complete ionization prescription to compute the mean molecular weight perfectly matches the Skye \citep{jermyn2021}
+		EOS, and starts to diverge in the blending region, just as I would expect based on the fact that Skye assumes full ionization and FreeEOS does not.
+	}
+	\centering
+	\incplot{w32-EOS-profile-RGB}
+\end{figure}
+
+\subsection{Main Sequence}
+
+Now, let's look at the main sequence.
+Maybe here we see a similar crossing between EOS regimes.
+
+\begin{figure}[ht]
+	\marginfignote{0}{I once again plot the \(\rho\)-\(T\) plane and the regions of the different
+		EOS tables.
+		I then plot 3 different MS models with different masses and \(X(\text{H})_\text{center} = 0.65\).
+		I also indicate where the hydrogen burning core boundary is with a black dot.
+	}
+	\marginfignote{12}{The plot clearly shows that the heaviest model here crosses into the Skye EOS \citep{jermyn2021}
+		in its core.
+		The entirety of the \(1\; M_\odot \) model uses the \href{https://freeeos.sourceforge.net}{FreeEOS} table and the \(0.4\; M_\odot\) crosses into the OPAL/SCVH region \citep{rogers2002}.
+	}
+	\centering
+	\incplot{w32-eos-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Again, we see that the mean molecular weight of the Skye EOS agrees perfectly
+		with my fully ionized computation.
+		As soon as we enter the blended region, the mean molecular
+		weight starts to deviate.
+	}
+	\marginfignote{10}{The weird thing is that the \citet{asplund2009} mean molecular weight agrees with the \href{https://freeeos.sourceforge.net}{FreeEOS} nearly perfectly.}
+	\centering
+	\incplot{w32-mu-2}
+\end{figure}
+
+It took me an embarrassingly long time, but I \emph{think} I have finally been able to figure out what causes the differences in \(\mu \) between the Skye EOS and FreeEOS.
+The differences can be explained by the masses of the elements that are used in the computation of \(\mu \).
+My naive approach for complete ionization for the
+\emph{MESA} abundances was to simply take integer mass numbers equal to the number of protons plus neutrons.
+\emph{However}, for the \citet{asplund2009} mean molecular weight
+computations, I use the \href{https://en.wikipedia.org/wiki/Standard_atomic_weight#cite_note-23}{Standard atomic weight}.
+This is a bit different.
+
+It seems like Skye \citep{jermyn2021} uses the mass number, while the FreeEOS uses the atomic mass.
+In fact, when I compute the \emph{MESA} mean molecular weight
+using both methods, we can clearly see that the computed mean molecular weights match depending on which mass is used.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Clearly, the ``mass number'' mean molecular weights match the Skye \citep{jermyn2021}
+		EOS mean molecular weights.
+		The ``atomic mass'' mean molecular weights match the \href{https://freeeos.sourceforge.net}{FreeEOS} mean molecular weights.
+	}
+	\centering
+	\incplot{w32-mu-3}
+\end{figure}
+
+This is not necessarily a problem.
+For all main sequence models, the blending region, if it even exists, is \emph{inside} the core.
+This means that for the entire mixing region, the \href{https://freeeos.sourceforge.net}{FreeEOS} mean molecular weight is used.
+I use this same ``atomic mass'' prescription to compute \(\mu \) for the accreted material, so to compute the
+mixing mass, we can simply use the full ionization with atomic masses.
+There are then no inconsistencies.
+
+I have now implemented the fully ionized mean molecular weight computation into the accretor code.
+Since it agrees so well with the normal \emph{MESA} EOS, there are no noticeable differences
+in the abundances or mixing masses.
+
+\subsection{Giant Branch Dip 2}
+I also plot the two different computation methods for the late RGB model.
+\begin{figure}[ht]
+	\marginfignote{0}{Again, clearly the ``mass number'' mean molecular weights match the Skye \citep{jermyn2021}
+		EOS mean molecular weights.
+		The ``atomic mass'' mean molecular weights match the \href{https://freeeos.sourceforge.net}{FreeEOS} mean molecular weights.
+	}
+	\centering
+	\incplot{w32-EOS-profile-RGB-2}
 \end{figure}
 
 \bibliography{master.bib}
