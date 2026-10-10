@@ -1,0 +1,51 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 32}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Grid}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w32-R-M-s-q-panels}
+\end{figure}
+
+\section{Mean Molecular Weight}
+
+\subsection{Giant Branch Dip}
+
+Using the \lstinline[style=output, breaklines=true]|EOS_plotter| routine from \emph{MESA}, it
+is possible to clearly plot the different EOS tables that MESA uses, and in which regions in
+the \(\rho\)-\(T\) diagram.
+Below, I show this, and I plot the \(\rho\)-\(T\) profile for
+an evolved RGB star over these tables.
+\begin{figure}[ht]
+	\marginfignote{0}{The RGB profile is colored, where very red regions correspond to regions with relatively large mean molecular weight \(\mu \).
+		Blue regions correspond to the lowest mean molecular weights, and white corresponds to an average mean molecular weight of the envelope.
+		I think this figure quite clearly shows why we see a pit in the mean molecular weight.
+		The core boundary happens inside the Skye EoS table \citep{jermyn2021}.
+		This table \emph{assumes} complete ionization.
+		Once the profile crosses over to the boundary region, we see that the mean molecular weight increases until it crosses
+		the \href{https://freeeos.sourceforge.net}{FreeEOS} regime, which does \emph{not assume} complete ionization.
+	}
+	\centering
+	\incplot{w32-eos}
+\end{figure}
+
+\bibliography{master.bib}
+\end{document}
