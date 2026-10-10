@@ -272,6 +272,7 @@ cmap = plt.cm.viridis
 
 model = grid_sorted[15]
 
+print(model.params["R"])
 for p in model.profiles:
     plt.plot(
         p.logT,
@@ -302,4 +303,101 @@ plt.savefig(
 plt.show()
 plt.close()
 
+# %%
+
+norm = plt.Normalize(230, 240)
+cmap = plt.cm.viridis
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted:
+    print(model.params["R"])
+    plt.plot(
+        model.envelope_mass,
+        (model.sad_s_m_max - model.sad_s_m_min),
+        c=cmap(norm(model.params["R"])),
+    )
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$R_\textrm{RL,i}$ ($R_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel(r"$m_\textrm{env}$ ($M_\odot$)")
+plt.ylabel("$M_\\textrm{sad} / M_\\textrm{env}$")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-sad-m-2.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+norm = plt.Normalize(230, 240)
+cmap = plt.cm.viridis
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+for model in grid_sorted:
+    print(model.params["R"])
+    plt.plot(
+        model.envelope_mass,
+        (model.sad_s_m_min),
+        c=cmap(norm(model.params["R"])),
+    )
+
+    plt.plot(
+        model.envelope_mass,
+        (model.sad_s_m_max),
+        c=cmap(norm(model.params["R"])),
+    )
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$R_\textrm{RL,i}$ ($R_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel(r"$m_\textrm{env}$ ($M_\odot$)")
+plt.ylabel("$M_\\textrm{sad} / M_\\textrm{env}$")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-sad-m-2.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+profiles = grid_sorted[10].profiles
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+norm = plt.Normalize(0, 1.7)
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+for p in profiles[::-1]:
+    args = np.argwhere(p.gradT - p.grada > 0.03)
+    plt.plot(p.mass, p.entropy, c=cmap(norm(p.mass[0] - p.he_core_mass)))
+
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"Envelope mass ($M_\odot$)")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$m$ ($M_\\odot$)")
+plt.ylabel("$S$ (kergs/baryon)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w31-full-S-profile.pgf", format="pgf")
+plt.show()
+plt.close()
 # %%

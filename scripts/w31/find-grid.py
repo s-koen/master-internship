@@ -1674,8 +1674,8 @@ ms = np.unique(df_results["m1i"])
 subset = df_results[df_results["m1i"] == ms[12]]
 
 
-vmin = (np.min(subset["m2f"] - subset["m1i"] * subset["qi"]),)
-vmax = (np.max(subset["s"] - subset["m1i"] * subset["qi"]),)
+vmin = np.log10(np.min(subset["m2f"] - subset["m1i"] * subset["qi"]))
+vmax = np.log10(np.max(subset["s"] - subset["m1i"] * subset["qi"]))
 
 print(ms[12])
 
@@ -1698,18 +1698,31 @@ for i, ax in enumerate(axs):
         (np.abs(df_results["eps"] - epss[i]) < 0.0001) & (df_results["m1i"] == ms[12])
     ]
 
-    s_grid = subset.pivot(
+    m2f_grid = subset.pivot(
         index="qi",
         columns="r_init",
-        values="s",
+        values="m2f",
+    )
+
+    m1i_grid = subset.pivot(
+        index="qi",
+        columns="r_init",
+        values="m1i",
+    )
+
+    qi_grid = subset.pivot(
+        index="qi",
+        columns="r_init",
+        values="qi",
     )
 
     im = ax.pcolormesh(
         s_grid.columns,
         s_grid.index,
-        s_grid.values,
-        norm=norm,
-        cmap="coolwarm",
+        np.log10(m2f_grid.values - m1i_grid.values * qi_grid.values),
+        vmin=-3,
+        vmax=vmax,
+        cmap="viridis",
         rasterized=True,
     )
 
@@ -1720,9 +1733,10 @@ for i, ax in enumerate(axs):
 cb = fig.colorbar(
     im,
     ax=axs[1:3],
-    label=r"$[\mathrm{s}/\mathrm{Fe}]$",
+    label=r"log$(\Delta M_\textrm{acc} / M_\odot)$",
     orientation="horizontal",
     location="top",
+    extend="min",
 )
 cb.ax.set_xscale("linear")
 
@@ -1733,7 +1747,63 @@ for ax in axs:
 fig.supxlabel("$R_\\textrm{RL}$ ($R_\\odot$)", fontsize=10)
 fig.supylabel("$q$", fontsize=10)
 plt.savefig(
-    "/home/koen/LaTeX-setup/plots/w31-R-q-s-eps-panels.pgf", format="pgf", dpi=600
+    "/home/koen/LaTeX-setup/plots/w31-R-q-dm-eps-panels.pgf", format="pgf", dpi=600
 )
 plt.show()
 plt.close()
+
+
+# %%
+def abundance_map(
+    df,
+    x,
+    y,
+    z,
+    fixed=None,
+    cmap="coolwarm",
+):
+    subset = df.copy()
+
+    if fixed is not None:
+        for key, value in fixed.items():
+            subset = subset[np.isclose(subset[key], value)]
+
+    grid = subset.pivot_table(
+        index=y,
+        columns=x,
+        values=z,
+        aggfunc="mean",
+    )
+
+    fig, ax = plt.subplots()
+
+    im = ax.pcolormesh(
+        grid.columns,
+        grid.index,
+        grid.values,
+        shading="nearest",
+        cmap=cmap,
+    )
+
+    if x in ["r_init", "eps"]:
+        ax.set_xscale("log")
+    if y in ["r_init", "eps"]:
+        ax.set_yscale("log")
+
+    fig.colorbar(im, ax=ax)
+
+    return fig, ax
+
+
+fig, ax = abundance_map(
+    df_results,
+    x="r_init",
+    y="eps",
+    z="s",
+    fixed={"m1i": 2.2, "qi": 0.6},
+)
+
+ax.set_xlabel(r"$R_{\rm init}/R_\odot$")
+ax.set_ylabel(r"$\epsilon$")
+plt.show()
+# %%
