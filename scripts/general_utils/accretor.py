@@ -4,6 +4,33 @@ import pickle
 from numpy.typing import NDArray
 
 
+def compute_mu_profile(profile) -> NDArray[np.float64]:
+    names = ["h1", "he3", "he4", "c12", "n14", "o16", "ne20", "mg24"]
+    z_s = [1, 2, 2, 6, 7, 8, 10, 12]
+    # atomic weights from https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl
+    a_s = [
+        1.00782503224,
+        3.0160293201,
+        4.00260325413,
+        12,
+        14.00307400443,
+        15.99491461957,
+        19.9924401762,
+        23.985041697,
+    ]
+
+    mu_inv = 0
+    X_tot = np.zeros(len(profile.mass))
+    for n, Z_i, A_i in zip(names, z_s, a_s):
+        X_i = profile.data(n)
+        mu_inv += X_i * (1 + Z_i) / A_i
+        X_tot += X_i
+        print(n, X_i[0], (X_i * (1 + Z_i) / A_i)[0])
+    mu = 1 / mu_inv
+    mu = np.array(mu, dtype=np.float64)
+    return mu
+
+
 class AccretionResult:
     def __init__(self, index, mixing_mass, final_mu) -> None:
         self.index = index
@@ -30,9 +57,7 @@ class AccretorProfile:
         self.age = float(profile.star_age)
         self.profile = profile
         self.mass = np.array(profile.mass, dtype=np.float64)
-        self.mu = np.array(profile.mu, dtype=np.float64)
-        arg = np.argmin(self.mu)
-        self.mu[:arg] = self.mu[arg]
+        self.mu = compute_mu_profile(profile)
 
 
 class AccretorProfiles:
