@@ -93,9 +93,6 @@ def get_ba(ab):
 
 from matplotlib.colors import TwoSlopeNorm
 
-subset
-
-
 subset = df_results[(np.abs(df_results["eps"] - 0.11288379) < 0.01)]
 
 
