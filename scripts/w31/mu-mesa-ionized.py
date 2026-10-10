@@ -73,7 +73,6 @@ def compute_mu_profile(profile):
         mu_inv += X_i * (1 + Z_i) / A_i
         X_tot += X_i
     mu = 1 / mu_inv
-    print(min(X_tot), max(X_tot))
     return mu
 
 
@@ -94,7 +93,7 @@ fig, axs = plt.subplots(
 )
 axs = axs.flatten()
 
-asplund = Asplund(he_method="karakas")
+asplund = Asplund(he_method="karakas", z=0.005573)
 mu = compute_mu_asplund(asplund)
 
 norm = plt.Normalize(0, 0.7)
@@ -145,7 +144,7 @@ for ax in axs[len(masses) :]:
     ax.remove()
 fig.supylabel("$\\mu$", size=10)
 fig.supxlabel("$m$ ($M_\\odot$)", size=10)
-plt.savefig("/home/koen/LaTeX-setup/plots/w31-computed-mu.pgf", format="pgf", dpi=600)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w31-computed-mu.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 # %%
