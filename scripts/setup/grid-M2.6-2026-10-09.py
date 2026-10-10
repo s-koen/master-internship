@@ -12,15 +12,15 @@ from pathlib import Path
 # ---
 
 # WARNING: CHECK / MODIFY THESE PATHS
-name = "grid-M2.2"
+name = "grid-M2.6"
 grid_name = f"{name}-{datetime.today().strftime('%Y-%m-%d')}"
 proj_dir = "/home/koen/master-internship"
 reference_binary_dir = f"{proj_dir}/mesa-models/reference-binary/2026-10-03"
 binary_exe_dir = f"{proj_dir}/mesa-models/reference-binary/"
 
 # WARNING: SETTINGS FOR THE GRID
-single_star_masses = np.array([2.2])
-Rs = np.logspace(np.log10(325), np.log10(1.25e3), 5)
+single_star_masses = np.array([2.6])
+Rs = np.logspace(np.log10(300), np.log10(1.3e3), 5)
 qs = np.array([0.4, 0.55, 0.7, 0.85, 1.0])
 epss = np.array([0.1, 0])
 
