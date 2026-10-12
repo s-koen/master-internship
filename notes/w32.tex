@@ -20,7 +20,37 @@
 \setuplayout
 \section{Grid}
 
+Based on the simple binary evolution grids I showed last week, I have decided to simulate a high dimensional grid that looks at a broad mass range, broad initial mass-ratio
+range, and initial Roche lobe radii such that I simulate pretty much the complete RLOF regime with some dredge up.
+
+I do this for two RLOF accretion efficiencies, each with three different ratios for isotropic re-emission and circumbinary mass loss.
+The ratios are \((\text{CCT}, \text{isotropic re-emission}) = (0.1,0.9)\quad{,}(0.2,0.8)\quad{,}(0.3,0.7)\).
+The accretion efficiencies are \(0\) and \(0.1\).
+
+The plot below shows the complete grid.
+
 \begin{figure}[ht]
+	\marginfignote{0}{Notice in naive simple binary case, the different ratios between
+		isotropic re-emission and mass loss to a circumbinary torus would result in the same accretion and thus
+		in the same abundances.
+		Therefore, each dot is really \(3\) dots stacked on top of each other.
+	}
+
+	\marginfignote{12}{In the detailed MESA simulation, there will most likely be small differences
+		between the final abundances for these systems.
+		However, the biggest differences between these
+		will be in the final orbital properties of these systems.
+		More mass loss to a circumbinary torus
+		will generally lead to much tighter final binary systems.
+	}
+
+	\marginfignote{28}{The panels with \(\varepsilon_\text{RLOF} = 0.1\) and \(\varepsilon_\text{RLOF} = 0.0\) at first sight might look very similar.
+		This is because in both these cases, \emph{most} of the mass is transferred via winds, which are not affected by the efficiency parameter.
+		However, in the regime where winds are not very strong, differences between the two settings can be seen.
+		This is on the left side of the plot.
+		Here we see that the systems with \emph{some} RLOF accretion are generally able to
+		create barium stars with slightly smaller initial Roche lobe radii.
+	}
 	\centering
 	\incplot{w32-R-M-s-q-panels}
 \end{figure}
@@ -140,6 +170,103 @@ I also plot the two different computation methods for the late RGB model.
 	\centering
 	\incplot{w32-EOS-profile-RGB-2}
 \end{figure}
+
+\newsection{Roche lobe radius Grid}
+
+Below I will compare some of the orbital properties of the broad Roche lobe radius grid that I simulated a couple of weeks ago.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This plot shows the period of the various models.
+		The gray line shows the initial period of the models as a function of the initial Roche lobe radius.
+		This is simply a power law based on the \citet{eggleton1983} Roche lobe radius approximation and Kepler's Third Law.
+	}
+	\marginfignote{11}{I also plot the final period, which is in some cases \emph{smaller} than the initial period, and in some cases, especially towards large initial Roche lobe radii, the final period is \emph{larger} than the initial period.}
+
+	\marginfignote{19}{The minimum period get reached during RLOF and is always smaller than the final Roche lobe radius.}
+	\centering
+	\incplot{w32-RL-vs-final-period}
+\end{figure}
+
+It is more obvious if we plot this compared to the initial period.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The differences with respect to the initial period increases with the Roche lobe radius.
+		This is in part due to the tides in combination with the winds, and
+		due to the RLOF, which seems to decrease the periods \emph{more} for the larger masses.
+	}
+	\centering
+	\incplot{w32-RL-minus-initial}
+\end{figure}
+
+\section{1.4 Solar mass grid}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I show the final [s/Fe] ratios for \(q=0.85\), \(M_\text{TPAGB} = 1.4\; M_\odot \) detailed \emph{MESA} binary simulations and the simple binary simulation.}
+	\marginfignote{6}{I think the \emph{MESA} models and the simple binary models correspond quite well, but there are definitely differences.
+		Mainly, the detailed MESA simulations seem
+		to predict slightly larger observed abundances in many cases.
+		For one model however, the abundances are smaller.
+		Then, for the wind only regime, the \emph{MESA} models agree very well
+		with the simple binary models.
+	}
+	\centering
+	\incplot{w32-M1.4-compare-s}
+\end{figure}
+
+Let me first focus on the set of models with the third Roche lobe radius.
+These are interesting because
+they interact during the phase of strong winds.
+We can recognise this in the figure above by the clear
+upwards diagonal in the \(\varepsilon = 0\) models.
+The downwards sloping diagonal line that follows it
+contains models that interact during the last thermal pulse.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I plot the Roche lobe radius and the star radius as a function of time
+		for the models with an initial Roche lobe radius of approximately \(R_\text{RL} = 520\; R_\odot \).
+		The most obvious differences between the models is caused by the differences in \(f_\delta \), which is to be expected.
+		We see that more mass loss to a CCT leads to smaller final periods.
+		A second, initially less obvious effect is that these models interact \emph{earlier}.
+		This effects how much mass is lost through \emph{winds}.
+	}
+	\marginfignote{18}{If we look at the total amount of accreted mass, we can clearly explain the differences we see between the simple binary and the detailed \emph{MESA} simulations.
+		For the \(\varepsilon =0\) case, the earlier RLOF interaction causes less mass to be transferred via winds for the \(f_\delta =0.3\) model.
+		For the \(f_{\delta } = 0.1 \) model, there are still significant winds during and after RLOF, which invalidates the assumption of the simple binary that all mass is lost through RLOF once this starts.
+		For the \(\varepsilon =0.1\) models, this effect causes the differences.
+	}
+	\centering
+	\incplot{w32-radius-3}
+\end{figure}
+
+Now, let me look at the first Roche lobe radius, where we see some peculiar differences, especially for the \(\varepsilon =0, f_\delta =0.1\) model.
+
+\begin{figure}[ht]
+	\marginfignote{-3}{Apparently, these different mass transfer mechanisms cause these models to interact
+		during different thermal pulses.
+		This makes it slightly confusing to interpret the differences between
+		the simple binary and the detailed \emph{MESA} models.
+		To start, we see that the \(f_{\delta } = 0.3 \) models interact first.
+		This means
+		these models will transfer mass, independent of how much, with the \emph{lowest} enrichment.
+		In fact, the envelope is barely enriched at all during this thermal pulse and therefore, both
+		of these models do not show any enhanced [s/Fe].
+		Then, the orange \(f_{\delta } = 0.2 \), models.
+		These interact one pulse later, but still earlier than the simple binary.
+		This means that these models will have lower, but still slightly enhanced envelope abundances, which explains why the model with \(\varepsilon =0.1\) predicts a slightly enhanced [s/Fe], but still lower than the simple binary.
+		Lastly, we have the \(f_{\delta } = 0.1 \) models.
+		These undergo RLOF during the same thermal pulse, \emph{but} they do not expel their entire
+		envelope during RLOF, unlike what we assume for the simple binary.
+		Because the envelope becomes enriched due to dredge up \emph{after} the RLOF episode, wind mass losses after
+		this episode are especially important.
+		Because the \(\varepsilon =0.0\) model experiences more of this strongly enhanced wind, it predicts the highest [s/Fe] value.
+	}
+	\centering
+	\incplot{w32-radius-4}
+\end{figure}
+
+I feel like, with this, I can explain the differences between the simple binary and the detailed \emph{MESA} models.
+They originate from different RLOF moments and the assumption
+of complete RLOF mass transfer.
 
 \bibliography{master.bib}
 \end{document}
