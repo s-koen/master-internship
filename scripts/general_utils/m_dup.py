@@ -321,7 +321,8 @@ class Abundances:
 
         else:
 
-            self.simple_end_idx = (len(sb.age)) // sampling
+            ind = np.argwhere(simple.age >= sb.age[-1])[0][0]
+            self.simple_end_idx = (ind) // sampling
             self.total_length = self.simple_end_idx
 
         self.m_dup = np.zeros(self.total_length)
@@ -408,9 +409,18 @@ class Abundances:
             self.m_env = simple.m_env[::sampling][: self.simple_end_idx]
             self.time = simple.age[::sampling][: self.simple_end_idx]
             self.dt = np.concatenate([[0], np.diff(self.time)])
-            valid = ~np.isnan(sb.m2[::sampling][: self.simple_end_idx])
-            dm = np.diff(sb.m2[::sampling][: self.simple_end_idx])
+
+            # match the sampled simple ages to sb ages
+            sb_idx = np.searchsorted(sb.age, self.time)
+            sb_idx = np.clip(sb_idx, 0, len(sb.age) - 1)
+
+            # use the matched sb masses
+            sb_mass = sb.m2[sb_idx]
+            valid = ~np.isnan(sb_mass)
+
+            dm = np.diff(sb_mass)
             dm[~valid[:-1] | ~valid[1:]] = 0
+
             if self.m_env[-1] > 0.04:
                 self.dm_acc = np.concatenate(
                     [
@@ -419,13 +429,15 @@ class Abundances:
                     ]
                 )
                 self.total_mass_accreted = (
-                    sb.m2[-1]
+                    sb_mass[-1]
                     + self.m_env[-1] * mass_transfer_efficiency
-                    - np.nanmin(sb.m2)
+                    - np.nanmin(sb_mass)
                 )
             else:
                 self.dm_acc = np.concatenate([np.clip(dm, 0, np.inf), [0]])
-                self.total_mass_accreted = sb.m2[-1] - np.nanmin(sb.m2)
+                self.total_mass_accreted = sb_mass[-1] - np.nanmin(sb_mass)
+
+            print(self.dm_acc[-1])
             self.dm = np.concatenate(
                 [[0], -1 * np.diff(simple.mass[::sampling][: self.simple_end_idx])]
             )
@@ -434,7 +446,9 @@ class Abundances:
                     break
                 self.m_dup[value["index"]] = value["mass"]
 
-            self.tp_count = simple.TP_count[::sampling][: self.simple_end_idx]
+            self.tp_count = simple.TP_count[::sampling][
+                : self.simple_end_idx
+            ]  # elif type(sb) == type(None):
 
         self.total_mass_expelled = simple.mass[0] - simple.mass[-1]
         self.monash_models = defaultdict(list)

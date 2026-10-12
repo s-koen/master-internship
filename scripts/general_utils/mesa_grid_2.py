@@ -17,6 +17,15 @@ from scripts.evolve_mesa.rgbf import *
 from scripts.evolve_mesa.star_model import *
 from scripts.evolve_mesa.grid_call import *
 
+from scripts.general_utils.m_dup import (
+    compute_m_DUP,
+    AbundanceTables,
+    Abundances,
+    MonashModel,
+)
+from scripts.general_utils.accretor import *
+from scripts.general_utils.asplund import Element, Asplund
+
 sys.path.insert(1, "/home/koen/master-internship/")
 from scripts.general_utils.cache import get_star
 
@@ -52,6 +61,7 @@ class MesaGrid:
             "delta": self.settings["mass_transfer"]["delta"],
         }
 
+        self.df = AbundanceTables()
         self._load_models()
 
     def _finalize_grid(self):
@@ -97,7 +107,13 @@ class MesaGrid:
 
             try:
                 self.models.append(
-                    MesaRun(run_dir, self.fresh, self.loc, z=self.settings["star_Z"])
+                    MesaRun(
+                        run_dir,
+                        self.fresh,
+                        self.loc,
+                        df=self.df,
+                        z=self.settings["star_Z"],
+                    )
                 )
             except FileNotFoundError:
                 self.failed_models.append(run_dir)
@@ -208,7 +224,7 @@ class MesaGrid:
 
 class MesaRun:
 
-    def __init__(self, run_dir, fresh, loc, z=0.00557):
+    def __init__(self, run_dir, fresh, loc, df, z=0.00557):
         self.run_dir = run_dir
         self.loc = loc
 
@@ -236,6 +252,11 @@ class MesaRun:
         star = get_star(full_path=self.params["single_star"])
         tpagb_age = star.age[star.ntpagb]
         self.age = self.starting_model.star_age + tpagb_age + self.star_age
+        self.df = df
+        self.get_accretion_results(fresh)
+        self.s = self.get_s()
+        self.ls = self.get_ls()
+        self.hs = self.get_hs()
 
     def __repr__(self):
         return f"MesaRun object with m={self.params["m"]:.2f}, q={self.params["q"]:.3f} and RL = {self.params["R"]:.0f}"
@@ -340,6 +361,64 @@ class MesaRun:
             self.profiles = list(profiles_dict.profile_dict.values())
             with open(f"{self.run_dir}/profiles.pkl", "wb") as f:
                 pickle.dump(self.profiles, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def get_accretion_results(self, fresh):
+        if fresh:
+            ab = Abundances(model=self, df=self.df, sampling=1)
+            res_dict = {
+                "ab": ab.iron_abundance,
+                "mass": ab.elements_mass,
+                "name": ab.elements_name,
+                "t_av": ab.t_av,
+                "m_dup_av": ab.m_dup_av,
+            }
+            with open(f"{self.run_dir}/accretion_result.pkl", "wb") as f:
+                pickle.dump(res_dict, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+        try:
+            with open(f"{self.run_dir}/accretion_result.pkl", "rb") as f:
+                res_dict = pickle.load(f)
+        except FileNotFoundError:
+            self.get_accretion_results(True)
+            return
+
+        self.ab = res_dict["ab"]
+        self.elements_mass = res_dict["mass"]
+        self.elements_name = res_dict["name"]
+        self.t_av = res_dict["t_av"]
+        self.m_dup_av = res_dict["m_dup_av"]
+
+    def get_ls(self):
+        fe = 0
+        for i, name in enumerate(self.elements_name):
+
+            if name in ["sr", "y", "zr"]:
+                fe += self.ab[i]
+
+        return fe / 3
+
+    def get_hs(self):
+        fe = 0
+        for i, name in enumerate(self.elements_name):
+
+            if name in [
+                "ba",
+                "la",
+                "ce",
+                "nd",
+            ]:
+                fe += self.ab[i]
+
+        return fe / 4
+
+    def get_s(self):
+        fe = 0
+        for i, name in enumerate(self.elements_name):
+
+            if name in ["ba", "la", "ce", "nd", "sr", "y", "zr"]:
+                fe += self.ab[i]
+
+        return fe / 7
 
     @property
     def key(self):
