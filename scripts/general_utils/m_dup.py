@@ -437,7 +437,6 @@ class Abundances:
                 self.dm_acc = np.concatenate([np.clip(dm, 0, np.inf), [0]])
                 self.total_mass_accreted = sb_mass[-1] - np.nanmin(sb_mass)
 
-            print(self.dm_acc[-1])
             self.dm = np.concatenate(
                 [[0], -1 * np.diff(simple.mass[::sampling][: self.simple_end_idx])]
             )
