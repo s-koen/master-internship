@@ -332,5 +332,4 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w31-see-same-pulse-3.pgf", format="pgf
 plt.show()
 plt.close()
 
-
 # %%
