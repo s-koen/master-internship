@@ -258,8 +258,27 @@ Now, let me look at the first Roche lobe radius, where we see some peculiar diff
 		envelope during RLOF, unlike what we assume for the simple binary.
 		Because the envelope becomes enriched due to dredge up \emph{after} the RLOF episode, wind mass losses after
 		this episode are especially important.
-		Because the \(\varepsilon =0.0\) model experiences more of this strongly enhanced wind, it predicts the highest [s/Fe] value.
+		Because the \(\varepsilon =0.0\) model transfers no not very enriched material during RLOF, and about the same amount of enhanced material with winds, it predicts the highest [s/Fe] value.
 	}
+	\marginfignote{49}{Let's look at this a bit more carefully.
+		The second and third panel show the amount of accreted mass, and the amount of accreted s-process mass.
+		Clearly these are both larger for the \(\varepsilon =0.1\) model, which makes sense, because it is able to transfer mass during RLOF.
+	}
+	\marginfignote{60}{The subplot on the left shows the averaged abundance of the material that is accreted.
+		It is important to realise that this is \emph{not} the
+		instantaneous abundance of the material that is accreted at time \(t\).
+		Because a strong third dredge up episode enhances the envelope of the TPAGB star after RLOF
+		in the blue models, the abundances of s-process elements are much larger after this dredge up.
+		This means the averaged abundance of the accreted material is much larger for the \(\varepsilon =0\) model than for the \(\varepsilon =0.1\) model.
+	}
+	\marginfignote{80}{We can then accrete this material onto the accretor.
+		In this case I use a constant mixing mass that is determined based on the final value, so \emph{strictly speaking}, only the last value is accurate.
+		The subplot to the left and the one above it show the s-process abundances based on this assumption.
+		The first being \emph{no} initial \(s\)-process elements in the accretor, and the second using more realistic initial s-process abundances based on \citet{asplund2009}.
+		Without initial abundances, the \(\varepsilon =0.1\) model generates the largest accretor abundance, simply because it accretes more s-process elements.
+		However, because the bulk of this accreted material has abundances that are very close to the initial value, these really do not contribute much if we consider an accretor with initial s-process abundances.
+	}
+	\marginfignote{110}{Finally, if we use the correct mass-fractions, we can compute [s/Fe] for the models, and we obtain the final values.}
 	\centering
 	\incplot{w32-radius-4}
 \end{figure}
@@ -267,6 +286,31 @@ Now, let me look at the first Roche lobe radius, where we see some peculiar diff
 I feel like, with this, I can explain the differences between the simple binary and the detailed \emph{MESA} models.
 They originate from different RLOF moments and the assumption
 of complete RLOF mass transfer.
+
+Now, let's look at some more general properties.
+To start, let me plot the [s/Fe] abundances as a function of the final period of the binary.
+
+\begin{figure}[ht]
+	\marginfignote{0}{With a broader period range than before, we can actually see some structure.
+		Clearly, for small initial Roche lobe radii, non of the other parameters actually matter for
+		the [s/Fe] since there is no dredge up in the TPAGB at the point of RLOF.
+	}
+	\marginfignote{10}{Then there is a clear clustering of many models with large period
+		of several thousands of days and [s/Fe] abundances around \(0.5 - 0.6\).
+		Lastly, there
+		are some systems with slightly lower [s/Fe], but \emph{much} shorter periods.
+		These are not exclusively
+		systems with \(f_{\delta } = 0.3\), like I would expect.
+	}
+	\centering
+	\incplot{period-sFe-period}
+\end{figure}
+These initially mysterious systems with
+
+\begin{figure}[ht]
+	\centering
+	\incplot{period-sFe-period-q}
+\end{figure}
 
 \bibliography{master.bib}
 \end{document}

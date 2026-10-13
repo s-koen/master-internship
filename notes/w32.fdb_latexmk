@@ -1,18 +1,20 @@
 # Fdb version 4
-["bibtex w32"] 1791840497.72241 "w32.aux" "w32.bbl" "w32" 1791840615.90501 0
+["bibtex w32"] 1791922435.63558 "w32.aux" "w32.bbl" "w32" 1791923313.41934 0
   "./master.bib" 1791652518.81357 53841 9c8da239d9f2aa959ee641eca99b028c ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w32.aux" 1791840615.64868 2822 3ef42578567c75c7d64419cfbf066d59 "pdflatex"
+  "w32.aux" 1791923313.13365 3103 05e80cd2aa9678087cbf611bb09d5b5c "pdflatex"
   (generated)
   "w32.bbl"
   "w32.blg"
   (rewritten before read)
-["pdflatex"] 1791840611.94438 "w32.tex" "w32.pdf" "w32" 1791840615.90515 0
+["pdflatex"] 1791923309.08929 "w32.tex" "w32.pdf" "w32" 1791923313.41949 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
   "/home/koen/LaTeX-setup//LaTeX-files/listings.tex" 1739308810.95949 27571 9f1d93b589b3961f6fd7d842d0658ca5 ""
   "/home/koen/LaTeX-setup//LaTeX-files/master-internship.tex" 1787679229.1306 14761 ebe03b24d2a295bf401c19751f591e66 ""
+  "/home/koen/LaTeX-setup//plots/period-sFe-period-q.pgf" 1791923280.5593 159482 4120481251da3fe4c4fbf3cbdebeb88d ""
+  "/home/koen/LaTeX-setup//plots/period-sFe-period.pgf" 1791923238.13585 159527 ccb383f60b24fa2ca8627583affe7e0e ""
   "/home/koen/LaTeX-setup//plots/w32-EOS-profile-RGB-2.pgf" 1791675283.51105 34444 717b848a8700355cb7dfa3e58c0c27c9 ""
   "/home/koen/LaTeX-setup//plots/w32-EOS-profile-RGB.pgf" 1791660802.38982 31407 fc93ebaa0caafae9cd27e0bb6277163a ""
   "/home/koen/LaTeX-setup//plots/w32-M1.4-compare-s.pgf" 1791839085.29739 76960 18a28bfbe4017cc6ee3df8be422127a1 ""
@@ -41,8 +43,8 @@
   "/home/koen/LaTeX-setup//plots/w32-mu-3.pgf" 1791673709.86949 29583 29f8c2197d3a5ce680eb454d880b7c8e ""
   "/home/koen/LaTeX-setup//plots/w32-radius-3-img0.png" 1791833204.67754 44953 777b020a19744c21b29bae99709f8649 ""
   "/home/koen/LaTeX-setup//plots/w32-radius-3.pgf" 1791833204.71554 205188 99b489af2febaec5289ae1231f476d7c ""
-  "/home/koen/LaTeX-setup//plots/w32-radius-4-img0.png" 1791839974.37138 14799 90304f5fe4a5b864238e15b205afdb12 ""
-  "/home/koen/LaTeX-setup//plots/w32-radius-4.pgf" 1791839974.40138 127286 75296c358c1dda2aea3a7b1c32b96f7d ""
+  "/home/koen/LaTeX-setup//plots/w32-radius-4-img0.png" 1791901476.70099 14465 cb33c583d0cb5d92cd610cbff1db4b34 ""
+  "/home/koen/LaTeX-setup//plots/w32-radius-4.pgf" 1791901476.796 283034 fba22e0618d89d8b53c474830d4fb959 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1775415801 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/share/texmf-dist/fonts/enc/dvips/sourcecodepro/a_rzhnou.enc" 1775415801 2853 35e797fe15a6254cee914dbc5dbd5292 ""
@@ -419,10 +421,10 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1783670516 5388821 3a3a435a487e4cbc819e69494cd5514c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1783670470 2968234 d23dd1d939fcf2c5a6fef745ad70030a ""
-  "w32.aux" 1791840615.64868 2822 3ef42578567c75c7d64419cfbf066d59 "pdflatex"
-  "w32.bbl" 1791840497.76758 1686 7325aa002e9c5b872c0bcce964096456 "bibtex w32"
-  "w32.out" 1791840615.64968 950 8a7f69bc1e6925a80ccde00b39df1762 "pdflatex"
-  "w32.tex" 1791840610.13763 14116 b4cc3e79ab5d0c1bad5d66f58e5954b9 ""
+  "w32.aux" 1791923313.13365 3103 05e80cd2aa9678087cbf611bb09d5b5c "pdflatex"
+  "w32.bbl" 1791922435.69144 1686 7325aa002e9c5b872c0bcce964096456 "bibtex w32"
+  "w32.out" 1791923313.13465 950 8a7f69bc1e6925a80ccde00b39df1762 "pdflatex"
+  "w32.tex" 1791923307.10759 17020 8a552d05c3562d25b80e66b3e9488b8b ""
   (generated)
   "w32.aux"
   "w32.log"

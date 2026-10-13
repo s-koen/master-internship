@@ -432,8 +432,40 @@ plt.close()
 
 # %%
 fig, axs = plt.subplots(
-    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+    7, 1, sharex=True, figsize=set_size(column, height=3.25), constrained_layout=True
 )
+
+
+def get_massfrac(element):
+    try:
+        return asplund.elements[element].massfrac
+    except:
+        return 1e-99
+
+
+def compute_MS_spectroscopic(ab, ab_H, index, abs):
+    N_i = ab / abs.atomic_weight[index]
+    N_H = ab_H / abs.atomic_weight[0]
+    eps = np.log10(N_i / N_H) + 12
+
+    return eps
+
+
+def compute_iron_abundance(spec, spec_iron, index, abs):
+
+    asplund = Asplund(he_method="karakas")
+
+    specs = spec
+    fe_star = spec_iron
+    fe_sun = asplund.elements[26].abundance
+
+    fe_abundance_sun = asplund.elements[abs.elements_mass[index]].abundance - fe_sun
+    fe_abundance_star = specs - fe_star
+
+    fe_abundance_sun = np.array(fe_abundance_sun)
+    fe_abundance_star = np.array(fe_abundance_star)
+
+    return fe_abundance_star - fe_abundance_sun
 
 
 for m in grid.models:
@@ -452,12 +484,122 @@ for m in grid.models:
         continue
     if m.params["q"] != 0.85:
         continue
+
+    abs = Abundances(m, df, save_full=True, sampling=1)
+    ms = abs.initial_envelope_abundances.copy()
+    asplund = Asplund(he_method="karakas")
+
+    ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+    abbies_MS = 0
+    abss = []
+    epss = []
+    fes = []
+
+    for i in [52, 53, 54, 56, 34, 35, 36]:
+        abbies_MS += ms.iloc[i]["massfrac"]
+
+    abbies_MS *= abs.mixing_mass
+
+    abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+    abss.append(
+        (
+            np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+            + ms.iloc[52]["massfrac"] * abs.mixing_mass
+        )
+        / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+    )
+    for i in [53, 54, 56, 34, 35, 36]:
+        abss.append(
+            (
+                np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+                + ms.iloc[i]["massfrac"] * abs.mixing_mass
+            )
+            / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+        )
+        abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+    abss_H = (
+        np.cumsum(abs.envelope[:, 0] * abs.dm_acc)
+        + ms.iloc[0]["massfrac"] * abs.mixing_mass
+    ) / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+
+    abss_fe = (
+        np.cumsum(abs.envelope[:, 22] * abs.dm_acc)
+        + ms.iloc[22]["massfrac"] * abs.mixing_mass
+    ) / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+    print(abs.elements_name[22])
+
+    for counter, i in enumerate([52, 53, 54, 56, 34, 35, 36]):
+        epss.append(compute_MS_spectroscopic(abss[counter], abss_H, i, abs))
+
+    epss_Fe = compute_MS_spectroscopic(abss_fe, abss_H, 22, abs)
+
+    for counter, i in enumerate([52, 53, 54, 56, 34, 35, 36]):
+        fes.append(compute_iron_abundance(epss[counter], epss_Fe, i, abs))
+
+    s = np.mean(fes, axis=0)
+
     if m.params["eps"] == 0:
         axs[0].plot(m.age, m.rl_1, c=color, linewidth=2, alpha=0.5)
         axs[1].plot(m.age, m.star_2_mass - bin.m2[0], c=color, linewidth=2, alpha=0.5)
+        axs[2].plot(abs.time, abbies, c=color, linewidth=2, alpha=0.5)
+        axs[3].plot(
+            abs.time, abbies / np.cumsum(abs.dm_acc), c=color, linewidth=2, alpha=0.5
+        )
+        axs[4].plot(
+            abs.time,
+            abbies / (np.cumsum(abs.dm_acc) + abs.mixing_mass),
+            c=color,
+            linewidth=2,
+            alpha=0.5,
+        )
+        axs[5].plot(
+            abs.time,
+            (abbies + abbies_MS) / (np.cumsum(abs.dm_acc) + abs.mixing_mass),
+            c=color,
+            linewidth=2,
+            alpha=0.5,
+        )
+        axs[6].plot(abs.time, s, c=color, linewidth=2, alpha=0.5)
+        axs[6].scatter(abs.time[-1], m.s, c=color, alpha=0.5)
     else:
         axs[0].plot(m.age, m.rl_1, c=color, linewidth=0.75)
         axs[1].plot(m.age, m.star_2_mass - bin.m2[0], c=color, linewidth=0.75)
+        axs[2].plot(
+            abs.time,
+            abbies,
+            c=color,
+            linewidth=0.75,
+        )
+        axs[3].plot(
+            abs.time,
+            abbies / (np.cumsum(abs.dm_acc)),
+            c=color,
+            linewidth=0.75,
+        )
+        axs[4].plot(
+            abs.time,
+            abbies / (np.cumsum(abs.dm_acc) + abs.mixing_mass),
+            c=color,
+            linewidth=0.75,
+        )
+        axs[5].plot(
+            abs.time,
+            (abbies + abbies_MS) / (np.cumsum(abs.dm_acc) + abs.mixing_mass),
+            c=color,
+            linewidth=0.75,
+        )
+        axs[6].plot(
+            abs.time,
+            s,
+            c=color,
+            linewidth=0.75,
+        )
+        axs[6].scatter(
+            abs.time[-1],
+            m.s,
+            c=color,
+        )
 
 star = get_star(m=1.4)
 axs[0].plot(
@@ -505,7 +647,99 @@ axs[1].plot(
     bin.age[star.ntpagb :], bin.m2[star.ntpagb :] - bin.m2[0], c="C9", zorder=-1000
 )
 
-plt.xlim(2820936572.6464543, 2821470289.655047)
+abs = Abundances(
+    None, df, sb=bin, sampling=1, mass=1.4, mass_transfer_efficiency=0.1, save_full=True
+)
+
+ms = abs.initial_envelope_abundances.copy()
+asplund = Asplund(he_method="karakas")
+
+ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+abbies_MS = 0
+abss = []
+epss = []
+fes = []
+
+for i in [52, 53, 54, 56, 34, 35, 36]:
+    abbies_MS += ms.iloc[i]["massfrac"]
+
+abbies_MS *= abs.mixing_mass
+
+abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+abss.append(
+    (
+        np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+        + ms.iloc[52]["massfrac"] * abs.mixing_mass
+    )
+    / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+)
+for i in [53, 54, 56, 34, 35, 36]:
+    abss.append(
+        (
+            np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+            + ms.iloc[i]["massfrac"] * abs.mixing_mass
+        )
+        / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+    )
+    abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+abss_H = (
+    np.cumsum(abs.envelope[:, 0] * abs.dm_acc)
+    + ms.iloc[0]["massfrac"] * abs.mixing_mass
+) / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+
+abss_fe = (
+    np.cumsum(abs.envelope[:, 22] * abs.dm_acc)
+    + ms.iloc[22]["massfrac"] * abs.mixing_mass
+) / (np.cumsum(abs.dm_acc) + abs.mixing_mass)
+
+for counter, i in enumerate([52, 53, 54, 56, 34, 35, 36]):
+    epss.append(compute_MS_spectroscopic(abss[counter], abss_H, i, abs))
+
+epss_Fe = compute_MS_spectroscopic(abss_fe, abss_H, 22, abs)
+
+for counter, i in enumerate([52, 53, 54, 56, 34, 35, 36]):
+    fes.append(compute_iron_abundance(epss[counter], epss_Fe, i, abs))
+
+s = np.mean(fes, axis=0)
+
+axs[2].plot(
+    abs.time,
+    abbies,
+    c="C9",
+    linewidth=0.75,
+)
+axs[3].plot(
+    abs.time,
+    abbies / (np.cumsum(abs.dm_acc)),
+    c="C9",
+    linewidth=0.75,
+)
+axs[4].plot(
+    abs.time,
+    (abbies) / (np.cumsum(abs.dm_acc) + abs.mixing_mass),
+    c="C9",
+    linewidth=0.75,
+)
+axs[5].plot(
+    abs.time,
+    (abbies + abbies_MS) / (np.cumsum(abs.dm_acc) + abs.mixing_mass),
+    c="C9",
+    linewidth=0.75,
+)
+axs[6].plot(
+    abs.time,
+    s,
+    c="C9",
+    linewidth=0.75,
+)
+axs[6].scatter(
+    abs.time[-1],
+    get_s(abs),
+    c="C9",
+)
+
+plt.xlim(2820936572.6464543, 2821440289.655047)
 axs[0].set_ylim(150, 400)
 
 # axs[0].text(400000+2.821e9, 427, "$f_\\delta = 0.1$", c="C0", fontsize=8)
@@ -542,6 +776,21 @@ axs[0].annotate(
 axs[1].text(350000 + 2.821e9, 0.0935, "$\\varepsilon = 0.1$", c="C0", fontsize=8)
 axs[1].text(350000 + 2.821e9, 0.055, "Simple binary", c="C9", fontsize=8)
 axs[1].text(350000 + 2.821e9, 0.0175, "$\\varepsilon = 0.0$", c="C0", fontsize=8)
+axs[2].text(350000 + 2.821e9, 8.9e-9, "$\\varepsilon = 0.1$", c="C0", fontsize=8)
+axs[2].text(350000 + 2.821e9, 3e-9, "Simple binary", c="C9", fontsize=8)
+axs[2].text(350000 + 2.821e9, 5.1e-9, "$\\varepsilon = 0.0$", c="C0", fontsize=8)
+axs[3].text(350000 + 2.821e9, 2.9e-7, "$\\varepsilon = 0.1$", c="C0", fontsize=8)
+axs[3].text(350000 + 2.821e9, 0.5e-7, "Simple binary", c="C9", fontsize=8)
+axs[3].text(350000 + 2.821e9, 0.9e-7, "$\\varepsilon = 0.0$", c="C0", fontsize=8)
+axs[4].text(350000 + 2.821e9, 1.6e-8, "$\\varepsilon = 0.1$", c="C0", fontsize=8)
+axs[4].text(350000 + 2.821e9, 0.5e-8, "Simple binary", c="C9", fontsize=8)
+axs[4].text(350000 + 2.821e9, 1.4e-8, "$\\varepsilon = 0.0$", c="C0", fontsize=8)
+axs[5].text(350000 + 2.821e9, 5.65e-8, "$\\varepsilon = 0.0$", c="C0", fontsize=8)
+axs[5].text(350000 + 2.821e9, 4.625e-8, "Simple binary", c="C9", fontsize=8)
+axs[5].text(350000 + 2.821e9, 5.3e-8, "$\\varepsilon = 0.1$", c="C0", fontsize=8)
+axs[6].text(350000 + 2.821e9, 0.17, "$\\varepsilon = 0.0$", c="C0", fontsize=8)
+axs[6].text(350000 + 2.821e9, 0.07, "Simple binary", c="C9", fontsize=8)
+axs[6].text(350000 + 2.821e9, 0.13, "$\\varepsilon = 0.1$", c="C0", fontsize=8)
 
 
 for ax in axs:
@@ -549,6 +798,13 @@ for ax in axs:
 plt.xlabel("Age (yr)")
 axs[0].set_ylabel("$R$ ($R_\\odot$)")
 axs[1].set_ylabel("$\\Delta M_\\textrm{acc}$ ($M_\\odot$)")
+axs[2].set_ylabel("$\\Delta M_\\textrm{s}$ ($M_\\odot$)")
+axs[3].set_ylabel("$\\langle X\\rangle(s, \\textrm{accr. mat.})_{t=t}$")
+axs[4].set_ylabel("$\\langle X\\rangle(s, \\textrm{MS})_{t=t}$, $X(s,i) = 0$")
+axs[5].set_ylabel(
+    "$\\langle X\\rangle(s, \\textrm{MS})_{t=t}$, $X(s,i) = X(s)_\\textrm{Asplund}$"
+)
+axs[6].set_ylabel("[s/Fe]$_{t=t}$")
 plt.savefig("/home/koen/LaTeX-setup/plots/w32-radius-4.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
@@ -632,3 +888,498 @@ for i, n in enumerate(abs.elements_name):
 # %%
 
 52, 53, 54, 56, 34, 35, 36
+
+
+# %%
+def get_massfrac(element):
+    try:
+        return asplund.elements[element].massfrac
+    except:
+        return 1e-99
+
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+df = AbundanceTables()
+for m in grid.models:
+    match np.round(m.params["f_delta"], 2):
+        case 0.10:
+            color = "C0"
+        case 0.20:
+            color = "C1"
+        case 0.30:
+            color = "C2"
+        case _:
+            print(np.round(m.params["f_delta"], 2))
+            color = "red"
+
+    if m.params["R"] != grid.axes["R"][0]:
+        continue
+    if m.params["q"] != 0.85:
+        continue
+
+    abs = Abundances(m, df, save_full=True, sampling=1)
+
+    ms = abs.initial_envelope_abundances.copy()
+    asplund = Asplund(he_method="karakas")
+
+    ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+    abbies_MS = 0
+
+    for i in [52, 53, 54, 56, 34, 35, 36]:
+        abbies_MS += ms.iloc[i]["massfrac"]
+
+    abbies_MS *= abs.mixing_mass
+
+    if m.params["eps"] == 0:
+        axs[0].plot(m.age, m.rl_1, c=color, linewidth=2, alpha=0.5)
+        abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+        for i in [53, 54, 56, 34, 35, 36]:
+            abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+
+        axs[1].plot(
+            abs.time,
+            (abbies + abbies_MS) / (abs.total_mass_accreted + abs.mixing_mass),
+            c=color,
+            linewidth=2,
+            alpha=0.5,
+        )
+    else:
+        axs[0].plot(m.age, m.rl_1, c=color, linewidth=0.75)
+        abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+        for i in [53, 54, 56, 34, 35, 36]:
+            abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+        axs[1].plot(
+            abs.time,
+            (abbies + abbies_MS) / (abs.total_mass_accreted + abs.mixing_mass),
+            c=color,
+            linewidth=0.75,
+        )
+
+a_init = inv_roche_lobe(grid.axes["R"][0], 0.85)
+star, Options, q_init, a_init, e_init, Bins = call_evolution(
+    star, q, a_init, simple_only=True
+)
+
+
+bin = Bins[0]
+abs = Abundances(
+    None, df, sb=bin, sampling=1, mass=1.4, mass_transfer_efficiency=0.1, save_full=True
+)
+
+abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+for i in [53, 54, 56, 34, 35, 36]:
+    abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+
+
+asplund = Asplund(he_method="karakas")
+
+ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+abbies_MS = 0
+
+for i in [52, 53, 54, 56, 34, 35, 36]:
+    abbies_MS += ms.iloc[i]["massfrac"]
+
+abbies_MS *= abs.mixing_mass
+
+
+axs[1].plot(
+    abs.time,
+    (abbies + abbies_MS) / (abs.total_mass_accreted + abs.mixing_mass),
+    c="C9",
+    linewidth=0.75,
+)
+
+
+plt.show()
+# %%
+
+
+fig, axs = plt.subplots(
+    2, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+df = AbundanceTables()
+for m in grid.models:
+    match np.round(m.params["f_delta"], 2):
+        case 0.10:
+            color = "C0"
+        case 0.20:
+            color = "C1"
+        case 0.30:
+            color = "C2"
+        case _:
+            print(np.round(m.params["f_delta"], 2))
+            color = "red"
+
+    if m.params["R"] != grid.axes["R"][0]:
+        continue
+    if m.params["q"] != 0.85:
+        continue
+
+    abs = Abundances(m, df, save_full=True, sampling=1)
+
+    ms = abs.initial_envelope_abundances.copy()
+    asplund = Asplund(he_method="karakas")
+
+    ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+    abbies_MS = 0
+    abss = []
+    epss = []
+    fes = []
+
+    for i in [52, 53, 54, 56, 34, 35, 36]:
+        abbies_MS += ms.iloc[i]["massfrac"]
+
+    abbies_MS *= abs.mixing_mass
+
+    abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+    abss.append(
+        (
+            np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+            + ms.iloc[52]["massfrac"] * abs.mixing_mass
+        )
+        / (abs.total_mass_accreted + abs.mixing_mass)
+    )
+    for i in [53, 54, 56, 34, 35, 36]:
+        abss.append(
+            (
+                np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+                + ms.iloc[i]["massfrac"] * abs.mixing_mass
+            )
+            / (abs.total_mass_accreted + abs.mixing_mass)
+        )
+        abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+    abss_H = (
+        np.cumsum(abs.envelope[:, 0] * abs.dm_acc)
+        + ms.iloc[0]["massfrac"] * abs.mixing_mass
+    ) / (abs.total_mass_accreted + abs.mixing_mass)
+
+    abss_fe = (
+        np.cumsum(abs.envelope[:, 22] * abs.dm_acc)
+        + ms.iloc[22]["massfrac"] * abs.mixing_mass
+    ) / (abs.total_mass_accreted + abs.mixing_mass)
+    print(abs.elements_name[22])
+
+    for counter, i in enumerate([52, 53, 54, 56, 34, 35, 36]):
+        epss.append(compute_MS_spectroscopic(abss[counter], abss_H, i, abs))
+
+    epss_Fe = compute_MS_spectroscopic(abss_fe, abss_H, 22, abs)
+
+    for counter, i in enumerate([52, 53, 54, 56, 34, 35, 36]):
+        fes.append(compute_iron_abundance(epss[counter], epss_Fe, i, abs))
+
+    s = np.mean(fes, axis=0)
+
+    if m.params["eps"] == 0:
+        axs[0].plot(m.age, m.rl_1, c=color, linewidth=2, alpha=0.5)
+
+        axs[1].plot(
+            abs.time,
+            s,
+            c=color,
+            linewidth=2,
+            alpha=0.5,
+        )
+        axs[1].scatter(abs.time[-1], m.s, c=color, alpha=0.5)
+    else:
+        axs[0].plot(m.age, m.rl_1, c=color, linewidth=0.75)
+        axs[1].plot(
+            abs.time,
+            s,
+            c=color,
+            linewidth=0.75,
+        )
+        axs[1].scatter(abs.time[-1], m.s, c=color)
+
+a_init = inv_roche_lobe(grid.axes["R"][0], 0.85)
+star, Options, q_init, a_init, e_init, Bins = call_evolution(
+    star, q, a_init, simple_only=True
+)
+
+
+bin = Bins[0]
+abs = Abundances(
+    None, df, sb=bin, sampling=1, mass=1.4, mass_transfer_efficiency=0.1, save_full=True
+)
+
+abbies = np.cumsum(abs.envelope[:, 52] * abs.dm_acc)
+for i in [53, 54, 56, 34, 35, 36]:
+    abbies += np.cumsum(abs.envelope[:, i] * abs.dm_acc)
+
+
+asplund = Asplund(he_method="karakas")
+
+ms["massfrac"] = ms["elemental_mass"].map(get_massfrac)
+
+abbies_MS = 0
+
+for i in [52, 53, 54, 56, 34, 35, 36]:
+    abbies_MS += ms.iloc[i]["massfrac"]
+
+abbies_MS *= abs.mixing_mass
+
+
+axs[1].plot(
+    abs.time,
+    (abbies + abbies_MS) / (abs.total_mass_accreted + abs.mixing_mass),
+    c="C9",
+    linewidth=0.75,
+)
+
+
+plt.show()
+# %%
+
+for model in grid.models:
+    plt.scatter(model.star_2_mass[-1], model.s)
+plt.show()
+# %%
+
+fs = [0.1, 0.2, 0.3]
+markers = ["^", "s", "*"]
+
+for i, f in enumerate(fs):
+    x = []
+    y = []
+    z = []
+    for model in grid.filter(f_delta=f):
+        x.append(model.star_2_mass[-1] - model.star_2_mass[0])
+        y.append(model.s)
+        z.append(model.params["R"])
+
+    plt.scatter(x, y, c=np.log10(z), marker=markers[i], cmap="viridis")
+
+
+plt.show()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+from matplotlib.lines import Line2D
+
+fs = [0.1, 0.2, 0.3]
+markers = ["o", "s", "^"]
+cmap = plt.get_cmap("viridis")
+
+for f, marker in zip(fs, markers):
+    x = []
+    y = []
+    z = []
+    for m in grid.filter(f_delta=f):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        x.append(m.period_days[-1])
+        y.append(m.s)
+        z.append(m.params["R"])
+
+    plt.scatter(x, y, c=np.log10(z), marker=marker, cmap=cmap, s=15)
+
+# gray markers for f_delta
+marker_handles = [
+    Line2D(
+        [],
+        [],
+        marker=marker,
+        linestyle="none",
+        color="gray",
+        markerfacecolor="gray",
+        markersize=8,
+        label=f"$f_\\delta = {f}$",
+    )
+    for f, marker in zip(fs, markers)
+]
+
+# colored dots for each R
+Rs = sorted({m.params["R"] for m in grid.models})
+norm = plt.Normalize(np.log10(min(Rs)), np.log10(max(Rs)))
+
+color_handles = [
+    Line2D(
+        [],
+        [],
+        marker="o",
+        linestyle="none",
+        color=cmap(norm(np.log10(R))),
+        markersize=7,
+        label=f"$R = {R:.2f}\\,R_\\odot$",
+    )
+    for R in Rs
+]
+
+fig.legend(handles=marker_handles, loc="outside upper center", ncols=3)
+
+plt.legend(handles=color_handles, frameon=False)
+
+plt.xscale("log")
+
+plt.xlim(200, 10000)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Period (days)")
+plt.ylabel("[s/Fe]")
+plt.savefig("/home/koen/LaTeX-setup/plots/period-sFe-period.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+from matplotlib.lines import Line2D
+
+fs = [0.0, 0.1]
+markers = ["^", "s", "*"]
+cmap = plt.get_cmap("viridis")
+
+for f, marker in zip(fs, markers):
+    x = []
+    y = []
+    z = []
+    for m in grid.filter(eps=f):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        x.append(m.period_days[-1])
+        y.append(m.s)
+        z.append(m.params["R"])
+
+    plt.scatter(x, y, c=np.log10(z), marker=marker, cmap=cmap, s=15)
+
+# gray markers for f_delta
+marker_handles = [
+    Line2D(
+        [],
+        [],
+        marker=marker,
+        linestyle="none",
+        color="gray",
+        markerfacecolor="gray",
+        markersize=8,
+        label=f"$f_\\delta = {f}$",
+    )
+    for f, marker in zip(fs, markers)
+]
+
+# colored dots for each R
+Rs = sorted({m.params["R"] for m in grid.models})
+norm = plt.Normalize(np.log10(min(Rs)), np.log10(max(Rs)))
+
+color_handles = [
+    Line2D(
+        [],
+        [],
+        marker="o",
+        linestyle="none",
+        color=cmap(norm(np.log10(R))),
+        markersize=7,
+        label=f"$R = {R:g}\\,R_\\odot$",
+    )
+    for R in Rs
+]
+
+fig.legend(handles=marker_handles, loc="outside upper center", ncols=3)
+
+plt.legend(handles=color_handles, frameon=False)
+
+plt.xscale("log")
+
+plt.xlim(200, 10000)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Period (days)")
+plt.ylabel("[s/Fe]")
+# plt.savefig("/home/koen/LaTeX-setup/plots/period-sFe-period.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][1]:
+        continue
+    if m.envelope_mass[-1] > 0.02:
+        continue
+    if not np.isclose(m.params["f_delta"], 0.1):
+        continue
+    plt.plot(m.age, m.rl_1, label=m.params["q"])
+
+plt.legend()
+plt.show()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+from matplotlib.lines import Line2D
+
+fs = [0.1, 0.2, 0.3]
+markers = ["o", "s", "^"]
+cmap = plt.get_cmap("viridis")
+
+for f, marker in zip(fs, markers):
+    x = []
+    y = []
+    z = []
+    for m in grid.filter(f_delta=f):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        x.append(m.period_days[-1])
+        y.append(m.s)
+        z.append(m.params["q"])
+
+    plt.scatter(x, y, c=z, marker=marker, cmap=cmap, s=15)
+
+# gray markers for f_delta
+marker_handles = [
+    Line2D(
+        [],
+        [],
+        marker=marker,
+        linestyle="none",
+        color="gray",
+        markerfacecolor="gray",
+        markersize=8,
+        label=f"$f_\\delta = {f}$",
+    )
+    for f, marker in zip(fs, markers)
+]
+
+# colored dots for each R
+Rs = sorted({m.params["q"] for m in grid.models})
+norm = plt.Normalize(min(Rs), max(Rs))
+
+color_handles = [
+    Line2D(
+        [],
+        [],
+        marker="o",
+        linestyle="none",
+        color=cmap(norm(R)),
+        markersize=7,
+        label=f"$q = {R:.2f}$",
+    )
+    for R in Rs
+]
+
+fig.legend(handles=marker_handles, loc="outside upper center", ncols=3)
+
+plt.legend(handles=color_handles, frameon=False)
+
+plt.xscale("log")
+
+plt.xlim(200, 10000)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Period (days)")
+plt.ylabel("[s/Fe]")
+plt.savefig("/home/koen/LaTeX-setup/plots/period-sFe-period.pgf", format="pgf")
+plt.show()
+plt.close()
