@@ -55,6 +55,33 @@ The plot below shows the complete grid.
 	\incplot{w32-R-M-s-q-panels}
 \end{figure}
 
+\section{Roche lobe radius Grid}
+
+Below I will compare some of the orbital properties of the broad Roche lobe radius grid that I simulated a couple of weeks ago.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This plot shows the period of the various models.
+		The gray line shows the initial period of the models as a function of the initial Roche lobe radius.
+		This is simply a power law based on the \citet{eggleton1983} Roche lobe radius approximation and Kepler's Third Law.
+	}
+	\marginfignote{11}{I also plot the final period, which is in some cases \emph{smaller} than the initial period, and in some cases, especially towards large initial Roche lobe radii, the final period is \emph{larger} than the initial period.}
+
+	\marginfignote{19}{The minimum period get reached during RLOF and is always smaller than the final Roche lobe radius.}
+	\centering
+	\incplot{w32-RL-vs-final-period}
+\end{figure}
+
+It is more obvious if we plot this compared to the initial period.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The differences with respect to the initial period increases with the Roche lobe radius.
+		This is in part due to the tides in combination with the winds, and
+		due to the RLOF, which seems to decrease the periods \emph{more} for the larger masses.
+	}
+	\centering
+	\incplot{w32-RL-minus-initial}
+\end{figure}
+
 \newsection{Mean Molecular Weight}
 
 \subsection{Giant Branch Dip}
@@ -171,34 +198,7 @@ I also plot the two different computation methods for the late RGB model.
 	\incplot{w32-EOS-profile-RGB-2}
 \end{figure}
 
-\newsection{Roche lobe radius Grid}
-
-Below I will compare some of the orbital properties of the broad Roche lobe radius grid that I simulated a couple of weeks ago.
-
-\begin{figure}[ht]
-	\marginfignote{0}{This plot shows the period of the various models.
-		The gray line shows the initial period of the models as a function of the initial Roche lobe radius.
-		This is simply a power law based on the \citet{eggleton1983} Roche lobe radius approximation and Kepler's Third Law.
-	}
-	\marginfignote{11}{I also plot the final period, which is in some cases \emph{smaller} than the initial period, and in some cases, especially towards large initial Roche lobe radii, the final period is \emph{larger} than the initial period.}
-
-	\marginfignote{19}{The minimum period get reached during RLOF and is always smaller than the final Roche lobe radius.}
-	\centering
-	\incplot{w32-RL-vs-final-period}
-\end{figure}
-
-It is more obvious if we plot this compared to the initial period.
-
-\begin{figure}[ht]
-	\marginfignote{0}{The differences with respect to the initial period increases with the Roche lobe radius.
-		This is in part due to the tides in combination with the winds, and
-		due to the RLOF, which seems to decrease the periods \emph{more} for the larger masses.
-	}
-	\centering
-	\incplot{w32-RL-minus-initial}
-\end{figure}
-
-\section{1.4 Solar mass grid}
+\newsection{1.4 Solar mass grid}
 
 \begin{figure}[ht]
 	\marginfignote{0}{Here, I show the final [s/Fe] ratios for \(q=0.85\), \(M_\text{TPAGB} = 1.4\; M_\odot \) detailed \emph{MESA} binary simulations and the simple binary simulation.}
@@ -305,12 +305,176 @@ To start, let me plot the [s/Fe] abundances as a function of the final period of
 	\centering
 	\incplot{period-sFe-period}
 \end{figure}
-These initially mysterious systems with
+I think these systems are a combination of two effects.
+First, we have that
+the \(\delta =0.3\) models have much stronger orbital shrinkage, which moves them
+to lower periods from the right.
+So the clustered systems on the upper right of the plot
+migrate to \emph{lower periods} when they have a higher \(\delta \).
+
+Then secondly, we have the effect where systems with lower \(q\) respond more intensely to mass loss,
+and therefore obtain much shorter periods and in many cases also lower abundances.
+
+We can confirm this by using \(q\) as the color instead of the initial Roche lobe radius.
 
 \begin{figure}[ht]
+	\marginfignote{0}{We quite clearly see that most of the sparse, floating points are either
+		\begin{enumd}
+			\item  systems with small \(q\),
+			\item  systems with large \(\delta \),
+		\end{enumd}
+		or both.
+	}
 	\centering
 	\incplot{period-sFe-period-q}
 \end{figure}
+
+\nextpage
+This effect becomes even clearer when we plot only a single Roche lobe radius at a time.
+\begin{figure}[ht]
+	\marginfignote{0}{\emph{Clearly}, the Roche lobe radius has the largest effect on
+		where in the this diagram the points end up, \emph{but} the different \(q\) values can
+		have a significant role in shifting the models, especially to lower periods.}
+	\marginfignote{55}{This this point, the models do not experience RLOF and therefore
+		the different mass loss mechanisms during RLOF do not matter anymore.
+		Only \(q\) is relevant,
+		but only the models with the two \emph{largest} \(q\) values were actually simulated in this case.
+		.
+	}
+	\centering
+	\incplot{w32-compare-different-q}
+\end{figure}
+
+Intuitively, based on the figure I show below that I made last week, you might think that
+the lower \(q\) values cause lower accretor masses, and therefore higher abundances during RLOF.
+The models below are for a TPAGB star with mass \(2.2\; M_\odot \) and \(\varepsilon_\text{RLOF} = 0.25\).
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-change-q}
+\end{figure}
+
+However, the story is a bit more nuances than that.
+Obviously the accretion efficiency of RLOF plays a role, because if we would have \(\varepsilon = 0\), then
+only wind matters and wind accretion is generally less effective for lower \(q\).
+Then we also have the effect that models with lower \(q\) interact
+earlier, which, in combination with dredge up can significantly lower the abundances of the accreted material.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Below we see that, if we take into account these nuances, it is very much possible to quite significantly lower s-process enhancements for models
+		with lower \(q\) in the RLOF dominated regime.
+		These are models for \(1.4\; M_\odot \) and \(\varepsilon_\text{RLOF}=0.1\).
+	}
+	\centering
+	\incplot{w32-q-complications}
+\end{figure}
+
+We can of course make some 2d plots.
+
+\begin{figure}[ht]
+	\marginfignote{5}{Here I compare the [s/Fe] abundances.
+		The un-enriched regime on the left is clearly larger for the \(\varepsilon =0\) models.
+		This is what we expect.
+		We then also see that the actual s-process abundances in the region where both become enriched are not very different.
+		It seems like even this low mass star can enrich the accretor enough to create a barium star according to the definition of [s/Fe] \(>0.25\).
+		There are three models missing on the bottom right of each panel.
+		These models have not been simulated because they would miss RLOF by too much.
+		The other empty spots are due to inspirals.
+		None of these models crashed.
+	}
+	\centering
+	\incplot{w32-pcolor-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{5}{The periods are distributed like we have seen many times before.
+		No surprises here.
+	}
+	\centering
+	\incplot{w32-pcolor-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{5}{If we look at the difference between the initial period and final period, we clearly see that this is strongly affected by the mass ratio and \(f_{\delta }\).
+		It is difficult to say if the initial Roche lobe radius has any noticeable, but we have seen in one of the plots above that it can have an effect.
+	}
+	\centering
+	\incplot{w32-pcolor-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{5}{Here I plot the final mass of the accretor after the full binary evolution.
+		The patterns make a lot of sense, and many of the final masses actually overlap with
+		the masses of observed barium stars, which is nice.
+	}
+	\centering
+	\incplot{w32-pcolor-5}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+	\marginfignote{5}{
+		This is very surprising to me.
+		So much so that I actually had to make sure I was really plotting the correct quantity.
+		We see \emph{much} less extreme overfill ratios for these \(1.4\; M_\odot \) models than we do for the heavier stars.
+		In some cases,
+		the star actually undergoes RLOF, but it never reaches exceeds its own Roche lobe radius.
+		Let me plot one of these models.
+	}
+	\centering
+	\incplot{w32-pcolor-4}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{The surprising shape is not surprising anymore if we look at models
+		with equal initial mass ratios, but different starting Roche lobe radii (so rows in the plots above).
+		We see that in the case of equal mass ratios and not very extreme circumbinary mass loss, models that approach RLOF during the interpulse can actually strip their envelope
+		with RLOF without large overfill ratios.
+		As soon as the models reach the last thermal pulse, we get a region again where the models can obtain large overfill ratios
+		due to the thermal pulse.
+		Then beyond a certain initial Roche lobe radius, the binary will not experience RLOF at all and we obviously get small overfill ratios.
+	}
+	\centering
+	\incplot{w32-no-RLOF}
+\end{figure}
+
+Instead of looking at a row, we can also inspect a column.
+Clearly an interesting column to look
+at is the one where some models do overfill their Roche lobes, and some do not.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Apparently, \(q\), has quite a large influence on \emph{if} the
+		model reaches significant overfill ratios.
+		This makes sense considering what we have
+		seen much earlier, where the models with the most unequal mass ratios also have the most
+		extreme RLOF episodes, the most instabilities and the possibility to spiral in due to tides.
+	}
+	\centering
+	\incplot{w32-no-RLOF-q}
+\end{figure}
+
+We can also compare \emph{across} the plots.
+For example, let me compare the 3 different \(f_\text{delta}\) values.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The effect of this is similar to what we see for different \(q\) values prior during RLOF, which is what we expect since \emph{both} of these parameters alter the severity of RLOF.
+		However, an important difference between the two is that the mass ratio \emph{also} affects the winds, while \(\delta \) does \emph{not}.
+		Therefore, prior to RLOF, the models with different \(\delta \) will behave more similarly than the models with different \(q\).
+	}
+	\centering
+	\incplot{w32-no-RLOF-delta}
+\end{figure}
+
+Lastly, let me different \(q\) values again, but now shifted one column to the right.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w32-no-RLOF-q-2}
+\end{figure}
+
+This is quite interesting.
+We see that the \(q=1\) model \emph{does} overfill its Roche lobe, while for example, the other models do not overfill their Roche lobe during the thermal pulse.
+However, the \(q=0.4\) model slightly overfills its Roche lobe during RLOF slightly before the thermal pulse.
 
 \bibliography{master.bib}
 \end{document}

@@ -1380,6 +1380,701 @@ plt.xlim(200, 10000)
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Period (days)")
 plt.ylabel("[s/Fe]")
-plt.savefig("/home/koen/LaTeX-setup/plots/period-sFe-period.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/period-sFe-period-q.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    5,
+    1,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=2),
+    constrained_layout=True,
+)
+
+markers = ["o", "^", "s", "*", "v"]
+
+qs = grid.axes["q"]
+qs = np.array(qs)
+
+for i, R in enumerate(grid.axes["R"]):
+    ls = []
+    for eps in [0, 0.1]:
+        for c, delta in enumerate([0.1, 0.2, 0.3]):
+
+            x = []
+            y = []
+            order = []
+            for m in grid.models:
+                if m.params["R"] != R:
+                    continue
+                if m.envelope_mass[-1] > 0.02:
+                    continue
+                if not np.isclose(m.params["f_delta"], delta):
+                    continue
+                if not np.isclose(m.params["eps"], eps):
+                    continue
+                x.append(m.period_days[-1])
+                y.append(m.s)
+                ind = np.argmin(np.abs(qs - m.params["q"]))
+                if eps == 0:
+                    axs[i].scatter(
+                        x[-1], y[-1], marker=markers[ind], color=f"C{c}", alpha=0.3
+                    )
+                else:
+                    axs[i].scatter(
+                        x[-1], y[-1], marker=markers[ind], color=f"C{c}", s=10
+                    )
+                order.append(m.params["q"])
+
+            x = np.array(x)
+            y = np.array(y)
+            order = np.array(order)
+
+            idx = np.argsort(order)
+            order = order[idx]
+            x = x[idx]
+            y = y[idx]
+
+            if eps == 0:
+                (h,) = axs[i].plot(
+                    x,
+                    y,
+                    alpha=0.3,
+                    linewidth=3,
+                    label=f"$f_\\delta = {delta:.1f}, \\varepsilon = {eps:.1f}$",
+                    color=f"C{c}",
+                )
+            else:
+                (h,) = axs[i].plot(
+                    x,
+                    y,
+                    label=f"$f_\\delta = {delta:.1f}, \\varepsilon = {eps:.1f}$",
+                    color=f"C{c}",
+                    linewidth=1,
+                )
+            ls.append(h)
+    axs[i].text(
+        1,
+        0.05,
+        f"$R_\\textrm{{RL}} = {R:.0f}\\; R_\\odot$",
+        transform=axs[i].transAxes,
+        fontsize=10,
+        va="bottom",
+        ha="right",
+    )
+
+axs[0].legend(ncols=2, handles=ls)
+
+marker_handles = [
+    Line2D(
+        [],
+        [],
+        marker=marker,
+        linestyle="none",
+        color="C9",
+        markerfacecolor="C9",
+        markersize=5,
+        label=f"$q = {f}$",
+    )
+    for f, marker in zip(qs, markers)
+]
+
+axs[1].legend(handles=marker_handles)
+
+
+plt.xscale("log")
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Period (days)")
+axs[2].set_ylabel("[s/Fe]")
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-compare-different-q.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+from concurrent.futures import ProcessPoolExecutor
+from itertools import repeat
+
+df = AbundanceTables()
+
+ms = np.arange(1, 3.01, 0.1)
+rs = np.logspace(np.log10(250), np.log10(1000), 50)
+
+mi = 1.4
+qs = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+
+def run_model(ri, q):
+    a_init = inv_roche_lobe(ri, q)
+
+    star = get_star(m=mi)
+
+    star, Options, q_init, a_init, e_init, Bins = call_evolution(
+        star, q, a_init, simple_only=True
+    )
+
+    bin = Bins[0]
+    print(f"r = {ri:.2f}, m = {mi}, len = {len(bin.age)}")
+
+    ab = Abundances(
+        None,
+        df,
+        mass=mi,
+        sb=bin,
+        sampling=1,
+        mass_transfer_efficiency=0.1,
+    )
+
+    return get_s(ab)
+
+
+abs_total = []
+for q in qs:
+    if __name__ == "__main__":
+        with ProcessPoolExecutor(max_workers=8) as executor:
+            abs4 = list(executor.map(run_model, rs, repeat(q)))
+        abs_total.append(abs4)
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+norm = plt.Normalize(min(qs), max(qs))
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+
+for i, q in enumerate(qs):
+    plt.plot(rs, abs_total[i], color=cmap(norm(q)))
+
+
+sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+sm.set_array([])
+
+cbar = plt.colorbar(sm, ax=plt.gca())
+cbar.set_label(r"$q_i$")
+cbar.set_ticks(qs)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$R_\\textrm{RL,i}$ ($R_\\odot$)")
+plt.ylabel("[s/Fe]")
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-q-complications.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+from matplotlib.lines import Line2D
+
+fs = [0.1, 0.2, 0.3]
+markers = ["o", "s", "^"]
+cmap = plt.get_cmap("viridis")
+
+for f, marker in zip(fs, markers):
+    x = []
+    y = []
+    z = []
+    for m in grid.filter(f_delta=f):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        x.append(m.m_dup_av)
+        y.append(m.s)
+        z.append(m.params["R"])
+
+    plt.scatter(x, y, c=np.log10(z), marker=marker, cmap=cmap, s=15)
+
+# gray markers for f_delta
+marker_handles = [
+    Line2D(
+        [],
+        [],
+        marker=marker,
+        linestyle="none",
+        color="gray",
+        markerfacecolor="gray",
+        markersize=8,
+        label=f"$f_\\delta = {f}$",
+    )
+    for f, marker in zip(fs, markers)
+]
+
+# colored dots for each R
+Rs = sorted({m.params["R"] for m in grid.models})
+norm = plt.Normalize(np.log10(min(Rs)), np.log10(max(Rs)))
+
+color_handles = [
+    Line2D(
+        [],
+        [],
+        marker="o",
+        linestyle="none",
+        color=cmap(norm(np.log10(R))),
+        markersize=7,
+        label=f"$R = {R:.2f}\\,R_\\odot$",
+    )
+    for R in Rs
+]
+
+fig.legend(handles=marker_handles, loc="outside upper center", ncols=3)
+
+plt.legend(handles=color_handles, frameon=False)
+
+plt.xscale("log")
+
+# plt.xlim(200, 10000)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Period (days)")
+plt.ylabel("[s/Fe]")
+# plt.savefig("/home/koen/LaTeX-setup/plots/period-sFe-period.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return r.s
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+print(maxx)
+
+norm = TwoSlopeNorm(0.25, minn, maxx)
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="coolwarm", norm=norm)
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+plt.colorbar(
+    c, ax=axs[0, 1], orientation="horizontal", location="top", label="[s/Fe]", aspect=20
+)
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return r.period_days[-1]
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+print(maxx)
+
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="viridis", vmin=minn, vmax=maxx)
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="Period (days)",
+    aspect=20,
+)
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=0.75),
+    constrained_layout=True,
+)
+
+
+def period_days(q, M1, R_L):
+    """Compute the orbital period from the mass ratio and donor Roche lobe radius.
+
+    Parameters
+    ----------
+    q : float or array-like
+        Mass ratio M2 / M1.
+    M1 : float
+        Donor mass in solar masses.
+    R_L : float or array-like
+        Donor Roche lobe radius in solar radii.
+
+    Returns
+    -------
+    float or ndarray
+        Orbital period in days.
+    """
+    q_donor = 1 / q
+    r_L = (
+        0.49
+        * q_donor ** (2 / 3)
+        / (0.6 * q_donor ** (2 / 3) + np.log1p(q_donor ** (1 / 3)))
+    )
+
+    a = R_L / r_L * 695508000  # orbital separation in solar radii
+    M_total = M1 * (1 + q) * 1.989e30
+    G = 6.67430e-11
+    T = np.sqrt(a**3 * 4 * np.pi**2 / (G * (M_total))) / (3600 * 24)
+
+    return T
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return r.period_days[-1] - period_days(r.params["q"], r.params["m"], r.params["R"])
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+print(maxx)
+
+norm = TwoSlopeNorm(0, minn, maxx)
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="coolwarm", norm=norm)
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="$\\Delta$ period (days)",
+    aspect=20,
+)
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-3.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return np.nanmax(r.R / r.rl_1)
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+print(maxx)
+print(minn)
+
+norm = TwoSlopeNorm(1, minn, maxx)
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="coolwarm", norm=norm)
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+cbar = plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="max($R_\\textrm{star} / R_\\textrm{RL}$)",
+    aspect=20,
+)
+cbar.ax.set_xscale("linear")
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-4.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+for m in grid.models:
+    plt.plot(m.star_1_mass, m.R / m.rl_1)
+plt.show()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+counter = 0
+for m in grid.models:
+    if not m.params["R"] in grid.axes["R"][2:5]:
+        continue
+    if not np.isclose(m.params["q"], 1):
+        continue
+    if not np.isclose(m.params["eps"], 0.1):
+        continue
+    if not np.isclose(m.params["f_delta"], 0.1):
+        continue
+    plt.plot(m.age, m.R, c=f"C{counter}", linewidth=1)
+    plt.plot(m.age, m.rl_1, c=f"C{counter}", alpha=0.5, linewidth=2)
+    counter += 1
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Star age (yr)")
+plt.ylabel("$R$ ($R_\\odot$)")
+plt.title("$q=1$, $\\varepsilon = 0.1$, $f_\\delta = 0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-no-RLOF.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+counter = 0
+for m in grid.models:
+    if not m.params["R"] in grid.axes["R"][2:3]:
+        continue
+    if not m.params["q"] in grid.axes["q"][1:5]:
+        continue
+    if not np.isclose(m.params["eps"], 0.1):
+        continue
+    if not np.isclose(m.params["f_delta"], 0.1):
+        continue
+    plt.plot(m.age, m.R, c=f"C{counter}", linewidth=1)
+    if m.params["q"] == 0.55:
+        plt.text(
+            m.age[-1] - 2000,
+            m.R[-1] + 120 - m.params["q"] * 250,
+            f"$q={m.params["q"]:.2f}$",
+            va="top",
+            ha="center",
+            fontsize=8,
+            color=f"C{counter}",
+        )
+    else:
+        plt.text(
+            m.age[-1] - 2000,
+            m.R[-1] + 120 - m.params["q"] * 250,
+            f"${m.params["q"]:.2f}$",
+            va="top",
+            ha="center",
+            fontsize=8,
+            color=f"C{counter}",
+        )
+    plt.plot(m.age, m.rl_1, c=f"C{counter}", alpha=0.5, linewidth=2)
+    counter += 1
+
+    print(m.params["R"])
+x_min = plt.gca().get_xlim()[0]
+star = get_star(m=1.4)
+plt.plot(star.age[star.ntpagb :], 10 ** star.log_R[star.ntpagb :], c="C9")
+
+plt.xlim(2.821e9 + 530000, 2.821e9 + 700000)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Star age (yr)")
+plt.ylabel("$R$ ($R_\\odot$)")
+plt.title("$R_\\textrm{RL}= 521 \\;R_\\odot$, $\\varepsilon = 0.1$, $f_\\delta = 0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-no-RLOF-q.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+counter = 0
+for m in grid.models:
+    if not m.params["R"] in grid.axes["R"][2:3]:
+        continue
+    if not m.params["q"] in grid.axes["q"][4:5]:
+        continue
+    if not np.isclose(m.params["eps"], 0.1):
+        continue
+    if (
+        not np.isclose(m.params["f_delta"], 0.1)
+        and not np.isclose(m.params["f_delta"], 0.2)
+        and not np.isclose(m.params["f_delta"], 0.3)
+    ):
+        continue
+    plt.plot(m.age, m.R, c=f"C{counter}", linewidth=1)
+    plt.text(
+        m.age[-1] - 2000,
+        m.R[-1] - 130 + m.params["f_delta"] * 300,
+        f"$f_\\delta = {m.params["f_delta"]:.2f}$",
+        va="top",
+        ha="center",
+        fontsize=8,
+        color=f"C{counter}",
+    )
+    plt.plot(m.age, m.rl_1, c=f"C{counter}", alpha=0.5, linewidth=2)
+    counter += 1
+    print(m.params["q"])
+
+x_min = plt.gca().get_xlim()[0]
+star = get_star(m=1.4)
+plt.plot(star.age[star.ntpagb :], 10 ** star.log_R[star.ntpagb :], c="C9")
+
+plt.xlim(2.821e9 + 530000, 2.821e9 + 700000)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Star age (yr)")
+plt.ylabel("$R$ ($R_\\odot$)")
+plt.title("$R_\\textrm{RL}= 521 \\;R_\\odot$, $q=1$, $\\varepsilon = 0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-no-RLOF-delta.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, full), constrained_layout=True
+)
+
+counter = 0
+for m in grid.models:
+    if not m.params["R"] in grid.axes["R"][3:4]:
+        continue
+    if not m.params["q"] in grid.axes["q"][0:5]:
+        continue
+    if not np.isclose(m.params["eps"], 0.1):
+        continue
+    if not np.isclose(m.params["f_delta"], 0.3):
+        continue
+    plt.plot(m.age, m.R, c=f"C{counter}", linewidth=1)
+    # if m.params["q"] == 0.55:
+    #     plt.text(
+    #         m.age[-1] - 2000,
+    #         m.R[-1] + 120 - m.params["q"] * 250,
+    #         f"$q={m.params["q"]:.2f}$",
+    #         va="top",
+    #         ha="center",
+    #         fontsize=8,
+    #         color=f"C{counter}",
+    #     )
+    # else:
+    #     plt.text(
+    #         m.age[-1] - 2000,
+    #         m.R[-1] + 120 - m.params["q"] * 250,
+    #         f"${m.params["q"]:.2f}$",
+    #         va="top",
+    #         ha="center",
+    #         fontsize=8,
+    #         color=f"C{counter}",
+    #     )
+    plt.plot(m.age, m.rl_1, c=f"C{counter}", alpha=0.5, linewidth=2)
+    counter += 1
+
+    print(m.params["R"])
+x_min = plt.gca().get_xlim()[0]
+
+plt.xlim(2821644494.5016646, 2821652040.5511336)
+plt.ylim(82.1939045910354, 511.84956085384266)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Star age (yr)")
+plt.ylabel("$R$ ($R_\\odot$)")
+plt.title("$R_\\textrm{RL}= 635 \\;R_\\odot$, $\\varepsilon = 0.1$, $f_\\delta = 0.1$")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w32-no-RLOF-q.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
