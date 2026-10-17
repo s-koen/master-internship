@@ -2027,7 +2027,7 @@ plt.show()
 plt.close()
 # %%
 fig, axs = plt.subplots(
-    1, 1, sharex=True, figsize=set_size(column, full), constrained_layout=True
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
 )
 
 counter = 0
@@ -2040,7 +2040,7 @@ for m in grid.models:
         continue
     if not np.isclose(m.params["f_delta"], 0.3):
         continue
-    plt.plot(m.age, m.R, c=f"C{counter}", linewidth=1)
+    plt.plot(m.age, m.R, c=f"C{counter}", linewidth=1, label=f"$q= {m.params["q"]}$")
     # if m.params["q"] == 0.55:
     #     plt.text(
     #         m.age[-1] - 2000,
@@ -2070,11 +2070,72 @@ x_min = plt.gca().get_xlim()[0]
 plt.xlim(2821644494.5016646, 2821652040.5511336)
 plt.ylim(82.1939045910354, 511.84956085384266)
 
+plt.legend()
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Star age (yr)")
 plt.ylabel("$R$ ($R_\\odot$)")
-plt.title("$R_\\textrm{RL}= 635 \\;R_\\odot$, $\\varepsilon = 0.1$, $f_\\delta = 0.1$")
-# plt.savefig("/home/koen/LaTeX-setup/plots/w32-no-RLOF-q.pgf", format="pgf")
+plt.title("$R_\\textrm{RL}= 635 \\;R_\\odot$, $\\varepsilon = 0.1$, $f_\\delta = 0.3$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-no-RLOF-q-2.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return r.star_2_mass[-1]
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+print(maxx)
+print(minn)
+
+norm = TwoSlopeNorm(1, minn, maxx)
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="viridis", vmin=minn, vmax=maxx)
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+cbar = plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="$M_\\textrm{accretor,f}$ ($M_\\odot$)",
+    aspect=20,
+)
+cbar.ax.set_xscale("linear")
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-5.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
 # %%
