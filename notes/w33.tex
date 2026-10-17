@@ -20,6 +20,7 @@
 \setuplayout
 \section{Envelope mass}
 
+\subsection{Introduction}
 Last week, I showed a couple of plots in which RLOF occured during the interpulse period of the TPAGB
 star.
 When the mass ratios were not extreme, and not a lot of mass was lost to a circumbinary disk,
@@ -50,6 +51,8 @@ This is also why there are differences in the last two columns.
 	\incplot{w32-pcolor-5-m1.4}
 \end{figure}
 
+\subsection{Setup}
+
 Let me plot the masses of the envelope for the different thermal pulses as a function of the mass.
 
 \begin{figure}[ht]
@@ -78,5 +81,75 @@ last thermal pulse close to \(0.1\; M_\odot \), about \(2 \times \) lower than t
 I will use the simple binary code to estimate a nice Roche lobe radius that hits causes RLOF to happen towards the end of the last interpulse, when there
 is very little mass left.
 It is then interesting to see if we again obtain these stable RLOF mass transfer binary systems.
+
+\begin{figure}[ht]
+	\marginfignote{0}{I ended up selecting a single initial Roche lobe radius of \(R_\text{RL} = 1100\; R_\odot \).
+		I simulate the same 5 initial mass ratios as I do for my
+		large grid, and the same 3 \(f_{\delta } \) values, however this time only for \(\varepsilon = 0\), which means \(f_{\delta } = \delta \).
+	}
+	\marginfignote{10}{This seems like it will give interesting results.
+		The models \emph{should} undergo RLOF with very little envelope mass left, or in the case of the \(q=1\) model,
+		experience so sort of flipping where now, wind mass-loss causes an increase in the Roche lobe radius.
+		This is probably some non-trivial effect of the changing mass ratio in the prescription from \citet{saladino2018} and a nice consistency check.
+		I expect roughly the same behaviour in the detailed \emph{MESA} models.
+	}
+	\centering
+	\incplot{w33-test-higher-mass-low-env}
+\end{figure}
+
+I expect there to be \emph{big} differences in the final periods \emph{and} the final [s/Fe] values for these models.
+This is simply because this heavier star reaches much larger radii and much larger envelope s-process abundances.
+
+\subsection{Results}
+
+\newsection{Mixing mass and the Effect on the final abundances}
+
+Last week, I showed this plot:
+\begin{figure}[ht]
+	\marginfignote{1}{Every plot here makes some intuitive sense if we consider that the envelope
+		s-process abundances increase after thermal pulses up to the point were we start actually \emph{accreting} material
+		onto a main sequence star, and we obtain MS abundances.}
+	\marginfignote{65}{This is where things start to become a little difficult to predict.
+		This panel shows the abundances in a MS accretor if the MS itself has no initial s-process abundances.
+		To understand these abundances, we need to consider both the mixing mass, \emph{and} the accreted mass.
+	}
+	\marginfignote{83}{For the actual main sequence abundances, it is important to also consider the initial abundances of the s-process elements in the main sequence star.}
+	\centering
+	\incplot{w32-radius-4}
+\end{figure}
+
+Let me plot the \(\mu\)-mixing profiles for the blue models (\(f_{\delta } = 0.1\)).
+That way, we can see
+how deep the thermohaline mixing should extend, and what the differences are between the two.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The orange line has less accretion, but with higher s-process abundances, and thus a higher mean molecular weight.
+		The lower accretion mass is more important in this case.
+		The \(\varepsilon =0.0\) model has a lower mixing mass.
+	}
+	\centering
+	\incplot{w33-mixing-mass-1}
+\end{figure}
+
+To confirm the mixing mass actually fixes MS abundances, let me show, explicitly,
+a calculation of the final accretor abundances.
+First, let's consider the
+case \emph{without} any initial abundances in the accretor.
+Then we simply have
+
+\begin{align*}
+	X_\text{MS}                       & = \Delta M_\text{s-process} / (M_\text{mix} + \Delta M_\text{accr})        \\
+	X_\text{MS, \(\varepsilon =0.1\)} & \approx 9 \times  10^{-9} / (0.09 + 0.464) \approx 1.62 \times  10^{-8}    \\
+	X_\text{MS, \(\varepsilon =0.0\)} & \approx 5.5 \times  10^{-9} / (0.015 + 0.359) \approx 1.47 \times  10^{-8}
+\end{align*}
+These values, although approximate, align very well with what we see in the subplot showing \(\langle X \rangle (s\text{, MS} )_{t=t}, X(s,i) = 0 \)
+Now, if we consider the initial abundances of the accretor, I calculate the abundances as follows:
+\begin{align*}
+	X_\text{MS}                       & = (\Delta M_\text{s-process} + X(s) \cdot M_\text{mix}) / (M_\text{mix} + \Delta M_\text{accr})              \\
+	X_\text{MS, \(\varepsilon =0.1\)} & \approx (9 \times  10^{-9} + 4.4 \times 10^{-8} \cdot 0.464 ) / (0.09 + 0.464) \approx 5.31 \times  10^{-8}  \\
+	X_\text{MS, \(\varepsilon =0.0\)} & \approx (5.5 \times  10^{-9}+ 4.4 \times 10^{-8} \cdot 0.359) / (0.015 + 0.359) \approx 5.69 \times  10^{-8}
+\end{align*}
+Both of these values align very well with the plot showing \(\langle X \rangle (s\text{, MS} )_{t=t},\)\\\(X(s,i) = X(s)_\text{Asplund}\).
+
 \bibliography{master.bib}
 \end{document}
