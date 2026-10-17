@@ -123,3 +123,40 @@ def element_labels(fig, z, names, axs=plt.gca()):
                 fig.dpi_scale_trans,
             )
         )
+
+
+def annotate_pcolormesh(
+    ax,
+    x,
+    y,
+    values,
+    vmin=None,
+    vmax=None,
+    colors=("white", "black"),
+    fmt=".2f",
+    fontsize=6,
+):
+    if vmin is None:
+        vmin = np.nanmin(values)
+    if vmax is None:
+        vmax = np.nanmax(values)
+
+    for i, xx in enumerate(x):
+        for j, yy in enumerate(y):
+            value = values.T[i, j]
+
+            if not np.isfinite(value):
+                continue
+
+            normalized = (value - vmin) / (vmax - vmin)
+            color = colors[1] if normalized > 0.5 else colors[0]
+
+            ax.text(
+                xx,
+                yy,
+                format(value, fmt),
+                ha="center",
+                va="center",
+                fontsize=fontsize,
+                color=color,
+            )
