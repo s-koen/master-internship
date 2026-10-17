@@ -1,0 +1,82 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 33}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Envelope mass}
+
+Last week, I showed a couple of plots in which RLOF occured during the interpulse period of the TPAGB
+star.
+When the mass ratios were not extreme, and not a lot of mass was lost to a circumbinary disk,
+RLOF appeared to be very stable\sidenote{In the sense that the radius of the star never became larger than the
+	Roche lobe radius.
+}. For example, see this figure:
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w32-no-RLOF}
+\end{figure}
+
+Maybe this surprising stability is due to the low envelope mass at the moment of RLOF.
+Below, I plot an approximate mass for the start of RLOF.
+It is approximate because it is difficult to
+select an exact starting moment.
+This is also why there are differences in the last two columns.
+
+\begin{figure}[ht]
+	\marginfignote{6}{The third column shows models that interact during the last interpulse phase,
+		where the radius of the star never exceeds the Roche lobe radius.
+		As we can see, the envelope mass
+		at this point is already quite small.
+		But really, to know if this is really the reason, we should compare
+		if with stars with different masses, but equally small evelope masses before the final thermal pulse.
+	}
+	\centering
+	\incplot{w32-pcolor-5-m1.4}
+\end{figure}
+
+Let me plot the masses of the envelope for the different thermal pulses as a function of the mass.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The dots represent the mass of the TPAGB star at the start of a certain thermal pulse.
+		The exact thermal pulse numbers are irrelevant here.
+		It is only important to look at the lowest two dot.
+		These dot represent the mass of the envelope during the \emph{last} two thermal pulse.
+		Clearly, if we interact during
+		the last \emph{interpulse} phase, RLOF will occur when the star has an envelope mass between these two values.
+	}
+	\marginfignote{17}{The figure above shows that for the models that interact during the interpulse, the envelope mass is approximately \(0.5\; M_\odot \).
+		This figure shows that this is totally in agreement with the values that we expect are possible.
+		The envelope mass of the \(1.4\; M_\odot \) star during the last thermal pulse is not very low compared to the other stars.
+	}
+	\centering
+	\incplot{w33-mass-at-TP}
+\end{figure}
+
+There are some quite heavy stars that have \emph{lower} envelope masses towards the end
+of the last interpulse period.
+For example, it might be interesting
+to look at the \(2.4\; M_\odot \) model.
+This one has an envelope mass during the
+last thermal pulse close to \(0.1\; M_\odot \), about \(2 \times \) lower than the \(1.4\; M_\odot \) model.
+
+I will use the simple binary code to estimate a nice Roche lobe radius that hits causes RLOF to happen towards the end of the last interpulse, when there
+is very little mass left.
+It is then interesting to see if we again obtain these stable RLOF mass transfer binary systems.
+\bibliography{master.bib}
+\end{document}
