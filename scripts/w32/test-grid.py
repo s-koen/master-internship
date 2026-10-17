@@ -2139,3 +2139,18 @@ plt.close()
 
 
 # %%
+
+ms = np.arange(1,3.1,0.1)
+for m in ms:
+    star = get_star(m=m)
+    plt.plot((star.age[star.ntpagb:] - star.age[star.ntpagb]) / (star.age[-1] - star.age[star.ntpagb]),10*star.log_R[star.ntpagb:])
+
+plt.show()
+# %%
+
+ms = np.arange(1,3.1,0.1)
+for m in ms:
+    star = get_star(m=m)
+    plt.plot(star.TP_count[star.ntpagb :], star.m_env[star.ntpagb :])
+
+plt.show()

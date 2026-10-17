@@ -47,11 +47,15 @@ from scripts.evolve_mesa.star_model import *
 from scripts.evolve_mesa.grid_call import *
 
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.8), constrained_layout=True
+)
 
 
 Star = get_star(m=2.4)
 R = 1100
-for q in [0.4, 0.55, 0.7, 0.85, 1]:
+qs = [0.4, 0.55, 0.7, 0.85, 1]
+for q in qs:
     a_init = inv_roche_lobe(R, q)
     [Star, Options, q_init, a_init, e_init, Bins] = call_evolution(
         Star, q, a_init, simple_only=True
@@ -64,7 +68,47 @@ for q in [0.4, 0.55, 0.7, 0.85, 1]:
     q_evolve = bin.m2 / bin.m1
     RL = roche_lobe(1 / q_evolve) * bin.a
 
-    plt.plot(bin.age, RL)
-plt.plot(Star.age, 10**Star.log_R)
+    plt.plot(bin.age, RL, label=f"$q = {q:.2f}$", linewidth=1)
+plt.plot(Star.age, 10**Star.log_R, c="C9", zorder=-1, linewidth=1)
+
+from scipy.interpolate import interp1d
+
+# envelope mass as a function of age
+age = Star.age
+m_env = Star.mass - Star.m_core
+
+# ensure the interpolation data are sorted by age
+idx = np.argsort(age)
+age = age[idx]
+m_env = m_env[idx]
+
+# interpolate in both directions
+age_to_m_env = interp1d(age, m_env, bounds_error=False, fill_value="extrapolate")
+m_env_to_age = interp1d(
+    m_env[::-1], age[::-1], bounds_error=False, fill_value="extrapolate"
+)
+
+# secondary axis
+secax = axs.secondary_xaxis(
+    "top",
+    functions=(age_to_m_env, m_env_to_age),
+)
+secax.set_xlabel(r"Envelope mass ($M_\odot$)")
+secax.set_xticks([1.75, 1.7, 1.6, 1.5, 1, 0.8, 0.5, 0.2, 0])
+secax.set_xticklabels(["1.75", "1.7", "1.6", "1.5", "1", "0.8", "0.5", "0.2", "0"])
+
+
+plt.xlabel("Age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.xlim(726213946.5060341, 726512869.7479917)
+plt.ylim(100, 1200)
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-test-higher-mass-low-env.pgf", format="pgf"
+)
 plt.show()
+plt.close()
 # %%
