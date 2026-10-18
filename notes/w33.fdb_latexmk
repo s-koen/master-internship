@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w33"] 1792271708.92878 "w33.aux" "w33.bbl" "w33" 1792276365.58448 0
-  "./master.bib" 1792140743.43353 53841 9c8da239d9f2aa959ee641eca99b028c ""
+["bibtex w33"] 1792354086.98026 "w33.aux" "w33.bbl" "w33" 1792354093.58476 0
+  "./master.bib" 1792349064.2752 53841 9c8da239d9f2aa959ee641eca99b028c ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w33.aux" 1792276365.32129 1704 82c03d39b5f38ea59f241c981d9759e0 "pdflatex"
+  "w33.aux" 1792354093.32697 2186 294b7ef722496cff2a43c06eaa016b3a "pdflatex"
   (generated)
   "w33.bbl"
   "w33.blg"
   (rewritten before read)
-["pdflatex"] 1792276361.7388 "w33.tex" "w33.pdf" "w33" 1792276365.58462 0
+["pdflatex"] 1792354087.04095 "w33.tex" "w33.pdf" "w33" 1792354093.58489 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -18,9 +18,19 @@
   "/home/koen/LaTeX-setup//plots/w32-pcolor-5-m1.4.pgf" 1792155950.12757 205083 c33c396d97013f8420f14ebe819e8e48 ""
   "/home/koen/LaTeX-setup//plots/w32-radius-4-img0.png" 1791901476.70099 14465 cb33c583d0cb5d92cd610cbff1db4b34 ""
   "/home/koen/LaTeX-setup//plots/w32-radius-4.pgf" 1791901476.796 283034 fba22e0618d89d8b53c474830d4fb959 ""
+  "/home/koen/LaTeX-setup//plots/w33-2.4-delta0.1-mdot-2.pgf" 1792353398.72053 247545 a4886a5758b748ad45e7c8e99bbe8df9 ""
+  "/home/koen/LaTeX-setup//plots/w33-2.4-delta0.1-mdot.pgf" 1792353184.32099 141865 6d3f4d1f91b9a4274e5895b701b816f0 ""
+  "/home/koen/LaTeX-setup//plots/w33-2.4-delta0.1.pgf" 1792349572.99647 167782 15c2d34e263f6b72c38403a473a9b5ae ""
+  "/home/koen/LaTeX-setup//plots/w33-compare-models-m_env-1.4-entr.pgf" 1792345701.40052 942576 f99179729a1b1c66911f7cd89377e064 ""
+  "/home/koen/LaTeX-setup//plots/w33-compare-models-m_env-1.4.pgf" 1792336054.66548 777055 cb7843171c360619f15aaed122f517c3 ""
+  "/home/koen/LaTeX-setup//plots/w33-compare-models-m_env.pgf" 1792334530.69377 529279 7d6da756d9567c6a824e49d92e4a127b ""
+  "/home/koen/LaTeX-setup//plots/w33-compare-models.pgf" 1792333258.75234 483034 db79601058719b8c0480f9b77ae21285 ""
   "/home/koen/LaTeX-setup//plots/w33-mass-at-TP.pgf" 1792193538.33651 1185961 2461a7543c407416856d11eade067cf5 ""
-  "/home/koen/LaTeX-setup//plots/w33-mixing-mass-1.pgf" 1792275447.06419 52706 8494e5ba01baf3f6062074f43467a2f4 ""
-  "/home/koen/LaTeX-setup//plots/w33-test-higher-mass-low-env.pgf" 1792240626.23094 66798 cbb54425e74d0d81ce5785c409b0b5ba ""
+  "/home/koen/LaTeX-setup//plots/w33-mixing-mass-1.pgf" 1792276434.64535 52706 8494e5ba01baf3f6062074f43467a2f4 ""
+  "/home/koen/LaTeX-setup//plots/w33-mixing-mass-vs-X-no-initial.pgf" 1792328829.45368 47231 5e5f58641a9d29c3962025fc40c4a8e0 ""
+  "/home/koen/LaTeX-setup//plots/w33-mixing-mass-vs-X.pgf" 1792328801.14227 42727 89fcd500975bab8de9f2bd47c800ba75 ""
+  "/home/koen/LaTeX-setup//plots/w33-rl-ratio.pgf" 1792348274.53288 549736 a798fcc4c8d7dabdc0da4e3a6c58f74f ""
+  "/home/koen/LaTeX-setup//plots/w33-test-higher-mass-low-env.pgf" 1792334520.66362 66798 cbb54425e74d0d81ce5785c409b0b5ba ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1775415801 6938 5135be6a8802f13a7faf296d1959a1ab ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1775415801 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -391,10 +401,10 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1783670516 5388821 3a3a435a487e4cbc819e69494cd5514c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1783670470 2968234 d23dd1d939fcf2c5a6fef745ad70030a ""
-  "w33.aux" 1792276365.32129 1704 82c03d39b5f38ea59f241c981d9759e0 "pdflatex"
-  "w33.bbl" 1792271708.98059 661 62cc4c096a97e7dac2117ce3d92728e1 "bibtex w33"
-  "w33.out" 1792276365.32229 719 09e45b553c4fa4a3f0acf6ddc6f508a1 "pdflatex"
-  "w33.tex" 1792276361.55623 7539 e5f0ada4d95f9b81d5f6080747b60cdf ""
+  "w33.aux" 1792354093.32697 2186 294b7ef722496cff2a43c06eaa016b3a "pdflatex"
+  "w33.bbl" 1792354087.03193 661 62cc4c096a97e7dac2117ce3d92728e1 "bibtex w33"
+  "w33.out" 1792354093.32916 719 09e45b553c4fa4a3f0acf6ddc6f508a1 "pdflatex"
+  "w33.tex" 1792354079.15889 12931 85fbca7eee9d5784da15b72741273692 ""
   (generated)
   "w33.aux"
   "w33.log"

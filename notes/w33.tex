@@ -102,6 +102,93 @@ This is simply because this heavier star reaches much larger radii and much larg
 
 \subsection{Results}
 
+I simulated the models using \emph{MESA}.
+Below, I first just plot their Roche lobe evolution
+as a function of time.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Although it is a bit cluttered, we can definitely see that the detailed
+		\emph{MESA} models have very similar Roche lobe radius evolutions. }
+	\marginfignote{8}{We can also see that larger values of \(\delta \) consistently have lower final Roche lobe radii and shorter lifetimes, thus larger
+		mass loss rates.}
+	\centering
+	\incplot{w33-compare-models}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-compare-models-m_env}
+\end{figure}
+
+Now, let me compare only the radius of the stars to the low mass models and something should become very obvious:
+
+\begin{figure}[ht]
+	\marginfignote{3}{Clearly, for some reason, the lower mass models \emph{do} seem
+		to respond radially to the mass transfer, generally \emph{shrinking}, while
+		the higher mass star does not, even though they have roughly the same envelope
+		mass remaining when undergoing Roche lobe overflow.
+		The actual radius of the star is
+		however very different.
+	}
+	\centering
+	\incplot{w33-compare-models-m_env-1.4}
+\end{figure}
+
+The difference in actual radius is probably mostly determined by the core mass, which is
+larger for the more massive star, even though the envelope masses are similar when RLOF happens.
+
+It might be interesting to look into the entropy profiles of the stars.
+Maybe we can see something there that can explain why the lower mass stars are able to decrease
+their radius as a function of mass loss, while the higher mass star cannot.
+
+\begin{figure}[ht]
+	\marginfignote{0}{First of all, there is a clear difference between the general value of the
+		minimum entropy inside the envelope of the star.
+		The \(1.4\; M_\odot \) star has much higher entropy.
+		However, both stars seem to behave quite similar in response
+		to the mass loss.
+		For the \(2.4\; M_\odot \) model, the different mechanisms of mass loss really do not affect the entropy profile at all, while for the \(1.4\; M_\odot \) model, we see some minor differences, with the most extreme mass transfer mechanisms producing slightly shallower.
+		However, neither show anything interesting, which is good I guess because that means the star is in thermal equilibrium.
+	}
+	\centering
+	\incplot{w33-compare-models-m_env-1.4-entr}
+\end{figure}
+
+\nextpage
+
+The figure below shows the ratio between the radius of the star and the Roche lobe radius.
+\begin{figure}[ht]
+	\marginfignote{3}{Clearly, none of the models reach very large overfill ratios and there
+		are again some models that do not reach overfill ratios larger than 1 even though they do
+		seem to experience semi-RLOF.}
+	\marginfignote{15}{Let me actually plot these models separately so they are easier to distinguish.}
+	\centering
+	\incplot{w33-rl-ratio}
+\end{figure}
+
+In this case, I show various \(q\), but only the \(\delta =0.1\) models.
+These have the least
+extreme RLOF.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Compared to the \(1.4\; M_\odot \) models, these are a lot messier in the sense
+		that the Roche lobe radii cross and earliest interacting models have a \(q\) somewhere
+		between \(1\) and \(0.4\) where for the \(1.4\; M_\odot \) models, the \(q = 0.4\) models interacted
+		first, then \(0.55\) up to \(1\).}
+	\marginfignote{12}{However, we can clearly see that for the blue, red and purple models, the
+		star never has a radius larger than the Roche lobe radius, even though the star loses
+		its mass more quickly here.}
+	\centering
+	\incplot{w33-2.4-delta0.1}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-2.4-delta0.1-mdot}
+\end{figure}
+
+The RLOF has quite low mass transfer rates.
+
 \newsection{Mixing mass and the Effect on the final abundances}
 
 Last week, I showed this plot:
@@ -131,6 +218,23 @@ how deep the thermohaline mixing should extend, and what the differences are bet
 	\incplot{w33-mixing-mass-1}
 \end{figure}
 
+\begin{figure}[ht]
+	\marginfignote{0}{The mass loss rate seems to only be slightly larger then the mass loss rate
+		strictly due to winds.}
+	\marginfignote{5}{We can actually split the mass loss in wind and RLOF, but for the sake of
+		clarity, I do that in the figure below.}
+	\centering
+	\incplot{w33-2.4-delta0.1-mdot}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Clearly, for the models without the radius of the star ever exceeding the Roche lobe radius,
+		the RLOF mass transfer rate never exceed the wind mass loss rate.
+	}
+	\centering
+	\incplot{w33-2.4-delta0.1-mdot-2}
+\end{figure}
+
 To confirm the mixing mass actually fixes MS abundances, let me show, explicitly,
 a calculation of the final accretor abundances.
 First, let's consider the
@@ -143,6 +247,22 @@ Then we simply have
 	X_\text{MS, \(\varepsilon =0.0\)} & \approx 5.5 \times  10^{-9} / (0.015 + 0.359) \approx 1.47 \times  10^{-8}
 \end{align*}
 These values, although approximate, align very well with what we see in the subplot showing \(\langle X \rangle (s\text{, MS} )_{t=t}, X(s,i) = 0 \)
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here I plot the main sequence abundance as a function of the mixing
+		mass.
+		We can clearly see that, in the limit of \(M_\text{mix}\to 0\), \(X_\text{MS}(s) = X_\text{accr.
+			mat.}(s)\).
+		Since the \emph{abundances} of the accreted material in the \(\varepsilon =0.0\) case are higher, we end up with larger final
+		abundances in the MS star too.
+		Then, as we go to larger mixing masses, there comes a crossing point where the \emph{quantity} of the s-process elements
+		is just as important as the proportion of s-process elements in the accreted material.
+		Then, towards even higher masses, we reach the actual mixing masses and we can see that, even though the \(\varepsilon =0.1\) model has a deeper mixing mass, it still produces a larger final accretor abundance.
+	}
+	\centering
+	\incplot{w33-mixing-mass-vs-X-no-initial}
+\end{figure}
+
 Now, if we consider the initial abundances of the accretor, I calculate the abundances as follows:
 \begin{align*}
 	X_\text{MS}                       & = (\Delta M_\text{s-process} + X(s) \cdot M_\text{mix}) / (M_\text{mix} + \Delta M_\text{accr})              \\
@@ -150,6 +270,17 @@ Now, if we consider the initial abundances of the accretor, I calculate the abun
 	X_\text{MS, \(\varepsilon =0.0\)} & \approx (5.5 \times  10^{-9}+ 4.4 \times 10^{-8} \cdot 0.359) / (0.015 + 0.359) \approx 5.69 \times  10^{-8}
 \end{align*}
 Both of these values align very well with the plot showing \(\langle X \rangle (s\text{, MS} )_{t=t},\)\\\(X(s,i) = X(s)_\text{Asplund}\).
+
+Again, we can plot the effect of the mixing mass.
+\begin{figure}[ht]
+	\marginfignote{0}{Again, we see that, in the limit of \(M_\text{mix}\to 0\), \(X_\text{MS}(s) = X_\text{accr. mat.}(s)\).
+		This time however, as we increase the mixing mass, we approach the initial abundance of the main sequence accretor.
+		The lines never cross.
+		The \(\varepsilon =0.0\) model has a lower mixing mass, and a larger accretor abunance, even though it accreted less material.
+	}
+	\centering
+	\incplot{w33-mixing-mass-vs-X}
+\end{figure}
 
 \bibliography{master.bib}
 \end{document}
