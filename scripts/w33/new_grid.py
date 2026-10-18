@@ -112,3 +112,126 @@ plt.savefig(
 plt.show()
 plt.close()
 # %%
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+# %%
+grid.models
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+linewidths = [1, 2, 4]
+alphas = [1, 0.6, 0.3]
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            plt.plot(m.age, m.rl_1, color=color, linewidth=linewidth, alpha=alpha)
+            plt.plot(m.age, m.R, color="C9", zorder=-1, linewidth=0.75)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+plt.xlim(726351720.183052, 726496549.4974384)
+
+plt.ylim(400, 1100)
+plt.text(7.2649e8, 725, "$\\delta = 0.1$", fontsize=8)
+plt.text(7.26489e8, 675, "$\\delta = 0.2$", fontsize=8)
+plt.text(7.26487e8, 600, "$\\delta = 0.2$", fontsize=8)
+fig.legend(loc="outside upper center", ncols=3)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-compare-models.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+linewidths = [1, 2, 4]
+alphas = [1, 0.6, 0.3]
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            plt.plot(
+                m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            )
+            plt.plot(m.envelope_mass, m.R, color="C9", zorder=-1, linewidth=0.75)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+# plt.xlim(726351720.183052, 726496549.4974384)
+
+plt.ylim(400, 1100)
+# plt.text(7.2649e8,725,"$\\delta = 0.1$", fontsize=8)
+# plt.text(7.26489e8,675,"$\\delta = 0.2$", fontsize=8)
+# plt.text(7.26487e8,600,"$\\delta = 0.2$", fontsize=8)
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.xscale("log")
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\\odot$)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-compare-models-m_env.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+linewidths = [1, 2, 4]
+alphas = [1, 0.6, 0.3]
+rs = grid.axes["R"]
+
+for i_r, q in enumerate(grid.axes["q"][1:]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta, R=rs[-3]):
+            # plt.plot(m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha)
+            plt.plot(m.envelope_mass, m.R, color=color, zorder=-1, linewidth=0.75)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+# plt.xlim(726351720.183052, 726496549.4974384)
+
+plt.ylim(150)
+# plt.text(7.2649e8,725,"$\\delta = 0.1$", fontsize=8)
+# plt.text(7.26489e8,675,"$\\delta = 0.2$", fontsize=8)
+# plt.text(7.26487e8,600,"$\\delta = 0.2$", fontsize=8)
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.xscale("log")
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\\odot$)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-compare-models-m_env-1.4.pgf", format="pgf"
+)
+plt.show()
+plt.close()

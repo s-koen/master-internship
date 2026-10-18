@@ -540,3 +540,73 @@ plt.close()
 
 
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+mms = np.logspace(-2, np.log10(1.2), 300)
+
+
+def compute_X(dms, xi, mm, dma):
+    return (dms + xi * mm) / (dma + mm)
+
+
+plt.plot(mms, compute_X(9e-9, 4.4e-8, mms, 0.09))
+plt.plot(mms, compute_X(5.5e-9, 4.4e-8, mms, 0.015))
+
+plt.scatter(0.464, compute_X(9e-9, 4.4e-8, 0.464, 0.09))
+plt.scatter(0.359, compute_X(5.5e-9, 4.4e-8, 0.359, 0.015))
+
+plt.xscale("log")
+plt.xlim(0.05)
+plt.ylim(4.5e-8, 1e-7)
+plt.yscale("log")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{mix}$ ($M_\\odot$)")
+plt.ylabel("$X(s)$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-mixing-mass-vs-X.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+mms = np.logspace(-2, np.log10(1.2), 300)
+
+
+def compute_X(dms, xi, mm, dma):
+    return (dms + xi * mm) / (dma + mm)
+
+
+plt.plot(mms, compute_X(9e-9, 0, mms, 0.09))
+plt.plot(mms, compute_X(5.5e-9, 0, mms, 0.015))
+
+plt.scatter(0.464, compute_X(9e-9, 0, 0.464, 0.09))
+plt.scatter(0.359, compute_X(5.5e-9, 0, 0.359, 0.015))
+
+plt.xscale("log")
+plt.xlim(0.01)
+plt.ylim(4.5e-9, 3e-7)
+plt.yscale("log")
+
+ax.annotate(
+    "straight",
+    xy=(0, 1),
+    xycoords="data",
+    xytext=(-50, 30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{mix}$ ($M_\\odot$)")
+plt.ylabel("$X(s)$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-mixing-mass-vs-X-no-initial.pgf", format="pgf"
+)
+plt.show()
+plt.close()
