@@ -182,12 +182,44 @@ extreme RLOF.
 	\incplot{w33-2.4-delta0.1}
 \end{figure}
 
+Let me plot the mass transfer rates as well.
+
 \begin{figure}[ht]
+	\marginfignote{0}{The mass loss rate seems to only be slightly larger then the mass loss rate
+		strictly due to winds.}
+	\marginfignote{5}{We can actually split the mass loss in wind and RLOF, but for the sake of
+		clarity, I do that in the figure below.}
 	\centering
 	\incplot{w33-2.4-delta0.1-mdot}
 \end{figure}
 
-The RLOF has quite low mass transfer rates.
+\begin{figure}[ht]
+	\marginfignote{3}{Clearly, for the models without the radius of the star ever exceeding the Roche lobe radius,
+		the RLOF mass transfer rate never exceed the wind mass loss rate.
+	}
+	\centering
+	\incplot{w33-2.4-delta0.1-mdot-2}
+\end{figure}
+
+We see something similar if we look at the \(1.4\; M_\odot \) models that interact during the last
+interpulse.
+
+\begin{figure}[ht]
+	\marginfignote{3}{Again, we see that the RLOF mass transfer rate is comparable to the wind mass
+		loss rate at the RLOF peak.}
+	\centering
+	\incplot{w33-other-mdot}
+\end{figure}
+
+However, if we look at the same \(1.4\; M_\odot \) models for a smaller initial Roche lobe radius,
+we see that the RLOF mass loss rate is much larger.
+For example, here I plot models with \(R_\text{RL} \approx 427\).
+
+\begin{figure}[ht]
+	\marginfignote{3}{Here, we obtain \emph{much} larger RLOF mass transfer rates than the wind mass loss rate.}
+	\centering
+	\incplot{w33-other-mdot-2}
+\end{figure}
 
 \newsection{Mixing mass and the Effect on the final abundances}
 
@@ -216,23 +248,6 @@ how deep the thermohaline mixing should extend, and what the differences are bet
 	}
 	\centering
 	\incplot{w33-mixing-mass-1}
-\end{figure}
-
-\begin{figure}[ht]
-	\marginfignote{0}{The mass loss rate seems to only be slightly larger then the mass loss rate
-		strictly due to winds.}
-	\marginfignote{5}{We can actually split the mass loss in wind and RLOF, but for the sake of
-		clarity, I do that in the figure below.}
-	\centering
-	\incplot{w33-2.4-delta0.1-mdot}
-\end{figure}
-
-\begin{figure}[ht]
-	\marginfignote{0}{Clearly, for the models without the radius of the star ever exceeding the Roche lobe radius,
-		the RLOF mass transfer rate never exceed the wind mass loss rate.
-	}
-	\centering
-	\incplot{w33-2.4-delta0.1-mdot-2}
 \end{figure}
 
 To confirm the mixing mass actually fixes MS abundances, let me show, explicitly,
@@ -280,6 +295,153 @@ Again, we can plot the effect of the mixing mass.
 	}
 	\centering
 	\incplot{w33-mixing-mass-vs-X}
+\end{figure}
+
+\section{1.8 Solar mass grid}
+
+Now, I look into the \(1.8\; M_\odot \) grid.
+Let me start by looking at the mass of the envelope
+at the approximate start of RLOF.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w32-pcolor-5-m1.8}
+\end{figure}
+
+\nextpage
+We see quite an important difference between the \(1.4\; M_\odot \) models and the \(1.8\; M_\odot \) models, with the most important differences being in the third row.
+Here, there is still a significant amount of mass in the envelope when RLOF occurs.
+The two models that are consistently missing on the bottom right have not been simulated because
+they miss RLOF by a lot.
+The other empty cells are models that were not able to finish their
+simulation in the maximum 2-day time limit.
+
+There are some models that spiral in and there is one model that fails, even though it does
+not spiral in.
+This is the \(\varepsilon =0.1,\; \delta =0.3,\; q=0.55,\; R_\text{RL} \approx 448\; R_\odot \) model.
+
+This model is in an inspiral, but reaches some unstable state during the inspiral.
+This
+is definitely not a stable model and it is not problematic that it fails.
+We can just classify
+as an inspiral model.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w32-pcolor-6-m1.8}
+\end{figure}
+
+We see quite a large range of possible periods, from 578 to 11154 days.
+The smallest period here actually occurs in a model with a relatively large initial Roche
+lobe radius.
+I \emph{think} this is kind of accidental, and this is really the
+model that is most close to the unstable inspiral regime.
+We can also plot the maximum ratio between the radius of the star and the Roche lobe radius.
+We then
+see that the models with relatively small final periods also reach larger overfill ratios.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-8-m1.8}
+\end{figure}
+
+However, this is not the only this that matters.
+From the two plots above, it seems like models
+with initially smaller Roche lobe periods reach lower maximum overfill ratios while still producing
+small final periods.
+Intuitively this makes sense too.
+
+We can make a scatter plot of all models with the final period versus the maximum overfill ratio.
+
+\begin{figure}[ht]
+	\marginfignote{7}{We see quite clear diagonal stripes.
+		They almost look like they would fit
+		a powerlaw nicely.
+		The mass does not seem to affect the slope of the diagonal lines, neither does the initial Roche lobe radius.
+		However, this initial
+		Roche lobe radius quite drastically changes the vertical offset.
+		I think this has to do with \emph{where} in the radius evolution RLOF occurs.
+		For example, if the model interacts towards the top of a thermal pulse, I would expect less overfill for all models compared to models that interact
+		towards the bottom of a thermal pulse.
+	}
+	\marginfignote{29}{The purple squares and the gray triangles occupy only a very small region of the plot.
+		This is because these models all miss RLOF and are wind only models.
+	}
+	\marginfignote{37}{The cyan triangles and the red squares do not follow the nice diagonal line.
+		These are models that interact during the last thermal pulse.
+		Let me try
+		to understand why this is.
+	}
+	\centering
+	\incplot{w33-final-period-rl-overflow}
+\end{figure}
+
+Let me first split the models different \(q\).
+
+\begin{figure}[ht]
+	\marginfignote{3}{We clearly see that the larger \(q\) values are on the upper right hook, while the low \(q\) models are in the upper left.}
+	\centering
+	\incplot{w33-final-period-rl-overflow-2}
+\end{figure}
+
+For the normal diagonal lines, splitting per \(q\) looks like this:
+\begin{figure}[ht]
+	\marginfignote{3}{For the normal models, we see that the lower \(q\) models are again at the
+		top left with the smallest final periods and the largest overfill ratios.
+		The largest
+		\(q\) models have the smallest overfill ratios, but the largest final periods.
+		We however do not
+		see the distinct hook.
+		I really want to understand where the hook comes from.
+	}
+	\marginfignote{17}{On another note, the green models show two markers distinctly away from the
+		other markers.
+		These are two models that interact one thermal pulse before the other models do.
+		Contrary to what I expected, these models have \emph{larger} overfill ratios, even though they
+		interact at the \emph{top} of the thermal pulse.
+	}
+	\centering
+	\incplot{w33-final-period-rl-overflow-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{It looks like \(\delta \) has some effect on where in the radius evolution
+		the models interact.
+		If we have a relatively weak delta of \(0.1\) the models interact in the
+		thermal pulse with higher final periods and higher overfill ratios.
+		We should be able to see this
+		in the scatter plot too if we color the models based on delta.
+	}
+	\centering
+	\incplot{w33-look-at-col-m1.4}
+\end{figure}
+\nextpage
+
+\begin{figure}[ht]
+	\marginfignote{3}{This figure, combined with the \(q\), figure and the evolution plots provide
+		quite a nice explanation of the slanted u shape.}
+	\marginfignote{10}{Most of the \(\varepsilon =0.3\) and \(\delta =0.2\) models
+		interact during the last interpulse period.
+		Only certain models with even mass ratios still
+		interact during the thermal pulse.
+		This quite naturally explains why we see the downwards diagonal
+		lines in both the \(1.4\; M_\odot \) and the \(1.8\; M_\odot \).
+		Then, there are some
+		scattered models with large \(q\), (see the figure above) that miss this interaction.
+		We also have
+		the many different \(q\) models with \(\delta =0.1\), and certain models with \(\delta = 0.2\) that
+		miss the interpulse and interact during the last thermal pulse.
+		Due to some complicated wind effects,
+		the trend breaks, and we do not get the nice diagonal lines but a more spread out distribution
+		towards the low overfill regime and the large period regime.
+	}
+	\centering
+	\incplot{w33-final-period-rl-overflow-4}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-1-m1.8}
 \end{figure}
 
 \bibliography{master.bib}
