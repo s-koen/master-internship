@@ -34,6 +34,8 @@ MASTER = "/home/koen/master-internship/mesa-models/"
 import mesa_reader as mr
 from scripts.general_utils.mesa_grid_2 import MesaGrid, SimpleBinary
 
+from scipy.ndimage import uniform_filter1d
+
 # %%
 
 
@@ -339,32 +341,34 @@ fig, axs = plt.subplots(
     3,
     sharex=True,
     sharey=True,
-    figsize=set_size(column, height=0.75),
+    figsize=set_size(full, height=0.75),
     constrained_layout=True,
 )
 
 
 def fes(r):
-    if r.envelope_mass[-1] > 0.01:
-        return np.nan
-    if r.period_days[-1] < 50:
-        return np.nan
+    # if r.envelope_mass[-1] > 0.01:
+    #     return np.nan
+    # if r.period_days[-1] < 50:
+    #     return np.nan
 
-    # smoothed = uniform_filter1d(m.R, size=10, mode="nearest")
+    smoothed = uniform_filter1d(r.R / r.rl_1, size=5, mode="nearest")
 
-    # mask = smoothed / m.rl_1 > 0.9
+    mask = smoothed > 0.9
 
-    mask = r.R / r.rl_1 > 0.9
+    # mask = r.R / r.rl_1 > 0.9
     inds = np.where(mask)[0]
+    print(inds)
 
     if len(inds):
         starts = np.r_[0, np.where(np.diff(inds) > 1)[0] + 1]
+        print(starts)
         if len(starts) > 2:
-            ind = inds[starts[-2]]
+            ind = inds[starts[-len(starts)]]
         else:
             ind = inds[starts[-1]]
     else:
-        id = np.argmax(r.R / r.rl_1)
+        ind = np.argmax(r.R / r.rl_1)
     return r.envelope_mass[ind]
 
 
@@ -380,15 +384,13 @@ for ratio in ss:
     minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
     maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
 
-print(maxx)
-print(minn)
 
 for i, eps in enumerate([0, 0.1]):
     for j, delta in enumerate([0.1, 0.2, 0.3]):
         R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
         c = axs[i, j].pcolormesh(R, q, s.T, cmap="viridis", vmin=minn, vmax=maxx)
 
-        annotate_pcolormesh(axs[i, j], R, q, s.T)
+        annotate_pcolormesh(axs[i, j], R, q, s.T, fmt=".3f")
         axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
 
 cbar = plt.colorbar(
@@ -408,3 +410,793 @@ plt.show()
 plt.close()
 
 # %%
+
+i = 0
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][-3]:
+        continue
+    if m.params["q"] != grid.axes["q"][-1]:
+        continue
+    plt.plot(
+        m.age,
+        m.rl_1,
+        c=f"C{i}",
+        label=f"$\\varepsilon = {m.params["eps"]:.1f}, \\delta = {m.params["delta"]:.1f}$",
+    )
+    plt.plot(m.age, m.R, c=f"C{i}", alpha=0.5, linewidth=3)
+    i += 1
+plt.legend()
+plt.show()
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    print(r.params["R"])
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+
+    smoothed = uniform_filter1d(r.R / r.rl_1, size=5, mode="nearest")
+
+    mask = smoothed > 0.9
+
+    # mask = r.R / r.rl_1 > 0.9
+    inds = np.where(mask)[0]
+    print(inds)
+
+    if len(inds):
+        starts = np.r_[0, np.where(np.diff(inds) > 1)[0] + 1]
+        print(starts)
+        if len(starts) > 2:
+            ind = inds[starts[-len(starts)]]
+        else:
+            ind = inds[starts[-1]]
+    else:
+        ind = np.argmax(r.R / r.rl_1)
+    return r.envelope_mass[ind]
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="viridis", vmin=minn, vmax=maxx)
+
+        annotate_pcolormesh(axs[i, j], R, q, s.T, fmt=".3f")
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+cbar = plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="$M_\\textrm{env}|_{t=t(R_\\textrm{star}/R_\\textrm{RL} > 0.9)}$ ($M_\\odot$)",
+    aspect=20,
+)
+cbar.ax.set_xscale("linear")
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+# plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-5-m1.8.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+i = 0
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][1]:
+        continue
+    if m.params["q"] != grid.axes["q"][1]:
+        continue
+    plt.plot(
+        m.age,
+        m.rl_1,
+        c=f"C{i}",
+        label=f"$\\varepsilon = {m.params["eps"]:.1f}, \\delta = {m.params["delta"]:.1f}$",
+    )
+    plt.plot(m.age, m.R, c=f"C{i}", alpha=0.5, linewidth=3)
+    i += 1
+plt.legend()
+plt.show()
+
+# %%
+
+i = 0
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][1]:
+        continue
+    if m.params["q"] != grid.axes["q"][1]:
+        continue
+    plt.plot(
+        m.age,
+        m.period_days,
+        c=f"C{i}",
+        label=f"$\\varepsilon = {m.params["eps"]:.1f}, \\delta = {m.params["delta"]:.1f}$",
+    )
+    i += 1
+plt.legend()
+plt.show()
+
+
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    print(r.params["R"])
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+
+    return r.period_days[-1]
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+
+
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="viridis", vmin=minn, vmax=maxx)
+
+        annotate_pcolormesh(axs[i, j], R, q, s.T, fmt=".0f")
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+cbar = plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="Final period (days)",
+    aspect=20,
+)
+cbar.ax.set_xscale("linear")
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w32-pcolor-6-m1.8.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return r.s
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+print(maxx)
+
+norm = TwoSlopeNorm(0.25, minn, maxx)
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="coolwarm", norm=norm)
+        annotate_pcolormesh(
+            axs[i, j],
+            R,
+            q,
+            s.T,
+            fmt=".2f",
+            colors=["white", "black", "white"],
+            norm=norm,
+        )
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+cbar = plt.colorbar(
+    c, ax=axs[0, 1], orientation="horizontal", location="top", label="[s/Fe]", aspect=20
+)
+cbar.ax.set_xscale("linear")
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-pcolor-1-m1.8.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+fig, axs = plt.subplots(
+    2,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=0.75),
+    constrained_layout=True,
+)
+
+
+def fes(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    if r.period_days[-1] < 50:
+        return np.nan
+    return np.nanmax(r.R / r.rl_1)
+
+
+ss = []
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        _, _, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        ss.append(s)
+
+minn = 1e99
+maxx = -1e99
+for ratio in ss:
+    minn = np.nanmin(ratio) if np.nanmin(ratio) < minn else minn
+    maxx = np.nanmax(ratio) if np.nanmax(ratio) > maxx else maxx
+print(maxx)
+
+norm = TwoSlopeNorm(1, minn, 2.5)
+for i, eps in enumerate([0, 0.1]):
+    for j, delta in enumerate([0.1, 0.2, 0.3]):
+        R, q, s = grid.array(fes, "R", "q", eps=eps, f_delta=delta)
+        c = axs[i, j].pcolormesh(R, q, s.T, cmap="coolwarm", norm=norm)
+        annotate_pcolormesh(
+            axs[i, j],
+            R,
+            q,
+            s.T,
+            fmt=".2f",
+            colors=["white", "black", "white"],
+            norm=norm,
+        )
+        axs[i, j].set_title(f"$\\varepsilon = {eps}$, $f_\\delta = {delta}$")
+
+cbar = plt.colorbar(
+    c,
+    ax=axs[0, 1],
+    orientation="horizontal",
+    location="top",
+    label="max$(R_\\textrm{star} / R_\\textrm{RL})$",
+    aspect=20,
+    extend="max",
+)
+cbar.ax.set_xscale("linear")
+plt.xscale("log")
+fig.supxlabel("Initial Roche lobe radius ($R_\\odot$)", fontsize=10)
+fig.supylabel("Initial mass ratio $q$", fontsize=10)
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-pcolor-8-m1.8.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=1.2), constrained_layout=True
+)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
+RS1 = grid.axes["R"]
+
+ppp = []
+rrr = []
+for i_R, R in enumerate(RS1):
+
+    pp = []
+    rr = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+    ppp.append(pp)
+    rrr.append(rr)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+RS2 = grid.axes["R"]
+for i_R, R in enumerate(RS2):
+    pp = []
+    rr = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+    ppp.append(pp)
+    rrr.append(rr)
+
+rs = list(RS1) + list(RS2)
+print(rs)
+
+norm = plt.Normalize(min(rs), max(rs))
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+print(len(ppp))
+
+ms = [1.8, 1.4]
+markers = ["s", "^"]
+for i, (pp, rr) in enumerate(zip(ppp, rrr)):
+    plt.scatter(
+        pp,
+        rr,
+        label=f"$M={ms[i//5]}\\;M_\\odot,\\;R_\\textrm{{RL, i}} = {rs[i]:.0f},\\;R_\\odot$",
+        s=10,
+        marker=markers[i // 5],
+    )
+
+
+fig.legend(loc="outside upper center", ncols=2)
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-final-period-rl-overflow.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.8), constrained_layout=True
+)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
+RS1 = grid.axes["R"][-2:-1]
+
+ppp = []
+rrr = []
+qqq = []
+for i_R, R in enumerate(RS1):
+
+    pp = []
+    rr = []
+    qq = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+        qq.append(m.params["q"])
+    ppp.append(pp)
+    rrr.append(rr)
+    qqq.append(qq)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+RS2 = grid.axes["R"][-2:-1]
+for i_R, R in enumerate(RS2):
+    pp = []
+    rr = []
+    qq = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+        qq.append(m.params["q"])
+    ppp.append(pp)
+    rrr.append(rr)
+    qqq.append(qq)
+
+rs = list(RS1) + list(RS2)
+print(rs)
+
+norm = plt.Normalize(min(rs), max(rs))
+cmap = plt.cm.viridis
+cmaps = ["Purples", "Greens"]
+# color = cmap(norm(x))
+
+print(len(ppp))
+
+ms = [1.8, 1.4]
+markers = ["s", "^"]
+
+scatters = []
+for i, (pp, rr, qq) in enumerate(zip(ppp, rrr, qqq)):
+    scatter = plt.scatter(
+        pp,
+        rr,
+        label=f"$M={ms[i]}\\;M_\\odot,\\;R_\\textrm{{RL, i}} = {rs[i]:.0f},\\;R_\\odot$",
+        s=10,
+        marker=markers[i],
+        c=qq,
+        cmap=cmaps[i],
+        vmin=0.31,
+    )
+    scatters.append(scatter)
+
+
+plt.colorbar(scatters[0], label="$q$", pad=0.01)
+cbar = plt.colorbar(pad=0.01)
+cbar.set_ticks(ticks=[], labels=[])
+
+fig.legend(loc="outside upper center", ncols=2)
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-final-period-rl-overflow-2.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.8), constrained_layout=True
+)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
+RS1 = grid.axes["R"][-3:-2]
+
+ppp = []
+rrr = []
+qqq = []
+for i_R, R in enumerate(RS1):
+
+    pp = []
+    rr = []
+    qq = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+        qq.append(m.params["q"])
+    ppp.append(pp)
+    rrr.append(rr)
+    qqq.append(qq)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+RS2 = grid.axes["R"][-3:-2]
+for i_R, R in enumerate(RS2):
+    pp = []
+    rr = []
+    qq = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+        qq.append(m.params["q"])
+    ppp.append(pp)
+    rrr.append(rr)
+    qqq.append(qq)
+
+rs = list(RS1) + list(RS2)
+print(rs)
+
+norm = plt.Normalize(min(rs), max(rs))
+cmap = plt.cm.viridis
+cmaps = ["Purples", "Greens"]
+# color = cmap(norm(x))
+
+print(len(ppp))
+
+ms = [1.8, 1.4]
+markers = ["s", "^"]
+
+scatters = []
+for i, (pp, rr, qq) in enumerate(zip(ppp, rrr, qqq)):
+    scatter = plt.scatter(
+        pp,
+        rr,
+        label=f"$M={ms[i]}\\;M_\\odot,\\;R_\\textrm{{RL, i}} = {rs[i]:.0f},\\;R_\\odot$",
+        s=10,
+        marker=markers[i],
+        c=qq,
+        cmap=cmaps[i],
+        vmin=0.31,
+    )
+    scatters.append(scatter)
+
+
+plt.colorbar(scatters[0], label="$q$", pad=0.01)
+cbar = plt.colorbar(pad=0.01)
+cbar.set_ticks(ticks=[], labels=[])
+
+fig.legend(loc="outside upper center", ncols=2)
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-final-period-rl-overflow-3.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=False, figsize=set_size(column, height=1.5), constrained_layout=True
+)
+
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+ms = []
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][-2]:
+        continue
+    if m.params["delta"] != grid.axes["delta"][0]:
+        continue
+    ms.append(m)
+    print(m.params["delta"])
+
+ms = np.array(ms)
+sortidx = np.argsort([m.params["q"] for m in ms])
+for i_m, m in enumerate(ms[sortidx]):
+    axs[0].plot(
+        m.age,
+        m.rl_1,
+        label=f"$q={m.params["q"]:.2f}$",
+        c=f"C{i_m}",
+        alpha=0.5,
+        linewidth=3,
+    )
+    axs[0].plot(m.age, m.R, c=f"C{i_m}")
+
+ms = []
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][-2]:
+        continue
+    if m.params["delta"] != grid.axes["delta"][2]:
+        continue
+    ms.append(m)
+
+ms = np.array(ms)
+sortidx = np.argsort([m.params["q"] for m in ms])
+print(sortidx)
+for i_m, m in enumerate(ms[sortidx]):
+    axs[1].plot(
+        m.age,
+        m.rl_1,
+        alpha=0.5,
+        linewidth=3,
+    )
+    axs[1].plot(m.age, m.R, c=f"C{i_m}")
+
+fig.legend(loc="outside upper center", ncols=3)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+axs[0].text(0.05, 0.05, "$\\delta = 0.3$", transform=axs[0].transAxes, va="bottom")
+axs[1].text(0.05, 0.05, "$\\delta = 0.1$", transform=axs[1].transAxes, va="bottom")
+
+axs[0].set_xlim(2821637125.2771544, 2821656128.5742683)
+axs[0].set_ylim(100, 500)
+axs[1].set_xlim(2821648625.799295, 2821651159.645361)
+axs[1].set_ylim(100, 600)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-look-at-col-m1.4.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    2, 1, sharex=False, figsize=set_size(column, height=1.5), constrained_layout=True
+)
+
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
+ms = []
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][-2]:
+        continue
+    if m.params["delta"] != grid.axes["delta"][0]:
+        continue
+    ms.append(m)
+    print(m.params["delta"])
+
+ms = np.array(ms)
+sortidx = np.argsort([m.params["q"] for m in ms])
+for i_m, m in enumerate(ms[sortidx]):
+    axs[0].plot(
+        m.age,
+        m.rl_1,
+        label=f"$q={m.params["q"]:.2f}$",
+        c=f"C{i_m}",
+        alpha=0.5,
+        linewidth=3,
+    )
+    axs[0].plot(m.age, m.R, c=f"C{i_m}")
+
+ms = []
+for m in grid.models:
+    if m.params["R"] != grid.axes["R"][-2]:
+        continue
+    if m.params["delta"] != grid.axes["delta"][2]:
+        continue
+    ms.append(m)
+
+ms = np.array(ms)
+sortidx = np.argsort([m.params["q"] for m in ms])
+print(sortidx)
+for i_m, m in enumerate(ms[sortidx]):
+    axs[1].plot(
+        m.age,
+        m.rl_1,
+        alpha=0.5,
+        linewidth=3,
+    )
+    axs[1].plot(m.age, m.R, c=f"C{i_m}")
+
+fig.legend(loc="outside upper center", ncols=3)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+axs[0].text(0.05, 0.05, "$\\delta = 0.3$", transform=axs[0].transAxes, va="bottom")
+axs[1].text(0.05, 0.05, "$\\delta = 0.1$", transform=axs[1].transAxes, va="bottom")
+
+# axs[0].set_xlim(2821637125.2771544, 2821656128.5742683)
+# axs[0].set_ylim(100, 500)
+# axs[1].set_xlim(2821648625.799295, 2821651159.645361)
+# axs[1].set_ylim(100, 600)
+
+plt.xlabel("Star age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w33-look-at-col-m1.4.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.8), constrained_layout=True
+)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
+RS1 = grid.axes["R"][-2:-1]
+
+ppp = []
+rrr = []
+qqq = []
+for i_R, R in enumerate(RS1):
+
+    pp = []
+    rr = []
+    qq = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+        qq.append(m.params["delta"])
+    ppp.append(pp)
+    rrr.append(rr)
+    qqq.append(qq)
+
+grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+RS2 = grid.axes["R"][-2:-1]
+for i_R, R in enumerate(RS2):
+    pp = []
+    rr = []
+    qq = []
+    for m in grid.filter(R=R):
+        if m.envelope_mass[-1] > 0.01:
+            continue
+        pp.append(m.period_days[-1])
+        rr.append(np.nanmax(m.R / m.rl_1))
+        qq.append(m.params["delta"])
+    ppp.append(pp)
+    rrr.append(rr)
+    qqq.append(qq)
+
+rs = list(RS1) + list(RS2)
+print(rs)
+
+norm = plt.Normalize(min(rs), max(rs))
+cmap = plt.cm.viridis
+cmaps = ["Purples", "Greens"]
+# color = cmap(norm(x))
+
+print(len(ppp))
+
+ms = [1.8, 1.4]
+markers = ["s", "^"]
+
+scatters = []
+for i, (pp, rr, qq) in enumerate(zip(ppp, rrr, qqq)):
+    scatter = plt.scatter(
+        pp,
+        rr,
+        label=f"$M={ms[i]}\\;M_\\odot,\\;R_\\textrm{{RL, i}} = {rs[i]:.0f},\\;R_\\odot$",
+        s=10,
+        marker=markers[i],
+        c=qq,
+        cmap=cmaps[i],
+        vmin=0.051,
+    )
+    scatters.append(scatter)
+
+
+plt.colorbar(scatters[0], label="$\\delta$", pad=0.01)
+cbar = plt.colorbar(pad=0.01)
+cbar.set_ticks(ticks=[], labels=[])
+
+fig.legend(loc="outside upper center", ncols=2)
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-final-period-rl-overflow-4.pgf", format="pgf"
+)
+plt.show()
+plt.close()

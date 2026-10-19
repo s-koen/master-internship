@@ -284,10 +284,10 @@ fig, axs = plt.subplots(
 
 
 def fes(r):
-    if r.envelope_mass[-1] > 0.01:
-        return np.nan
-    if r.period_days[-1] < 50:
-        return np.nan
+    # if r.envelope_mass[-1] > 0.01:
+    #     return np.nan
+    # if r.period_days[-1] < 50:
+    #     return np.nan
 
     # smoothed = uniform_filter1d(m.R, size=10, mode="nearest")
 
@@ -540,3 +540,146 @@ plt.ylabel("$m_\\textrm{env}$ ($M_\\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w33-mass-at-TP.pgf", format="pgf")
 plt.show()
 plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+linewidths = [1, 2, 4]
+alphas = [1, 0.6, 0.3]
+rs = grid.axes["R"]
+
+for i_r, q in enumerate(grid.axes["q"][1:]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta, R=rs[-3]):
+            plt.plot(
+                m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            )
+            plt.plot(m.envelope_mass, m.R, color="C9", zorder=-1, linewidth=0.75)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+# plt.xlim(726351720.183052, 726496549.4974384)
+
+
+plt.ylim(150)
+# plt.text(7.2649e8,725,"$\\delta = 0.1$", fontsize=8)
+# plt.text(7.26489e8,675,"$\\delta = 0.2$", fontsize=8)
+# plt.text(7.26487e8,600,"$\\delta = 0.2$", fontsize=8)
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.xscale("log")
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\\odot$)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-compare-models-m_env-1.4.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+RS = grid.axes["R"]
+eps = grid.settings["eps"]
+deltas = grid.axes["delta"]
+
+
+for i_m, m in enumerate(grid.filter(R=RS[1], eps=0, delta=deltas[-1])):
+    print(m.params["R"])
+    plt.plot(
+        m.age,
+        m.lg_mstar_dot_1,
+        label=f"$q = {m.params["q"]}$",
+        c=f"C{i_m}",
+        linewidth=1,
+    )
+    plt.plot(
+        m.age,
+        np.log10(10**m.lg_wind_mdot_1 / (1 - m.beta_accretion)),
+        c=f"C{9}",
+        alpha=0.5,
+        linewidth=2,
+        zorder=-100,
+    )
+    plt.plot(
+        m.age,
+        np.log10(10**m.lg_mstar_dot_1 - 10**m.lg_wind_mdot_1 / (1 - m.beta_accretion)),
+        c=f"C{i_m}",
+        alpha=0.5,
+        linewidth=2,
+        zorder=-100,
+    )
+
+
+plt.xlim(2821444379.892267, 2821445451.199682)
+plt.ylim(-10.183208231698345, -0.8240467347588698)
+
+fig.legend(loc="outside upper center", ncols=3)
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Age (yr)")
+plt.ylabel("log$(\\dot{M} / (M_\\odot \\textrm{ yr}^{-1}))$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-other-mdot-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+RS = grid.axes["R"]
+eps = grid.settings["eps"]
+deltas = grid.axes["delta"]
+
+
+for i_m, m in enumerate(grid.filter(R=RS[-2], eps=0, delta=deltas[-1])):
+    plt.plot(
+        m.age,
+        m.lg_mstar_dot_1,
+        label=f"$q = {m.params["q"]}$",
+        c=f"C{i_m}",
+        linewidth=1,
+    )
+    plt.plot(
+        m.age,
+        np.log10(10**m.lg_wind_mdot_1 / (1 - m.beta_accretion)),
+        c=f"C{9}",
+        alpha=0.5,
+        linewidth=2,
+        zorder=-100,
+    )
+    plt.plot(
+        m.age,
+        np.log10(10**m.lg_mstar_dot_1 - 10**m.lg_wind_mdot_1 / (1 - m.beta_accretion)),
+        c=f"C{i_m}",
+        alpha=0.5,
+        linewidth=2,
+        zorder=-100,
+    )
+    print(m.params["R"])
+
+
+# plt.xlim(2821444379.892267, 2821445451.199682)
+plt.xlim(2821633089.831236, 2821655955.00452)
+plt.ylim(-5.541783530753827, -4.3614667230332556)
+
+fig.legend(loc="outside upper center", ncols=3)
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Age (yr)")
+plt.ylabel("log$(\\dot{M} / (M_\\odot \\textrm{ yr}^{-1}))$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-other-mdot.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%

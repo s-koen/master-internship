@@ -199,13 +199,15 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+
 linewidths = [1, 2, 4]
 alphas = [1, 0.6, 0.3]
 rs = grid.axes["R"]
 
 for i_r, q in enumerate(grid.axes["q"][1:]):
     print(q)
-    color = f"C{i_r}"
+    color = f"C{i_r+1}"
 
     for i_d, delta in enumerate(grid.axes["delta"][::-1]):
         print(delta)
@@ -214,13 +216,67 @@ for i_r, q in enumerate(grid.axes["q"][1:]):
 
         for m in grid.filter(q=q, delta=delta, R=rs[-3]):
             # plt.plot(m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha)
-            plt.plot(m.envelope_mass, m.R, color=color, zorder=-1, linewidth=0.75)
+            plt.plot(
+                m.envelope_mass,
+                m.R / np.max(m.R),
+                color=color,
+                zorder=-1,
+                linewidth=0.75,
+            )
+
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            # plt.plot(
+            #     m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            # )
+            plt.plot(
+                m.envelope_mass,
+                m.R / np.max(m.R),
+                color=color,
+                zorder=-1,
+                linewidth=0.75,
+            )
 
     plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
 
+axs.annotate(
+    "$M=1.4\\;M_\\odot$",
+    xy=(0.03, 0.62),
+    xycoords="data",
+    ha="right",
+    va="center",
+    xytext=(-20, 10),
+    textcoords="offset points",
+    fontsize=8,
+    arrowprops=dict(arrowstyle="->", linewidth=0.75),
+)
+
+axs.annotate(
+    "$M=2.4\\;M_\\odot$",
+    xy=(0.105, 0.9),
+    xycoords="data",
+    ha="right",
+    va="center",
+    xytext=(-20, 10),
+    textcoords="offset points",
+    fontsize=8,
+    arrowprops=dict(arrowstyle="->", linewidth=0.75),
+)
+
 # plt.xlim(726351720.183052, 726496549.4974384)
 
-plt.ylim(150)
+# plt.ylim(150)
 # plt.text(7.2649e8,725,"$\\delta = 0.1$", fontsize=8)
 # plt.text(7.26489e8,675,"$\\delta = 0.2$", fontsize=8)
 # plt.text(7.26487e8,600,"$\\delta = 0.2$", fontsize=8)
@@ -229,9 +285,268 @@ fig.legend(loc="outside upper center", ncols=3)
 plt.xscale("log")
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("Envelope mass ($M_\\odot$)")
-plt.ylabel("Radius ($R_\\odot$)")
+plt.ylabel("$R / \\textrm{max}(R)$ ")
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/w33-compare-models-m_env-1.4.pgf", format="pgf"
 )
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+
+linewidths = [1, 2, 4]
+alphas = [1, 0.6, 0.3]
+rs = grid.axes["R"]
+
+for i_r, q in enumerate(grid.axes["q"][1:]):
+    print(q)
+    color = f"C{i_r+1}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta, R=rs[-3]):
+            # plt.plot(m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha)
+            plt.plot(m.envelope_mass, m.min_S, color=color, zorder=-1, linewidth=0.75)
+
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            # plt.plot(
+            #     m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            # )
+            plt.plot(m.envelope_mass, m.min_S, color=color, zorder=-1, linewidth=0.75)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+# axs.annotate(
+#     '$M=1.4\\;M_\\odot$',
+#     xy=(0.03, 0.62), xycoords='data',ha="right",va="center",
+#     xytext=(-20, 10), textcoords='offset points',fontsize=8,
+#     arrowprops=dict(arrowstyle="->",linewidth=0.75))
+#
+# axs.annotate(
+#     '$M=2.4\\;M_\\odot$',
+#     xy=(0.105, 0.9), xycoords='data',ha="right",va="center",
+#     xytext=(-20, 10), textcoords='offset points',fontsize=8,
+#     arrowprops=dict(arrowstyle="->",linewidth=0.75))
+
+# plt.xlim(726351720.183052, 726496549.4974384)
+
+plt.ylim(20.5, 22.2)
+# plt.text(7.2649e8,725,"$\\delta = 0.1$", fontsize=8)
+# plt.text(7.26489e8,675,"$\\delta = 0.2$", fontsize=8)
+# plt.text(7.26487e8,600,"$\\delta = 0.2$", fontsize=8)
+fig.legend(loc="outside upper center", ncols=3)
+
+# plt.xscale("log")
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Envelope mass ($M_\\odot$)")
+plt.ylabel("$S$ (kerg/baryon) ")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w33-compare-models-m_env-1.4-entr.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+# %%
+print(m.bulk_names)
+
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True
+)
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            # plt.plot(
+            #     m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            # )
+            plt.plot(
+                m.envelope_mass,
+                m.R / m.rl_1,
+                color=color,
+                zorder=-1,
+                linewidth=linewidth,
+                alpha=alpha,
+            )
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+
+fig.legend(loc="outside upper center", ncols=3)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-rl-ratio.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1][0:1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            # plt.plot(
+            #     m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            # )
+            plt.plot(
+                m.age, m.R, color=color, zorder=-1, linewidth=linewidth, alpha=alpha
+            )
+            plt.plot(m.age, m.rl_1, color=color, zorder=-1, linewidth=2, alpha=0.5)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+star = get_star(m=2.4)
+plt.plot(star.age, 10**star.log_R, c="C9", zorder=-100)
+
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.ylim(651.480424843292, 934.8981806485764)
+plt.xlim(726444055.3906687, 726492149.7361007)
+# fig.suptitle("$M=2.4\\;M_\\odot$, $\\delta = 0.1$")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("$R$ ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-2.4-delta0.1.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1][0:1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            # plt.plot(
+            #     m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            # )
+            plt.plot(m.age, m.lg_mstar_dot_1, color=color, zorder=-1, linewidth=1)
+            # plt.plot(m.age, np.log10(10**m.lg_wind_mdot_1 / (1-m.beta_accretion)), color=color, zorder=-1, alpha=0.5, linewidth=2)
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+star = get_star(m=2.4)
+# plt.plot(star.age, np.log10(star.Mdot), c="C9", zorder=-100)
+
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.ylim(-5.5, -4.4)
+plt.xlim(726352579.6791928, 726493691.7225358)
+# fig.suptitle("$M=2.4\\;M_\\odot$, $\\delta = 0.1$")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Star age (yr)")
+plt.ylabel("log$(\\dot{M} / (M_\\odot \\textrm{ yr}^{-1}))$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-2.4-delta0.1-mdot.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+m.bulk_names
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.4-2026-10-17/")
+
+for i_r, q in enumerate(grid.axes["q"]):
+    print(q)
+    color = f"C{i_r}"
+
+    for i_d, delta in enumerate(grid.axes["delta"][::-1][0:1]):
+        print(delta)
+        linewidth = linewidths[i_d]
+        alpha = alphas[i_d]
+
+        for m in grid.filter(q=q, delta=delta):
+            # plt.plot(
+            #     m.envelope_mass, m.rl_1, color=color, linewidth=linewidth, alpha=alpha
+            # )
+            plt.plot(m.age, m.lg_mstar_dot_1, color=color, zorder=-1, linewidth=1)
+            plt.plot(
+                m.age,
+                np.log10(
+                    10**m.lg_mstar_dot_1 - 10**m.lg_wind_mdot_1 / (1 - m.beta_accretion)
+                ),
+                color=color,
+                zorder=-1,
+                alpha=0.5,
+                linewidth=2,
+            )
+
+    plt.plot([0, 0], [0, 0], color=color, label=f"$q={q:.2f}$")
+
+plt.plot(
+    m.age,
+    np.log10(10**m.lg_wind_mdot_1 / (1 - m.beta_accretion)),
+    color="C9",
+    zorder=-1,
+    alpha=0.5,
+    linewidth=2,
+)
+star = get_star(m=2.4)
+# plt.plot(star.age, np.log10(star.Mdot), c="C9", zorder=-100)
+
+fig.legend(loc="outside upper center", ncols=3)
+
+plt.ylim(-5.6, -4.39)
+plt.xlim(726438768.0966113, 726488142.4714308)
+# fig.suptitle("$M=2.4\\;M_\\odot$, $\\delta = 0.1$")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{env}$ ($M_\\odot$)")
+plt.ylabel("log$(\\dot{M} / (M_\\odot \\textrm{ yr}^{-1}))$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w33-2.4-delta0.1-mdot-2.pgf", format="pgf")
 plt.show()
 plt.close()

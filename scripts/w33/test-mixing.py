@@ -544,24 +544,42 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-mms = np.logspace(-2, np.log10(1.2), 300)
+mms = np.logspace(-3, np.log10(1.2), 300)
 
 
 def compute_X(dms, xi, mm, dma):
     return (dms + xi * mm) / (dma + mm)
 
 
-plt.plot(mms, compute_X(9e-9, 4.4e-8, mms, 0.09))
-plt.plot(mms, compute_X(5.5e-9, 4.4e-8, mms, 0.015))
+plt.plot(mms, compute_X(9e-9, 4.4e-8, mms, 0.09), linewidth=1)
+plt.plot(mms, compute_X(5.5e-9, 4.4e-8, mms, 0.015), linewidth=1)
 
-plt.scatter(0.464, compute_X(9e-9, 4.4e-8, 0.464, 0.09))
-plt.scatter(0.359, compute_X(5.5e-9, 4.4e-8, 0.359, 0.015))
+plt.scatter(0.464, compute_X(9e-9, 4.4e-8, 0.464, 0.09), zorder=10, s=10)
+plt.scatter(0.359, compute_X(5.5e-9, 4.4e-8, 0.359, 0.015), zorder=10, s=10)
 
 plt.xscale("log")
-plt.xlim(0.05)
-plt.ylim(4.5e-8, 1e-7)
+plt.xlim(0.001)
+plt.ylim(4.5e-8, 4e-7)
 plt.yscale("log")
 
+
+axs.annotate(
+    "$\\varepsilon = 0.1$",
+    xy=(0.464, 1.01 * compute_X(9e-9, 4.4e-8, 0.464, 0.09)),
+    xycoords="data",
+    xytext=(-4, 30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->", linewidth=0.75),
+)
+
+axs.annotate(
+    "$\\varepsilon = 0.0$",
+    xy=(0.359, 1.01 * compute_X(5.5e-9, 4.4e-8, 0.359, 0.015)),
+    xycoords="data",
+    xytext=(-15, 50),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->", linewidth=0.75),
+)
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$M_\\textrm{mix}$ ($M_\\odot$)")
@@ -575,31 +593,40 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-mms = np.logspace(-2, np.log10(1.2), 300)
+mms = np.logspace(-3, np.log10(1.2), 300)
 
 
 def compute_X(dms, xi, mm, dma):
     return (dms + xi * mm) / (dma + mm)
 
 
-plt.plot(mms, compute_X(9e-9, 0, mms, 0.09))
-plt.plot(mms, compute_X(5.5e-9, 0, mms, 0.015))
+plt.plot(mms, compute_X(9e-9, 0, mms, 0.09), linewidth=1)
+plt.plot(mms, compute_X(5.5e-9, 0, mms, 0.015), linewidth=1)
 
-plt.scatter(0.464, compute_X(9e-9, 0, 0.464, 0.09))
-plt.scatter(0.359, compute_X(5.5e-9, 0, 0.359, 0.015))
+plt.scatter(0.464, compute_X(9e-9, 0, 0.464, 0.09), zorder=10, s=10)
+plt.scatter(0.359, compute_X(5.5e-9, 0, 0.359, 0.015), zorder=10, s=10)
 
 plt.xscale("log")
-plt.xlim(0.01)
-plt.ylim(4.5e-9, 3e-7)
+plt.xlim(0.001)
+plt.ylim(4.5e-9, 4e-7)
 plt.yscale("log")
 
-ax.annotate(
-    "straight",
-    xy=(0, 1),
+axs.annotate(
+    "$\\varepsilon = 0.1$",
+    xy=(0.464, 1.1 * compute_X(9e-9, 0, 0.464, 0.09)),
     xycoords="data",
-    xytext=(-50, 30),
+    xytext=(-4, 30),
     textcoords="offset points",
-    arrowprops=dict(arrowstyle="->"),
+    arrowprops=dict(arrowstyle="->", linewidth=0.75),
+)
+
+axs.annotate(
+    "$\\varepsilon = 0.0$",
+    xy=(0.359, 1.1 * compute_X(5.5e-9, 0, 0.359, 0.015)),
+    xycoords="data",
+    xytext=(-15, 50),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->", linewidth=0.75),
 )
 
 axs.spines[["right", "top"]].set_visible(False)
@@ -610,3 +637,4 @@ plt.savefig(
 )
 plt.show()
 plt.close()
+# %%
