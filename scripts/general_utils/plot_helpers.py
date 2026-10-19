@@ -125,21 +125,29 @@ def element_labels(fig, z, names, axs=plt.gca()):
         )
 
 
+from matplotlib.colors import Normalize
+import numpy as np
+
+
 def annotate_pcolormesh(
     ax,
     x,
     y,
     values,
-    vmin=None,
-    vmax=None,
+    norm=None,
     colors=("white", "black"),
     fmt=".2f",
     fontsize=6,
 ):
-    if vmin is None:
-        vmin = np.nanmin(values)
-    if vmax is None:
-        vmax = np.nanmax(values)
+    if norm is None:
+        norm = Normalize(
+            vmin=np.nanmin(values),
+            vmax=np.nanmax(values),
+        )
+
+    # boundaries halfway between the normalized positions of each color
+    positions = np.linspace(0, 1, len(colors))
+    boundaries = (positions[:-1] + positions[1:]) / 2
 
     for i, xx in enumerate(x):
         for j, yy in enumerate(y):
@@ -148,8 +156,9 @@ def annotate_pcolormesh(
             if not np.isfinite(value):
                 continue
 
-            normalized = (value - vmin) / (vmax - vmin)
-            color = colors[1] if normalized > 0.5 else colors[0]
+            normalized = np.clip(norm(value), 0, 1)
+            color_idx = np.digitize(normalized, boundaries)
+            color = colors[color_idx]
 
             ax.text(
                 xx,
