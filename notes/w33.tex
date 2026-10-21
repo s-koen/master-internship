@@ -18,6 +18,59 @@
 %Begin the document
 \begin{document}
 \setuplayout
+
+\section{Thermohaline mixing}
+
+Towards the end of the giant branch, we have a mean molecular weight transition between the Skye EOS \citep{jermyn2021} and
+the \href{https://freeeos.sourceforge.net/}{FreeEOS} tables which occurs in a radiative part of the star.
+This transition causes a \emph{higher} mean molecular weight region to be \emph{above} a lower mean
+molecular weight region.
+Even though this mean molecular weight transition is unphysical and
+entirely caused by the differences in the atom masses used to calculate \(\mu \) for both tables,
+\emph{MESA} should detect this transition as a region which is unstable to thermohaline (TH) mixing.
+
+In the plot below, I show the \(\mu \) profiles, together with the EOS tables and the mixing regions for a
+star at the tip of the RGB.
+\begin{figure}[ht]
+	\marginfignote{0}{We can quite clearly see that MESA recognises the thermohaline instability and applies
+		mixing in this region.
+		The region is just above the transition from Skye to FreeEOS.
+	}
+	\marginfignote{9}{I tested a rotating model too, to see if the thermohaline mixing would be significantly
+		affected by the rotation, however, both models, even though they do experience thermohaline mixing, maintain
+		their \(\mu \) dip.}
+	\marginfignote{20}{This makes a lot of sense if we think about how thermohaline mixing works and how we would
+		usually expect the \(\mu \) profile to change due to TH mixing.
+		Usually, the instability occurs due to
+		different compositions in different layers.
+		TH mixing then mixes these compositions, which in turn
+		equalized the mean molecular weight profile.
+		However, in this case, the composition is actually nearly
+		identical throughout the mixing region, and even if we completely mix the otherwise unmixed region, the
+		composition stays the same, and we maintain the \(\mu \) profile dip due to the differences in the
+		opacity tables.
+	}
+	\centering
+	\incplot{w33-th-2}
+\end{figure}
+
+However, for nitrogen and carbon, there are some small differences in the composition in the thermohaline
+mixing regime.
+This is a nice test-case to see the effects that ``fake'' thermohaline mixing can have on the
+composition of the star.
+
+\begin{figure}[ht]
+	\marginfignote{0}{In this case, we can compare the composition of the RGB model with and without thermohaline
+		mixing and rotation.
+		We see that the composition boundary becomes ``smoothed'' due to the thermohaline mixing,
+		which is what we expect.
+		However, the thermohaline mixing should not even exist here so this effect is
+		actually not physical and wrong.
+	}
+	\centering
+	\incplot{w33-TH-3}
+\end{figure}
+
 \section{Envelope mass}
 
 \subsection{Introduction}
@@ -100,7 +153,7 @@ It is then interesting to see if we again obtain these stable RLOF mass transfer
 I expect there to be \emph{big} differences in the final periods \emph{and} the final [s/Fe] values for these models.
 This is simply because this heavier star reaches much larger radii and much larger envelope s-process abundances.
 
-\subsection{Results}
+\newsubsection{Results}
 
 I simulated the models using \emph{MESA}.
 Below, I first just plot their Roche lobe evolution
@@ -439,9 +492,63 @@ For the normal diagonal lines, splitting per \(q\) looks like this:
 	\incplot{w33-final-period-rl-overflow-4}
 \end{figure}
 
+Then we can look at the s process abundances in the form of the 2d grids.
+
 \begin{figure}[ht]
 	\centering
 	\incplot{w33-pcolor-1-m1.8}
+\end{figure}
+Again, we see that in the case of \(\varepsilon =0\), we have more models with lower barium abundances
+with lower initial Roche lobe radii.
+This is because there is nearly no wind in this region.
+
+\section{2.2 Solar mass models}
+
+This morning, the \(2.2\; M_\odot \) models also finished.
+
+Below, I compare the final periods and the [s/Fe] values for the different masses.
+\begin{figure}[ht]
+	\marginfignote{0}{We can quite clearly see that the \(1.4\; M_\odot \) models clearly produce the shortest
+		period binaries, but also the least s-process abundant accretors.}
+	\centering
+	\incplot{w33-grid-thus-far}
+\end{figure}
+
+Below I plot the [s/Fe] values.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-1-m2.2}
+\end{figure}
+
+Then I plot the amount of envelope mass left at the approximate start of RLOF.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w32-pcolor-5-m2.2}
+\end{figure}
+
+Lastly, I plot the maximum overfill ratio:
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-8-m2.2}
+\end{figure}
+
+\newsection{Outer Roche lobes}
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-9-0}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-9-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w33-pcolor-9-2}
 \end{figure}
 
 \bibliography{master.bib}
