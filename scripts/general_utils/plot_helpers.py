@@ -126,7 +126,6 @@ def element_labels(fig, z, names, axs=plt.gca()):
 
 
 from matplotlib.colors import Normalize
-import numpy as np
 
 
 def annotate_pcolormesh(
