@@ -42,3 +42,4 @@ data/accretor-cache/
 **/reference-histories/
 mesa-models/**
 /scripts/w31/profiles.pkl
+/mesa-inconsistency
