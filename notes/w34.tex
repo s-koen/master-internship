@@ -1,0 +1,92 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 34}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Bug Report}
+
+\begin{minted}[fontsize=\small]{fortran}
+!! @param ACMI An array of the masses in AMU of those species.
+ACMI(relevant_species) = chem_isos% W(chem_id(j))
+A(relevant_species) = chem_isos% Z_plus_N(chem_id(j))
+
+
+chem_isos% Z_plus_N = chem_isos% Z + chem_isos% N
+chem_isos% W = chem_isos% Z_plus_N + chem_isos% mass_excess*(mev_to_ergs/amu/(clight*clight))
+\end{minted}
+
+\section{Summarizing my Results}
+
+I will first look at what I think is most relevant in each of my weekly notes.
+
+\begin{enumerate}
+	\item[\color{keywordscolor}2 -- 3.] This week contains a lot of relevant MESA parameters that I use, and
+	      \emph{why}
+	      I use them.
+	      Other than that, there are not really any relevant results.
+	\item[\color{keywordscolor}4.] This week shows my first attempts of RLOF mass transfer with MESA.
+	      I also check some dredge-up properties of \citet{rees2024b}-like TPAGB models.
+	      There are no
+	      relevant \emph{new} results.
+	\item[\color{keywordscolor}5.] I test different wind prescriptions for single stars.
+	      This is relevant for the methods section of my final thesis, but does not contain \emph{new} results.
+	      I also compare different opacity tables.
+	      Similarly, this is important for the methods, but does not show something \emph{new}.
+
+	      I also implement the quasi-adiabatic mass loss limit from \citet{temmink2022}.
+	      Again something for the methods.
+	      This is also the first week where I try some binary models with RLOF during the TPAGB phase of the donor.
+	      Not really any interesting results though, since these models still miss wind-mass transfer and tides.
+	\item[\color{keywordscolor}6.] Tried to figure out why models with low \(R\) and \(q\) fail.
+	      Did not really succeed.
+	      Contains a good description of \AE SOPUS tables for methods / introduction.
+	\item[\color{keywordscolor}7.] Contains detailed information of the overshooting parameters and comparisons with other methods.
+	      Also, MesaGrid class version 1.
+	      Not very relevant any more.
+	\item[\color{keywordscolor}8.]
+	\item[\color{keywordscolor}9.]
+	\item[\color{keywordscolor}10.]
+	\item[\color{keywordscolor}11.]
+	\item[\color{keywordscolor}12.]
+	\item[\color{keywordscolor}13.]
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+	\item
+\end{enumerate}
+
+\bibliography{master.bib}
+\end{document}
