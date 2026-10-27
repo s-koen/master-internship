@@ -257,6 +257,7 @@ class MesaRun:
         self.s = self.get_s()
         self.ls = self.get_ls()
         self.hs = self.get_hs()
+        self.co = self.get_co()
 
     def __repr__(self):
         return f"MesaRun object with m={self.params["m"]:.2f}, q={self.params["q"]:.3f} and RL = {self.params["R"]:.0f}"
@@ -419,6 +420,24 @@ class MesaRun:
                 fe += self.ab[i]
 
         return fe / 7
+
+    def get_co(self):
+        diff = 0
+        for i, name in enumerate(self.elements_name):
+
+            if name in ["c"]:
+                diff += self.ab[i]
+
+        for i, name in enumerate(self.elements_name):
+
+            if name in ["o"]:
+                diff -= self.ab[i]
+
+        solar = Asplund()
+        solar_c_o = (
+            solar.elements[6].relative_abundance / solar.elements[8].relative_abundance
+        )
+        return 10 ** (diff) * solar_c_o
 
     @property
     def key(self):
