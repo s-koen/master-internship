@@ -30,6 +30,35 @@ chem_isos% Z_plus_N = chem_isos% Z + chem_isos% N
 chem_isos% W = chem_isos% Z_plus_N + chem_isos% mass_excess*(mev_to_ergs/amu/(clight*clight))
 \end{minted}
 
+\section{MESA mailing list}
+
+Hi everyone,
+
+I noticed something while inspecting mean molecular weight profiles in MESA and I was wondering if I am observing the expected behaviour.
+
+Skye EOS and FreeEOS appear to use different approaches to calculate the mean molecular weight \(\mu \).
+Skye uses integer isotope mass number (\(A_{i} \)), whereas FreeEOS appears to use its own table of elemental atomic weights.
+
+These different approaches cause discrepancies in the mean molecular weight reported by the two different EOS tables.
+To show this, I ran the \lstinline[style=output, breaklines=true]|hb_2M| test suite with thermohaline mixing enabled using mesa-r23.05.1.
+The MESA reported \(\mu \) changes sharply across the EOS blending region, transitioning between the values obtained using these two approaches.
+During the RGB, the transition between the two tables occurs in a radiative region and appears to trigger thermohaline mixing.
+
+The figure below shows the \(\mu \) profile in the RGB-phase of the \lstinline[style=output, breaklines=true]|hb_2M| model, together with \(\mu \) values independently computed with the two approaches assuming complete ionization, and the thermohaline mixing diffusion coefficient.
+\begin{figure}[ht]
+	\centering
+	\incplot{Skye-vs-FreeEOS}
+\end{figure}
+
+Is this difference between the two \(\mu \) calculations something that is already known?
+And is the resulting molecular weight gradient, and the associated thermohaline mixing expected when blending Skye and FreeEOS?
+
+Thanks!
+
+Best regards,
+
+Koen
+
 \section{Summarizing my Results}
 
 I will first look at what I think is most relevant in each of my weekly notes.
@@ -58,35 +87,131 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	\item[\color{keywordscolor}7.] Contains detailed information of the overshooting parameters and comparisons with other methods.
 	      Also, MesaGrid class version 1.
 	      Not very relevant any more.
-	\item[\color{keywordscolor}8.]
-	\item[\color{keywordscolor}9.]
-	\item[\color{keywordscolor}10.]
-	\item[\color{keywordscolor}11.]
-	\item[\color{keywordscolor}12.]
-	\item[\color{keywordscolor}13.]
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
-	\item
+	\item[\color{keywordscolor}8.] Contains the first implementation of the tides.
+	      This version does still contain some bugs but it is important for the methods section of my thesis.
+	      It also contains the first implementation of a model selector, something that I update many times later on.
+	      This is also interesting for the methods section of my thesis.
+	\item[\color{keywordscolor}9.] Fixes to tides, also the first implementation of different angular momentum losses due to winds, including the \citet{saladino2018} winds.
+	      Shows detailed derivations as well for the angular momentum terms.
+	\item[\color{keywordscolor}10.] Starts with a nice figure showing the effects of the tides and wind angular momentum prescriptions for the Roche lobe evolution.
+	      Contains a lot of validations for the wind and tides, but this is not the complete and (hopefully) bug free setup yet.
+	      It does very nicely show how the individual parts of the prescriptions evolve over time.
+	      Also notes for the first time the difference between the two wind velocity assumptions and shows how they affect in particular \citet{saladino2018}.
+	\item[\color{keywordscolor}11.] Constant wind velocity of 15 km/s for everything in the model.
+	      This also contains important "last" tests for the winds + tides prescription.
+	      Shows full consistency with \lstinline[style=output, breaklines=true]|evolve.py| code.
+	      Also shows some examples of early grid generation code and how I make sure the mesa models use the correct starting values.
+	      Pretty important for methods, not so much for results.
+	\item[\color{keywordscolor}12.] Lots of \citet{soberman1997} analytic work.
+	      Not really any relevant results, but certainly helped with building intuition and understanding.
+	      Shows that \citet{soberman1997} predictions of TPAGB-like mass transfer with modest \(\delta \) values
+	      can already produce small orbits on the orbit of a couple hundred days.
+	      Also shows for the first time explicitly that small differences in initial binary separation can quite drastically change the outcome.
+	\item[\color{keywordscolor}13.] Implementation of proper circumbinary torus mass loss and the first grid showing some results.
+	      Also the first time encountering the Darwin instability but no nice plots yet.
+	      From this point onwards, the basic MESA models do not change a lot anymore, apart from additions that are required for abundances.
+	\item[\color{keywordscolor}14.] This week I show in more detail the Darwin instability.
+	      This is also the week that I actually enable the fully conservative mass transfer that \citet{temmink2025} talks about.
+	\item[\color{keywordscolor}15 -- 16.] Final model saving code.
+	      It now saves a single model at the start of a new thermal pulse with information on the maximum radius that was reached in the time before it.
+	      This week I also \emph{observed} the sudden mixing that sometimes occurs in the other layers of the star, which are not convective, but I had not yet \emph{understood} what I was seeing.
+	      I also look at the
+	      eccentricity and find that a lot of the parameter space is \emph{expected} to be circularized if you \emph{assume} \citet{hut1981} style tides.
+	      However, even with \citet{hut1981} style tides, there are still some models that can maintain their eccentricity at the start of RLOF.
+	\item[\color{keywordscolor}17.] Here I tried to get some semi-analytic bounds for relevant mass-transfer
+	      parameters \(\beta \), \(\gamma \) and \(\delta \).
+	      It is based on the criterion that the
+	      radius of the star cannot ever become larger than the semi-major axis.
+	      This is somewhat interesting, \emph{but} I think it is definitely not a major finding.
+	\item[\color{keywordscolor}18.] This week I compared the MESA internal tides with my
+	      own implementation.
+	      They produce slightly different results, but I opt to use
+	      my own method because it works well with the wind mass transfer prescription.
+	      The MESA tides does not work well with mass losses without having to implement
+	      a lot of new custom code.
+	\item[\color{keywordscolor}19.] This week I did some more analytic work.
+	      I tried to
+	      see the effects of \(q, \delta \) and \(\beta \).
+	      The most important result is that isotropic re-emission is \emph{much} less important for the change in binary separation than circumbinary disk mass loss.
+	      This means isotropic re-emission can be "used" to tune the amount of accreted mass, while
+	      \(\delta \) must be tuned to produce realistic final periods.
+
+	      Then I looked into the radial response of mass transfer for different \(\delta \) values.
+	      I find that stronger \(\delta \) values can cause a sort of delayed increase in the radius when a lot the mass is lost.
+
+	      In the HR diagram, this looks like a loop going from the right down, then moving to up and left
+	      to the Post-AGB constant luminosity track.
+	\item[\color{keywordscolor}20.] This week, I first tried to simulate a single star with a lower metallicity, based on metallicity data from observations of barium giants.
+	      Later, I change this metallicity to a more appropriate value for barium dwarfs.
+	      We see that a lower metallicity slightly alters the evolution of the star, but it is most important for the abundances.
+
+	      I also implement a very important fix to my angular momentum loss prescription to also take into account angular momentum lost from the accretor.
+
+	      I also implement a better stopping condition, making sure the models have finished RLOF.
+	      Then I also implement a profile saving method that saves profiles throughout mass loss.
+	\item[\color{keywordscolor}21.] Lower metallicity stars have larger dredge-up efficiencies, in line with literature \citep{herwig2005, karakas1902}.
+	      Lower metallicity stars also have larger C/O ratios, also in line with literature.
+
+	      I also compare my MESA models with Monash and NuGrid results without success.
+	      My later attemps are much better.
+
+	      I show that it is the mass transfer rate that determines how the star responds radially to mass loss.
+	      Large mass loss rates can cause the "loop" in the HR diagram, which is a hint at some not
+	      super stable mass loss.
+
+	      I also \emph{show} with the MESA models that \(\delta \) is much more important for the final
+	      period than \(\beta \), and that a large \(\delta \) leads to larger mass transfer rates as well.
+
+	      Lastly, I look at the metallicity of dwarfs.
+	\item[\color{keywordscolor}22.] I show that the amount of dredge-up for low mass (1 to 3\(\; M_\odot \)) increases with mass in the MESA models, just like in the Monash \citet{karakas2016} models.
+
+	      These weeks, I also update the grid generator code and \lstinline[style=output, breaklines=true]|MesaGrid| class to create and analyze the MESA grids more effectively.
+
+	      Here, I also simulate a bulk of the single star models.
+	\item[\color{keywordscolor}23.] I use the masses of observed barium dwarfs in combination with
+	      the simple binary code to find suitable binary candidates for the creation of barium dwarfs.
+
+	      I find that it is difficult to create barium dwarfs with masses that agree with observations
+	      using large donor stars, simply because of the mass ratio.
+	      It is also important to
+	      interact later on during the TPAGB, because only then has the star had a third dredge-up
+	      episode to enrich the envelope.
+	\item[\color{keywordscolor}24.] The MESA binary models have \emph{a lot of} convergence problems.
+	      I developed a python pipeline that tries to fix these convergence problems, which is very useful.
+	\item[\color{keywordscolor}25.] Made sure my post-processed \(M_\text{DUP}\) calculation agrees well with the internal MESA dredge-up calculation which does not track the
+	      actual mass.
+	      It agrees well.
+	\item[\color{keywordscolor}26.]
+	\item[\color{keywordscolor}27.]
+	\item[\color{keywordscolor}28.]
+	\item[\color{keywordscolor}29.]
+	\item[\color{keywordscolor}30.]
+	\item[\color{keywordscolor}31.]
+	\item[\color{keywordscolor}32.]
+	\item[\color{keywordscolor}33.]
+	\item[\color{keywordscolor}34.]
 \end{enumerate}
+
+\section{Conclusions}
+
+\newsection{2.6 Solar mass grid}
+\begin{figure}[ht]
+	\centering
+	\incplot{w34-pcolor-10-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w34-pcolor-11-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{We see a very strong correlation between the [s/Fe] values and the C/O number ratios.
+		This is quite different from observations, where this correlation is \emph{much} less strong.
+	}
+	\centering
+	\incplot{w34-s-co}
+\end{figure}
 
 \bibliography{master.bib}
 \end{document}
