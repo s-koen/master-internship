@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w34"] 1793056740.22725 "w34.aux" "w34.bbl" "w34" 1793059353.06996 0
+["bibtex w34"] 1793145759.16793 "w34.aux" "w34.bbl" "w34" 1793145908.63664 0
   "./master.bib" 1792349064.2752 53841 9c8da239d9f2aa959ee641eca99b028c ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w34.aux" 1793059352.81607 2186 df558b0151bedce9f6a494e99a45a38a "pdflatex"
+  "w34.aux" 1793145908.3822 2606 e06a416bb9a04815605f962c980657fd "pdflatex"
   (generated)
   "w34.bbl"
   "w34.blg"
   (rewritten before read)
-["pdflatex"] 1793059349.26434 "w34.tex" "w34.pdf" "w34" 1793059353.07016 0
+["pdflatex"] 1793145904.86124 "w34.tex" "w34.pdf" "w34" 1793145908.6368 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -16,6 +16,7 @@
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS-img0.png" 1793040807.38899 1284 18dbd754ecdf528c9d4979d9f6df2c1c ""
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS-img1.png" 1793040807.41099 414 33cadaaa9f45a1cf60b8b026a2e6275e ""
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS.pgf" 1793040807.41699 55642 12c4de7bbef4e7a98b42aab22ea9a5ef ""
+  "/home/koen/LaTeX-setup//plots/w34-min-R_RL-for-barium-star.pgf" 1793145803.39564 38509 68d51156f147431bee7818dff4fbcbf2 ""
   "/home/koen/LaTeX-setup//plots/w34-pcolor-10-3-img0.png" 1793045138.62767 297 684fac011d15d3eedf202aebc8a1bd29 ""
   "/home/koen/LaTeX-setup//plots/w34-pcolor-10-3.pgf" 1793045138.63175 216734 01812caff27932f18e97881f22c94202 ""
   "/home/koen/LaTeX-setup//plots/w34-pcolor-11-3-img0.png" 1793045947.94648 309 68dd6c0fc688d27a599f382d79ea4396 ""
@@ -401,10 +402,10 @@
   "_minted/2B184797F934E35531973AA46B323AED.highlight.minted" 1792970642.23138 1350 05ac957d40d700e13e4811c99ebdf420 ""
   "_minted/_27B44E5383F108D10C2F57077B03A343.index.minted" 1792970642.56112 261 96bc0f4eca030314fa85f583f9e3a244 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w34.aux" 1793059352.81607 2186 df558b0151bedce9f6a494e99a45a38a "pdflatex"
-  "w34.bbl" 1793056740.28828 3839 93e39ac01f31bb2a92314271cadd0938 "bibtex w34"
-  "w34.out" 1793059352.81772 634 06024d88e168938dccb449a71280cc9d "pdflatex"
-  "w34.tex" 1793059347.25299 12984 d85657da73439b99b992c72be8b72aa4 ""
+  "w34.aux" 1793145908.3822 2606 e06a416bb9a04815605f962c980657fd "pdflatex"
+  "w34.bbl" 1793145759.21999 4266 bdaa0063142cf8a68b0acd58706f971a "bibtex w34"
+  "w34.out" 1793145908.3832 760 46f4f3898fda63c4d3d2a21febf2840b "pdflatex"
+  "w34.tex" 1793145903.43713 18014 65d6fd49477890fd8313776dd7a1dd89 ""
   (generated)
   "w34.aux"
   "w34.log"

@@ -181,12 +181,85 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	\item[\color{keywordscolor}25.] Made sure my post-processed \(M_\text{DUP}\) calculation agrees well with the internal MESA dredge-up calculation which does not track the
 	      actual mass.
 	      It agrees well.
-	\item[\color{keywordscolor}26.]
-	\item[\color{keywordscolor}27.]
-	\item[\color{keywordscolor}28.]
-	\item[\color{keywordscolor}29.]
-	\item[\color{keywordscolor}30.]
-	\item[\color{keywordscolor}31.]
+
+	      Also wrote some code to allow the MESA models to evolve past difficult points in their evolution.
+
+	      Then I looked at delayed Thermal pulses with happen on the post-AGB or even the white dwarf sequence.
+
+	      Also fixed a bug that caused the models to use incorrect starting conditions.
+	\item[\color{keywordscolor}26.] This week I got the intershell abundances from Zara.
+	      I implemented the first version of my intershell and envelope abundance estimations.
+	      Later on I refine this significantly.
+
+	      I show here as well that s-process elements only start occuring \emph{after} the first thermal pulse with significant TDU.
+	\item[\color{keywordscolor}27.] I compare MESA with the different Monash models from \citet{karakas2016}.
+	      The differences I find are the same as described by \citet{rees2024b}, which is \emph{good}, because
+	      I use the \citet{rees2024b} inlists, just modified a bit.
+
+	      I also finalize the intershell abundance estimation method.
+	      I end up using the TP + offset method, which produces the most natural and consistent interpolation.
+
+	      I also look at some yields.
+	      I find that there are some considerable differences between my models
+	      and the \citet{karakas2016} models.
+
+	\item[\color{keywordscolor}28.] I look at the MESA abundances and compare them with the abundances I get after interpolating the \citet{karakas2016} models.
+
+	      I find that the Monash models and my models predict significantly different abundances, both in the
+	      envelope \emph{and} in the intershell for important elements like carbon and oxygen.
+
+	      This is really a consequence of the different intershell abundances.
+	      If I use my post-processing code to predict the envelope abundances with MESA intershell abundances, I obtain the MESA envelope abundances.
+
+	      I fix a crucial bug, where I used the wrong metallicity, and reanalyze the yields.
+	      I now find that
+	      they are very much in line with \citet{karakas2016} yields.
+	      This is a nice consistency check.
+	      The same is true for the intershell mass fractions and the envelope mass fractions.
+	\item[\color{keywordscolor}29.] Here I simulate a bunch of main sequence stars.
+
+	      I also derive the equation to compute \(\mu \) for a fully ionized mixture.
+	      I then use this to compute the average \(\mu \) of accreted material for my mesa models.
+
+	      I also develop an algorithm to interpolate the \(\mu \) profiles and then mix the accreted material
+	      with a certain \(\mu \) value to get an estimate for the mixing mass due to the thermohaline
+	      instability.
+
+	      I find that the mixing mass is much more strongly dependent on the \emph{amount} of accreted mass
+	      than the actual \(\mu \) of the accreted mass.
+
+	      I also implement the \citet{asplund2009} abundances to estimate the initial MS abundances.
+	\item[\color{keywordscolor}30.] Important bug fix for the amount of accreted material.
+
+	      Also started looking into differences between the MESA reported \(\mu \), Monash reported \(\mu \), and \(\mu \) computed using abundances.
+
+	      I simulate the MS models again but with an initial helium abundance that aligns with the \citet{karakas2016}.
+
+	      I implement spectroscopic abundances into my post-processing calculations and look at the effects
+	      of \(\varepsilon \), \(M_\text{TPAGB}\) and \(q\).
+
+	      I also simulate a broad \(R\) grid, which shows quite nicely that the initial Roche lobe radius
+	      is very important for possibility of producing a barium star.
+
+	      Here I also finally see why a lot of the low \(q\) and low \(R\) models fail.
+	      They move to unstable configurations with increasing temperatures and radii.
+	\item[\color{keywordscolor}31.] I try to \emph{compute} \(\mu \) but I fail to reproduce the MESA value.
+
+	      I look into the failing models and clearly see that the minimum entropy in the profile \emph{rises} during the occurence of the instability.
+	      This is a clear hint that the model is \emph{not} in thermal equilibrium and the critial mass-loss rate from \citet{temmink2022} is higher than the actual critical mass loss rate.
+
+	      The HR diagram also clearly shows a departure to unstable stellar conditions.
+
+	      I also use the post-processing code in combination with the simple binary code to predict
+	      which binary configurations are interesting to simulate with MESA.
+
+	      I look into the effects of \(q\), \(\varepsilon \) and \(M_\text{TPAGB} \).
+
+	      A particularly important result is that it is quite easy to create barium stars with enough accreted
+	      material, even with very low RLOF accretion efficiencies.
+	      For the abundances of the accretor, it is very important that the donor has experienced significant dredge up.
+	      Without it, it is impossible to create a barium star.
+	      This places a lower limit on the initial Roche lobe radius for every initial mass.
 	\item[\color{keywordscolor}32.]
 	\item[\color{keywordscolor}33.]
 	\item[\color{keywordscolor}34.]
@@ -211,6 +284,13 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	}
 	\centering
 	\incplot{w34-s-co}
+\end{figure}
+
+\section{Additional Plots}
+Shows the minimum Roche lobe radius that is required according to the simple binary code to generate a barium star.
+\begin{figure}[ht]
+	\centering
+	\incplot{w34-min-R_RL-for-barium-star}
 \end{figure}
 
 \bibliography{master.bib}
