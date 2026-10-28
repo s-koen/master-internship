@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w34"] 1793145759.16793 "w34.aux" "w34.bbl" "w34" 1793145908.63664 0
+["bibtex w34"] 1793231772.63822 "w34.aux" "w34.bbl" "w34" 1793231778.02658 0
   "./master.bib" 1792349064.2752 53841 9c8da239d9f2aa959ee641eca99b028c ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w34.aux" 1793145908.3822 2606 e06a416bb9a04815605f962c980657fd "pdflatex"
+  "w34.aux" 1793231777.78631 3451 6edab665b2ad517dc2d9cf7d14caf717 "pdflatex"
   (generated)
   "w34.bbl"
   "w34.blg"
   (rewritten before read)
-["pdflatex"] 1793145904.86124 "w34.tex" "w34.pdf" "w34" 1793145908.6368 0
+["pdflatex"] 1793231772.70132 "w34.tex" "w34.pdf" "w34" 1793231778.02673 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -16,11 +16,15 @@
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS-img0.png" 1793040807.38899 1284 18dbd754ecdf528c9d4979d9f6df2c1c ""
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS-img1.png" 1793040807.41099 414 33cadaaa9f45a1cf60b8b026a2e6275e ""
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS.pgf" 1793040807.41699 55642 12c4de7bbef4e7a98b42aab22ea9a5ef ""
+  "/home/koen/LaTeX-setup//plots/w34-final-period-rl-overflow.pgf" 1793226359.45347 454339 fbce97c1a6765e79455c4415abc73e1e ""
+  "/home/koen/LaTeX-setup//plots/w34-grid-thus-far.pgf" 1793226193.91507 875987 1a36c4f8a8ce374cacf4a6902df282c5 ""
   "/home/koen/LaTeX-setup//plots/w34-min-R_RL-for-barium-star.pgf" 1793145803.39564 38509 68d51156f147431bee7818dff4fbcbf2 ""
+  "/home/koen/LaTeX-setup//plots/w34-pcolor-1-m2.6-img0.png" 1793226198.73314 326 ebd7210a3cdc8cdebcc294736f33cb8d ""
+  "/home/koen/LaTeX-setup//plots/w34-pcolor-1-m2.6.pgf" 1793226198.73714 215862 7c59d57243ad99683282803465180172 ""
   "/home/koen/LaTeX-setup//plots/w34-pcolor-10-3-img0.png" 1793045138.62767 297 684fac011d15d3eedf202aebc8a1bd29 ""
   "/home/koen/LaTeX-setup//plots/w34-pcolor-10-3.pgf" 1793045138.63175 216734 01812caff27932f18e97881f22c94202 ""
-  "/home/koen/LaTeX-setup//plots/w34-pcolor-11-3-img0.png" 1793045947.94648 309 68dd6c0fc688d27a599f382d79ea4396 ""
-  "/home/koen/LaTeX-setup//plots/w34-pcolor-11-3.pgf" 1793045947.94995 215741 c161be09124a1e69cc30142e6d8e43ad ""
+  "/home/koen/LaTeX-setup//plots/w34-pcolor-11-3-img0.png" 1793224003.81521 309 68dd6c0fc688d27a599f382d79ea4396 ""
+  "/home/koen/LaTeX-setup//plots/w34-pcolor-11-3.pgf" 1793224003.81862 215716 3dc637ae752ed575456ae532388c3aeb ""
   "/home/koen/LaTeX-setup//plots/w34-s-co.pgf" 1793058127.84942 872835 b0ae098ba3422c4325b964dc19799781 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1775415801 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/share/texmf-dist/fonts/enc/dvips/ly1/texnansi.enc" 1775415801 6938 5135be6a8802f13a7faf296d1959a1ab ""
@@ -402,10 +406,10 @@
   "_minted/2B184797F934E35531973AA46B323AED.highlight.minted" 1792970642.23138 1350 05ac957d40d700e13e4811c99ebdf420 ""
   "_minted/_27B44E5383F108D10C2F57077B03A343.index.minted" 1792970642.56112 261 96bc0f4eca030314fa85f583f9e3a244 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w34.aux" 1793145908.3822 2606 e06a416bb9a04815605f962c980657fd "pdflatex"
-  "w34.bbl" 1793145759.21999 4266 bdaa0063142cf8a68b0acd58706f971a "bibtex w34"
-  "w34.out" 1793145908.3832 760 46f4f3898fda63c4d3d2a21febf2840b "pdflatex"
-  "w34.tex" 1793145903.43713 18014 65d6fd49477890fd8313776dd7a1dd89 ""
+  "w34.aux" 1793231777.78631 3451 6edab665b2ad517dc2d9cf7d14caf717 "pdflatex"
+  "w34.bbl" 1793231772.69023 4708 557f6069ba470e7e4028d1e7089c56ed "bibtex w34"
+  "w34.out" 1793231777.78788 1491 858ab1700fa84b3bbc9944b2e795e300 "pdflatex"
+  "w34.tex" 1793231766.71214 21860 544d9759055d30abcdf3f82844c1b3c9 ""
   (generated)
   "w34.aux"
   "w34.log"

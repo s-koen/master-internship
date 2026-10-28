@@ -59,7 +59,7 @@ Best regards,
 
 Koen
 
-\section{Summarizing my Results}
+\newsection{Summarizing my Work}
 
 I will first look at what I think is most relevant in each of my weekly notes.
 
@@ -229,6 +229,9 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	      than the actual \(\mu \) of the accreted mass.
 
 	      I also implement the \citet{asplund2009} abundances to estimate the initial MS abundances.
+\end{enumerate}
+\nextpage
+\begin{enumerate}
 	\item[\color{keywordscolor}30.] Important bug fix for the amount of accreted material.
 
 	      Also started looking into differences between the MESA reported \(\mu \), Monash reported \(\mu \), and \(\mu \) computed using abundances.
@@ -260,14 +263,87 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	      For the abundances of the accretor, it is very important that the donor has experienced significant dredge up.
 	      Without it, it is impossible to create a barium star.
 	      This places a lower limit on the initial Roche lobe radius for every initial mass.
-	\item[\color{keywordscolor}32.]
-	\item[\color{keywordscolor}33.]
-	\item[\color{keywordscolor}34.]
-\end{enumerate}
+	\item[\color{keywordscolor}32.] Here I define my large grid and start simulating.
 
+	      Here I also figure out that the Skye EOS \citep{jermyn2021} and FreeEOS use a different way to
+	      compute the mean molecular weight \(\mu \).
+	      This explains the weird dips.
+
+	      Then I compare some accurate MESA accretion models with the simple binary model with some assumptions.
+	      I find that overall, they agree quite well, \emph{however}, most of the assumptions are not
+	      actually true and differences between \emph{MESA} accretion post-processing and the simple binary post-processing can all be explained by the assumptions that the simple-binary makes.
+
+	      I make some scatter plots of the final periods and the [s/Fe] abundances.
+	      This clearly shows
+	      a trend.
+	      Short period binaries interact \emph{before} dredge-up has enriched the star and therefore
+	      we cannot produce a barium star.
+	      Then there is quite a broad period range where various abundances and periods can exist.
+	      Then, for very large initial Roche lobe radii, the models all move to very large periods with relatively large abundances.
+	      It also seems like it is possible to create barium stars with
+	      wind alone up to quite large periods.
+
+	      It is clear as well that very low RLOF mass transfer accretion can easily produce barium stars.
+	      We also see that very low RLOF accretion is already enough to produce barium stars in the region where the is no\sidenote{At least very little} wind.
+
+	      I also find that for the \(1.4\; M_\odot \) models, (semi) RLOF can occur without large overfill ratios for much of the models that I evolved.
+	      In some cases, semi-RLOF happens during the last interpulse which produces
+
+	      However, as \(\delta \) increases, we see the overfill ratio increase as well.
+	      The same is true for decreasing \(q\).
+
+	      Interactions during the last interpulse period seems to be quite interesting as here
+	      it seems to be possible to accrete material with \emph{high} s-process abundances,
+	      with low overfill ratios, and the possibility to shrink the orbit.
+	\item[\color{keywordscolor}33.] I show that the artificial \(\mu \) gradient introduces
+	      thermohaline mixing.
+
+	      It seems like low envelope masses during interpulses provide ideal opportunities for
+	      mass transfer with high accretion efficiencies, low overfill ratios, but still
+	      relatively short periods.
+	      The \(1.4\; M_\odot \) model has a particularly low
+	      envelope mass before the final thermal pulse.
+	      Models that interact during this
+	      last interpulse are relatively stable during RLOF.
+
+	      I look for other models with low envelope masses during the last thermal pulse to test
+	      this hypothesis and find that this seems to hold for other masses too.
+
+	      The \(2.4\; M_\odot \) models have low overfill ratios and low envelope masses,
+	      while the \(2.2\; M_\odot \) and \(2.6\; M_\odot \) models have larger envelope masses
+	      \emph{and} higher overfill ratios.
+
+	      Models that interact during the interpulse reach significantly lower peak mass loss
+	      rates.
+	      The RLOF mass loss rate is much more comparable to the wind mass loss rate.
+
+	      There is a quite strong negative correlation between the final period and the overfill ratio.
+	      This means it is very difficult to produce low period binaries without
+	      large overfill ratios.
+\end{enumerate}
 \section{Conclusions}
 
+\subsection{Wind and Tides}
+
+\subsection{Binary configurations}
+
+\subsection{Accretion efficiencies}
+
+\subsection{Accretor Abundances}
+
+\section{Important plots}
 \newsection{2.6 Solar mass grid}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w34-grid-thus-far}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w34-pcolor-1-m2.6}
+\end{figure}
+
 \begin{figure}[ht]
 	\centering
 	\incplot{w34-pcolor-10-3}
@@ -286,6 +362,11 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	\incplot{w34-s-co}
 \end{figure}
 
+\begin{figure}[ht]
+	\centering
+	\incplot{w34-final-period-rl-overflow}
+\end{figure}
+
 \section{Additional Plots}
 Shows the minimum Roche lobe radius that is required according to the simple binary code to generate a barium star.
 \begin{figure}[ht]
@@ -293,5 +374,6 @@ Shows the minimum Roche lobe radius that is required according to the simple bin
 	\incplot{w34-min-R_RL-for-barium-star}
 \end{figure}
 
+\nextpage
 \bibliography{master.bib}
 \end{document}

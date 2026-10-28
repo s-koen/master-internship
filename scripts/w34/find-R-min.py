@@ -225,16 +225,34 @@ fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
 
-plt.plot(results["m1i"], results["r_init"], label="$\\varepsilon=1$", c="C0")
-plt.scatter(results["m1i"], results["r_init"], c="C0", zorder=100, marker=".", size=50)
-plt.scatter(results["m1i"], results["r_init"], c="w", zorder=99, marker=".", size=100)
-plt.plot(results_0["m1i"], results_0["r_init"], label="$\\varepsilon=0$", c="C1")
-plt.scatter(
-    results_0["m1i"], results_0["r_init"], c="C1", zorder=100, marker=".", size=50
-)
-plt.scatter(results_0["m1i"], results_0["r_init"], c="w", zorder=99, size=100)
+plt.plot(eps1["m1i"], eps1["r_init"], label="$\\varepsilon=1$", c="C0")
+plt.scatter(eps1["m1i"], eps1["r_init"], c="C0", zorder=100, marker=".", s=50)
+plt.scatter(eps1["m1i"], eps1["r_init"], c="w", zorder=99, marker=".", s=100)
+plt.plot(eps0["m1i"], eps0["r_init"], label="$\\varepsilon=0$", c="C1")
+plt.scatter(eps0["m1i"], eps0["r_init"], c="C1", zorder=100, marker=".", s=50)
+plt.scatter(eps0["m1i"], eps0["r_init"], c="w", zorder=99, s=100, marker=".")
 
-fig.legend(loc="outside upper center", ncols=2)
+axs.annotate(
+    "$\\varepsilon_\\textrm{RLOF} = 1$",
+    xy=(2.1, 440),
+    xycoords="data",
+    xytext=(0, -25),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+    ha="center",
+)
+
+axs.annotate(
+    "$\\varepsilon_\\textrm{RLOF} = 0$",
+    xy=(2.1, 310),
+    xycoords="data",
+    xytext=(0, 20),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+    ha="center",
+)
+
+plt.title("$q = 0.75$", fontsize=10)
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$M_\\textrm{TPAGB}$ ($M_\\odot$)")
@@ -244,3 +262,30 @@ plt.savefig(
 )
 plt.show()
 plt.close()
+# %%
+
+with open(
+    f"/home/koen/master-internship/scripts/w34/cache/eps0.pkl",
+    "wb",
+) as f:
+    pickle.dump(results_0, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+with open(
+    f"/home/koen/master-internship/scripts/w34/cache/eps1.pkl",
+    "wb",
+) as f:
+    pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
+# %%
+
+with open(
+    f"/home/koen/master-internship/scripts/w34/cache/eps1.pkl",
+    "rb",
+) as f:
+    eps1 = pickle.load(f)
+
+with open(
+    f"/home/koen/master-internship/scripts/w34/cache/eps0.pkl",
+    "rb",
+) as f:
+    eps0 = pickle.load(f)
+# %%

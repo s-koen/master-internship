@@ -275,7 +275,7 @@ for i_g, grid in enumerate([g1, g2, g3, g4]):
         ax=axs[0, 1],
         orientation="horizontal",
         location="top",
-        label="max$(R_\\textrm{star} / R_\\textrm{RL})$",
+        label="Period (days)",
         aspect=20,
         extend="max",
     )
@@ -353,3 +353,124 @@ plt.xlabel("[s/Fe]")
 plt.show()
 plt.close()
 # %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=1.2), constrained_layout=True
+)
+
+ppp = []
+rrr = []
+ms = [2.6, 2.2, 1.8, 1.4]
+rs = []
+
+for m in ms:
+    grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M{m}-2026-10-09/")
+    RS1 = grid.axes["R"]
+
+    for i_R, R in enumerate(RS1):
+
+        pp = []
+        rr = []
+        for m in grid.filter(R=R):
+            if m.envelope_mass[-1] > 0.01:
+                continue
+            pp.append(m.period_days[-1])
+            rr.append(np.nanmax(m.R / m.rl_1))
+        ppp.append(pp)
+        rrr.append(rr)
+
+    rs += list(RS1)
+
+print(rs)
+
+norm = plt.Normalize(min(rs), max(rs))
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+print(len(ppp))
+
+markers = ["s", "^", "v", "o"]
+for i, (pp, rr) in enumerate(zip(ppp, rrr)):
+    plt.scatter(
+        pp,
+        rr,
+        label=f"$M={ms[i//5]}\\;M_\\odot,\\;R_\\textrm{{RL, i}} = {rs[i]:.0f},\\;R_\\odot$",
+        s=10,
+        marker=markers[i // 5],
+    )
+
+
+fig.legend(loc="outside upper center", ncols=2)
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w34-final-period-rl-overflow.pgf", format="pgf"
+)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=1.2), constrained_layout=True
+)
+
+ppp = []
+rrr = []
+ms = [2.6, 2.2, 1.8, 1.4]
+rs = []
+
+for m in ms:
+    grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M{m}-2026-10-09/")
+    RS1 = grid.axes["R"]
+
+    for i_R, R in enumerate(RS1):
+
+        pp = []
+        rr = []
+        for m in grid.filter(R=R):
+            if m.envelope_mass[-1] > 0.01:
+                continue
+            pp.append(m.period_days[-1])
+            rr.append(np.nanmax(m.R / rol(m)))
+        ppp.append(pp)
+        rrr.append(rr)
+
+    rs += list(RS1)
+
+print(rs)
+
+norm = plt.Normalize(min(rs), max(rs))
+cmap = plt.cm.viridis
+# color = cmap(norm(x))
+
+print(len(ppp))
+
+markers = ["s", "^", "v", "o"]
+for i, (pp, rr) in enumerate(zip(ppp, rrr)):
+    plt.scatter(
+        pp,
+        rr,
+        label=f"$M={ms[i//5]}\\;M_\\odot,\\;R_\\textrm{{RL, i}} = {rs[i]:.0f},\\;R_\\odot$",
+        s=10,
+        marker=markers[i // 5],
+    )
+
+
+fig.legend(loc="outside upper center", ncols=2)
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{RL}$")
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w34-final-period-rl-overflow.pgf", format="pgf"
+)
+plt.show()
+plt.close()
