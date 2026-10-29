@@ -64,7 +64,7 @@ for i_g, g in enumerate(gs):
         )
     ls.append(s)
 
-fig.legend(loc="outside upper center", ncol=3, handles=ls)
+fig.legend(loc="outside upper center", ncol=2, handles=ls)
 
 plt.xscale("log")
 
@@ -413,7 +413,13 @@ plt.savefig(
 )
 plt.show()
 plt.close()
+
+
 # %%
+def rol(history):
+    q = history.star_2_mass / history.star_1_mass
+    return history.rl_1 * (1 + (0.441 * q ** (-0.325)) / (1 + 0.412 * q ** (-0.8)))
+
 
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column, height=1.2), constrained_layout=True
@@ -474,3 +480,86 @@ plt.savefig(
 )
 plt.show()
 plt.close()
+
+
+# %%
+def rol(history):
+    q = history.star_2_mass / history.star_1_mass
+    return history.rl_1 * (1 + (0.441 * q ** (-0.325)) / (1 + 0.412 * q ** (-0.8)))
+
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=1.2), constrained_layout=True
+)
+
+ppp = []
+rrr = []
+sss = []
+ms = [2.6, 2.2, 1.8, 1.4]
+rs = []
+
+for m in ms:
+    grid = MesaGrid(f"/home/koen/master-internship/mesa-models/grid-M{m}-2026-10-09/")
+    RS1 = grid.axes["R"]
+
+    for R in RS1:
+        pp = []
+        rr = []
+        ss = []
+
+        for model in grid.filter(R=R):
+            if model.envelope_mass[-1] > 0.01:
+                continue
+
+            pp.append(model.period_days[-1])
+            rr.append(np.nanmax(model.R / rol(model)))
+            ss.append(model.s)
+
+        ppp.append(pp)
+        rrr.append(rr)
+        sss.append(ss)
+
+    rs += list(RS1)
+
+markers = ["s", "^", "v", "o"]
+
+for i, (pp, rr, ss) in enumerate(zip(ppp, rrr, sss)):
+    colors = ["C9" if s < 0.25 else "C2" for r, s in zip(rr, ss)]
+
+    plt.scatter(
+        pp,
+        rr,
+        c=colors,
+        s=10,
+        marker=markers[i // len(RS1)],
+    )
+
+# fake points for the legend
+for i, mass in enumerate(ms):
+    axs.scatter(
+        [],
+        [],
+        label=f"$M={mass}\\;M_\\odot$",
+        marker=markers[i],
+        s=10,
+        color="C2",
+    )
+
+fig.legend(loc="outside upper center", ncols=4)
+
+plt.axhline(1, linewidth=0.75, c="C9")
+
+plt.xscale("log")
+plt.yscale("log")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Final period (days)")
+plt.ylabel("$R_\\textrm{star} / R_\\textrm{ROL}$")
+
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w34-final-period-rl-overflow.pgf",
+    format="pgf",
+)
+plt.show()
+plt.close()
+# %%

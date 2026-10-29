@@ -321,17 +321,224 @@ I will first look at what I think is most relevant in each of my weekly notes.
 	      This means it is very difficult to produce low period binaries without
 	      large overfill ratios.
 \end{enumerate}
-\section{Conclusions}
+\section{Results}
+
+Below I repeat important results with some preliminary conclusions.
 
 \subsection{Wind and Tides}
 
+\begin{figure}[ht]
+	\marginfignote{0}{This plot shows the oscillations due to tides + stellar evolution and the
+		sharp decrease in roche lobe radius due to strong winds.
+	}
+	\centering
+	\incplot{w11-compare-mesa-evolve-radius-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{In the weak wind regime, only the tides + stellar evolution affect
+		the Roche lobe radius.
+		Overal, we see a small decrease with time due to the increase
+		in stellar radius, but it is much more subtle than in the strong wind regime.
+		The MESA
+		binary models agree well with the simple binary.
+	}
+	\centering
+	\incplot{w11-money1}
+\end{figure}
+Below I plot a zoom
+\begin{figure}[ht]
+	\marginfignote{0}{The Roche lobe radius is slightly smaller after the pulse, due to RLOF mass transfer.}
+	\centering
+	\incplot{w11-money2}
+\end{figure}
+
+I am sure I can make plots with nice annotations that more clearly show the effects.
+I think
+these results are interesting as they really show how systems with a TPAGB donor are driven
+into RLOF.
+
 \subsection{Binary configurations}
 
+I varied donor mass, accretor mass and initial separation for my models.
+All models have
+eccentricity 0, which is an assumption that probably is not valid.
+However, it is also
+very uncertain how one \emph{should} treat the eccentricities, let alone mass transfer in
+eccentric binaries.
+
+I also parameterise the binary systems using the donor mass, mass ratio, and initial Roche-lobe radius, rather than the individual stellar masses and initial orbital separation.
+These parameters are directly related to the latter but provide a more physically intuitive description of the mass-transfer configuration.
+
+First of all, I find that many configurations are stable if we only consider the thermal response of the donor, in line with results from \citet{temmink2022}.
+
+I find the results of mass transfer are strongly dependent on the thermal pulse \sidenote{or interpulse} during which it occurs.
+The exact thermal pulse evolution
+is very strongly dependent on the initial mass.
+This is also not trivially parametrisable.
+It is especially important how much mass is left in the envelope
+during the last interpulse and thermal pulse.
+
+The Roche lobe radius determines, in many cases, much more strongly than the mass ratio, during which thermal pulse the donor star will undergo RLOF.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here I show a broad range of models with \(q=0.6\), \(M_\text{TPAGB} = 2.2\; M_\odot \) and \(\varepsilon =0.25\).
+		I also plot the initial period of the binaries, as well as the initial periods if we use \(q=0.1\) and \(q=1\).
+	}
+	\marginfignote{10}{We see that the final period is quite closely related to the initial
+		Roche lobe radius.
+		The initial mass ratio \(q\) and accretion efficiency parameters primarily
+		shift the line up or down.
+	}
+	\centering
+	\incplot{w34-RL-vs-final-period}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+	\marginfignote{0}{In some cases, the differences are quite drastic.
+		Nearly identical starting orbits can end with very different separations.
+		I think it is important to try to understand where these differences come from.
+	}
+	\centering
+	\incplot{w12-grid-fine-2}
+\end{figure}
+
+Presumably, this is due to interactions during a different thermal pulse.
+To check, we can look at the final TP count of the binary systems.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Although not a perfect match (for example, \(q=0.9\) shows nearly all systems experiencing the same number of pulses while clear differences in final periods exist) there does seem to be some relation between the thermal pulse count and the jumps in final period.}
+	\centering
+	\incplot{w12-grid-fine-1}
+\end{figure}
+
+The plots below show the evolution of \emph{all} models of this fine grid.
+They are split by \(q\) values.
+This makes it easier to compare.
+These are thus able to show the time evolution of the models of a single column in the plots above.
+
+I start with a plot that shows the Roche lobe radius as a function of time.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w12-grid-fine-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w12-grid-fine-4}
+\end{figure}
+
+These models have fully conservative mass transfer.
+It might be interesting to show this
+for nearly non-conservative mass transfer.
+
+Also, I might want to simulate a 1D grid with all different initial TPAGB masses but constant
+Roche lobe radius.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Apparently, \(q\), has quite a large influence on \emph{if} the
+		model reaches significant overfill ratios.
+		This makes sense considering what we have
+		seen much earlier, where the models with the most unequal mass ratios also have the most
+		extreme RLOF episodes, the most instabilities and the possibility to spiral in due to tides.
+	}
+	\centering
+	\incplot{w32-no-RLOF-q}
+\end{figure}
+
+Low \(q\) models can reach a Darwin-instability like inspiral.
+\begin{figure}[ht]
+	\centering
+	\incplot{w15-grid-11}
+\end{figure}
+\nextpage
 \subsection{Accretion efficiencies}
+
+The mass transfer efficiency \(\varepsilon \) and the different values for
+isotropic re-emission and circumbinary coroting toroid mass loss have little influence
+on \emph{when} systems undergo RLOF.
+However, they have very important consequences on
+\emph{how} RLOF occurs.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The effect of this is similar to what we see for different \(q\) values prior during RLOF, which is what we expect since \emph{both} of these parameters alter the severity of RLOF.
+		However, an important difference between the two is that the mass ratio \emph{also} affects the winds, while \(\delta \) does \emph{not}.
+		Therefore, prior to RLOF, the models with different \(\delta \) will behave more similarly than the models with different \(q\).
+	}
+	\centering
+	\incplot{w32-no-RLOF-delta}
+\end{figure}
+
+Larger \(\delta \) primarily affects the overfill ratio, the duration of RLOF and
+the final period.
+We obtain much shorter final periods with larger \(\delta \), but
+this also makes RLOF less stable.
+
+\(\beta \) however, is way less important for RLOF, but it does still affect how much
+mass can be accreted.
+This gives \(\beta \) a nice place in our prescription to tune
+the accretion efficiency without affecting very significantly the orbital response to RLOF.
+
+\begin{figure}[ht]
+	\marginfignote{3}{The effect on the star radius is minimal, while a larger \(\beta \) tends to result in somewhat smaller final Roche lobe radii.
+		This corresponds to shorter periods too.
+	}
+	\centering
+	\incplot{w21-conservation-grid-beta-r}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{Clearly, changing \(\delta \) has a much larger effect than \(\beta \).}
+	\marginfignote{7}{Some models stop because the binary spirals in.
+		I have not plotted these.
+	}
+	\marginfignote{13}{Some models only ran until \(M_\text{env} = 0.01M_\odot \) because I forgot to remove the MESA default envelope mass stopping condition.
+	}
+	\centering
+	\incplot{w21-conservation-grid-delta-r}
+\end{figure}
+
+\subsection{Thermal Response}
+I think it might also be interesting to talk about the donors that are unstable to RLOF.
+Although they should be stable according the criterion from \citet{temmink2022}, I find that the minimum entropy in the envelope of these models increases, as they move to higher temperatures and radii during RLOF.
+MESA is unable to simulate these models.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This first plot simply shows the Roche lobe radius and the radius of the stars
+		as a function of time.
+		We can see that all of the failing models interact during 1 thermal pulse,
+		while all of the succeeding models interact 1 thermal pulse later.
+	}
+	\marginfignote{20}{The bottom panel again shows the minimum entropy as a function of envelope mass.
+		This time the resolution is much better because I compute this for every history step.
+		We can now even more clearly see that the failing models tend to get much larger
+		minimum entropies when losing their envelope.
+	}
+	\centering
+	\incplot{w31-entropy-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w31-see-same-pulse-3}
+\end{figure}
 
 \subsection{Accretor Abundances}
 
-\section{Important plots}
+It seems like it is possible to create barium dwarfs with very little RLOF accretion, and wind accretion alone.
+This means
+the accretion efficiency of RLOF does not need to be high, which is expected as well due to the large overfill ratios and large mass-transfer rates.
+
+Quite unsurprisingly, we find that higher mass TPAGB-stars can produce more enriched accretors.
+We also find that it barium stars can only be created
+if the envelope of the TPAGB-star has already obtained enough dredged-up mass due to third dredge-up episodes.
+
+This is kind of unfortunate, as it requires larger initial Roche lobe radii, and thus also likely larger final periods.
+Thus it is difficult to produce very low period, s-process enhanced TPAGB stars.
+
+I think the plot below shows this well.
 \newsection{2.6 Solar mass grid}
 
 \begin{figure}[ht]

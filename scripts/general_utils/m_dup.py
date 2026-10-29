@@ -49,11 +49,14 @@ def compute_m_DUP(model, combined=None, sampling=1):
 
                 dup_index = pulse_idx[local_min]
 
-                dup[tp] = {
-                    "mass": combined[model.params["TP"]]["mass"],
-                    "index": dup_index,
-                    "time": model.age[::sampling][dup_index],
-                }
+                try:
+                    dup[tp] = {
+                        "mass": combined[model.params["TP"]]["mass"],
+                        "index": dup_index,
+                        "time": model.age[::sampling][dup_index],
+                    }
+                except KeyError:
+                    pass
             continue
 
         # ----------------------------------------------------------

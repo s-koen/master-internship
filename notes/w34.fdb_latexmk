@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w34"] 1793231772.63822 "w34.aux" "w34.bbl" "w34" 1793231778.02658 0
+["bibtex w34"] 1793273963.44409 "w34.aux" "w34.bbl" "w34" 1793274071.3806 0
   "./master.bib" 1792349064.2752 53841 9c8da239d9f2aa959ee641eca99b028c ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w34.aux" 1793231777.78631 3451 6edab665b2ad517dc2d9cf7d14caf717 "pdflatex"
+  "w34.aux" 1793274071.11794 4213 dff8b0c6e736a4faca3ffd40fab82206 "pdflatex"
   (generated)
   "w34.bbl"
   "w34.blg"
   (rewritten before read)
-["pdflatex"] 1793231772.70132 "w34.tex" "w34.pdf" "w34" 1793231778.02673 0
+["pdflatex"] 1793274063.74737 "w34.tex" "w34.pdf" "w34" 1793274071.38073 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -16,6 +16,25 @@
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS-img0.png" 1793040807.38899 1284 18dbd754ecdf528c9d4979d9f6df2c1c ""
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS-img1.png" 1793040807.41099 414 33cadaaa9f45a1cf60b8b026a2e6275e ""
   "/home/koen/LaTeX-setup//plots/Skye-vs-FreeEOS.pgf" 1793040807.41699 55642 12c4de7bbef4e7a98b42aab22ea9a5ef ""
+  "/home/koen/LaTeX-setup//plots/w11-compare-mesa-evolve-radius-2.pgf" 1780259185.82031 36532 c824baa57d86d67ab378e2c2cf8c8481 ""
+  "/home/koen/LaTeX-setup//plots/w11-money1.pgf" 1776246012.49198 72073 7a848fd99484f99a3e42327045620379 ""
+  "/home/koen/LaTeX-setup//plots/w11-money2.pgf" 1776246345.01702 46304 3ad6f4d1387eb0e71b5671476846f7dd ""
+  "/home/koen/LaTeX-setup//plots/w12-grid-fine-1-img0.png" 1780259791.37513 406 c6fc35f70ecd9e555ce2f611403a5041 ""
+  "/home/koen/LaTeX-setup//plots/w12-grid-fine-1.pgf" 1780259791.38014 115473 0c64a7f584687aae77a8f00a87f5ff9a ""
+  "/home/koen/LaTeX-setup//plots/w12-grid-fine-2-img0.png" 1780259793.27913 402 96d85bcc2702f48168b55dee3b686142 ""
+  "/home/koen/LaTeX-setup//plots/w12-grid-fine-2.pgf" 1780259793.28513 116509 c2cc7c245a0bddabf9aa676e04ee8eb3 ""
+  "/home/koen/LaTeX-setup//plots/w12-grid-fine-3.pgf" 1780259768.28422 368323 cd2ec4fd08c22ed10a4c14e7bd55e118 ""
+  "/home/koen/LaTeX-setup//plots/w12-grid-fine-4.pgf" 1780259783.77316 325376 d071b286cd936447c96ad23f789e4262 ""
+  "/home/koen/LaTeX-setup//plots/w15-grid-11.pgf" 1779182690.3724 52990 2f14a7e12b499c0a4e95226e80c5e85a ""
+  "/home/koen/LaTeX-setup//plots/w21-conservation-grid-beta-r-img0.png" 1782212452.16795 351 77b1325b86ce29d7fbac278f5ded8932 ""
+  "/home/koen/LaTeX-setup//plots/w21-conservation-grid-beta-r.pgf" 1782212452.17343 87553 1cdab76177a4a5c6cdf332428dcc32f2 ""
+  "/home/koen/LaTeX-setup//plots/w21-conservation-grid-delta-r-img0.png" 1782212525.80961 356 db7e576e2d148a6a5a8250130c533d39 ""
+  "/home/koen/LaTeX-setup//plots/w21-conservation-grid-delta-r.pgf" 1782212525.81565 125747 57419b85e00b43db015ee72c9e27cb13 ""
+  "/home/koen/LaTeX-setup//plots/w31-entropy-2.pgf" 1791117249.19831 2705001 7ed3c38749d0b22647844be8c6c0869c ""
+  "/home/koen/LaTeX-setup//plots/w31-see-same-pulse-3.pgf" 1791150113.63489 100233 f4cc035bb40aac4f009379c6ee955d1c ""
+  "/home/koen/LaTeX-setup//plots/w32-no-RLOF-delta.pgf" 1791984708.80156 133883 94b3b6c8b165bf90fa787132f215ac55 ""
+  "/home/koen/LaTeX-setup//plots/w32-no-RLOF-q.pgf" 1792189124.72344 160174 3bcf5549a789d0e8bc43bcbbb4f90f82 ""
+  "/home/koen/LaTeX-setup//plots/w34-RL-vs-final-period.pgf" 1793270563.05198 56612 2a326311611c8781b6cdb3f7c5ef6d54 ""
   "/home/koen/LaTeX-setup//plots/w34-final-period-rl-overflow.pgf" 1793226359.45347 454339 fbce97c1a6765e79455c4415abc73e1e ""
   "/home/koen/LaTeX-setup//plots/w34-grid-thus-far.pgf" 1793226193.91507 875987 1a36c4f8a8ce374cacf4a6902df282c5 ""
   "/home/koen/LaTeX-setup//plots/w34-min-R_RL-for-barium-star.pgf" 1793145803.39564 38509 68d51156f147431bee7818dff4fbcbf2 ""
@@ -406,10 +425,10 @@
   "_minted/2B184797F934E35531973AA46B323AED.highlight.minted" 1792970642.23138 1350 05ac957d40d700e13e4811c99ebdf420 ""
   "_minted/_27B44E5383F108D10C2F57077B03A343.index.minted" 1792970642.56112 261 96bc0f4eca030314fa85f583f9e3a244 ""
   "_minted/default.style.minted" 1771806855.34554 6426 e1fb43a91491f41b33310478eee48cdb ""
-  "w34.aux" 1793231777.78631 3451 6edab665b2ad517dc2d9cf7d14caf717 "pdflatex"
-  "w34.bbl" 1793231772.69023 4708 557f6069ba470e7e4028d1e7089c56ed "bibtex w34"
-  "w34.out" 1793231777.78788 1491 858ab1700fa84b3bbc9944b2e795e300 "pdflatex"
-  "w34.tex" 1793231766.71214 21860 544d9759055d30abcdf3f82844c1b3c9 ""
+  "w34.aux" 1793274071.11794 4213 dff8b0c6e736a4faca3ffd40fab82206 "pdflatex"
+  "w34.bbl" 1793273963.49633 4708 557f6069ba470e7e4028d1e7089c56ed "bibtex w34"
+  "w34.out" 1793274071.11894 1490 bdf0c8d0cc7ad1f2f92c2e67d7dbe7a9 "pdflatex"
+  "w34.tex" 1793274062.63981 30738 3ed2873ab67b1c44399220be5dd1496d ""
   (generated)
   "w34.aux"
   "w34.log"
