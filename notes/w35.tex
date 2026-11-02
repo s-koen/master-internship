@@ -1,0 +1,207 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 35}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Different Masses}
+
+I want to see if there is some predictable structure in the plot below:
+
+\begin{figure}[ht]
+	\marginfignote{0}{The dots represent the mass of the TPAGB star at the start of a certain thermal pulse.
+		The exact thermal pulse numbers are irrelevant here.
+		It is only important to look at the lowest two dot.
+		These dot represent the mass of the envelope during the \emph{last} two thermal pulse.
+		Clearly, if we interact during
+		the last \emph{interpulse} phase, RLOF will occur when the star has an envelope mass between these two values.
+	}
+	\marginfignote{17}{The figure above shows that for the models that interact during the interpulse, the envelope mass is approximately \(0.5\; M_\odot \).
+		This figure shows that this is totally in agreement with the values that we expect are possible.
+		The envelope mass of the \(1.4\; M_\odot \) star during the last thermal pulse is not very low compared to the other stars.
+	}
+	\centering
+	\incplot{w33-mass-at-TP}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{During the last thermal pulses, there is quite a strong correlation between the
+		mass and the interpulse duration.
+		However (unfortunately), during the earlier thermal pulses, this relation is a bit less clear.
+	}
+	\centering
+	\incplot{w35-interpulse-time}
+\end{figure}
+
+Unfortunately, the changing interpulse duration \emph{already} makes it difficult to predict the
+mass of the envelope during the thermal pulses.
+This is even without taking into account that
+the wind mass loss is also not constant throughout the evolution.
+
+I am interested to see how drastically the envelope mass changes between masses.
+The first figure makes it seem like it is very chaotic.
+I want to simulate some more single stars
+between some masses to see if the chaotic nature is really part of the TP-AGB evolution, \emph{or}, if it is
+just an effect of the rough sampling or \(0.1\; M_\odot \) I am using.
+
+I choose to simulate the masses \(1.9\) to \(2.1\) with a delta of \(0.01\; M_\odot \).
+In the first figure,
+we see that these masses have roughly the same envelope mass during the final thermal pulse.
+However, they all have a different amount of thermal pulses, so the evolution \emph{must} be quite different.
+
+% \begin{figure}[ht]
+% 	\centering
+% 	\incplot{w35-roche-radii}
+% \end{figure}
+%
+% \nextpage
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-roche-radii-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.1\).}
+	\marginfignote{8}{Unfortunately, the resolution of the models in the
+		\(M_\text{TPAGB}\)--\(R_\text{RL}\) plane is not great.
+		I color
+		the plane using cubic interpolation between the datapoints.
+		The contours are definitely not precise, and not too much importance should be attributed to the contours.
+	}
+	\marginfignote{18}{These models have the \emph{lowest} \(f_{\delta }\) values.
+		This means these models have the \emph{largest} periods.
+	}
+	\centering
+	\incplot{w35-mass-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.2\).}
+	\marginfignote{8}{As expected, the higher value of \(f_{\delta }=0.2\) produces lower final periods.
+		However, there is also a slightly different effect that can be seen when comparing this plot with the one above:
+		The mass becomes less important, while the initial Roche lobe radius stays relevant.
+	}
+	\centering
+	\incplot{w35-mass-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.3\).}
+	\marginfignote{8}{The same trends are visible for the models with \(f_{\delta } = 0.3 \).
+		Now, the mass \emph{really} seems like it is
+		not relevant anymore.
+	}
+	\marginfignote{16}{Obviously, things would change if we would take into account the models that
+		do not undergo RLOF.}
+	\centering
+	\incplot{w35-mass-3}
+\end{figure}
+
+\nextpage
+
+Let me show how these wind only models would complete the plane on the right.
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows a much broader plane of the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.1\).}
+	\marginfignote{10}{Clearly the models on the right follow quite a different trend
+		then the RLOF models.
+		For the wind models, we see that the final period
+		follows the same trend as the initial period, where the longest periods correspond
+		to the \emph{largest} initial Roche lobe radius and the \emph{least heavy} donor stars.
+	}
+	\centering
+	\incplot{w35-mass-5}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows a much broader plane of the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.3\).}
+	\marginfignote{10}{For the \(f_{\delta } = 0.3\) models, we see that the
+		discrepancy between the two methods is much less obvious.
+		We see a
+		slight shift from pretty much vertical contour lines to slightly diagonal contour lines.
+	}
+	\marginfignote{19}{Obviously, for the wind only models, there is no difference between
+		the \(f_{\delta } =0.3 \) and \(f_{\delta } =0.1 \) models.}
+	\centering
+	\incplot{w35-mass-4}
+\end{figure}
+
+Now, obviously I have only shown \(q=0.85\).
+However, the trends still exist for
+different mass ratios.
+In the appendix, I show \(q=0.7\) as well.
+
+Another exciting thing is that I can probably make a much nicer version of this
+plot when my new grid finishes simulating.
+
+Let me show the [s/Fe] abundances for \(q=0.7\).
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-mass-s-1}
+\end{figure}
+
+I think this looks great.
+Again, we could use the simple binary simulation to
+extend the models to higher initial Roche lobe radii, however, this is really not that relevant.
+We know these models with very gradually produce lower accreted abundances.
+This means
+we can easily create barium stars with wind alone, but this is not what this project is about.
+
+\nextpage
+\bibliography{master.bib}
+\appendix
+\section{Additional plots}
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.1\).}
+	\centering
+	\incplot{w35-mass-1-q07}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.2\).}
+	\centering
+	\incplot{w35-mass-2-q07}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows the final period of a grid of models
+		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.3\).}
+	\centering
+	\incplot{w35-mass-3-q07}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows a much broader plane of the final period of a grid of models
+		with \(q=0.7,\;\varepsilon=0.1\) and \(f_\text{delta}=0.1\).}
+	\centering
+	\incplot{w35-mass-5-q07}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{3}{This plot shows a much broader plane of the final period of a grid of models
+		with \(q=0.7,\;\varepsilon=0.1\) and \(f_\text{delta}=0.3\).}
+	\centering
+	\incplot{w35-mass-4-q07}
+\end{figure}
+\end{document}
