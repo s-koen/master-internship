@@ -18,6 +18,7 @@
 %Begin the document
 \begin{document}
 \setuplayout
+
 \section{Different Masses}
 
 I want to see if there is some predictable structure in the plot below:
@@ -69,15 +70,30 @@ However, they all have a different amount of thermal pulses, so the evolution \e
 % \end{figure}
 %
 % \nextpage
+
+\section{Effects of Different Masses}
+
+To start, I generate a new grid with a dense mass and initial Roche lobe grid.
+Below, I show the
+predicted simple binary tracks.
 \begin{figure}[ht]
 	\centering
 	\incplot{w35-roche-radii-2}
 \end{figure}
 
+I also do some basic binary searches to find the approximate initial Roche lobe radii / periods
+for models that experience RLOF and could produce a barium star.
+
 \begin{figure}[ht]
+	\marginfignote{0}{Clearly, the minimum initial period does not change much with mass,
+		while the maximum initial period does.
+		This makes sense, as the final radii of heavier TPAGB stars is \emph{much} larger.
+	}
 	\centering
 	\incplot{w35-min-R_RL-for-barium-star}
 \end{figure}
+
+Below, I show some preliminary results based on the coarse grid of different masses that I simulated.
 
 \begin{figure}[ht]
 	\marginfignote{3}{This plot shows the final period of a grid of models
@@ -251,6 +267,81 @@ I have tested this new script and it works!
 Unfortunately though, I will still need to \emph{manually} move roughly 15 or so single star models from the
 scratch directories back to the project directory.
 
+\section{Unbounded mass}
+
+During my talk with Davey, I explained that many of my MESA models experience overfill ratios much larger than unity.
+This really concerned him because a lot of the \emph{volume} of the star would then be unbounded.
+However, since our
+TPAGB stars are very puffy, I think a more interesting question is how much \emph{mass} is actually unbounded.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Let me start by just plotting the stellar mass as a function of the radius.
+		It is already very clear from this picture that the core and envelope mass are pretty much distinct from
+		each other.
+		It is also obvious that large radii can easily occur for low envelope masses.
+	}
+	\centering
+	\incplot{w35-m-r-profile}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-m-unbound-1}
+\end{figure}
+
+We can also plot this another way, where I now show the envelope mass as the color and the
+overfill ratio as the \(x\)-axis.
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-m-unbound-switch}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-m-unbound-frac-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-m-unbound-frac-2}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-m-unbound-switch-2}
+\end{figure}
+
+\nextpage
+\section{3 Solar mass models}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-pcolor-1-m3}
+\end{figure}
+
+The features here look a bit unintuitive at first.
+However, they do make sense.
+The weird effects really only happen in the first two columns of every plot.
+We see that in many cases, the first column
+has a higher final abundance than the second.
+This is a weird effect that is caused by partial envelope stripping
+in the lower \(R\) models, which then causes the dredge up to more efficient in enriching the envelope, which then
+in turn causes wind mass transfer and subsequent RLOF to be more effective in transferring s-process abundances.
+
+For the same reason, the \(f_\delta =0.3\) models have the lowest s-process abundances.
+These models often
+strip the entire envelope in one RLOF episode, not leaving anything to be transferred or enriched afterwards.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-pcolor-2-m3}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-grid-thus-far}
+\end{figure}
+
 \bibliography{master.bib}
 \appendix
 \section{Additional plots}
@@ -288,4 +379,5 @@ scratch directories back to the project directory.
 	\centering
 	\incplot{w35-mass-4-q07}
 \end{figure}
+
 \end{document}

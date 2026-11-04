@@ -229,7 +229,7 @@ plt.scatter(
 
 axs.annotate(
     "Maximum initial\nperiod for RLOF",
-    xy=(2.6, 9000),
+    xy=(2.7, 10000),
     xycoords="data",
     xytext=(0, -35),
     textcoords="offset points",
@@ -240,9 +240,9 @@ axs.annotate(
 
 axs.annotate(
     "$\\varepsilon_\\textrm{RLOF} = 0$",
-    xy=(2.1, 2500),
+    xy=(2.5, 2500),
     xycoords="data",
-    xytext=(0, 25),
+    xytext=(0, 20),
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->"),
     ha="center",
@@ -251,13 +251,14 @@ axs.annotate(
 
 axs.annotate(
     "$\\varepsilon_\\textrm{RLOF} = 0.1$",
-    xy=(2.1, 1300),
+    xy=(1.4, 2400),
     xycoords="data",
-    xytext=(0, 20),
+    xytext=(0, -20),
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->"),
     ha="center",
     fontsize=8,
+    zorder=1000
 )
 
 
