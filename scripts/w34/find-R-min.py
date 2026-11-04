@@ -289,3 +289,55 @@ with open(
 ) as f:
     eps0 = pickle.load(f)
 # %%
+# %%
+import pandas as pd
+import numpy as np
+import multiprocessing as mp
+from concurrent.futures import ProcessPoolExecutor
+from tqdm.auto import tqdm
+import os
+
+ms = np.arange(1.2, 3.1, 0.1)
+eps_values = [0.1]
+
+
+def process_model(args):
+    mi, eps = args
+
+    print(
+        f"Starting M={mi:.2f}, eps={eps:.2f} in PID={os.getpid()}",
+        flush=True,
+    )
+
+    result = find_min_R(
+        mi=mi,
+        eps=eps,
+        R_low=50,
+        R_high=800,
+        tol=1.0,
+    )
+
+    return result
+
+
+if __name__ == "__main__":
+    combinations = [(mi, eps) for mi in ms for eps in eps_values]
+
+    ctx = mp.get_context("fork")
+
+    with ProcessPoolExecutor(
+        max_workers=10,
+        mp_context=ctx,
+    ) as executor:
+        futures = [executor.submit(process_model, args) for args in combinations]
+
+        results = [future.result() for future in tqdm(futures)]
+
+    results = pd.DataFrame(results)
+# %%
+
+with open(
+    f"/home/koen/master-internship/scripts/w34/cache/eps0.1.pkl",
+    "wb",
+) as f:
+    pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)

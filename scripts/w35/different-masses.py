@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.style import context
 from matplotlib.ticker import ScalarFormatter
+import matplotlib.cm as cm
 import sys
 import pickle
 
@@ -45,6 +46,30 @@ from scripts.evolve_mesa.grid_call import *
 
 # %%
 
+
+def rol(history):
+    q = history.star_2_mass / history.star_1_mass
+    return history.rl_1 * (1 + (0.441 * q ** (-0.325)) / (1 + 0.412 * q ** (-0.8)))
+
+
+# %%
+
+g1 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+g2 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
+g3 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.2-2026-10-09/")
+g4 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.6-2026-10-09/")
+g5 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M3.0-2026-10-09/")
+
+# %%
+
+grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M1.4-2026-10-09/")
+grid.merge(g2)
+grid.merge(g3)
+grid.merge(g4)
+grid.merge(g5)
+
+# %%
+
 with open(
     f"/home/koen/master-internship/scripts/w34/cache/eps1.pkl",
     "rb",
@@ -52,10 +77,22 @@ with open(
     eps1 = pickle.load(f)
 
 with open(
+    f"/home/koen/master-internship/scripts/w34/cache/eps0.1.pkl",
+    "rb",
+) as f:
+    eps01 = pickle.load(f)
+
+with open(
     f"/home/koen/master-internship/scripts/w34/cache/eps0.pkl",
     "rb",
 ) as f:
     eps0 = pickle.load(f)
+
+with open(
+    f"/home/koen/master-internship/scripts/w35/cache/results2.pkl",
+    "rb",
+) as f:
+    wind = pickle.load(f)
 
 # %%
 
@@ -93,17 +130,8 @@ def period_days(q, M1, R_L):
 
 
 # %%
+from scipy.optimize import brentq
 
-ms = np.linspace(1, 3, 100)
-plt.plot(
-    ms,
-    period_days(0.75, ms, 100),
-    c="C0",
-)
-
-plt.show()
-
-# %%
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )
@@ -112,12 +140,12 @@ plt.plot(
     eps1["m1i"],
     period_days(0.75, eps1["m1i"], eps1["r_init"]),
     label="$\\varepsilon=1$",
-    c="C0",
+    c="C9",
 )
 plt.scatter(
     eps1["m1i"],
     period_days(0.75, eps1["m1i"], eps1["r_init"]),
-    c="C0",
+    c="C9",
     zorder=100,
     marker=".",
     s=50,
@@ -130,6 +158,29 @@ plt.scatter(
     marker=".",
     s=100,
 )
+plt.plot(
+    eps01["m1i"],
+    period_days(0.75, eps01["m1i"], eps01["r_init"]),
+    label="$\\varepsilon=0$",
+    c="C0",
+)
+plt.scatter(
+    eps01["m1i"],
+    period_days(0.75, eps01["m1i"], eps01["r_init"]),
+    c="C0",
+    zorder=100,
+    marker=".",
+    s=50,
+)
+plt.scatter(
+    eps01["m1i"],
+    period_days(0.75, eps01["m1i"], eps01["r_init"]),
+    c="w",
+    zorder=99,
+    s=100,
+    marker=".",
+)
+
 plt.plot(
     eps0["m1i"],
     period_days(0.75, eps1["m1i"], eps0["r_init"]),
@@ -153,39 +204,123 @@ plt.scatter(
     marker=".",
 )
 
+plt.plot(
+    wind["m1i"],
+    period_days(0.75, wind["m1i"], wind["R_boundary"]),
+    label="$\\varepsilon=0$",
+    c="C2",
+)
+plt.scatter(
+    wind["m1i"],
+    period_days(0.75, wind["m1i"], wind["R_boundary"]),
+    c="C2",
+    zorder=100,
+    marker=".",
+    s=50,
+)
+plt.scatter(
+    wind["m1i"],
+    period_days(0.75, wind["m1i"], wind["R_boundary"]),
+    c="w",
+    zorder=99,
+    s=100,
+    marker=".",
+)
+
 axs.annotate(
-    "$\\varepsilon_\\textrm{RLOF} = 1$",
-    xy=(2.1, 440),
+    "Maximum initial\nperiod for RLOF",
+    xy=(2.6, 9000),
     xycoords="data",
-    xytext=(0, -25),
+    xytext=(0, -35),
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->"),
     ha="center",
+    fontsize=8,
 )
 
 axs.annotate(
     "$\\varepsilon_\\textrm{RLOF} = 0$",
-    xy=(2.1, 310),
+    xy=(2.1, 2500),
+    xycoords="data",
+    xytext=(0, 25),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->"),
+    ha="center",
+    fontsize=8,
+)
+
+axs.annotate(
+    "$\\varepsilon_\\textrm{RLOF} = 0.1$",
+    xy=(2.1, 1300),
     xycoords="data",
     xytext=(0, 20),
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->"),
     ha="center",
+    fontsize=8,
 )
 
-for i in [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
-    ms = np.linspace(1, 3, 100)
-    plt.plot(ms, period_days(0.5, ms, i), c="C3", linewidth=0.75, zorder=-1)
 
-for i in [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
-    ms = np.linspace(1, 3, 100)
+def period_to_RL(P):
+    q = 0.75
+    M1 = 3 / 0.95
+
+    q_donor = 1 / q
+    r_L = (
+        0.49
+        * q_donor ** (2 / 3)
+        / (0.6 * q_donor ** (2 / 3) + np.log1p(q_donor ** (1 / 3)))
+    )
+
+    G = 6.67430e-11
+    M_total = M1 * (1 + q) * 1.989e30
+    R_sun = 695508000
+
+    P = np.asarray(P) * 86400  # days -> seconds
+
+    a = (G * M_total * P**2 / (4 * np.pi**2)) ** (1 / 3)
+
+    return a * r_L / R_sun
+
+
+def RL_to_period(R):
+    return period_days(0.75, 3 / 0.95, R)
+
+
+secax = axs.secondary_yaxis(
+    "right",
+    functions=(period_to_RL, RL_to_period),
+)
+
+secax.set_ylabel(r"Initial Roche-lobe radius ($R_\odot$)")
+secax.set_yticks([200, 400, 600, 800, 1000, 1200, 1400])
+
+# plt.xscale("log")
+# plt.yscale("log")
+# for i in [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]:
+#     ms = np.linspace(1, 3, 100)
+#     plt.plot(ms, period_days(0.5, ms, i), c="C3", linewidth=0.75, zorder=-1)
+
+for i in [
+    200,
+    400,
+    600,
+    800,
+    1000,
+    1200,
+    1400,
+]:
+    ms = np.linspace(0.7, 4, 100)
     plt.plot(ms, period_days(0.75, ms, i), c="C9", linewidth=0.75, zorder=-1)
+
+plt.ylim(0, 12000)
+plt.xlim(0.95 * 1, 1 / 0.95 * 3)
 
 plt.title("$q = 0.75$", fontsize=10)
 
-axs.spines[["right", "top"]].set_visible(False)
+# axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$M_\\textrm{TPAGB}$ ($M_\\odot$)")
-plt.ylabel("$R_\\textrm{RL,i}$ ($R_\\odot$)")
+plt.ylabel("Initial period (days)")
 plt.savefig(
     "/home/koen/LaTeX-setup/plots/w35-min-R_RL-for-barium-star.pgf", format="pgf"
 )
@@ -705,53 +840,6 @@ from matplotlib.collections import PatchCollection
 from matplotlib.colors import Normalize
 
 # %%
-fig, axs = plt.subplots(
-    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
-)
-
-x = []
-y = []
-z = []
-for r in grid.filter(q=0.85, eps=0.1, f_delta=0.1):
-    if r.envelope_mass[-1] > 0.01:
-        continue
-
-    x.append(r.params["R"])
-    y.append(r.params["m"])
-    z.append(r.period_days[-1])
-
-
-plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-plt.tricontour(x, y, z, levels=5, linewidths=0.75 / 2, colors="w")
-cntr2 = plt.tricontourf(
-    x,
-    y,
-    z,
-    levels=5,
-    cmap="viridis",
-)
-
-# for x in [1.4,1.8,2.2,2.6,3.0]:
-#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
-
-plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
-plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
-
-plt.yticks([1.4, 1.8, 2.2, 2.6, 3.0])
-
-plt.xlim(np.min(x) - 20, np.max(x) + 20)
-plt.ylim(np.min(y) - 0.1, np.max(y) + 0.05)
-plt.xscale("log")
-
-axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
-plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
-plt.ylabel("Initial mass ($M_\\odot$)")
-plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-1.pgf", format="pgf")
-plt.show()
-plt.close()
-
-# %%
 from scipy.interpolate import griddata
 
 fig, axs = plt.subplots(
@@ -782,8 +870,9 @@ Z = griddata(
 )
 
 plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis")
-axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2)
+axs.set_rasterization_zorder(-10)
+c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis", zorder=-20)
+axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2, zorder=-11)
 
 # plt.colorbar(c)
 
@@ -905,7 +994,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-1.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-1.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -940,8 +1029,9 @@ Z = griddata(
 )
 
 plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis")
-axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2)
+c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis", zorder=-20)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2, zorder=-11)
 
 # for x in [1.4,1.8,2.2,2.6,3.0]:
 #     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
@@ -1048,7 +1138,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-2.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-2.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -1084,8 +1174,9 @@ Z = griddata(
 )
 
 plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis")
-axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2)
+c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis", zorder=-20)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2, zorder=-11)
 
 # plt.colorbar(c)
 # for x in [1.4,1.8,2.2,2.6,3.0]:
@@ -1206,7 +1297,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-3.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-3.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -1454,8 +1545,9 @@ Z = griddata(
 )
 
 plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-c = axs.contourf(10**X, Y, Z, levels=5, cmap="viridis")
-axs.contour(10**X, Y, Z, levels=5, colors="w", linewidths=0.75 / 2)
+c = axs.contourf(10**X, Y, Z, levels=5, cmap="viridis", zorder=-20)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=5, colors="w", linewidths=0.75 / 2, zorder=-11)
 
 # plt.colorbar(c)
 
@@ -1577,7 +1669,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-1-q07.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-1-q07.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -1612,8 +1704,9 @@ Z = griddata(
 )
 
 plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis")
-axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2)
+c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis", zorder=-20)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2, zorder=-11)
 # plt.colorbar(c)
 
 # for x in [1.4,1.8,2.2,2.6,3.0]:
@@ -1750,7 +1843,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-2-q07.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-2-q07.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -1786,8 +1879,9 @@ Z = griddata(
 )
 
 plt.scatter(x, y, c=z, cmap="viridis", zorder=1000, edgecolor="w", linewidth=0.75 / 2)
-c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis")
-axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2)
+c = axs.contourf(10**X, Y, Z, levels=6, cmap="viridis", zorder=-20)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=6, colors="w", linewidths=0.75 / 2, zorder=-11)
 
 # plt.colorbar(c)
 # for x in [1.4,1.8,2.2,2.6,3.0]:
@@ -1923,7 +2017,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-3-q07.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-3-q07.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -2230,9 +2324,11 @@ for i, ax in enumerate(axs):
         linewidth=0.75 / 2,
         norm=norm,
     )
-    c = ax.contourf(10**X, Y, Z, levels=10, cmap="coolwarm", norm=norm)
-    c.set_rasterized(True)
-    ax.contour(10**X, Y, Z, levels=10, colors="w", linewidths=0.75 / 2, norm=norm)
+    c = ax.contourf(10**X, Y, Z, levels=10, cmap="coolwarm", norm=norm, zorder=-20)
+    ax.set_rasterization_zorder(-10)
+    ax.contour(
+        10**X, Y, Z, levels=10, colors="w", linewidths=0.75 / 2, norm=norm, zorder=-11
+    )
 
     ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
     ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
@@ -2268,7 +2364,674 @@ axs[-2].set_ylabel("Initial mass ($M_\\odot$)")
 axs[0].set_ylabel("Initial mass ($M_\\odot$)")
 axs[2].set_ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-s-1.pgf", format="pgf")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-s-1.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 # %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    3,
+    2,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+q = 0.85
+c_max = None
+minn = 1e99
+maxx = 1e-99
+
+deltas = [0.1, 0.2, 0.3]
+epss = [0, 0.1]
+
+for i, ax in enumerate(axs):
+    delta = deltas[i // 2]
+    eps = epss[i % 2]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / r.rl_1))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    if np.min(z) < minn:
+        minn = np.min(z)
+    if np.max(z) > maxx:
+        maxx = np.max(z)
+
+for i, ax in enumerate(axs):
+    delta = deltas[i // 2]
+    eps = epss[i % 2]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / r.rl_1))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    norm = TwoSlopeNorm(1, minn, maxx)
+    ax.scatter(
+        x,
+        y,
+        c=z,
+        cmap="coolwarm",
+        zorder=1000,
+        edgecolor="w",
+        linewidth=0.75 / 2,
+        norm=norm,
+    )
+    c = ax.contourf(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        cmap="coolwarm",
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-20,
+    )
+    ax.set_rasterization_zorder(-10)
+    try:
+        print(len(c.levels), len(c_max.levels))
+    except:
+        pass
+    if c_max == None or len(c.levels) >= len(c_max.levels):
+        c_max = c
+    ax.contour(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        colors="w",
+        linewidths=0.75 / 2,
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-11,
+    )
+
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+    ax.tick_params(color="w", axis="both", which="both")
+    ax.text(
+        0.95,
+        0.05,
+        f"$\\varepsilon = {eps},\\;f_\\delta = {delta}$",
+        ha="right",
+        va="bottom",
+        transform=ax.transAxes,
+        fontsize=8,
+    )
+
+sm = cm.ScalarMappable(norm=norm, cmap="coolwarm")
+sm.set_array([])
+cbar = fig.colorbar(
+    sm, ax=axs[-3], label="$\\textrm{max}(R_\\textrm{star} / R_\\textrm{RL})$"
+)
+cbar.ax.set_yscale("linear")
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+
+plt.xlim(np.min(x) - 20, np.max(x) + 20)
+plt.ylim(np.min(y) - 0.05, np.max(y) + 0.05)
+plt.xscale("log")
+
+for ax in axs:
+    ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
+axs[-1].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_ylabel("Initial mass ($M_\\odot$)")
+axs[0].set_ylabel("Initial mass ($M_\\odot$)")
+axs[2].set_ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-rl-1.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    3,
+    2,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+q = 1
+c_max = None
+minn = 1e99
+maxx = 1e-99
+
+deltas = [0.1, 0.2, 0.3]
+epss = [0, 0.1]
+
+for i, ax in enumerate(axs):
+    delta = deltas[i // 2]
+    eps = epss[i % 2]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / r.rl_1))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    if np.min(z) < minn:
+        minn = np.min(z)
+    if np.max(z) > maxx:
+        maxx = np.max(z)
+
+for i, ax in enumerate(axs):
+    delta = deltas[i // 2]
+    eps = epss[i % 2]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / r.rl_1))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    norm = TwoSlopeNorm(1, minn, maxx)
+    ax.scatter(
+        x,
+        y,
+        c=z,
+        cmap="coolwarm",
+        zorder=1000,
+        edgecolor="w",
+        linewidth=0.75 / 2,
+        norm=norm,
+    )
+    c = ax.contourf(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        cmap="coolwarm",
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-20,
+    )
+    ax.set_rasterization_zorder(-10)
+    try:
+        print(len(c.levels), len(c_max.levels))
+    except:
+        pass
+    if c_max == None or len(c.levels) >= len(c_max.levels):
+        c_max = c
+    ax.contour(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        colors="w",
+        linewidths=0.75 / 2,
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-11,
+    )
+
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+    ax.tick_params(color="w", axis="both", which="both")
+    ax.text(
+        0.95,
+        0.05,
+        f"$\\varepsilon = {eps},\\;f_\\delta = {delta}$",
+        ha="right",
+        va="bottom",
+        transform=ax.transAxes,
+        fontsize=8,
+    )
+
+sm = cm.ScalarMappable(norm=norm, cmap="coolwarm")
+sm.set_array([])
+cbar = fig.colorbar(
+    sm, ax=axs[-3], label="$\\textrm{max}(R_\\textrm{star} / R_\\textrm{RL})$"
+)
+cbar.ax.set_yscale("linear")
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+
+plt.xlim(np.min(x) - 20, np.max(x) + 20)
+plt.ylim(np.min(y) - 0.05, np.max(y) + 0.05)
+plt.xscale("log")
+
+for ax in axs:
+    ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
+axs[-1].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_ylabel("Initial mass ($M_\\odot$)")
+axs[0].set_ylabel("Initial mass ($M_\\odot$)")
+axs[2].set_ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-rl-2.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    3,
+    2,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+q = 0.7
+c_max = None
+minn = 1e99
+maxx = 1e-99
+
+deltas = [0.1, 0.2, 0.3]
+epss = [0, 0.1]
+
+for i, ax in enumerate(axs):
+    delta = deltas[i // 2]
+    eps = epss[i % 2]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / r.rl_1))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    if np.min(z) < minn:
+        minn = np.min(z)
+    if np.max(z) > maxx:
+        maxx = np.max(z)
+
+for i, ax in enumerate(axs):
+    delta = deltas[i // 2]
+    eps = epss[i % 2]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / r.rl_1))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    norm = TwoSlopeNorm(1, minn, maxx)
+    ax.scatter(
+        x,
+        y,
+        c=z,
+        cmap="coolwarm",
+        zorder=1000,
+        edgecolor="w",
+        linewidth=0.75 / 2,
+        norm=norm,
+    )
+    c = ax.contourf(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        cmap="coolwarm",
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-20,
+    )
+    ax.set_rasterization_zorder(-10)
+    try:
+        print(len(c.levels), len(c_max.levels))
+    except:
+        pass
+    if c_max == None or len(c.levels) >= len(c_max.levels):
+        c_max = c
+    ax.contour(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        colors="w",
+        linewidths=0.75 / 2,
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-11,
+    )
+
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+    ax.tick_params(color="w", axis="both", which="both")
+    ax.text(
+        0.95,
+        0.05,
+        f"$\\varepsilon = {eps},\\;f_\\delta = {delta}$",
+        ha="right",
+        va="bottom",
+        transform=ax.transAxes,
+        fontsize=8,
+    )
+
+sm = cm.ScalarMappable(norm=norm, cmap="coolwarm")
+sm.set_array([])
+cbar = fig.colorbar(
+    sm, ax=axs[-3], label="$\\textrm{max}(R_\\textrm{star} / R_\\textrm{RL})$"
+)
+cbar.ax.set_yscale("linear")
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+
+plt.xlim(np.min(x) - 20, np.max(x) + 20)
+plt.ylim(np.min(y) - 0.05, np.max(y) + 0.05)
+plt.xscale("log")
+
+for ax in axs:
+    ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
+axs[-1].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_ylabel("Initial mass ($M_\\odot$)")
+axs[0].set_ylabel("Initial mass ($M_\\odot$)")
+axs[2].set_ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-rl-3.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+# %%
+
+from matplotlib.colors import TwoSlopeNorm
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    5,
+    3,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+q = 0.7
+c_max = None
+minn = 1e99
+maxx = 1e-99
+
+deltas = [0.1, 0.2, 0.3]
+epss = [0, 0.1]
+qs = [1.0, 0.85, 0.7, 0.55, 0.4]
+
+for i, ax in enumerate(axs):
+    delta = deltas[i % 3]
+    q = qs[i // 3]
+    eps = [0]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / rol(r)))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    if np.min(z) < minn:
+        minn = np.min(z)
+    if np.max(z) > maxx:
+        maxx = np.max(z)
+
+for i, ax in enumerate(axs):
+    delta = deltas[i % 3]
+    q = qs[i // 3]
+    eps = [0]
+
+    x = []
+    y = []
+    z = []
+    for r in grid.filter(q=q, eps=eps, f_delta=delta):
+        if r.envelope_mass[-1] > 0.01:
+            continue
+
+        x.append(r.params["R"])
+        y.append(r.params["m"])
+        z.append(np.max(r.R / rol(r)))
+
+    xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+    yi = np.linspace(min(y), max(y), 1000)
+    X, Y = np.meshgrid(xi, yi)
+
+    Z = griddata(
+        (np.log10(x), y),
+        z,
+        (X, Y),
+        method="cubic",
+    )
+
+    norm = TwoSlopeNorm(1, minn, maxx)
+    ax.scatter(
+        x,
+        y,
+        c=z,
+        cmap="coolwarm",
+        zorder=1000,
+        edgecolor="w",
+        linewidth=0.75 / 2,
+        norm=norm,
+    )
+    c = ax.contourf(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        cmap="coolwarm",
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-20,
+    )
+    ax.set_rasterization_zorder(-10)
+    try:
+        print(len(c.levels), len(c_max.levels))
+    except:
+        pass
+    if c_max == None or len(c.levels) >= len(c_max.levels):
+        c_max = c
+    ax.contour(
+        10**X,
+        Y,
+        Z,
+        levels=8,
+        colors="w",
+        linewidths=0.75 / 2,
+        norm=norm,
+        vmin=minn,
+        vmax=maxx,
+        zorder=-11,
+    )
+
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+    ax.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+    ax.tick_params(color="w", axis="both", which="both")
+    ax.set_title(
+        f"$q = {q:.2f},\\;f_\\delta = {delta}$",
+        fontsize=8,
+    )
+
+    ax.set_xscale("log")
+sm = cm.ScalarMappable(norm=norm, cmap="coolwarm")
+sm.set_array([])
+cbar = fig.colorbar(
+    sm,
+    ax=axs[3:-4],
+    label="$\\textrm{max}(R_\\textrm{star} / R_\\textrm{ROL})$",
+    aspect=35,
+)
+cbar.ax.set_yscale("linear")
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+
+# plt.xlim(np.min(x) - 20, np.max(x) + 20)
+# plt.ylim(np.min(y) - 0.05, np.max(y) + 0.05)
+
+for ax in axs:
+    ax.spines[["right", "top", "left", "bottom"]].set_visible(False)
+axs[-1].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-2].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-3].set_xlabel("Initial Roche lobe radius ($R_\\odot$)")
+axs[-3].set_ylabel("Initial mass ($M_\\odot$)")
+axs[0].set_ylabel("Initial mass ($M_\\odot$)")
+axs[3].set_ylabel("Initial mass ($M_\\odot$)")
+axs[6].set_ylabel("Initial mass ($M_\\odot$)")
+axs[9].set_ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w35-mass-rol-1.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()

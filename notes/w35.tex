@@ -75,6 +75,11 @@ However, they all have a different amount of thermal pulses, so the evolution \e
 \end{figure}
 
 \begin{figure}[ht]
+	\centering
+	\incplot{w35-min-R_RL-for-barium-star}
+\end{figure}
+
+\begin{figure}[ht]
 	\marginfignote{3}{This plot shows the final period of a grid of models
 		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.1\).}
 	\marginfignote{8}{Unfortunately, the resolution of the models in the
@@ -101,6 +106,8 @@ However, they all have a different amount of thermal pulses, so the evolution \e
 	\incplot{w35-mass-2}
 \end{figure}
 
+\nextpage
+
 \begin{figure}[ht]
 	\marginfignote{3}{This plot shows the final period of a grid of models
 		with \(q=0.85,\;\varepsilon=0.1\) and \(f_\text{delta}=0.3\).}
@@ -113,8 +120,6 @@ However, they all have a different amount of thermal pulses, so the evolution \e
 	\centering
 	\incplot{w35-mass-3}
 \end{figure}
-
-\nextpage
 
 Let me show how these wind only models would complete the plane on the right.
 \begin{figure}[ht]
@@ -166,7 +171,86 @@ We know these models with very gradually produce lower accreted abundances.
 This means
 we can easily create barium stars with wind alone, but this is not what this project is about.
 
+Now, let me show the overfill ratios.
+First for \(q=1\).
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-mass-rl-2}
+\end{figure}
+
+The plot below shows the same, but now for \(q=0.85\).
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-mass-rl-1}
+\end{figure}
 \nextpage
+Lastly, for \(q=0.7\).
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-mass-rl-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w35-mass-rol-1}
+\end{figure}
+
+\newsection{SLURM fix}
+
+I really dislike how models that timed out will not clean up their files and transfer them back to my project directory.
+This is really annoying for the single stars, because nearly all of them take more than 2 days to complete and
+I have to manually move them all back from the scratch directory to my project directory.
+
+I did some searching on the internet and found this nice fix:
+
+\begin{minted}[fontsize=\small]{bash}
+#!/bin/bash
+
+# job name
+#SBATCH --job-name=example
+
+# replace this by your account
+#SBATCH --account=YourAccount
+
+#SBATCH --qos=devel
+#SBATCH --ntasks=1
+## Note: On Saga, you will also have to specify --mem-per-cpu
+
+# we give this job 4 minutes
+#SBATCH --time=0-00:04:00
+
+# asks Slurm to send the USR1 signal 120 seconds before end of the time limit
+#SBATCH --signal=B:USR1@120
+
+# define the handler function
+# note that this is not executed here, but rather
+# when the associated signal is sent
+your_cleanup_function()
+{
+    echo "function your_cleanup_function called at $(date)"
+    # do whatever cleanup you want here
+}
+
+# call your_cleanup_function once we receive USR1 signal
+trap 'your_cleanup_function' USR1
+
+echo "starting calculation at $(date)"
+
+# the calculation "computes" (in this case sleeps) for 1000 seconds
+# but we asked slurm only for 240 seconds so it will not finish
+# the "&" after the compute step and "wait" are important
+sleep 1000 &
+wait
+\end{minted}
+
+I modified this for my bash script and I now have a nice cleanup function as well that gets triggered by the
+USR1 trap.
+
+I have tested this new script and it works!
+
+Unfortunately though, I will still need to \emph{manually} move roughly 15 or so single star models from the
+scratch directories back to the project directory.
+
 \bibliography{master.bib}
 \appendix
 \section{Additional plots}
