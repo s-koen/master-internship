@@ -27,7 +27,7 @@ def get_star(
 
     if full_path == None:
         directory = (
-            Path(proj_dir) / "single-stars" / f"z{z}" / "completed" / f"M{m:.1f}"
+            Path(proj_dir) / "single-stars" / f"z{z}" / "completed" / f"M{m:.2f}"
         )
 
     else:

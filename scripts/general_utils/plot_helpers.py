@@ -15,6 +15,7 @@ def cplot(
     vmin=None,
     vmax=None,
     rasterized=True,
+    ax=None,
     **kwargs,
 ):
     """
@@ -80,7 +81,8 @@ def cplot(
 
     lc.set_array(c_segments)
 
-    ax = plt.gca()
+    if type(ax) == type(None):
+        ax = plt.gca()
     ax.add_collection(lc)
     ax.autoscale_view()
 
