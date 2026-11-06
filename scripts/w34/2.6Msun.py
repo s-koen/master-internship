@@ -44,6 +44,8 @@ g2 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M1.8-2026-10-09/")
 g3 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.2-2026-10-09/")
 g4 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M2.6-2026-10-09/")
 # %%
+g5 = MesaGrid("/home/koen/master-internship/mesa-models/grid-M3.0-2026-10-09/")
+# %%
 fig, axs = plt.subplots(
     1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
 )

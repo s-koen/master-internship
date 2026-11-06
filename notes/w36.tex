@@ -1,0 +1,46 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 36}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Dense Mass Spacing Results}
+
+Below I plot the envelope mass for the new models and the old ones.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-mass-at-TP}
+\end{figure}
+
+Quite clearly, even for \(0.01\; M_\odot \) differences in mass, there is no predictable relation between
+changes in initial mass and envelope mass during the last thermal pulse.
+
+It seems to be very ``chaotic''.
+Small perturbations in initial mass lead to quite drastically different
+final TPAGB evolutions.
+
+To highlight this, let me show the last few thermal pulses for the different masses between
+\(1.9\; M_\odot \) and \(2.1\; M_\odot \).
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-diff-radial-evolution}
+\end{figure}
+
+\bibliography{master.bib}
+\end{document}
