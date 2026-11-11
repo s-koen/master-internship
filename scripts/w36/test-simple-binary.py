@@ -3833,10 +3833,505 @@ for ax in axs:
     ax.spines[["right", "top"]].set_visible(False)
     ax.set_facecolor("k")
 axs[0].set_ylabel("$M_\\textrm{env}$ ($M_\\odot$)")
-axs[0].set_xlabel("log Initial period (days)")
+axs[0].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
 axs[1].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
+axs[2].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w36-m-m_env-winds.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 # %%
 
+
+subset = df_results[(np.abs(df_results["eps"] - 0.1) < 0.01) & (df_results["wind"] == "Saladino")]
+
+
+norm = TwoSlopeNorm(
+    vcenter=0.25,
+    vmin=np.min(subset["s"]),
+    vmax=np.max(subset["s"]),
+)
+
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.5),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.1) < 0.01) & (df_results["qi"] == qs[i]) & (df_results["wind"] == "Saladino")
+    ]
+
+    s_grid = subset.pivot(
+        index="m1i",
+        columns="p_init",
+        values="s",
+    )
+
+    im = ax.pcolormesh(
+        s_grid.index,
+        s_grid.columns,
+        s_grid.values.T,
+        norm=norm,
+        cmap="coolwarm",
+        rasterized=True,
+    )
+
+    ax.set_yscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label=r"$[\mathrm{s}/\mathrm{Fe}]$",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supylabel("Period (days)", fontsize=10)
+fig.supxlabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w36-R-M-s-q-panels.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
+
+# %%
+
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(full, height=1.25),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    values = None
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    for wind in ["Saladino", "BHL", "fast"]:
+        subset = df_results[
+            (np.abs(df_results["eps"] - 0.1) < 0.01) & (df_results["qi"] == qs[i]) & (df_results["wind"] == wind)
+        ]
+
+        s_grid = subset.pivot(
+            index="m1i",
+            columns="p_init",
+            values="rlof_tpagb",
+        )
+
+        ss_grid = subset.pivot(
+            index="m1i",
+            columns="p_init",
+            values="s",
+        )
+
+        ss_grid = ss_grid.values > 0.25
+
+        if type(values) == type(None):
+            values = s_grid.values.T.astype(np.float64) +1/3* ss_grid.T.astype(np.float64)
+        else:
+            values += s_grid.values.T.astype(np.float64)+1/3* ss_grid.T.astype(np.float64)
+
+
+    print(values)
+    im = ax.pcolormesh(
+        s_grid.index,
+        s_grid.columns,
+        values,
+        # norm=norm,
+        cmap="Spectral",
+        rasterized=True,
+    )
+
+    ax.set_yscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+# cb = fig.colorbar(
+#     im,
+#     ax=axs[1:3],
+#     label=r"$[\mathrm{s}/\mathrm{Fe}]$",
+#     orientation="horizontal",
+#     location="top",
+# )
+cb.ax.set_xscale("linear")
+
+axs[-1].annotate(
+    'no Ba-star; no RLOF',
+    xy=(1, 200), xycoords='data',
+    xytext=(15, 0), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75), va="center", fontsize=8)
+
+axs[-1].annotate(
+    'no Ba-star; RLOF',
+    xy=(1, 1.1e3), xycoords='data',
+    xytext=(15, 0), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75), va="center", fontsize=8)
+
+axs[-1].annotate(
+    'Ba-star; RLOF',
+    xy=(1, 3000), xycoords='data',
+    xytext=(15, 0), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75), va="center", fontsize=8)
+
+axs[-1].annotate(
+    'Ba-star; Saladino RLOF',
+    xy=(1, 7e3), xycoords='data',
+    xytext=(15, 0), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75), va="center", fontsize=8)
+
+axs[-1].annotate(
+    'Ba-star; no RLOF',
+    xy=(1, 1.5e4), xycoords='data',
+    xytext=(15, 0), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75), va="center", fontsize=8)
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supylabel("Period (days)", fontsize=10)
+fig.supxlabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w36-winds.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
+
+
+# %%
+cmap=Colormap("bids:fake_parula_r").to_mpl()
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.25),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    values = None
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.1) < 0.01) & (df_results["qi"] == qs[i]) & (df_results["wind"] == "Saladino")
+    ]
+
+    s_grid = subset.pivot(
+        index="m1i",
+        columns="p_init",
+        values="rlof_tpagb",
+    )
+
+    ss_grid = subset.pivot(
+        index="m1i",
+        columns="p_init",
+        values="m_env_rlof",
+    )
+
+    values = s_grid.values.T * ss_grid.values.T
+    values[values == 0] = 'nan'
+
+    print(values)
+    im = ax.pcolormesh(
+        s_grid.index,
+        s_grid.columns,
+        values,
+        # norm=norm,
+        cmap=cmap,
+        rasterized=True,
+    )
+
+    ax.set_yscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label="$M_\\textrm{env}$ ($M_\\odot$)",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supylabel("Period (days)", fontsize=10)
+fig.supxlabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w36-m_env-grid.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
+# %%
+cmap=Colormap("bids:fake_parula_r").to_mpl()
+fig, axs = plt.subplots(
+    5,
+    4,
+    sharex=True,
+    sharey=True,
+    figsize=set_size(column, height=1.25),
+    constrained_layout=True,
+)
+
+axs = axs.flatten()
+
+qs = np.unique(df_results["qi"])
+for i, ax in enumerate(axs):
+    values = None
+    if i == 19:
+        ax.axis("off")
+        continue
+
+    subset = df_results[
+        (np.abs(df_results["eps"] - 0.1) < 0.01) & (df_results["qi"] == qs[i]) & (df_results["wind"] == "BHL")
+    ]
+
+    s_grid = subset.pivot(
+        index="m1i",
+        columns="p_init",
+        values="rlof_tpagb",
+    )
+
+    ss_grid = subset.pivot(
+        index="m1i",
+        columns="p_init",
+        values="m_env_rlof",
+    )
+
+    values = s_grid.values.T * ss_grid.values.T
+    values[values == 0] = 'nan'
+
+    print(values)
+    im = ax.pcolormesh(
+        s_grid.index,
+        s_grid.columns,
+        values,
+        # norm=norm,
+        cmap=cmap,
+        rasterized=True,
+    )
+
+    ax.set_yscale("log")
+    ax.set_title(f"$q = {qs[i]:.2f}$")
+# ax.set_yscale("log")
+
+cb = fig.colorbar(
+    im,
+    ax=axs[1:3],
+    label="$M_\\textrm{env}$ ($M_\\odot$)",
+    orientation="horizontal",
+    location="top",
+)
+cb.ax.set_xscale("linear")
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+
+fig.supylabel("Period (days)", fontsize=10)
+fig.supxlabel("$M_\\textrm{TPAGB,i}$ ($M_\\odot$)", fontsize=10)
+plt.savefig(
+    "/home/koen/LaTeX-setup/plots/w36-m_env-grid-bhl.pgf", format="pgf", dpi=600
+)
+plt.show()
+plt.close()
+
+# %%
+
+s = []
+m = []
+m_wind = []
+m_rlof = []
+p = []
+N = len(mm_bins)
+
+for i in range(0, N * n_repeat, chunk_size):
+
+    mm = mm_bins
+    pp = pp_bins
+    qq = qq_bins
+
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm[j],
+            qq[idx],
+            np.log10(pp[j]),
+        )
+    ).astype(np.float32)
+
+    args = np.where(qq[idx] > 0.5)
+
+    mask1 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points[args]) > 0.5
+    ss = interpolators[0.1]["Saladino"]["s"](points[args])
+    mm_env = interpolators[0.1]["Saladino"]["m_env_rlof"](points[args])
+    mm_fin = interpolators[0.1]["Saladino"]["m_star_rlof"](points[args])
+
+    s.append(np.array(ss[mask1]))
+    m.append(np.array(mm[j][args][mask1]))
+    p.append(np.array(np.log10(pp[j])[args][mask1]))
+    m_rlof.append(np.array(mm_env[mask1]))
+    m_wind.append(np.array(mm[j][args][mask1]) - np.array(mm_fin[mask1]))
+
+s_bins = np.concatenate(s)
+m_bins = np.concatenate(m)
+p_bins = np.concatenate(p)
+m_rlof_bins = np.concatenate(m_rlof)
+m_wind_bins = np.concatenate(m_wind)
+
+
+s = []
+m = []
+m_wind = []
+m_rlof = []
+p = []
+N = len(mm_bins)
+
+for i in range(0, N * n_repeat, chunk_size):
+
+    mm = mm_bins
+    pp = pp_bins
+    qq = qq_bins
+
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm[j],
+            qq[idx],
+            np.log10(pp[j]),
+        )
+    ).astype(np.float32)
+
+    args = np.where(qq[idx] > 0.5)
+
+    mask1 = interpolators[0]["Saladino"]["rlof_tpagb"](points[args]) > 0.5
+    ss = interpolators[0]["Saladino"]["s"](points[args])
+    mm_env = interpolators[0]["Saladino"]["m_env_rlof"](points[args])
+    mm_fin = interpolators[0]["Saladino"]["m_star_rlof"](points[args])
+
+    s.append(np.array(ss[mask1]))
+    m.append(np.array(mm[j][args][mask1]))
+    p.append(np.array(np.log10(pp[j])[args][mask1]))
+    m_rlof.append(np.array(mm_env[mask1]))
+    m_wind.append(np.array(mm[j][args][mask1]) - np.array(mm_fin[mask1]))
+
+
+s_bins0 = np.concatenate(s)
+m_bins0 = np.concatenate(m)
+p_bins0 = np.concatenate(p)
+m_rlof_bins0 = np.concatenate(m_rlof)
+m_wind_bins0 = np.concatenate(m_wind)
+
+s = []
+m = []
+m_wind = []
+m_rlof = []
+p = []
+N = len(mm_bins)
+
+
+for i in range(0, N * n_repeat, chunk_size):
+
+    mm = mm_bins
+    pp = pp_bins
+    qq = qq_bins
+
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm[j],
+            qq[idx],
+            np.log10(pp[j]),
+        )
+    ).astype(np.float32)
+
+    args = np.where(qq[idx] > 0.5)
+
+    mask1 = interpolators[0.2]["Saladino"]["rlof_tpagb"](points[args]) > 0.5
+    ss = interpolators[0.2]["Saladino"]["s"](points[args])
+    mm_env = interpolators[0.2]["Saladino"]["m_env_rlof"](points[args])
+    mm_fin = interpolators[0.2]["Saladino"]["m_star_rlof"](points[args])
+
+    s.append(np.array(ss[mask1]))
+    m.append(np.array(mm[j][args][mask1]))
+    p.append(np.array(np.log10(pp[j])[args][mask1]))
+    m_rlof.append(np.array(mm_env[mask1]))
+    m_wind.append(np.array(mm[j][args][mask1]) - np.array(mm_fin[mask1]))
+
+
+s_bins2 = np.concatenate(s)
+m_bins2 = np.concatenate(m)
+p_bins2 = np.concatenate(p)
+m_rlof_bins2 = np.concatenate(m_rlof)
+m_wind_bins2 = np.concatenate(m_wind)
+
+# %%
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+from cmap import Colormap
+cmap=Colormap("cmasher:rainforest").to_mpl()
+fig, axs = plt.subplots(1, 2, sharey=True, figsize=set_size(full, height=0.4), constrained_layout=True)
+
+
+h = axs[0].hist2d(m_bins[np.isfinite(m_env_bins)], s_bins[np.isfinite(m_env_bins)], bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[0].set_title("$\\varepsilon=0.1$")
+axs[1].hist2d(m_bins[np.isfinite(m_env_bins0)], s_bins0[np.isfinite(m_env_bins0)], bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[1].set_title("$\\varepsilon=0.0$")
+
+plt.colorbar(h[3], ax = axs, label="Counts", extend="max")
+
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.set_facecolor("k")
+axs[0].set_ylabel("[s/Fe]")
+axs[0].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
+axs[1].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w36-frac-wind-rlof.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()

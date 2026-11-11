@@ -42,6 +42,62 @@ To highlight this, let me show the last few thermal pulses for the different mas
 	\incplot{w36-diff-radial-evolution}
 \end{figure}
 
+Clearly, we see that these very small mass differences can have quite different evolutions.
+For example, look at the systems with masses \(1.93\; M_\odot \), \(1.94\; M_\odot \) and \(1.95\; M_\odot \).
+
+\section{Simple Binary grids}
+
+I simulated a bunch of systems using the Simple binary code and my single stars.
+I used the three different wind prescriptions to compare what parts of the parameter space
+barium dwarfs produced through RLOF take up.
+
+I decided to simulate the models based on initial period instead of initial Roche lobe radius.
+This is only because this will make it easier to interpolate the \emph{many} \citet{moe2016} systems
+I will generate.
+Obviously it is trivial to convert them back any time.
+\begin{figure}[ht]
+	\marginfignote{0}{
+		The figure shows the [s/Fe] values of the accretor as predicted by the simple binary evolution
+		code using \(\varepsilon_\text{RLOF} =0.1\) and the \citet{saladino2018} winds.
+	}
+	\centering
+	\incplot{w36-R-M-s-q-panels}
+\end{figure}
+
+The figure below uses this same \(\varepsilon_\text{RLOF} =0.1.
+\) I use the criterion of [s/Fe] > 0.25 for a barium star.
+
+\nextpage
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-winds}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I color \emph{all} systems that undergo RLOF during the TPAGB (independent of \emph{if} they produce a barium star or not) based on the final envelope
+		mass at the point of first RLOF.}
+	\marginfignote{8}{Unsurprisingly, for short initial periods, there is no difference if you change the period a bit.
+		This is to be expected because the stars
+		do not experience much wind in this regime.
+		You clearly see the \emph{full} envelope mass still intact at the moment of RLOF.
+	}
+	\marginfignote{20}{If you move to higher initial periods, you get into the regime where winds start to matter and it is possible to undergo RLOF with very little
+		envelope mass left, even though the star was initially quite massive.}
+	\centering
+	\incplot{w36-m_env-grid}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{This figure is the same as the figure above, except now I use the \citet{bondi1951} \citet{hoyle1939} prescription.}
+	\marginfignote{7}{If we compare this figure with the one using \citet{saladino2018} winds, we see that the BHL prescription mainly prevents
+		systems from interacting with decreased envelope masses.
+		This makes sense as clearly this is where the winds become important.
+	}
+	\centering
+	\incplot{w36-m_env-grid-bhl}
+\end{figure}
+
 \section{Moe and Di Stefano}
 
 I use a standard \citet{salpeter1955} IMF.
@@ -218,6 +274,21 @@ not RLOF TPAGB binaries.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-m-m_env-winds}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-frac-hists}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-frac-wind-rlof}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-p-frac-wind-rlof}
 \end{figure}
 
 \bibliography{master.bib}
