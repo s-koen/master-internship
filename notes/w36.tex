@@ -164,17 +164,39 @@ not RLOF TPAGB binaries.
 
 \nextpage
 
+For the figures below, I use \(\varepsilon_\text{RLOF} = 0.1\).
+I also classify accretors as barium stars if they have [s/Fe] \(>0.25\).
+
 \begin{figure}[ht]
+	\marginfignote{0}{This figure shows the density of binaries generated from the \citet{moe2016} distributions.
+		Only binaries that are barium stars \emph{and} undergo RLOF during the TPAGB are counted.
+		The systems are assumed to experience \citet{saladino2018} style winds.
+	}
+	\marginfignote{12}{I plot the primary mass and period distributions separately as well.
+		They are clearly different from the total distribution.
+	}
 	\centering
 	\incplot{w36-compare-distribution-sal}
 \end{figure}
 
 \begin{figure}[ht]
+	\marginfignote{0}{This figure shows the density of binaries generated from the \citet{moe2016} distributions.
+		Only binaries that are barium stars \emph{and} undergo RLOF during the TPAGB are counted.
+		The systems are assumed to experience \citet{bondi1951} \citet{hoyle1939} style winds.
+	}
+	\marginfignote{12}{Compared to the Saladino winds, this population has shorter initial periods.
+		The mass distribution is similar.
+	}
 	\centering
 	\incplot{w36-compare-distribution-bhl}
 \end{figure}
 
 \begin{figure}[ht]
+	\marginfignote{0}{This figure shows the density of binaries generated from the \citet{moe2016} distributions.
+		Only binaries that are barium stars \emph{and} undergo RLOF during the TPAGB are counted.
+		The systems are assumed to experience fast winds.
+	}
+	\marginfignote{12}{This population is very similar to the \citet{bondi1951} \citet{hoyle1939} style winds population.}
 	\centering
 	\incplot{w36-compare-distribution-fast}
 \end{figure}
@@ -188,18 +210,30 @@ not RLOF TPAGB binaries.
 	\incplot{w36-compare-distribution-sal-high-q}
 \end{figure}
 
+This is the criterion that I will continue using for the rest of the plots unless I state otherwise.
+
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-compare-distribution-bhl-high-q}
 \end{figure}
 
 \begin{figure}[ht]
+	\marginfignote{0}{Something interesting happens here.
+		We see that we lose the low mass part of the systems.
+		This makes sense.
+		Fast winds do not accrete anything and the RLOF alone is no longer able to produce the barium stars for these masses.
+	}
 	\centering
 	\incplot{w36-compare-distribution-fast-high-q}
 \end{figure}
 
+If we include the observational limits of the barium star mass, we get an even more constrained parameter space.
+For this plot, I require that the barium stars have masses
+between 0.7 and \(2\; M_\odot \).
+
 \begin{figure}[ht]
 	\marginfignote{0}{\(\varepsilon =0.1\)}
+	\marginfignote{2}{Clearly, we lose most of the high mass systems, only systems with low \(q\), but larger than \(0.5\) are still able to generate barium stars.}
 	\centering
 	\incplot{w36-compare-distribution-sal-high-q-correct-mass}
 \end{figure}
@@ -225,57 +259,83 @@ not RLOF TPAGB binaries.
 	\incplot{w36-compare-distribution-sal-high-q-correct-mass-eps0}
 \end{figure}
 
+Now I remove the mass criterion again.
+It is probably only an observational constraint anyway.
+
 \begin{figure}[ht]
+	\marginfignote{0}{This plot shows the fraction of binaries, triples and quadruples.
+		The colors in the 2d histogram give an idea of the fractions.
+		If a square is blue, there are
+		only binaries, if it is green there are only triples and if it is red, there are only quadruples.
+		I white square contains all in equal proportions and a black square contains none.
+		We see that the distribution is mostly blue, but towards higher masses, it gets a bit greener, meaning we have more triples there.
+		The 1d histograms show this as well.
+	}
 	\centering
 	\incplot{w36-compare-distribution-bins-trips-quads}
 \end{figure}
 
+Below, I look at systems that undergo RLOF during the TPAGB.
+
 \begin{figure}[ht]
+	\marginfignote{0}{This figure shows how the [s/Fe] abundances are distributed.
+		Clearly, many systems are not enriched at all.
+		However, the rest of the abundances are quite evenly distributed.
+	}
 	\centering
 	\incplot{w36-s-fe}
 \end{figure}
 
 \begin{figure}[ht]
+	\marginfignote{0}{This figure shows how the envelope masses are distributed.}
 	\centering
 	\incplot{w36-m_env}
 \end{figure}
 
+This figure shows a 2d histogram of the binaries from the plots above for Saladino style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-s-m_env}
 \end{figure}
 
+This figure shows a 2d histogram of the binaries from the plots above for BHL style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-s-m_env-bhl}
 \end{figure}
 
+This figure shows a 2d histogram of the binaries from the plots above for fast style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-s-m_env-f}
 \end{figure}
 
 \nextpage
+Now we look at [s/Fe] as a function of mass for Saladino style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-s-m}
 \end{figure}
 
+Now we look at [s/Fe] as a function of initial period for Saladino style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-s-p}
 \end{figure}
 
+Now we look at $M_\text{env}$ as a function of initial period and mass for Saladino style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-m-m_env-p}
 \end{figure}
 
+Now we look at $M_\text{env}$ as a function of mass for the different style winds.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-m-m_env-winds}
 \end{figure}
 
+Lastly, we compare how the fraction of mass lost through winds and RLOF are distributed.
 \begin{figure}[ht]
 	\centering
 	\incplot{w36-frac-hists}

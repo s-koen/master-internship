@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex w36"] 1794395123.60646 "w36.aux" "w36.bbl" "w36" 1794400260.35852 0
+["bibtex w36"] 1794401705.92152 "w36.aux" "w36.bbl" "w36" 1794401758.85872 0
   "./master.bib" 1794394811.33766 56640 14338672a01894ec61d264d6d8d59d2f ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w36.aux" 1794400260.05154 3309 c89b75a03c5b6db5878e80617c868beb "pdflatex"
+  "w36.aux" 1794401758.51518 3937 a976f6d8e6d74f026f472b5b0d4e8d7f "pdflatex"
   (generated)
   "w36.bbl"
   "w36.blg"
   (rewritten before read)
-["pdflatex"] 1794400243.03045 "w36.tex" "w36.pdf" "w36" 1794400260.35864 0
+["pdflatex"] 1794401741.67139 "w36.tex" "w36.pdf" "w36" 1794401758.85887 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
@@ -592,10 +592,10 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1783670516 5388821 3a3a435a487e4cbc819e69494cd5514c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1783670470 2968234 d23dd1d939fcf2c5a6fef745ad70030a ""
-  "w36.aux" 1794400260.05154 3309 c89b75a03c5b6db5878e80617c868beb "pdflatex"
-  "w36.bbl" 1794395123.6584 2423 9d0eadfa109bc9b94d3d0bdddb99f4a2 "bibtex w36"
-  "w36.out" 1794400260.05429 771 d4450f35eea608ecb12461dff6bece47 "pdflatex"
-  "w36.tex" 1794400242.44129 11241 27b3cc0895aa05059e74f25200703632 ""
+  "w36.aux" 1794401758.51518 3937 a976f6d8e6d74f026f472b5b0d4e8d7f "pdflatex"
+  "w36.bbl" 1794401705.97116 2423 9d0eadfa109bc9b94d3d0bdddb99f4a2 "bibtex w36"
+  "w36.out" 1794401758.51618 771 d4450f35eea608ecb12461dff6bece47 "pdflatex"
+  "w36.tex" 1794401740.14182 15020 0cfcdb243f5c38344d5e5a3e1cc14238 ""
   (generated)
   "w36.aux"
   "w36.log"
