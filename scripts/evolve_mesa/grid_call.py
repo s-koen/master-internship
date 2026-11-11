@@ -3,7 +3,14 @@ from orbit_evol import *
 
 
 def call_evolution(
-    Star, q, a_init, simple_only=False, eps=0.01, f_conv="BSE", e_init=0
+    Star,
+    q,
+    a_init,
+    simple_only=False,
+    eps=0.01,
+    f_conv="BSE",
+    e_init=0,
+    wind_model="Saladino",
 ):
     # Initial values of the mass ratio, semi-major axis and eccentricity
     # for which the evolution is to be computed
@@ -24,6 +31,7 @@ def call_evolution(
     Options.simple_only = simple_only
     Options.eps = eps
     Options.tidal_freq_scaling = f_conv
+    Options.wind_model = wind_model
 
     Bins = []
     # Compute and save the orbital evolution for the above system(s)

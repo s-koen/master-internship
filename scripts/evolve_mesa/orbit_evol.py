@@ -119,10 +119,10 @@ def evolve_orbit(
     # Time derivative of the log of specific moment of intertia:
     # (This is used to account for evolutionare expansion in the spin evolution.)
     Rg = np.sqrt(Star.rg2) * Star.radius
-    dln_Rg2_dt = 2 * np.diff(np.log(Rg)) / dt
+    dln_Rg2_dt = 2 * np.diff(np.log(Rg)) / np.maximum(dt, 1e-30)
     # the version below is more accurate for large time steps
     dRg_over_Rg = np.diff(Rg) / Rg[:-1]
-    dln_Rg2_step_dt = (1 - (1 + dRg_over_Rg) ** (-2)) / dt
+    dln_Rg2_step_dt = (1 - (1 + dRg_over_Rg) ** (-2)) / np.maximum(dt, 1e-30)
 
     # Initialize object to collect the computed orbital evolution data.
     Bin = Empty()
