@@ -42,6 +42,184 @@ To highlight this, let me show the last few thermal pulses for the different mas
 	\incplot{w36-diff-radial-evolution}
 \end{figure}
 
+\section{Moe and Di Stefano}
+
+I use a standard \citet{salpeter1955} IMF.
+Differences between this IMF and for example, \citet{chabrier1903} should be very minor, since we are only interested in primaries that produce
+enough s-process elements in third dredge-up episodes.
+This happens at masses of about \(1.2\; M_\odot \) and higher.
+We also only go up to masses of \(M = 3.0\; M_\odot \).
+Above this mass, it is difficult to reproduce barium dwarfs with
+masses within the observed range.
+Therefore, I have not simulated these TPAGB stars
+with MESA for masses above \(3.0\; M_\odot \).
+
+For the plots below, I only show periods below \(30\,000\) days, because periods above this
+limit will not produce barium dwarfs within the observed period range, and \emph{definitely}
+not RLOF TPAGB binaries.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I show a population of 153714(000) \emph{binaries} using the parameterization of
+		\citet{moe2016}.
+		Their paper explicitly describes multiplicities, and not only binaries,
+		so really I generated a bunch of singles, binaries, triples and quadruples, but I only show
+		the binaries here.
+	}
+	\marginfignote{12}{Clearly, the mass distribution is similar to the \citet{salpeter1955}
+		IMF.
+		However, it is slightly flatter.
+		There are slightly more heavier stars and
+		slightly fewer lighter stars.
+	}
+	\marginfignote{20}{The binaries also contain many "twin" binaries.
+		This is about 10 to 15\% of the total systems.
+	}
+	\marginfignote{25}{
+		Lastly, we see that, in log space, there are many more wide orbits.
+		However, if you would look at the systems in linear space, the peak is towards lower periods.
+	}
+	\centering
+	\incplot{w36-population-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I show the same distributions, but now for the population containing 91111(000) triples.}
+	\marginfignote{5}{There are fewer triples, which is to be expected within this mass range.
+		Let me be fully clear on what I do with the triples as well as the quadruples.
+		Triples contain two binaries.
+		I simply include none, one, or both of these orbits, only dependent on if they are within the period range.
+		This means the fraction of triple \emph{orbits} over binary \emph{orbits} will be \emph{larger} than the fraction of triple \emph{systems} over binary \emph{systems}.
+	}
+	\marginfignote{23}{The mass-ratio distribution and period distributions are not very different.
+		However, we see a much shallower IMF.
+	}
+	\centering
+	\incplot{w36-population-trips}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here, I show the same distributions, but now for the population containing 27730(000) triples.}
+	\marginfignote{5}{The mass-ratio distribution and period distributions are not very different.
+		However, we see a much shallower IMF, even shallower than for the triples.
+	}
+	\centering
+	\incplot{w36-population-quads}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-compare-distribution-sal}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-compare-distribution-bhl}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-compare-distribution-fast}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{If we require the binaries to have \(q > 0.5\) for stable mass transfer,
+		we get slightly different distributions.
+		Here I also increased the barium threshold to [s/Fe] > 0.5.
+	}
+	\centering
+	\incplot{w36-compare-distribution-sal-high-q}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-compare-distribution-bhl-high-q}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-compare-distribution-fast-high-q}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{\(\varepsilon =0.1\)}
+	\centering
+	\incplot{w36-compare-distribution-sal-high-q-correct-mass}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+	\marginfignote{0}{\(\varepsilon =0.0\)}
+	\marginfignote{2}{The fast winds models cannot produce barium stars.
+		This is simply because
+		we \emph{only} have wind mass transfer, and the fast winds do not transfer mass.
+	}
+	\marginfignote{10}{For the Saladino winds, we also see that the lower initial periods are now
+		missing.
+		This is because these models do not experience wind before RLOF occurs.
+		In the simple case
+		explored here, mass is stripped in its entirety during RLOF.
+		However, we have seen that this is
+		not very realistic.
+		Therefore, the plot above is probably much more relevant.
+	}
+	\centering
+	\incplot{w36-compare-distribution-sal-high-q-correct-mass-eps0}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-compare-distribution-bins-trips-quads}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-s-fe}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-m_env}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-s-m_env}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-s-m_env-bhl}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-s-m_env-f}
+\end{figure}
+
+\nextpage
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-s-m}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-s-p}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-m-m_env-p}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w36-m-m_env-winds}
+\end{figure}
+
 \bibliography{master.bib}
 \nextpage
 \appendix
@@ -87,7 +265,41 @@ To highlight this, let me show the last few thermal pulses for the different mas
 \begin{figure}[ht]
 	\marginfignote{0}{Compared with Figure 37 from \citet{moe2016}, these results look sensible.}
 	\centering
+	\incplot{w36-test-log_P_q_gt_0_3}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Compared with Figure 37 from \citet{moe2016}, these results look sensible.}
+	\centering
 	\incplot{w36-test-log_P}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Sampling reproduces the period frequencies well.}
+	\centering
+	\incplot{w36-test-period-sampling}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Compared with Figure 39 from \citet{moe2016}, these results look sensible.}
+	\centering
+	\incplot{w36-multiplicity}
+\end{figure}
+
+\nextpage
+
+\section{Additional Plots}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Binaries, \(\varepsilon =0.1\), BHL}
+	\centering
+	\incplot{w36-m_env_bhl}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Binaries, \(\varepsilon =0.1\), fast}
+	\centering
+	\incplot{w36-m_env_f}
 \end{figure}
 
 \end{document}
