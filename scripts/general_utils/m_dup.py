@@ -487,16 +487,21 @@ class Abundances:
 
         if mass == None:
             yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
-            self.accreted_abundances = yields / self.total_mass_accreted
+            self.accreted_abundances = yields / np.max(
+                [self.total_mass_accreted, 1e-20]
+            )
 
         elif type(sb) == type(None):
             yields = np.cumsum(envelope * self.dm[:, None], axis=0)[-1, :]
             self.accreted_abundances = yields / self.total_mass_expelled
         else:
             yields = np.cumsum(envelope * self.dm_acc[:, None], axis=0)[-1, :]
-            self.accreted_abundances = yields / self.total_mass_accreted
+            self.accreted_abundances = yields / np.max(
+                [self.total_mass_accreted, 1e-20]
+            )
 
-        self.accreted_abundances /= np.sum(self.accreted_abundances)
+        if np.sum(self.accreted_abundances) != 0:
+            self.accreted_abundances /= np.sum(self.accreted_abundances)
 
         mu_inv = 0
         for i, ab in enumerate(self.accreted_abundances):
@@ -504,7 +509,10 @@ class Abundances:
             Z_i = self.elements_mass[i]
             A_i = pt.elements[Z_i].mass
             mu_inv += X_i * (1 + Z_i) / A_i
-        self.mu = 1 / mu_inv
+        if mu_inv != 0:
+            self.mu = 1 / mu_inv
+        else:
+            self.mu = 1  # doesnt matter, we dont accrete anything anyway
 
         self.age_arg = np.argmax(self.dm[1:] / self.dt[1:])
         if mass == None:
