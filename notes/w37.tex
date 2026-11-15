@@ -1,0 +1,107 @@
+\documentclass[a4paper,10pt]{article}
+\newcommand\subdir{/home/koen/LaTeX-setup/}
+\input{\subdir/LaTeX-files/imports.tex}
+\input{\subdir/LaTeX-files/master-internship.tex}
+\usepackage{\subdir/LaTeX-files/aastex}
+\usepackage{natbib}
+\bibliographystyle{\subdir/LaTeX-files/astroadstitle.bst}
+
+%Set the title, Author and date
+\title{Notes Week 37}
+\author{Koen Essers}
+\tutorial{Master Internship}
+\date{\today}
+
+%Set the header style
+\header{\tutorialstring}
+
+%Begin the document
+\begin{document}
+\setuplayout
+\section{Increasing the mass-radius grid}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-roche-radii-2}
+\end{figure}
+
+\newsection{Mass-Radius grid}
+
+Below I show some results of the \(M\)--\(R\) grid.
+This grid used \(\varepsilon =0.1\), \(\delta = 0.1\),
+\(\beta =0.8\) and \(q=0.9\).
+
+To start, let me plot the final periods of this grid.
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-3}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-4}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-5}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-6}
+\end{figure}
+
+The RLOF region is clearly behaving very different from the wind region.
+We see that the RLOF region has the largest increase in period for small initial periods and large initial masses.
+
+The increase with mass is quite easy to understand, as \(\delta =0.1\) and \(\beta =0.8\) will generally increase the \(P_\text{f} / P_\text{i}\), and a larger mass means the final
+\(q\) will be larger.
+The change with initial period is an effect of the wind.
+I can actually reproduce this using just the analytic formulations of \citet{soberman1997} and the fraction of mass that is lost through
+winds.
+
+Below I plot this fraction.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-8}
+\end{figure}
+
+If we take this into account and give the proper fraction of \(\alpha , \beta \) and \(\delta \) to the \citet{soberman1997} formulation,
+we obtain the following plot:
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-9}
+\end{figure}
+
+The values are not identical, but this is expected since the \citet{soberman1997} prescription is a very simple one.
+One source of errors that I can think of are the tides, which are not taken into account
+in the \citet{soberman1997} prescription but generally \emph{decrease} the periods before interaction.
+This could explain why the analytic predictions are larger.
+
+\nextpage
+The wind region in the \(P_\text{f} / P_\text{i}\) plot is actually interesting too.
+We see the transition to isotropic winds happening for larger
+initial periods.
+
+The figure below shows this the isotropic wind regime better.
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-7}
+\end{figure}
+
+Clearly, for much larger periods, the period dependence drops out and we are left with a pure mass dependence.
+This mass dependence is caused by the changing final mass ratio.
+All models start with \(q=0.9\), but
+stars with higher masses can lose more envelope and thus reach larger final \(q\) values, which increases the
+fraction \(P_\text{f} / P_\text{i}\).
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-mass-10}
+\end{figure}
+
+\bibliography{master.bib}
+\end{document}
