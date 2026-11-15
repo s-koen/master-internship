@@ -243,6 +243,12 @@ class MesaRun:
 
         self.get_star_dir_from_model_path(self.params["model_name"])
 
+        self.params["model_name"] = re.sub(
+            r"M(\d+\.\d{1,3})",
+            lambda m: f"M{float(m[1]):.3f}",
+            self.params["model_name"],
+        )
+
         self.get_starting_model(fresh)
         self.get_history(fresh)
         self.get_simple_binary(fresh)
@@ -271,6 +277,11 @@ class MesaRun:
 
     def get_star_dir_from_model_path(self, model_path):
         self.params["single_star"] = str(Path(model_path).parent.parent) + "/"
+        self.params["single_star"] = re.sub(
+            r"M(\d+\.\d{1,3})",
+            lambda m: f"M{float(m[1]):.3f}",
+            self.params["single_star"],
+        )
 
     def get_mass_from_model_path(self, model_path):
         match = re.search(r"/M([0-9.]+)/models/", str(model_path))

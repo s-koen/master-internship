@@ -270,7 +270,7 @@ class Abundances:
         mass=None,
         intershell=None,
         initial_abundance=None,
-        sampling=100,
+        sampling=10,
         m_acc=None,
         sb=None,
         mass_transfer_efficiency: float = 1.0,
@@ -538,7 +538,7 @@ class Abundances:
             self.mixing_mass = self.accretor_res.mixing_mass
             self.real = True
         else:
-            if type(sb) != None:
+            if type(sb) != type(None):
                 # accretor age is less obvious, but i think taking the time where R_RL < R_star is fine.
                 # TPAGB mass transfer is a really short duration event when compared to MS lifetimes.
 
