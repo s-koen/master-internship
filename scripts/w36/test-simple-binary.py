@@ -4245,10 +4245,10 @@ for i in range(0, N * n_repeat, chunk_size):
 
     args = np.where(qq[idx] > 0.5)
 
-    mask1 = interpolators[0]["Saladino"]["rlof_tpagb"](points[args]) > 0.5
-    ss = interpolators[0]["Saladino"]["s"](points[args])
-    mm_env = interpolators[0]["Saladino"]["m_env_rlof"](points[args])
-    mm_fin = interpolators[0]["Saladino"]["m_star_rlof"](points[args])
+    mask1 = interpolators[0.1]["BHL"]["rlof_tpagb"](points[args]) > 0.5
+    ss = interpolators[0.1]["BHL"]["s"](points[args])
+    mm_env = interpolators[0.1]["BHL"]["m_env_rlof"](points[args])
+    mm_fin = interpolators[0.1]["BHL"]["m_star_rlof"](points[args])
 
     s.append(np.array(ss[mask1]))
     m.append(np.array(mm[j][args][mask1]))
@@ -4291,10 +4291,10 @@ for i in range(0, N * n_repeat, chunk_size):
 
     args = np.where(qq[idx] > 0.5)
 
-    mask1 = interpolators[0.2]["Saladino"]["rlof_tpagb"](points[args]) > 0.5
-    ss = interpolators[0.2]["Saladino"]["s"](points[args])
-    mm_env = interpolators[0.2]["Saladino"]["m_env_rlof"](points[args])
-    mm_fin = interpolators[0.2]["Saladino"]["m_star_rlof"](points[args])
+    mask1 = interpolators[0.1]["fast"]["rlof_tpagb"](points[args]) > 0.5
+    ss = interpolators[0.1]["fast"]["s"](points[args])
+    mm_env = interpolators[0.1]["fast"]["m_env_rlof"](points[args])
+    mm_fin = interpolators[0.1]["fast"]["m_star_rlof"](points[args])
 
     s.append(np.array(ss[mask1]))
     m.append(np.array(mm[j][args][mask1]))
@@ -4315,13 +4315,17 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from cmap import Colormap
 cmap=Colormap("cmasher:rainforest").to_mpl()
-fig, axs = plt.subplots(1, 2, sharey=True, figsize=set_size(full, height=0.4), constrained_layout=True)
+fig, axs = plt.subplots(1, 3, sharey=True, figsize=set_size(full, height=0.4), constrained_layout=True)
 
 
-h = axs[0].hist2d(m_bins[np.isfinite(m_env_bins)], s_bins[np.isfinite(m_env_bins)], bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
-axs[0].set_title("$\\varepsilon=0.1$")
-axs[1].hist2d(m_bins[np.isfinite(m_env_bins0)], s_bins0[np.isfinite(m_env_bins0)], bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
-axs[1].set_title("$\\varepsilon=0.0$")
+h = axs[0].hist2d(m_bins[np.isfinite(m_env_bins)], m_rlof_bins[np.isfinite(m_env_bins)] / (m_rlof_bins[np.isfinite(m_env_bins)] + m_wind_bins[np.isfinite(m_env_bins)]), bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[0].set_title("Saladino winds")
+# axs[1].hist2d(m_bins[np.isfinite(m_env_bins0)], m_rlof_bins[np.isfinite(m_env_bins)] / (m_rlof_bins[np.isfinite(m_env_bins)] + m_wind_bins[np.isfinite(m_env_bins)]], bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+h = axs[1].hist2d(m_bins0[np.isfinite(m_rlof_bins0)], m_rlof_bins0[np.isfinite(m_rlof_bins0)] / (m_rlof_bins0[np.isfinite(m_rlof_bins0)] + m_wind_bins0[np.isfinite(m_rlof_bins0)]), bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[1].set_title("BHL winds")
+
+h = axs[2].hist2d(m_bins2[np.isfinite(m_rlof_bins2)], m_rlof_bins2[np.isfinite(m_rlof_bins2)] / (m_rlof_bins2[np.isfinite(m_rlof_bins2)] + m_wind_bins2[np.isfinite(m_rlof_bins2)]), bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[2].set_title("Fast winds")
 
 plt.colorbar(h[3], ax = axs, label="Counts", extend="max")
 
@@ -4329,9 +4333,81 @@ plt.colorbar(h[3], ax = axs, label="Counts", extend="max")
 for ax in axs:
     ax.spines[["right", "top"]].set_visible(False)
     ax.set_facecolor("k")
-axs[0].set_ylabel("[s/Fe]")
+axs[0].set_ylabel("$\\Delta M_\\textrm{RLOF} / (\\Delta M_\\textrm{RLOF} + \\Delta M_\\textrm{wind})$")
 axs[0].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
 axs[1].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
+axs[2].set_xlabel("$M_\\textrm{star;i}$ ($M_\\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w36-frac-wind-rlof.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+# %%
+
+fig, axs = plt.subplots(1, 2, sharex=True, figsize=set_size(full, height=0.5), constrained_layout=True)
+
+
+nbins1 = 100
+nbins2 = 1000
+
+bins, edges = np.histogram(m_rlof_bins[np.isfinite(m_rlof_bins)] / (m_rlof_bins[np.isfinite(m_rlof_bins)] + m_wind_bins[np.isfinite(m_rlof_bins)]), bins=nbins1)
+centers = (edges[0:-1] + edges[1:]) / 2
+axs[0].plot(centers, bins)
+bins, edges = np.histogram(m_rlof_bins[np.isfinite(m_rlof_bins)] / (m_rlof_bins[np.isfinite(m_rlof_bins)] + m_wind_bins[np.isfinite(m_rlof_bins)]), bins=nbins2)
+centers = (edges[0:-1] + edges[1:]) / 2
+axs[1].plot(centers, np.cumsum(bins) / np.sum(bins), label="Saladino")
+
+bins, edges = np.histogram(m_rlof_bins0[np.isfinite(m_rlof_bins0)] / (m_rlof_bins0[np.isfinite(m_rlof_bins0)] + m_wind_bins0[np.isfinite(m_rlof_bins0)]), bins=nbins1)
+centers = (edges[0:-1] + edges[1:]) / 2
+axs[0].plot(centers, bins)
+bins, edges = np.histogram(m_rlof_bins0[np.isfinite(m_rlof_bins0)] / (m_rlof_bins0[np.isfinite(m_rlof_bins0)] + m_wind_bins0[np.isfinite(m_rlof_bins0)]), bins=nbins2)
+centers = (edges[0:-1] + edges[1:]) / 2
+axs[1].plot(centers, np.cumsum(bins) / np.sum(bins), label="BHL")
+
+bins, edges = np.histogram(m_rlof_bins2[np.isfinite(m_rlof_bins2)] / (m_rlof_bins2[np.isfinite(m_rlof_bins2)] + m_wind_bins2[np.isfinite(m_rlof_bins2)]), bins=nbins1)
+centers = (edges[0:-1] + edges[1:]) / 2
+axs[0].plot(centers, bins)
+bins, edges = np.histogram(m_rlof_bins2[np.isfinite(m_rlof_bins2)] / (m_rlof_bins2[np.isfinite(m_rlof_bins2)] + m_wind_bins2[np.isfinite(m_rlof_bins2)]), bins=nbins2)
+centers = (edges[0:-1] + edges[1:]) / 2
+axs[1].plot(centers, np.cumsum(bins) / np.sum(bins), label="Fast")
+axs[0].set_yscale("log")
+
+axs[1].legend()
+
+for ax in axs:
+    ax.spines[["right", "top"]].set_visible(False)
+axs[0].set_xlabel("$\\Delta M_\\textrm{RLOF} / (\\Delta M_\\textrm{RLOF} + \\Delta M_\\textrm{wind})$")
+axs[1].set_xlabel("$\\Delta M_\\textrm{RLOF} / (\\Delta M_\\textrm{RLOF} + \\Delta M_\\textrm{wind})$")
+axs[0].set_ylabel("Counts")
+axs[1].set_ylabel("CDF")
+plt.savefig("/home/koen/LaTeX-setup/plots/w36-frac-hists.pgf", format="pgf")
+plt.show()
+plt.close()
+# %%
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+from cmap import Colormap
+cmap=Colormap("cmasher:rainforest").to_mpl()
+fig, axs = plt.subplots(1, 3, sharey=True, figsize=set_size(full, height=0.4), constrained_layout=True)
+
+
+h = axs[0].hist2d(p_bins[np.isfinite(m_env_bins)], m_rlof_bins[np.isfinite(m_env_bins)] / (m_rlof_bins[np.isfinite(m_env_bins)] + m_wind_bins[np.isfinite(m_env_bins)]), bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[0].set_title("Saladino winds")
+# axs[1].hist2d(m_bins[np.isfinite(m_env_bins0)], m_rlof_bins[np.isfinite(m_env_bins)] / (m_rlof_bins[np.isfinite(m_env_bins)] + m_wind_bins[np.isfinite(m_env_bins)]], bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+h = axs[1].hist2d(p_bins0[np.isfinite(m_rlof_bins0)], m_rlof_bins0[np.isfinite(m_rlof_bins0)] / (m_rlof_bins0[np.isfinite(m_rlof_bins0)] + m_wind_bins0[np.isfinite(m_rlof_bins0)]), bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[1].set_title("BHL winds")
+
+h = axs[2].hist2d(p_bins2[np.isfinite(m_rlof_bins2)], m_rlof_bins2[np.isfinite(m_rlof_bins2)] / (m_rlof_bins2[np.isfinite(m_rlof_bins2)] + m_wind_bins2[np.isfinite(m_rlof_bins2)]), bins=150, norm=LogNorm(vmin=1, vmax=20000), cmap=cmap, rasterized=True)
+axs[2].set_title("Fast winds")
+
+plt.colorbar(h[3], ax = axs, label="Counts", extend="max")
+
+
+for ax in axs:
+    ax.set_facecolor("k")
+axs[0].set_ylabel("$\\Delta M_\\textrm{RLOF} / (\\Delta M_\\textrm{RLOF} + \\Delta M_\\textrm{wind})$")
+axs[0].set_xlabel("$\\log(P/\\textrm{days})$")
+axs[1].set_xlabel("$\\log(P/\\textrm{days})$")
+axs[2].set_xlabel("$\\log(P/\\textrm{days})$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w36-p-frac-wind-rlof.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()

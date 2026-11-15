@@ -174,7 +174,7 @@ df = AbundanceTables()
 
 ms = np.arange(1, 3.01, 0.1)
 qs = np.linspace(0.1, 1.0, 19)
-Ps = np.logspace(np.log10(100), np.log10(30000), 100)
+Ps = np.logspace(np.log10(30000), np.log10(1000000), 51)[1:]
 epss = [1e-20, 0.1, 0.2, 0.3, 1]
 
 wind_methods = ["Saladino", "BHL", "fast"]
@@ -235,7 +235,7 @@ def run_model(pi):
                     )
 
     with open(
-        f"/home/koen/master-internship/scripts/w36/cache/df2_{pi:.1f}.pkl",
+        f"/home/koen/master-internship/scripts/w36/cache/df3_{pi:.1f}.pkl",
         "wb",
     ) as f:
         pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -265,7 +265,7 @@ df_results = pd.DataFrame(results)
 print(df_results)
 
 with open(
-    f"/home/koen/master-internship/scripts/w36/cache/df2.pkl",
+    f"/home/koen/master-internship/scripts/w36/cache/df3.pkl",
     "wb",
 ) as f:
     pickle.dump(df_results, f, protocol=pickle.HIGHEST_PROTOCOL)
