@@ -1606,11 +1606,12 @@ plt.show()
 # %%
 
 N = 1_000_000
-m_salpeter = sample_salpeter(N, 1, 3.2, rng)
+m_salpeter = sample_salpeter(N, 0.1, 16, rng)
 p_bins = []
 p_trips = []
 p_quads = []
 
+m_sing = []
 m_bins = []
 m_trips = []
 m_quads = []
@@ -1620,22 +1621,22 @@ for i, m in enumerate(m_salpeter):
         print(i // 1000)
 
     periods = sample_companion_periods(m)
+    if len(periods) == 0:
+        m_sing.append(m)
     if len(periods) == 1:
-        if periods[0] < 30000:
-            p_bins.append(periods[0])
-            m_bins.append(m)
+        p_bins.append(periods[0])
+        m_bins.append(m)
     elif len(periods) == 2:
         for per in periods:
-            if per < 30000:
-                p_trips.append(per)
-                m_trips.append(m)
+            p_trips.append(per)
+            m_trips.append(m)
     elif len(periods) == 3:
         for per in periods:
-            if per < 30000:
-                p_quads.append(per)
-                m_quads.append(m)
+            p_quads.append(per)
+            m_quads.append(m)
 # %%
 results = {
+    "m_sing": m_bins,
     "m_bins": m_bins,
     "p_bins": p_bins,
     "m_trips": m_trips,
@@ -1645,7 +1646,7 @@ results = {
 }
 
 with open(
-    f"/home/koen/master-internship/scripts/w36/cache/m-p-dump.pkl",
+    f"/home/koen/master-internship/scripts/w37/cache/m-p-dump.pkl",
     "wb",
 ) as f:
     pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -2114,4 +2115,124 @@ plt.show()
 plt.close()
 # %%
 print(len(distr["m_bins"]))
+# %%
+
+
+# %%
+
+m1_samples = results["m_bins"]
+p_samples = results["p_bins"]
+
+# %%
+q_samples = []
+for i, (m1, p) in enumerate(zip(m1_samples, p_samples)):
+    if i % 1000 == 0:
+        print(i // 1000, " / ", len(m1_samples) // 1000)
+    q_samples.append(sample_q(m1, p, n=1000, size=1000))
+
+# %%
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-bins-dump.pkl",
+    "wb",
+) as f:
+    pickle.dump(q_samples, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+# %%
+
+m1_samples = results["m_trips"]
+p_samples = results["p_trips"]
+
+# %%
+q_samples = []
+for i, (m1, p) in enumerate(zip(m1_samples, p_samples)):
+    if i % 1000 == 0:
+        print(i // 1000, " / ", len(m1_samples) // 1000)
+    q_samples.append(sample_q(m1, p, n=1000, size=1000))
+
+# %%
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-trips-dump.pkl",
+    "wb",
+) as f:
+    pickle.dump(q_samples, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+# %%
+
+m1_samples = results["m_quads"]
+p_samples = results["p_quads"]
+
+# %%
+q_samples = []
+for i, (m1, p) in enumerate(zip(m1_samples, p_samples)):
+    if i % 1000 == 0:
+        print(i // 1000, " / ", len(m1_samples) // 1000)
+    q_samples.append(sample_q(m1, p, n=1000, size=1000))
+
+# %%
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-quads-dump.pkl",
+    "wb",
+) as f:
+    pickle.dump(q_samples, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+# %%
+
+
+# %%
+
+m1_samples = results["m_bins"]
+p_samples = results["p_bins"]
+
+# %%
+q_samples = []
+for i, (m1, p) in enumerate(zip(m1_samples, p_samples)):
+    if i % 1000 == 0:
+        print(i // 1000, " / ", len(m1_samples) // 1000)
+    q_samples.append(sample_q(np.clip(m1, 0.8, 40), p, n=1000, size=1000))
+
+# %%
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-bins-dump-clip.pkl",
+    "wb",
+) as f:
+    pickle.dump(q_samples, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+# %%
+
+m1_samples = results["m_trips"]
+p_samples = results["p_trips"]
+
+# %%
+q_samples = []
+for i, (m1, p) in enumerate(zip(m1_samples, p_samples)):
+    if i % 1000 == 0:
+        print(i // 1000, " / ", len(m1_samples) // 1000)
+    q_samples.append(sample_q(np.clip(m1, 0.8, 40), p, n=1000, size=1000))
+
+# %%
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-trips-dump-clip.pkl",
+    "wb",
+) as f:
+    pickle.dump(q_samples, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+# %%
+
+m1_samples = results["m_quads"]
+p_samples = results["p_quads"]
+
+# %%
+q_samples = []
+for i, (m1, p) in enumerate(zip(m1_samples, p_samples)):
+    if i % 1000 == 0:
+        print(i // 1000, " / ", len(m1_samples) // 1000)
+    q_samples.append(sample_q(np.clip(m1, 0.8, 40), p, n=1000, size=1000))
+
+# %%
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-quads-dump-clip.pkl",
+    "wb",
+) as f:
+    pickle.dump(q_samples, f, protocol=pickle.HIGHEST_PROTOCOL)
+
 # %%

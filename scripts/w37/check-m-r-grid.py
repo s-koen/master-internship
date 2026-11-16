@@ -2157,7 +2157,7 @@ plt.yticks(
 )
 plt.tick_params(color="w", axis="both", which="both")
 
-plt.colorbar(c, ax=axs, label="$\\Delta M_\\textrm{wind} / \\Delta M_\\textrm{tot}$")
+plt.colorbar(c, ax=axs, label="$P_\\textrm{f} / P_\\textrm{i}$")
 
 # plt.xlim(np.min(x) - 20, 2e5)
 plt.ylim(1.25, np.max(y) + 0.05)
@@ -2293,3 +2293,5 @@ plt.ylabel("Initial mass ($M_\\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w37-mass-10.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
+
+# %%
