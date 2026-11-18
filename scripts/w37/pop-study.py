@@ -180,17 +180,17 @@ with open(
 ) as f:
     qq_bins = np.array(pickle.load(f)).flatten().astype(np.float32)
 
-# with open(
-#     f"/home/koen/master-internship/scripts/w37/cache/q-trips-dump.pkl",
-#     "rb",
-# ) as f:
-#     qq_trips = np.array(pickle.load(f)).flatten().astype(np.float32)
-#
-# with open(
-#     f"/home/koen/master-internship/scripts/w37/cache/q-quads-dump.pkl",
-#     "rb",
-# ) as f:
-#     qq_quads = np.array(pickle.load(f)).flatten().astype(np.float32)
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-trips-dump-clip.pkl",
+    "rb",
+) as f:
+    qq_trips = np.array(pickle.load(f)).flatten().astype(np.float32)
+
+with open(
+    f"/home/koen/master-internship/scripts/w37/cache/q-quads-dump-clip.pkl",
+    "rb",
+) as f:
+    qq_quads = np.array(pickle.load(f)).flatten().astype(np.float32)
 
 
 with open(
@@ -199,7 +199,7 @@ with open(
 ) as f:
     mp = pickle.load(f)
 
-mm_sing = np.array(mp["m_bins"])
+mm_sing = np.array(mp["m_sing"])
 mm_bins = np.array(mp["m_bins"])
 pp_bins = np.array(mp["p_bins"])
 mm_trips = np.array(mp["m_trips"])
@@ -634,7 +634,7 @@ N = len(mm_bins)
 n_repeat = 1000
 chunk_size = 1_000_000
 
-bins = 30
+bins = 40
 
 # Define fixed bin edges
 xedges = np.linspace(0, 5, bins + 1)
@@ -656,33 +656,9 @@ for i in range(0, N * n_repeat, chunk_size):
         )
     ).astype(np.float32)
 
-    # mask1 = interpolators[0.1]["fast"]["rlof_tpagb"](points) > 0.5
-    # mask2 = interpolators[0.1]["fast"]["s"](points) > 0.25
-    # mask = mask1 * mask2
-    #
-    # if np.any(mask):
-    #     h, _, _ = np.histogram2d(
-    #         mm_bins[j[mask]],
-    #         np.log10(pp_bins[j[mask]]),
-    #         bins=(xedges, yedges),
-    #     )
-    #     H_fast += h.astype(np.int64)
-    #
-    # mask1 = interpolators[0.1]["BHL"]["rlof_tpagb"](points) > 0.5
-    # mask2 = interpolators[0.1]["BHL"]["s"](points) > 0.25
-    # mask = mask1 * mask2
-    #
-    # if np.any(mask):
-    #     h, _, _ = np.histogram2d(
-    #         mm_bins[j[mask]],
-    #         np.log10(pp_bins[j[mask]]),
-    #         bins=(xedges, yedges),
-    #     )
-    #     H_BHL += h.astype(np.int64)
-
     mask2 = interpolators[0.1]["Saladino"]["s"](points) > 0.5
-    mask3 = qq_bins[idx] > 0.4
-    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > 0.5
+    mask3 = qq_bins[idx] > 0.1
+    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > -1
     mask = mask2 * mask3 * mask4
     xvals = interpolators[0.1]["Saladino"]["m2f"](points)
     low_mass = mm_bins[j] < 1
@@ -707,6 +683,80 @@ for i in range(0, N * n_repeat, chunk_size):
             bins=(xedges, yedges),
         )
         H_all += h.astype(np.int64)
+
+H_s_trips = np.zeros((bins, 2 * bins), dtype=np.int64)
+
+N = len(mm_trips)
+for i in range(0, N * n_repeat, chunk_size):
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm_trips[j],
+            qq_trips[idx],
+            np.log10(pp_trips[j]),
+        )
+    ).astype(np.float32)
+
+    mask2 = interpolators[0.1]["Saladino"]["s"](points) > 0.5
+    mask3 = qq_trips[idx] > 0.1
+    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > -1
+    mask = mask2 * mask3 * mask4
+    xvals = interpolators[0.1]["Saladino"]["m2f"](points)
+    low_mass = mm_trips[j] < 1
+    xvals[low_mass] = xvals[low_mass] * qq_trips[idx][low_mass] * mm_trips[j][low_mass]
+    high_mass = mm_trips[j] > 3
+    xvals[high_mass] = (
+        xvals[high_mass] / 3 * qq_trips[idx][high_mass] * mm_trips[j][high_mass]
+    )
+
+    if np.any(mask):
+        h, _, _ = np.histogram2d(
+            xvals[mask],
+            np.log10(pp_trips[j][mask]),
+            bins=(xedges, yedges),
+        )
+        H_s_trips += h.astype(np.int64)
+
+
+H_s_quads = np.zeros((bins, 2 * bins), dtype=np.int64)
+
+N = len(mm_quads)
+for i in range(0, N * n_repeat, chunk_size):
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm_quads[j],
+            qq_quads[idx],
+            np.log10(pp_quads[j]),
+        )
+    ).astype(np.float32)
+
+    mask2 = interpolators[0.1]["Saladino"]["s"](points) > 0.5
+    mask3 = qq_quads[idx] > 0.1
+    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > -1
+    mask = mask2 * mask3 * mask4
+    xvals = interpolators[0.1]["Saladino"]["m2f"](points)
+    low_mass = mm_quads[j] < 1
+    xvals[low_mass] = xvals[low_mass] * qq_quads[idx][low_mass] * mm_quads[j][low_mass]
+    high_mass = mm_quads[j] > 3
+    xvals[high_mass] = (
+        xvals[high_mass] / 3 * qq_quads[idx][high_mass] * mm_quads[j][high_mass]
+    )
+
+    if np.any(mask):
+        h, _, _ = np.histogram2d(
+            xvals[mask],
+            np.log10(pp_quads[j][mask]),
+            bins=(xedges, yedges),
+        )
+        H_s_quads += h.astype(np.int64)
+
 
 # %%
 
@@ -1053,7 +1103,7 @@ plt.show()
 # %%
 
 N = 100_000
-m_salpeter = sample_kroupa(N, 0.01, 5, rng)
+m_salpeter = sample_kroupa(N, 0.01, 5)
 p_bins = []
 p_trips = []
 p_quads = []
@@ -1083,7 +1133,7 @@ for i, m in enumerate(m_salpeter):
             m_quads.append(m)
 # %%
 results = {
-    "m_sing": m_bins,
+    "m_sing": m_sing,
     "m_bins": m_bins,
     "p_bins": p_bins,
     "m_trips": m_trips,
@@ -1098,26 +1148,341 @@ with open(
 ) as f:
     pickle.dump(results, f, protocol=pickle.HIGHEST_PROTOCOL)
 # %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
 
-hist, edges = np.histogram(mm_sing, bins=xedges)
+mm_total = np.concatenate(
+    (
+        np.repeat(mm_sing, 1000),
+        np.repeat(mm_bins, 1000),
+        qq_bins * np.repeat(mm_bins, 1000),
+        np.repeat(mm_trips, 500),
+        qq_trips * np.repeat(mm_trips, 1000),
+        np.repeat(mm_quads, 333),
+        qq_quads * np.repeat(mm_quads, 1000),
+    )
+)
+hist, edges = np.histogram(mm_total, bins=edges)
 
-plt.plot(
+plt.step(
     (edges[0:-1] + edges[1:]) / 2,
-    1000 * hist,
+    (
+        np.sum(H_s.T, axis=0)
+        + np.sum(H_s_trips.T, axis=0) / 2
+        + np.sum(H_s_quads.T, axis=0) / 3
+    )
+    / hist,
     c="k",
 )
 
-plt.plot(
-    (xedges[0:-1] + xedges[1:]) / 2,
-    np.sum(H_s.T, axis=0),
-    c="k",
-)
+# plt.plot(
+#     (xedges[0:-1] + xedges[1:]) / 2,
+#     np.sum(H_s.T, axis=0),
+#     c="k",
+# )
 
-plt.plot(
-    (xedges[0:-1] + xedges[1:]) / 2,
-    np.sum(H_all.T, axis=0),
-    c="k",
-)
+# plt.plot(
+#     (xedges[0:-1] + xedges[1:]) / 2,
+#     np.sum(H_all.T, axis=0),
+#     c="k",
+# )
 
+plt.grid(axis="y")
+
+plt.ylim(0, 0.04)
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M$ ($M_\\odot$)")
+plt.ylabel("$N_\\textrm{Ba stars} / N_\\textrm{all stars}$")
+# plt.savefig("/home/koen/LaTeX-setup/plots/w37-probs.pgf", format="pgf")
 plt.show()
+plt.close()
+
+# %%
+print(len(mm_sing))
+print(len(mm_bins))
+print(len(mm_trips) / 2)
+print(len(mm_quads) / 3)
+
+print(len(mm_sing) + len(mm_bins) + len(mm_trips) / 2 + len(mm_quads) / 3)
+# %%
+
+bins = np.logspace(-2, 2, 50)
+N = 100_000
+m_kroupa = sample_kroupa(N, 0.01, 5)
+
+plt.hist(mm_total, bins=bins, histtype="step")
+plt.hist(np.repeat(m_kroupa, 1000), bins=bins, histtype="step")
+plt.show()
+# %%
+
+m_cut = np.linspace(0, 5, 100)
+
+for m in m_cut:
+    print(len(np.where(mm_total < m)[0]))
+    print(len(np.where(mm_total < m)[0]))
+# %%
+
+N = len(mm_bins)
+n_repeat = 1000
+chunk_size = 1_000_000
+
+bins = 100
+
+# Define fixed bin edges
+xedges = np.linspace(0, 5, bins + 1)
+yedges = np.linspace(0.2, 8, 2 * bins + 1)
+
+H_s = np.zeros((bins, 2 * bins), dtype=np.int64)
+H_all = np.zeros((bins, 2 * bins), dtype=np.int64)
+
+for i in range(0, N * n_repeat, chunk_size):
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm_bins[j],
+            qq_bins[idx],
+            np.log10(pp_bins[j]),
+        )
+    ).astype(np.float32)
+
+    mask2 = interpolators[0.1]["Saladino"]["s"](points) > 0.5
+    mask3 = qq_bins[idx] > 0.1
+    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > -1
+    mask = mask2 * mask3 * mask4
+    xvals = interpolators[0.1]["Saladino"]["m2f"](points)
+    low_mass = mm_bins[j] < 1
+    xvals[low_mass] = xvals[low_mass] * qq_bins[idx][low_mass] * mm_bins[j][low_mass]
+    high_mass = mm_bins[j] > 3
+    xvals[high_mass] = (
+        xvals[high_mass] / 3 * qq_bins[idx][high_mass] * mm_bins[j][high_mass]
+    )
+
+    if np.any(mask):
+        h, _, _ = np.histogram2d(
+            xvals[mask],
+            np.log10(pp_bins[j][mask]),
+            bins=(xedges, yedges),
+        )
+        H_s += h.astype(np.int64)
+
+    if np.any(mask):
+        h, _, _ = np.histogram2d(
+            xvals,
+            np.log10(pp_bins[j]),
+            bins=(xedges, yedges),
+        )
+        H_all += h.astype(np.int64)
+
+H_s_trips = np.zeros((bins, 2 * bins), dtype=np.int64)
+
+N = len(mm_trips)
+for i in range(0, N * n_repeat, chunk_size):
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm_trips[j],
+            qq_trips[idx],
+            np.log10(pp_trips[j]),
+        )
+    ).astype(np.float32)
+
+    mask2 = interpolators[0.1]["Saladino"]["s"](points) > 0.5
+    mask3 = qq_trips[idx] > 0.1
+    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > -1
+    mask = mask2 * mask3 * mask4
+    xvals = interpolators[0.1]["Saladino"]["m2f"](points)
+    low_mass = mm_trips[j] < 1
+    xvals[low_mass] = xvals[low_mass] * qq_trips[idx][low_mass] * mm_trips[j][low_mass]
+    high_mass = mm_trips[j] > 3
+    xvals[high_mass] = (
+        xvals[high_mass] / 3 * qq_trips[idx][high_mass] * mm_trips[j][high_mass]
+    )
+
+    if np.any(mask):
+        h, _, _ = np.histogram2d(
+            xvals[mask],
+            np.log10(pp_trips[j][mask]),
+            bins=(xedges, yedges),
+        )
+        H_s_trips += h.astype(np.int64)
+
+
+H_s_quads = np.zeros((bins, 2 * bins), dtype=np.int64)
+
+N = len(mm_quads)
+for i in range(0, N * n_repeat, chunk_size):
+    print(f"{100*i / (N * n_repeat):.1f}%")
+    idx = np.arange(i, min(i + chunk_size, N * n_repeat))
+    j = idx // n_repeat
+
+    points = np.column_stack(
+        (
+            mm_quads[j],
+            qq_quads[idx],
+            np.log10(pp_quads[j]),
+        )
+    ).astype(np.float32)
+
+    mask2 = interpolators[0.1]["Saladino"]["s"](points) > 0.5
+    mask3 = qq_quads[idx] > 0.1
+    mask4 = interpolators[0.1]["Saladino"]["rlof_tpagb"](points) > -1
+    mask = mask2 * mask3 * mask4
+    xvals = interpolators[0.1]["Saladino"]["m2f"](points)
+    low_mass = mm_quads[j] < 1
+    xvals[low_mass] = xvals[low_mass] * qq_quads[idx][low_mass] * mm_quads[j][low_mass]
+    high_mass = mm_quads[j] > 3
+    xvals[high_mass] = (
+        xvals[high_mass] / 3 * qq_quads[idx][high_mass] * mm_quads[j][high_mass]
+    )
+
+    if np.any(mask):
+        h, _, _ = np.histogram2d(
+            xvals[mask],
+            np.log10(pp_quads[j][mask]),
+            bins=(xedges, yedges),
+        )
+        H_s_quads += h.astype(np.int64)
+
+
+# %%
+
+m_cut = np.linspace(0, 5, 101)
+m_cut
+# %%
+n_tots = []
+for m in m_cut:
+    n_tots.append(len(np.where(mm_total < m)[0]))
+
+
+# %%
+m_cut = np.linspace(0, 5, 101)
+
+bins, _ = np.histogram(mm_total, bins=m_cut)
+
+centers = (m_cut[0:-1] + m_cut[1:]) / 2
+
+n_s = (
+    np.sum(H_s.T, axis=0)
+    + np.sum(H_s_trips.T, axis=0) / 2
+    + np.sum(H_s_quads.T, axis=0) / 3
+)
+
+plt.plot(centers, np.array(n_s) / bins)
+plt.show()
+# %%
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column), constrained_layout=True
+)
+
+plt.plot(centers, np.array(n_s) / np.nanmax(bins))
+plt.plot(centers, bins / np.nanmax(bins))
+
+plt.annotate(
+    "All stars\n(singles + binaries +\ntriples + quadruples)",
+    xy=(2.5, 2e-3),
+    xycoords="data",
+    xytext=(0, 40),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+plt.annotate(
+    "Barium stars",
+    xy=(2.5, 3e-5),
+    xycoords="data",
+    xytext=(0, -30),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="->", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+
+plt.yscale("log")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M$ ($M_\\odot$)")
+plt.ylabel("Normalized count")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-frac-all-masses.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+# %%
+from scipy.interpolate import griddata
+
+levels = 8
+cmap = "viridis"
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.8), constrained_layout=True
+)
+
+val2d = np.zeros((100, 100))
+val2d[val2d == 0] = np.nan
+x = []
+y = []
+z = []
+
+for i in range(100):
+    for j in range(i + 7, 100):
+        val2d[i, j] = np.sum(n_s[i:j]) / np.sum(bins[i:j])
+        x.append(centers[i])
+        y.append(centers[j])
+        z.append(np.sum(n_s[i:j]) / np.sum(bins[i:j]))
+
+# plt.pcolormesh(centers, centers,val2d.T, cmap="viridis", rasterized=True)
+
+plt.grid(color="w", alpha=0.5)
+
+xi = np.linspace(min(x), max(x), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (x, y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+c = plt.contourf(
+    X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+axs.spines[["right", "bottom", "left", "top"]].set_visible(False)
+axs.tick_params(color="w")
+
+plt.colorbar(
+    c, orientation="horizontal", location="top", aspect=30, label="Probability $p$"
+)
+plt.xlim(0)
+plt.ylim(0)
+
+plt.xlabel("$M_\\textrm{min}$ ($M_\\odot$)")
+plt.ylabel("$M_\\textrm{max}$ ($M_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-probs-cuts.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
 # %%

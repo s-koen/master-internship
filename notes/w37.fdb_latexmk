@@ -1,18 +1,19 @@
 # Fdb version 4
-["bibtex w37"] 1794835182.11613 "w37.aux" "w37.bbl" "w37" 1794844111.45154 0
-  "./master.bib" 1794394811.33766 56640 14338672a01894ec61d264d6d8d59d2f ""
+["bibtex w37"] 1794959774.36392 "w37.aux" "w37.bbl" "w37" 1794964002.6993 0
+  "./master.bib" 1794959712.38335 57004 00d0a0c9e7a2649d4b9ed96e35ef4c2d ""
   "/home/koen/LaTeX-setup//LaTeX-files/astroadstitle.bst" 1749582617.83681 34437 075df992cd7afd84466a458d3eed639f ""
-  "w37.aux" 1794844111.20246 1120 06c14d357f3b4185f08d254268fc5a45 "pdflatex"
+  "w37.aux" 1794964002.454 1230 63ac456a3767886ab8e81db8c5595e61 "pdflatex"
   (generated)
   "w37.bbl"
   "w37.blg"
   (rewritten before read)
-["pdflatex"] 1794844097.53343 "w37.tex" "w37.pdf" "w37" 1794844111.45164 0
+["pdflatex"] 1794963988.39657 "w37.tex" "w37.pdf" "w37" 1794964002.69944 0
   "/home/koen/LaTeX-setup//LaTeX-files/aastex.sty" 1748955955.4375 5890 7cbd952ddad525c1698b12ec0e043a96 ""
   "/home/koen/LaTeX-setup//LaTeX-files/colors.tex" 1739308810.95949 2150 e271e2e57972974a87eedb0286cf9b74 ""
   "/home/koen/LaTeX-setup//LaTeX-files/imports.tex" 1777983841.57175 1667 07f0adee4eccd6f3c50bb64457e00d4d ""
   "/home/koen/LaTeX-setup//LaTeX-files/listings.tex" 1739308810.95949 27571 9f1d93b589b3961f6fd7d842d0658ca5 ""
   "/home/koen/LaTeX-setup//LaTeX-files/master-internship.tex" 1787679229.1306 14761 ebe03b24d2a295bf401c19751f591e66 ""
+  "/home/koen/LaTeX-setup//plots/w37-frac-all-masses.pgf" 1794959197.22444 68260 25b52621165575bff2d477b81078d6c4 ""
   "/home/koen/LaTeX-setup//plots/w37-mass-10-img0.png" 1794783194.71361 506552 d436e3f7070312dfe2e40e3e12081428 ""
   "/home/koen/LaTeX-setup//plots/w37-mass-10.pgf" 1794783194.80161 690291 3efb9fbd4981d5e2cbc968efdeff196d ""
   "/home/koen/LaTeX-setup//plots/w37-mass-3-img0.png" 1794776432.15627 287112 fef7b1976642556e9c2b728ff5c5bba2 ""
@@ -33,6 +34,9 @@
   "/home/koen/LaTeX-setup//plots/w37-population-1-img1.png" 1794843969.29614 6919 34871daf5cda1033b76d4de064e7b435 ""
   "/home/koen/LaTeX-setup//plots/w37-population-1-img2.png" 1794843969.31814 13300 6f9b06799f4d1dbd4a1259ee94929c94 ""
   "/home/koen/LaTeX-setup//plots/w37-population-1.pgf" 1794843969.32614 109038 47e8424642fbea0a140f5a7c52419f5e ""
+  "/home/koen/LaTeX-setup//plots/w37-probs-cuts-img0.png" 1794963988.19977 168325 750fb1a79cd20c15978ae158a27ebeed ""
+  "/home/koen/LaTeX-setup//plots/w37-probs-cuts.pgf" 1794963988.21977 36172 dd970704b65c196d03395d3717aa2607 ""
+  "/home/koen/LaTeX-setup//plots/w37-probs.pgf" 1794952321.60591 28015 66a6fae9337786970eb774c9be02a61c ""
   "/home/koen/LaTeX-setup//plots/w37-roche-radii-2-img0.png" 1794752888.77695 35011 bf93b6c3e2e41437e0e80a214a23892f ""
   "/home/koen/LaTeX-setup//plots/w37-roche-radii-2-img1.png" 1794752888.92395 37750 c66709dcf5bb24f1b0345b2862ce5e08 ""
   "/home/koen/LaTeX-setup//plots/w37-roche-radii-2-img10.png" 1794752890.29897 41615 883af8d43727a2626c1b8ff45ab02c2d ""
@@ -445,10 +449,10 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1775415801 43569 fd570f2fa160877d211e859f687312ba ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1783670516 5388821 3a3a435a487e4cbc819e69494cd5514c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1783670470 2968234 d23dd1d939fcf2c5a6fef745ad70030a ""
-  "w37.aux" 1794844111.20246 1120 06c14d357f3b4185f08d254268fc5a45 "pdflatex"
-  "w37.bbl" 1794835182.16864 575 619cf7ede367650557f03d19c5434958 "bibtex w37"
-  "w37.out" 1794844111.20346 459 f1c78e1888a65267233b6e48eb55a27a "pdflatex"
-  "w37.tex" 1794844095.5642 3569 2b4674b067c9615e65336d3dcc99ab3c ""
+  "w37.aux" 1794964002.454 1230 63ac456a3767886ab8e81db8c5595e61 "pdflatex"
+  "w37.bbl" 1794959774.40871 720 e6d45289cf95d94a7e61ce9631930c4b "bibtex w37"
+  "w37.out" 1794964002.455 459 f1c78e1888a65267233b6e48eb55a27a "pdflatex"
+  "w37.tex" 1794962705.74573 5586 94641779042a652889610357f30a0623 ""
   (generated)
   "w37.aux"
   "w37.log"

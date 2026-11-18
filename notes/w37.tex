@@ -120,5 +120,50 @@ Now, all \(q\) panels have the edge of the [s/Fe] boundary at high masses.
 	\incplot{w37-population-1}
 \end{figure}
 
+Assuming any possible way to create a barium star, so an optimistic estimate in that sense.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-probs}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{It is important to interpret these results with caution, as there are a lot of assumptions
+		that went into making this plot.
+		To start, I only have detailed models between 1 and 4 solar mass primaries between
+		log periods of 2 to 6.
+		This is not a problem for the periods, since this captures the entire Barium star regime.
+		This is not generally true for the masses though, primaries with masses up to about 8 to 10 solar masses
+		should be able to produce barium stars.
+		I extrapolate systems based on the results of the 3 solar mass star and the
+		masses involved.
+	}
+	\centering
+	\incplot{w37-frac-all-masses}
+\end{figure}
+
+For the masses of all systems, I \emph{assume} no binary interactions happen.
+This is obviously wrong, but it is not immediately clear to me how I can capture this effectively without
+a bunch of trouble.
+This means I just take the masses of the stars in the system.
+It is therefore quite close to the IMF I used, which is the \citet{kroupa1902} IMF.
+
+There is quite an important result here.
+We create quite an approximately constant number of barium stars up to masses of roughly \(1.5\) to \(2\; M_\odot \).
+After this, the number decreases with a
+slope slightly steeper than the slope of the total systems.
+
+For low masses however, this approximately constant number means a \(2\; M_\odot \) star is \emph{much} more likely to a barium star than a \(0.5\; M_\odot \) star is.
+
+If we want to assign a single "probability" to observe a barium dwarf, I think it is fair to take the observed mass range and take the total number of stars in this range and the total number of barium stars in this range.
+
+I take the observational range between \(0.7\) and \(1.55\; M_\odot \).
+This gives me a probability of 1.2\%.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-probs-cuts}
+\end{figure}
+
 \bibliography{master.bib}
 \end{document}
