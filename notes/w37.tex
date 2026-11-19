@@ -18,6 +18,112 @@
 %Begin the document
 \begin{document}
 \setuplayout
+\section{MESA Mailing List}
+
+\begin{minipage}{1.55\textwidth}
+	\begin{shadequote}{Me}
+		Hi everyone,
+
+		I noticed something while inspecting mean molecular weight profiles in MESA and I was wondering if I am observing the expected behaviour.
+
+		Skye EOS and FreeEOS appear to use different approaches to calculate the mean molecular weight \(\mu \).
+		Skye uses integer isotope mass number (\(A_{i} \)), whereas FreeEOS appears to use its own table of elemental atomic weights.
+
+		These different approaches cause discrepancies in the mean molecular weight reported by the two different EOS tables.
+		To show this, I ran the \lstinline[style=output, breaklines=true]|hb_2M| test suite with thermohaline mixing enabled using mesa-r23.05.1.
+		The MESA reported \(\mu \) changes sharply across the EOS blending region, transitioning between the values obtained using these two approaches.
+		During the RGB, the transition between the two tables occurs in a radiative region and appears to trigger thermohaline mixing.
+
+		The figure below shows the \(\mu \) profile in the RGB-phase of the \lstinline[style=output, breaklines=true]|hb_2M| model, together with \(\mu \) values independently computed with the two approaches assuming complete ionization, and the thermohaline mixing diffusion coefficient.
+
+		\begin{center}
+			\incplot{Skye-vs-FreeEOS}
+		\end{center}
+
+		Is this difference between the two \(\mu \) calculations something that is already known?
+		And is the resulting molecular weight gradient, and the associated thermohaline mixing expected when blending Skye and FreeEOS?
+
+		Thanks!
+
+		Best regards,
+
+		Koen
+	\end{shadequote}
+\end{minipage}
+
+\hspace{0.1\textwidth}\begin{minipage}{1.45\textwidth}
+	\begin{shadequote}{Evan Bauer}
+		Hi Koen,
+
+		Thanks for raising this interesting question, and for the very clear plot to go along with it!
+		Sorry it took so long for anybody to get back to you.
+
+		You're right that Skye uses integer isotope masses for computing mu.
+		In Skye, mu is calculated directly from abar, which the EOS gets from calling the \texttt{basic\_composition\_info} routine in the chem module.
+		So chem is really the part of the code responsible for deciding that abar comes from integer isotope masses rather than the atomic weights, and I think Skye went with that to try to be consistent with other parts of MESA where these terms appear.
+
+		As far as thermohaline mixing goes, quantities like abar and mu don't actually have any direct impact on the thermohaline prescription.
+		Instead, the term that you might often see written as \texttt{(phi/delta)*grad\_mu} is written as the "Ledoux B term", which is calculated according to Eqn (8) in MESA II: \url{https://ui.adsabs.harvard.edu/abs/2013ApJS.
+			.208....4P/abstract}
+
+		The B term therefore derives primarily from the composition dependence of the pressure returned by the EOS.
+		Since different EOSs have different ways of depending on composition, it does seem likely that an EOS blend can influence thermohaline mixing, just not directly through \texttt{grad\_mu}.
+		Skye depends on the full detailed composition vector, while FreeEOS depends on (X,Y,Z) with Z being a solar-scaled mixture.
+		So when it comes to thermohaline, your plot might be even more informative if it showed B ("\texttt{gradL\_composition\_term}" in \texttt{profile\_columns.list}) instead of mu.
+
+		It's not entirely clear (to me at least) whether this represents a bug or an inherent limitation of EOS blending, but it certainly seems worth discussing.
+		Perhaps you could raise an issue at \url{https://github.com/MESAHub/mesa/issues} for us to keep exploring this topic.
+
+		Cheers,
+	\end{shadequote}
+\end{minipage}
+
+\hspace{0.2\textwidth}\begin{minipage}{1.35\textwidth}
+	\begin{shadequote}{Me}
+		Hi Evan,
+
+		Thanks for the explanations and suggestions.
+		I have had a closer look at the Ledoux composition term and its behaviour across the Skye-FreeEOS transition.
+		I don't see any significant artefacts in this term that appear to be associated with the EOS blending.
+
+		The EOS blending region and the H-shell burning region are located at the same mass (radius) coordinates.
+		I also see 3He being destroyed in this region, so I suspect the thermohaline mixing is instead related to the resulting mean-molecular-weight inversion, rather than being an artefact of the EOS transition.
+
+		Based on this, I don't think there is currently an issue to report.
+		Thanks for taking the time to help me understand what is going on!
+
+		Best,
+		Koen
+	\end{shadequote}
+\end{minipage}
+
+\hspace{0.2\textwidth}\begin{minipage}{1.35\textwidth}
+	\begin{shadequote}{Natasha Ivanova}
+		Hi Essers,
+
+		Just saw your original message: I don't think that the mean molecular
+		weight itself is the main responsible thing for your issue, but the
+		difference between different regions of MESA EOS is known indeed.
+		See 3.2.1 in \url{https://iopscience.iop.org/article/10.3847/1538-4357/ae984c}
+		There are more differences in transitions with other adopted EOS, as indeed
+		the ays how mean molecular weight is obtained differs.
+
+		Best,
+	\end{shadequote}
+\end{minipage}
+
+\hspace{0.2\textwidth}\begin{minipage}{1.35\textwidth}
+	\begin{shadequote}{Sutirtha Sengupta}
+		Dear Koen,
+		I just wanted to follow-up having read your response (to Evan's reply) on the mesa-maling list which I was also suspecting to be the case after seeing your plot, that had the mu-inversion exactly at the outer edge of the H-burning shell where the 3He-3He reaction is thought to trigger thermohaline mixing.
+		Of course, I can go on forever about how we have come a long way since identifying this mu-inversion as the cause of thermohaline mixing on the upper RGB (starting at the "luminosity-bump") with regards to its efficiency and interplay with processes like rotation (e.g. Sengupta \& Garaud 2018 \url{https://iopscience.iop.org/article/10.3847/1538-4357/aacbc8}) and magnetic fields (e.g, Harrington \& Garaud 2019 \url{https://iopscience.iop.org/article/10.3847/2041-8213/aaf812}).
+		Very recently, Fraser (2026) and Skoutnev (2026) have bridged the gaps from 3D (direct) numerical simulations towards a unified picture of thermohaline mixing in astrophysical regimes.
+		I would urge you to refer to these papers in your future work(s) and choose your mixing efficiencies judiciously based on the vast body of extant work over past decade in modeling of thermohaline (fingering) convection in stars.
+
+		Best wishes,
+	\end{shadequote}
+\end{minipage}
+
 \section{Increasing the mass-radius grid}
 
 \begin{figure}[ht]

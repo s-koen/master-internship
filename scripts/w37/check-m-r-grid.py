@@ -3545,12 +3545,18 @@ for qi, ri in zip(qs, max_r_init):
     bin = Bins[0]
     bins.append(bin)
 # %%
-fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column, height=1), constrained_layout=True)
+
+norm = plt.Normalize(0.1, 1)
+cmap=Colormap("colorcet:CET_R1").to_mpl()
+# color = cmap(norm(x))
+
 
 for bin in bins:
-    plt.plot(bin.m1, bin.m2 / bin.m1, c="k")
+    plt.plot(bin.m1, bin.m2 / bin.m1, c=cmap(norm(bin.m2[0] / bin.m1[0])), linewidth=1)
 
-
+plt.yscale("log")
+plt.grid(axis="both", which="both")
 
 axs.spines[["right", "top"]].set_visible(False)
 plt.xlabel("$M_\\textrm{TPAGB}$")
@@ -3559,6 +3565,4 @@ plt.savefig("/home/koen/LaTeX-setup/plots/w37-max-q.pgf", format="pgf")
 plt.show()
 plt.close()
 
-
 # %%
-

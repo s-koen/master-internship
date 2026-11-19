@@ -63,6 +63,7 @@ class MesaGrid:
 
         self.df = AbundanceTables()
         self._load_models()
+        self._finalize_grid()
 
     def _finalize_grid(self):
 
