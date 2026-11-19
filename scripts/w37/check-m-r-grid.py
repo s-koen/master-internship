@@ -45,9 +45,208 @@ from scripts.evolve_mesa.grid_call import *
 import matplotlib.pyplot as plt
 from cmap import Colormap
 
+df = AbundanceTables()
+
+
+def get_ls(ab):
+    fe = 0
+    for i, name in enumerate(ab.elements_name):
+
+        if name in ["sr", "y", "zr"]:
+            fe += ab.iron_abundance[i]
+
+    return fe / 3
+
+
+def get_hs(ab):
+    fe = 0
+    for i, name in enumerate(ab.elements_name):
+
+        if name in [
+            "ba",
+            "la",
+            "ce",
+            "nd",
+        ]:
+            fe += ab.iron_abundance[i]
+
+    return fe / 4
+
+
+def get_s(ab):
+    fe = 0
+    for i, name in enumerate(ab.elements_name):
+
+        if name in ["ba", "la", "ce", "nd", "sr", "y", "zr"]:
+            fe += ab.iron_abundance[i]
+
+    return fe / 7
+
+
+def get_ba(ab):
+    fe = 0
+    for i, name in enumerate(ab.elements_name):
+
+        if name in ["ba"]:
+            fe += ab.iron_abundance[i]
+
+    return fe
+
+
+def period_to_RL(P, q, m1):
+
+    q_donor = 1 / q
+    r_L = (
+        0.49
+        * q_donor ** (2 / 3)
+        / (0.6 * q_donor ** (2 / 3) + np.log1p(q_donor ** (1 / 3)))
+    )
+
+    G = 6.67430e-11
+    M_total = m1 * (1 + q) * 1.989e30
+    R_sun = 695508000
+
+    P = np.asarray(P) * 86400  # days -> seconds
+
+    a = (G * M_total * P**2 / (4 * np.pi**2)) ** (1 / 3)
+
+    return a * r_L / R_sun
+
+
+def period_to_a(P, q, m1):
+
+    q_donor = 1 / q
+
+    G = 6.67430e-11
+    M_total = m1 * (1 + q) * 1.989e30
+    R_sun = 695508000
+
+    P = np.asarray(P) * 86400  # days -> seconds
+
+    a = (G * M_total * P**2 / (4 * np.pi**2)) ** (1 / 3)
+
+    return a / R_sun
+
+
+def get_rlof_properties(star, bin):
+    """
+    Get stellar properties at the moment of RLOF.
+
+    Returns
+    -------
+    m_env_rlof : float
+        Envelope mass at RLOF, or nan if no RLOF occurred.
+    m_star_rlof : float
+        Stellar mass at RLOF, or nan if no RLOF occurred.
+    rlof_tpagb : bool
+        Whether RLOF occurred during the TP-AGB.
+    """
+
+    t_rlof = bin.age[-1]
+
+    # Check whether the binary evolved to the end without RLOF
+    if np.isclose(t_rlof, star.age[-1]):
+        return np.nan, np.nan, False
+
+    # Interpolate stellar properties onto the binary time
+    m_env_rlof = np.interp(t_rlof, star.age, star.m_env)
+    m_star_rlof = np.interp(t_rlof, star.age, star.mass)
+
+    # Check whether RLOF happened during the TP-AGB
+    t_tpagb = star.age[star.ntpagb]
+    rlof_tpagb = t_rlof >= t_tpagb
+
+    return m_env_rlof, m_star_rlof, rlof_tpagb
+
+
+class Result:
+    def __init__(self):
+        pass
+
+
+class SimpleGrid:
+
+    def __init__(self):
+        self.models = []
+
+    def add_model(self, model):
+        self.models.append(model)
+
+
+class SimpleModel:
+
+    def __init__(
+        self,
+        params,
+        bin,
+    ):
+        self.params = params
+        self.bin = bin
+        self.period_days = self.get_final_period()
+        self.rl_1 = self.get_rl()
+
+    def __getattr__(self, name):
+        if name in ("bin", "params"):
+            raise AttributeError(name)
+
+        try:
+            return getattr(self.bin, name)
+        except AttributeError:
+            return getattr(get_star(m=self.params["m"]), name)
+
+    def get_final_period(self):
+        star = get_star(m=self.params["m"])
+
+        bin = self.bin
+
+        q = bin.m2 / bin.m1
+        a = bin.a * 695508000
+
+        M_total = (bin.m1 + bin.m2) * 1.989e30
+        G = 6.67430e-11
+        T = np.sqrt(a**3 * 4 * np.pi**2 / (G * (M_total))) / (3600 * 24)
+
+        return T
+
+    def get_rl(self):
+        rl = self.bin.a * (
+            0.49
+            * self.params["q"] ** (-2 / 3)
+            / (
+                0.6 * self.params["q"] ** (-2 / 3)
+                + np.log1p(self.params["q"] ** (-1 / 3))
+            )
+        )
+
+        rl = np.interp(
+            get_star(m=self.params["m"]).age,
+            self.bin.age,
+            rl,
+        )
+        return rl
+
+
 # %%
 
 grid = MesaGrid("/home/koen/master-internship/mesa-models/grid-M-R-2026-11-02/")
+
+# %%
+sgrid = SimpleGrid()
+
+for m in np.arange(1, 3.1, 0.1):
+    filename = f"/home/koen/master-internship/scripts/w37/cache/sgrid_m{m:.1f}.pkl"
+    with open(filename, "rb") as f:
+        models = pickle.load(f)
+    sgrid.models.extend(models)
+    print(m)
+
+sgrid.models.sort(
+    key=lambda model: (
+        model.params["m"],
+        model.params["R"],
+    )
+)
+
 # %%
 
 from scipy.optimize import brentq
@@ -573,7 +772,34 @@ class Result:
         pass
 
 
+# %%
+
 rr_large = [
+    500,
+    525,
+    550,
+    575,
+    600,
+    650,
+    700,
+    750,
+    800,
+    900,
+    1000,
+    1100,
+    1200,
+    1300,
+    1400,
+    1500,
+    1750,
+    2000,
+    2500,
+    3000,
+    4000,
+    5000,
+    7500,
+    10000,
+    15000,
     20000,
     50000,
     100000,
@@ -648,61 +874,132 @@ class SimpleModel:
         return rl
 
 
-sgrid = SimpleGrid()
+import os
+import pickle
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm.auto import tqdm
 
-for mi in ms:
-    max_R = -1
-    for m in grid.filter(m=mi):
-        if m.params["R"] > max_R:
-            max_R = m.params["R"]
+
+def process_mass(mi):
+    models = []
+
+    max_R = max(
+        (m.params["R"] for m in grid.filter(m=mi)),
+        default=-1,
+    )
+
     for r in rr_large:
-        if r > max_R:
-            print(f"{mi:.1f}", r)
+        if r <= max_R:
+            continue
 
-            star = get_star(m=mi)
-            a_init = inv_roche_lobe(r, qi)
+        print(f"m={mi:.1f}, R={r}")
 
-            star, Options, q_init, a_init, e_init, Bins = call_evolution(
-                star, qi, a_init, simple_only=True
+        star = get_star(m=mi)
+        a_init = inv_roche_lobe(r, qi)
+
+        star, Options, q_init, a_init, e_init, Bins = call_evolution(
+            star, qi, a_init, simple_only=True
+        )
+        bin = Bins[0]
+
+        m_env_rlof, m_star_rlof, rlof_tpagb = get_rlof_properties(star, bin)
+
+        ab = Abundances(
+            None,
+            df,
+            mass=mi,
+            sb=bin,
+            sampling=10,
+            mass_transfer_efficiency=eps,
+        )
+
+        if ab.m_env[-1] > 0.04:
+            m2f = bin.m2[-1] + ab.m_env[-1] * eps
+        else:
+            m2f = bin.m2[-1]
+
+        params = {"m": mi, "R": r, "q": qi}
+        model = SimpleModel(params, bin)
+
+        model.r_init = r
+        model.a_init = a_init
+        model.m1i = mi
+        model.m1f = star.mass[-1]
+        model.m_env_rlof = m_env_rlof
+        model.m_star_rlof = m_star_rlof
+        model.rlof_tpagb = rlof_tpagb
+        model.qi = qi
+        model.eps = eps
+        model.m2f = m2f
+        model.s = get_s(ab)
+        model.hs = get_hs(ab)
+        model.ls = get_ls(ab)
+        model.ba = get_ba(ab)
+
+        models.append(model)
+
+    # Save results for this mass independently
+    filename = f"cache/sgrid_m{mi:.1f}.pkl"
+
+    with open(filename, "wb") as f:
+        pickle.dump(models, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    return filename
+
+
+if __name__ == "__main__":
+
+    os.makedirs("cache", exist_ok=True)
+
+    np.random.shuffle(ms)
+
+    with ProcessPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(process_mass, mi) for mi in ms]
+
+        files = [
+            future.result()
+            for future in tqdm(
+                as_completed(futures),
+                total=len(futures),
             )
-            bin = Bins[0]
+        ]
 
-            m_env_rlof, m_star_rlof, rlof_tpagb = get_rlof_properties(star, bin)
+    # Collect all individual results
+    sgrid = SimpleGrid()
 
-            ab = Abundances(
-                None,
-                df,
-                mass=mi,
-                sb=bin,
-                sampling=10,
-                mass_transfer_efficiency=eps,
-            )
-            if ab.m_env[-1] > 0.04:
-                m2f = bin.m2[-1] + ab.m_env[-1] * eps
-            else:
-                m2f = bin.m2[-1]
+    for filename in files:
+        with open(filename, "rb") as f:
+            models = pickle.load(f)
 
-            params = {"m": mi, "R": r, "q": qi}
-            model = SimpleModel(params, bin)
+        sgrid.models.extend(models)
 
-            model.r_init = r
-            model.a_init = a_init
-            model.m1i = mi
-            model.m1f = star.mass[-1]
-            model.m_env_rlof = m_env_rlof
-            model.m_star_rlof = m_star_rlof
-            model.rlof_tpagb = rlof_tpagb
-            model.qi = qi
-            model.eps = eps
-            model.m2f = m2f
-            model.s = get_s(ab)
-            model.hs = get_hs(ab)
-            model.ls = get_ls(ab)
-            model.ba = get_ba(ab)
+    # Sort by mass and radius
+    sgrid.models.sort(
+        key=lambda model: (
+            model.params["m"],
+            model.params["R"],
+        )
+    )
 
-            sgrid.add_model(model)
+    # Save final grid
+    with open("cache/sgrid.pkl", "wb") as f:
+        pickle.dump(
+            sgrid,
+            f,
+            protocol=pickle.HIGHEST_PROTOCOL,
+        )
+
 
 # %%
+sgrid.models.sort(key=lambda model: (model.params["m"], model.params["R"]))
+
+import pickle
+
+with open("/home/koen/master-internship/scripts/w37/cache/sgrid.pkl", "wb") as f:
+    pickle.dump(sgrid, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+# %%
+
 
 levels = 15
 
@@ -2295,3 +2592,973 @@ plt.show()
 plt.close()
 
 # %%
+
+cmap = "coolwarm"
+
+levels = 17
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(r.s)
+    z_mesa.append(r.s)
+
+
+for r in sgrid.models:
+
+    if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+        print(r)
+        continue
+    if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+        continue
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_simple.append(r.params["m"])
+    z.append(r.s)
+    z_simple.append(r.s)
+
+norm = TwoSlopeNorm(0.25, min(z), max(z))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=20,
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=15,
+    marker="s",
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    norm=norm,
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="[s/Fe]")
+
+plt.xlim(np.min(x) - 20, 10e5)
+plt.ylim(np.min(y) - 0.05, np.max(y) + 0.05)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-mass-11.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+
+# %%
+
+levels = 15
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+x = []
+y = []
+z = []
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(np.nanmax(r.R / r.rl_1))
+    z_mesa.append(np.nanmax(r.R / r.rl_1))
+
+
+for r in sgrid.models:
+
+    if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+        print(r)
+        continue
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_simple.append(r.params["m"])
+    z.append(np.nanmax(10**r.log_R / r.rl_1))
+    z_simple.append(np.nanmax(10**r.log_R / r.rl_1))
+
+print(min(z), max(z))
+norm = TwoSlopeNorm(1, min(z), max(z))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap="coolwarm",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=20,
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap="coolwarm",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=15,
+    marker="s",
+)
+
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap="coolwarm",
+    zorder=-20,
+    norm=norm,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$R_\\textrm{star} / R_\\textrm{RL}$")
+
+plt.xlim(np.min(x) - 20, 1e5)
+plt.ylim(0.9, np.max(y) + 0.05)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-rl-overflow.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+
+def get_z(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+    return np.nanmax(r.R / r.rl_1)
+
+norm = TwoSlopeNorm(1, np.nanmin(z), np.nanmax(z))
+
+x, y, z =  grid.array(get_z,"R", "m")
+plt.pcolormesh(x,y,z.T, cmap="coolwarm", norm=norm, rasterized=True)
+cbar = plt.colorbar(label="$\\textrm{max}(R_\\textrm{star} / R_\\textrm{RL})$")
+cbar.ax.set_yscale("linear")
+
+plt.xscale("log")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Initial Roche lobe Radius ($R_\\odot$)")
+plt.ylabel("$M_\\textrm{TPAGB;i}$ ($M_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-pcolor-1.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+mass = 1.8
+
+norm = plt.Normalize(500, 1000)
+cmap=Colormap("colorcet:CET_R1").to_mpl()
+# color = cmap(norm(x))
+
+
+for m in grid.filter(m=mass):
+    plt.plot(m.age, m.rl_1, c=cmap(norm(m.params["R"])), zorder= 1e3 - m.params["R"])
+
+    arg = np.argmax(m.R / m.rl_1)
+    if m.log_LHe[arg] - m.log_LH[arg] > 0:
+        plt.scatter(m.age[arg], m.rl_1[arg], marker="o",c=cmap(norm(m.params["R"])), zorder= 1e3 - m.params["R"])
+    else:
+        plt.scatter(m.age[arg], m.rl_1[arg], marker="x",c=cmap(norm(m.params["R"])), zorder= 1e3 - m.params["R"])
+
+plt.xlim(plt.gca().get_xlim())
+
+print(m.bulk_names)
+star = get_star(m=mass)
+plt.plot(star.age[star.ntpagb:], 10**star.log_R[star.ntpagb:], c="C9", zorder=-10)
+
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Star age (yr)")
+plt.ylabel("Radius ($R_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-interpulse-pulse.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+mass = 1.8
+
+for m in grid.filter(m=mass):
+    arg = np.argmin(m.rl_1)
+    plt.plot(m.age, m.log_LHe - m.log_LH > 0)
+    plt.scatter(m.age[arg], m.log_LHe[arg] - m.log_LH[arg] > 0)
+
+print(m.bulk_names)
+# star = get_star(m=mass)
+# plt.plot(star.age[star.ntpagb:], 10**star.log_R[star.ntpagb:])
+
+plt.show()
+
+# %%
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+
+def get_z(r):
+    if r.envelope_mass[-1] > 0.01:
+        return np.nan
+
+    arg = np.argmax(r.R / r.rl_1)
+    return r.log_LHe[arg] - r.log_LH[arg] > 0 and np.max(r.R / r.rl_1) > 1
+
+cmap=Colormap("colorbrewer:Paired").to_mpl()
+
+x, y, z =  grid.array(get_z,"R", "m")
+plt.pcolormesh(x,y,z.T, cmap=cmap, rasterized=True, vmin=-1, vmax=3.9)
+
+plt.xscale("log")
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("Initial Roche lobe Radius ($R_\\odot$)")
+plt.ylabel("$M_\\textrm{TPAGB;i}$ ($M_\\odot$)")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-pcolor-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+
+levels =14 
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    arg = np.argmax(r.R / r.rl_1)
+    if r.log_LHe[arg] - r.log_LH[arg] > 0 and np.max(r.R / r.rl_1) > 1:
+        continue
+
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(np.nanmax(r.R / r.rl_1))
+    z_mesa.append(np.nanmax(r.R / r.rl_1))
+
+
+for r in sgrid.models:
+
+    if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+        print(r)
+        continue
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_simple.append(r.params["m"])
+    z.append(np.nanmax(10**r.log_R / r.rl_1))
+    z_simple.append(np.nanmax(10**r.log_R / r.rl_1))
+
+print(min(z), max(z))
+norm = TwoSlopeNorm(1, min(z), max(z))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap="coolwarm",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=20,
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap="coolwarm",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=15,
+    marker="s",
+)
+
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap="coolwarm",
+    zorder=-20,
+    norm=norm,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$R_\\textrm{star} / R_\\textrm{RL}$")
+
+plt.xlim(np.min(x) - 20, 1e5)
+plt.ylim(0.9, np.max(y) + 0.05)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-rl-overflow-continue.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+
+# %%
+
+levels =14 
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
+)
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    arg = np.argmin(r.rl_1)
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(r.envelope_mass[arg])
+    z_mesa.append(r.envelope_mass[arg])
+
+
+# for r in sgrid.models:
+#
+#     if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+#         print(r)
+#         continue
+#     x.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     y.append(r.params["m"])
+#     y_simple.append(r.params["m"])
+#     z.append(np.nanmax(10**r.log_R / r.rl_1))
+#     z_simple.append(np.nanmax(10**r.log_R / r.rl_1))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap="viridis",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+)
+
+# plt.scatter(
+#     x_simple,
+#     y_simple,
+#     c=z_simple,
+#     cmap="coolwarm",
+#     zorder=1000,
+#     edgecolor="w",
+#     linewidth=0.75 / 2,
+#     norm=norm,
+#     s=15,
+#     marker="s",
+# )
+
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap="viridis",
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$M_\\textrm{env}$ at start RLOF ($M_\\odot$)")
+
+plt.xlim(np.min(x) - 20, np.max(x) + 20)
+plt.ylim(1.2, np.max(y) + 0.05)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-m_env.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+levels =14 
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
+)
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    arg = np.argmin(r.rl_1)
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(r.envelope_fraction_left[arg])
+    z_mesa.append(r.envelope_fraction_left[arg])
+
+
+# for r in sgrid.models:
+#
+#     if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+#         print(r)
+#         continue
+#     x.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     y.append(r.params["m"])
+#     y_simple.append(r.params["m"])
+#     z.append(np.nanmax(10**r.log_R / r.rl_1))
+#     z_simple.append(np.nanmax(10**r.log_R / r.rl_1))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap="viridis",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+)
+
+# plt.scatter(
+#     x_simple,
+#     y_simple,
+#     c=z_simple,
+#     cmap="coolwarm",
+#     zorder=1000,
+#     edgecolor="w",
+#     linewidth=0.75 / 2,
+#     norm=norm,
+#     s=15,
+#     marker="s",
+# )
+
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap="viridis",
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="fraction of $M_\\textrm{env}$ left at start RLOF")
+
+plt.xlim(np.min(x) - 20, np.max(x) + 20)
+plt.ylim(1.2, np.max(y) + 0.05)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-m_env-f.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+
+
+# %%
+
+print(r.bulk_names)
+
+# %%
+
+levels =14 
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.7), constrained_layout=True
+)
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    arg = np.argmin(r.rl_1)
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(r.star_2_mass[arg] / r.star_1_mass[arg])
+    z_mesa.append(r.star_2_mass[arg] / r.star_1_mass[arg])
+
+
+# for r in sgrid.models:
+#
+#     if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+#         print(r)
+#         continue
+#     x.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     y.append(r.params["m"])
+#     y_simple.append(r.params["m"])
+#     z.append(np.nanmax(10**r.log_R / r.rl_1))
+#     z_simple.append(np.nanmax(10**r.log_R / r.rl_1))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="cubic",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap="viridis",
+    zorder=1000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+)
+
+# plt.scatter(
+#     x_simple,
+#     y_simple,
+#     c=z_simple,
+#     cmap="coolwarm",
+#     zorder=1000,
+#     edgecolor="w",
+#     linewidth=0.75 / 2,
+#     norm=norm,
+#     s=15,
+#     marker="s",
+# )
+
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap="viridis",
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$M_\\textrm{acc} / M_\\textrm{don}$ at start RLOF")
+
+plt.xlim(np.min(x) - 20, np.max(x) + 20)
+plt.ylim(1.2, np.max(y) + 0.05)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-q.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(column, height=0.75), constrained_layout=True
+)
+
+plt.xlabel("Star mass $M_\\odot$")
+plt.ylabel("$P / P_i$")
+
+qs = np.linspace(0.5, 1.5, 100)
+wind = CombineEvolve(
+    alpha=0.15,
+    beta=0.0,
+    delta=0,
+    gamma=0,
+    qs=qs,
+)
+plt.plot(wind.M_d, wind.P_over_P0, c="C0", label="Isotropic wind, $q_i=0.5$")
+
+qs = np.linspace(0.5, 1.5, 100)
+wind = CombineEvolve(alpha=0.15, beta=0.0, delta=0, gamma=0, qs=qs, M_1_i=3)
+
+plt.plot(wind.M_d, wind.P_over_P0, c="C0", label="Isotropic wind, $q_i=0.5$")
+axs.tick_params(axis="y", which="minor", length=0)
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-analytic-2.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+
+m_i = 3
+qs = np.linspace(0.5, q_f(0.5,m_i,get_star(m=m_i).m_core[-1],0,0.8,0.1), 100)
+wind = CombineEvolve(
+    alpha=0,
+    beta=0.8,
+    delta=0.1,
+    gamma=1.44,
+    qs=qs,
+    M_1_i=m_i
+)
+plt.plot(qs, rl(wind.a_over_a0, qs) / rl(wind.a_over_a0, qs)[0], c="C0", label="Isotropic wind, $q_i=0.5$")
+
+m_i = 2
+m_a_i = 3 * 0.5 + 0.15
+q_i = m_a_i / m_i
+qs = np.linspace(q_i, q_f(q_i,m_i,get_star(m=3).m_core[-1],0,0.8,0.1), 100)
+wind = CombineEvolve(
+    alpha=0,
+    beta=0.8,
+    delta=0.1,
+    gamma=1.44,
+    qs=qs,
+    M_1_i=m_i
+)
+
+plt.plot(qs, rl(wind.a_over_a0, qs) / rl(wind.a_over_a0, qs)[0], c="C1", label="Isotropic wind, $q_i=0.5$")
+
+plt.title("$M_\\textrm{don;i} = 3.0$, $q_i=0.5$")
+plt.annotate(
+    'RLOF without prior wind',
+    xy=(1.5, 0.55), xycoords='data',
+    xytext=(0, 30), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75, color="C9"), fontsize=8, va="center", ha="center")
+
+plt.annotate(
+    'RLOF after losing 1 $M_\\odot$ of envelope',
+    xy=(1.5, 1), xycoords='data',
+    xytext=(0, 30), textcoords='offset points',
+    arrowprops=dict(arrowstyle="->", linewidth=0.75, color="C9"), fontsize=8, va="center", ha="center")
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$q$")
+plt.ylabel("$R_\\textrm{RL} / R_\\textrm{RL;i}$ ")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-diff.pgf", format="pgf")
+plt.show()
+plt.close()
+
+# %%
+import pandas as pd
+def load_grid(file):
+    return pd.read_pickle(file)
+
+df_old = load_grid("/home/koen/master-internship/scripts/w36/cache/df2.pkl")
+df_new = load_grid("/home/koen/master-internship/scripts/w36/cache/df3.pkl")
+
+df_results = pd.concat([df_old, df_new], ignore_index=True)
+# %%
+
+df_results.columns
+# %%
+df = df_results[np.isclose(df_results["m1i"], 3)]
+df = df[df["wind"] == "Saladino"]
+df = df[np.isclose(df["eps"], 0.1)]
+
+max_r_init = (
+    df[df["rlof_tpagb"]]
+    .groupby("qi")["r_init"]
+    .max()
+    .tolist()
+)
+max_r_init = (
+    df[df["rlof_tpagb"]]
+    .groupby("qi")["r_init"]
+    .max()
+)
+
+print(max_r_init)
+# %%
+
+ri = 1100
+qi=0.1
+star = get_star(m=3)
+
+bins = []
+qs = np.arange(0.1,1.05, 0.05)
+for qi, ri in zip(qs, max_r_init):
+    ri = ri+50
+    print(qi)
+    a_init = inv_roche_lobe(ri, qi)
+    star, Options, q_init, a_init, e_init, Bins = call_evolution(
+        star, qi, a_init, simple_only=True
+    )
+    bin = Bins[0]
+    bins.append(bin)
+# %%
+fig, axs = plt.subplots(1, 1, sharex=True, figsize=set_size(column), constrained_layout=True)
+
+for bin in bins:
+    plt.plot(bin.m1, bin.m2 / bin.m1, c="k")
+
+
+
+axs.spines[["right", "top"]].set_visible(False)
+plt.xlabel("$M_\\textrm{TPAGB}$")
+plt.ylabel("$q$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w37-max-q.pgf", format="pgf")
+plt.show()
+plt.close()
+
+
+# %%
+

@@ -103,6 +103,127 @@ fraction \(P_\text{f} / P_\text{i}\).
 	\incplot{w37-mass-10}
 \end{figure}
 
+The plot above shows the [s/Fe] abundances.
+Clearly, the regime to create possible Barium stars
+is very large and extends well into the "wind-only" regime which are computed using simple binaries
+only.
+
+The plot also seems to imply that a significant number of larger mass TPAGB stars can
+create barium stars.
+But, since these stars are significantly more rare than lower mass TPAGB stars,
+and could only produce barium dwarfs within the observed range if they exist in very unequal binaries
+I have not looked at these here.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-rl-overflow}
+\end{figure}
+
+There is quite a lot of structure here.
+Within the blue region, we see waves which
+are due to the different maximum radii that are reached during the TPAGB.
+
+Within the red region, we see a roughly random ordering of large and not very large overfill ratios.
+This randomness, which is probably caused by the envelope mass at the moment of interaction, is hard to
+capture well with the contours so not too much value should be attributed to them.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This figure shows the detailed MESA models using filled rectangles.
+		The "randomness" is more apparent now.
+	}
+	\centering
+	\incplot{w37-pcolor-1}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{This figure shows the Roche lobe evolution of various binaries with
+		an initial TPAGB mass of \(M=1.7\; M_\odot \).
+		The markers denote the point of maximum
+		\(R_\text{star} / R_\text{RL}\).
+	}
+	\marginfignote{7}{The dots denote when a model experiences its maximum overflow during a thermal pulse.
+		The crosses denote when a model experiences its maximum overflow during an interpulse period.
+	}
+	\centering
+	\incplot{w37-interpulse-pulse}
+\end{figure}
+
+Let me apply this classification to the entire grid.
+
+\begin{figure}[ht]
+	\marginfignote{0}{The pink cells are models that interact during the TPAGB, while the green ones
+		interact during an interpulse (or after the last thermal pulse or miss RLOF in its entirety).}
+	\centering
+	\incplot{w37-pcolor-2}
+\end{figure}
+
+Clearly quite random, but also, these include all of the models that have large overfill ratios in the
+figures above.
+I think it might be interesting to \emph{exclude} the models and generate another contour plot.
+This way we can see the effects of mass and period on overfill ratios during the interpulses.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-rl-overflow-continue}
+\end{figure}
+It is obviously not perfect, but we can clearly see some dependence on the mass and period.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here I plot the envelope mass at the start of RLOF.
+		It is difficult to pin
+		the exact start, but for this definition I use the minimum Roche lobe radius that is reached.
+		I think the overfill ratio is related to the envelope mass, and the two plots show similar, although
+		not perfect.
+	}
+	\centering
+	\incplot{w37-m_env}
+\end{figure}
+
+\nextpage
+
+\begin{figure}[ht]
+	\marginfignote{0}{We can also plot the envelope fraction left at the moment of RLOF.
+		This time,
+		we really match the shape quite well.
+	}
+	\centering
+	\incplot{w37-m_env-f}
+\end{figure}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Even though all models start with an initial \(q\) of 0.9, at the moment of RLOF,
+		they can have vastly different mass ratios.}
+	\marginfignote{7}{I think the shape and values make sense too.
+		This obviously has quite
+		a big influence on the stability of RLOF.
+	}
+	\centering
+	\incplot{w37-q}
+\end{figure}
+
+Especially for initially unequal mass ratios, a little bit of wind can quite significantly equalize the mass ratios.
+If the star then experiences RLOF, the Roche lobe radius will not decrease nearly as much.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This is an example using the simple \citet{soberman1997} prescriptions and different assumptions.
+		Obviously, the prior mass loss will change the Roche lobe radius, but this just changes the \emph{moment} of RLOF.
+		For
+		the actual mass transfer stability, it is much more important to see how much the Roche lobe radius changes with
+		respect to the moment of initial Roche lobe overflow.
+		Clearly, significant mass losses before will greatly decrease
+		the shrinkage.
+		In many cases, it will even push the mass ratio far above unity, in which case we do not expect any shrinkage
+		during RLOF.
+	}
+	\centering
+	\incplot{w37-diff}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w37-max-q}
+\end{figure}
+
 \newsection{Population Study}
 
 I simulated some larger period systems with the simple binary code and combined the results
@@ -161,9 +282,25 @@ I take the observational range between \(0.7\) and \(1.55\; M_\odot \).
 This gives me a probability of 1.2\%.
 
 \begin{figure}[ht]
+	\marginfignote{0}{Clearly, it matters quite a lot which stars you take into account when
+		determining the probability of a star being a barium star.}
+	\marginfignote{8}{However, we clearly see that for low minimum masses, the maximum mass does
+		not significantly alter the probability we find.}
 	\centering
 	\incplot{w37-probs-cuts}
 \end{figure}
+
+This means, even though we observe Barium giants with a significantly bigger spread of masses,
+the overall probability does not change much if we again take the range of observationally informed masses
+of about 0.75 to \(5\; M_\odot \).
+
+This is obviously because of the massive overabundance of lower mass stars with respect to higher mass stars.
+
+The distribution of Barium giant masses peaks around \(2\; M_\odot \).
+I am wondering if this is
+an observational effect in some way?
+As the plots above show, my models predict a roughly equal distribution
+of barium stars between up to masses of \(2\; M_\odot \).
 
 \bibliography{master.bib}
 \end{document}
