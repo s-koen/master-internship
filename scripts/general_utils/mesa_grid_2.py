@@ -256,9 +256,9 @@ class MesaRun:
 
         self.env_mass = self.history.envelope_mass
         self.q = self.history.star_2_mass / self.history.star_1_mass
-        star = get_star(full_path=self.params["single_star"])
-        tpagb_age = star.age[star.ntpagb]
-        self.age = self.starting_model.star_age + tpagb_age + self.star_age
+
+        self.get_age()
+
         self.df = df
         self.get_accretion_results(fresh)
         self.s = self.get_s()
@@ -338,6 +338,44 @@ class MesaRun:
             self.starting_model = mr.MesaData(self.params["model_name"])
             with open(f"{self.run_dir}/starting_model.pkl", "wb") as f:
                 pickle.dump(self.starting_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+    def get_starting_phase_age(self):
+
+        model = self.starting_model
+        star = get_star(full_path=self.params["single_star"])
+
+        # Central abundances
+        center = np.argmax(model.data("lnd"))
+
+        h1_c = model.data("h1")[center]
+        he4_c = model.data("he4")[center]
+
+        # MS -> GB
+        if h1_c > 1e-6:
+            return star.age[0]
+
+        phase_age = star.age[star.ntpagb]
+
+        # GB -> CHeB
+        if he4_c > 0.985:
+            return star.age[star.ntams]
+
+        # CHeB -> EAGB
+        if he4_c > 1e-4:
+            return star.age[star.nzacheb]
+
+        # EAGB -> TPAGB
+        net_name = model.header("net_name")
+
+        if "c13.net" in str(net_name).lower():
+            return star.age[star.ntpagb]
+
+        return star.age[star.ntacheb]
+
+    def get_age(self):
+
+        phase_age = self.get_starting_phase_age()
+        self.age = self.starting_model.star_age + phase_age + self.star_age
 
     def get_history(self, fresh):
         if fresh:

@@ -759,23 +759,6 @@ title = fig.suptitle("")
 
 # Hydrogen-burning shell criterion
 pp_fraction = 0.1
-# hydrogen-burning region: lower half of each panel
-burning_spans = []
-
-for ax in axs:
-    spans_ax = [
-        ax.axvspan(
-            0,
-            0,
-            ymin=0,
-            ymax=0.5,
-            color="tomato",
-            alpha=0.6,
-            zorder=-9,
-            visible=False,
-        )
-    ]
-    burning_spans.append(spans_ax)
 
 
 def update(i):
@@ -804,7 +787,7 @@ def update(i):
             burning = pp > np.nanmax(pp) - 1
         else:
             # linear values
-            burning = pp > 0.05 * np.nanmax(pp)
+            burning = pp > 0.01 * np.nanmax(pp)
 
         # Determine contiguous burning intervals
         indices = np.flatnonzero(burning)
@@ -821,52 +804,37 @@ def update(i):
                 # White by default
                 lower.set_facecolor("white")
 
-        # Identify hydrogen-burning region
-        pp = np.asarray(p.pp)
-        burning = pp > 0.1 * np.nanmax(pp)
+            # Overlay hydrogen-burning shell on lower half
+            # only where pp burning is active
+            for j in range(3):
+                left = boundaries[j]
+                right = boundaries[j + 1]
 
-        # Find contiguous burning regions
-        edges = np.diff(np.r_[False, burning, False].astype(int))
-        starts = np.flatnonzero(edges == 1)
-        ends = np.flatnonzero(edges == -1)
+                for k in range(len(indices)):
+                    if not burning[indices[k]]:
+                        continue
 
-        # Update burning spans
-        for ax, ax_spans in zip(axs, burning_spans):
-
-            # Hide previous patches
-            for span in ax_spans:
-                span.set_visible(False)
-
-            # Create additional patches if necessary
-            while len(ax_spans) < len(starts):
-                ax_spans.append(
-                    ax.axvspan(
-                        0,
-                        0,
-                        ymin=0,
-                        ymax=0.5,
-                        color="tomato",
-                        alpha=0.6,
-                        zorder=-9,
-                        visible=False,
+                    mass_left = p.mass[indices[k]]
+                    mass_right = (
+                        p.mass[indices[k] + 1]
+                        if indices[k] + 1 < len(p.mass)
+                        else mass_left
                     )
-                )
 
-            # Update existing patches
-            for j, (start, end) in enumerate(zip(starts, ends)):
-                x0 = p.mass[start]
-                x1 = p.mass[min(end, len(p.mass) - 1)]
+                    overlap_left = np.maximum(left, mass_left)
+                    overlap_right = np.minimum(right, mass_right)
 
-                ax_spans[j].set_xy(
-                    [
-                        [x0, 0],
-                        [x0, 0.5],
-                        [x1, 0.5],
-                        [x1, 0],
-                        [x0, 0],
-                    ]
-                )
-                ax_spans[j].set_visible(True)
+                    if overlap_right > overlap_left:
+                        ax.axvspan(
+                            overlap_left,
+                            overlap_right,
+                            ymin=0,
+                            ymax=0.5,
+                            color="tomato",
+                            alpha=0.6,
+                            edgecolor=None,
+                            zorder=-9,
+                        )
 
         # Tracking panel follows mixing region
         dx = x_min - x_max
@@ -952,58 +920,52 @@ for ax in axs:
     lines.append((line1, line2))
 
 # --------------------------------------------------
-# Top annotation strips
+# EOS shading (upper half)
 # --------------------------------------------------
 
-from matplotlib.colors import LogNorm
-
 eos_spans = []
-pp_meshes = []
-
-pp_cmap = mpl.cm.inferno
 
 for ax in axs:
+    spans = []
 
-    # EOS strip (upper 1/8)
-    eos = []
     for color in eos_colors:
         span = ax.axvspan(
-            0,
-            0,
-            ymin=0.875,
-            ymax=1.0,
-            facecolor=color,
+            -2,
+            -1,
+            ymin=0.5,
+            ymax=1,
+            color=color,
+            alpha=0.5,
             edgecolor="none",
-            alpha=0.8,
-            zorder=-5,
+            zorder=-10,
         )
-        eos.append(span)
+        spans.append(span)
 
-    eos_spans.append(eos)
+    eos_spans.append(spans)
 
-    # pp strip (lower 1/8)
-    pp_mesh = ax.pcolormesh(
-        [0, 1],
-        [0, 1],
-        [[1]],
-        cmap=pp_cmap,
-        norm=LogNorm(vmin=1e-10, vmax=1),
-        shading="flat",
-        transform=ax.get_xaxis_transform(),
-        zorder=-5,
-    )
+# --------------------------------------------------
+# Hydrogen-burning shading (lower half)
+# --------------------------------------------------
 
-    pp_meshes.append(pp_mesh)
+burning_spans = []
 
-# Shared colorbar
-cbar = fig.colorbar(
-    pp_meshes[0],
-    ax=axs,
-    location="right",
-    pad=0.02,
-    shrink=0.8,
-)
-cbar.set_label(r"$\epsilon_{\rm pp}$")
+for ax in axs:
+    spans = [
+        ax.axvspan(
+            0,
+            0,
+            ymin=0,
+            ymax=0.5,
+            color="tomato",
+            alpha=0.6,
+            edgecolor="none",
+            zorder=-9,
+            visible=False,
+        )
+    ]
+
+    burning_spans.append(spans)
+
 # --------------------------------------------------
 # Axis formatting
 # --------------------------------------------------
@@ -1057,48 +1019,48 @@ def update(i):
 
         boundaries = [-2, x_max, x_min, 2]
 
-    for spans in eos_spans:
-        for j, span in enumerate(spans):
-            left = boundaries[j]
-            right = boundaries[j + 1]
+        # Update EOS shading
+        for spans in eos_spans:
 
-            span.set_bounds(left, 0.875, right - left, 0.125)
+            for j, span in enumerate(spans):
+                left = boundaries[j]
+                right = boundaries[j + 1]
+
+                span.set_xy(
+                    [
+                        [left, 0],
+                        [left, 1],
+                        [right, 1],
+                        [right, 0],
+                        [left, 0],
+                    ]
+                )
+
+        # Update tracking panel
+        dx = x_min - x_max
+
+        ax_tracking.set_xlim(
+            x_max - 5 * dx,
+            x_min + 15 * dx,
+        )
 
     # --------------------------------------------------
     # Identify hydrogen-burning shell
     # --------------------------------------------------
 
-    # --------------------------------------------------
-    # Update pp-chain strip
-    # --------------------------------------------------
-
     pp = np.asarray(p.pp)
 
-    # Only positive, finite values can be shown on a logarithmic scale
-    pp_plot = np.where(
-        np.isfinite(pp) & (pp > 0),
-        pp,
-        np.nan,
-    )
+    burning = pp > 0.1 * np.nanmax(pp)
 
-    # Use the mass coordinates as cell boundaries
-    mass_edges = np.empty(len(p.mass) + 1)
-    mass_edges[1:-1] = 0.5 * (p.mass[:-1] + p.mass[1:])
-    mass_edges[0] = p.mass[0] - 0.5 * (p.mass[1] - p.mass[0])
-    mass_edges[-1] = p.mass[-1] + 0.5 * (p.mass[-1] - p.mass[-2])
+    # Find contiguous burning regions
+    edges = np.diff(np.r_[False, burning, False].astype(int))
 
-    # Update both panels
-    for mesh in pp_meshes:
-        mesh.set_array(pp_plot)
-        mesh.set_coordinates(
-            np.stack(
-                np.meshgrid(
-                    mass_edges,
-                    [0.75, 0.875],
-                ),
-                axis=-1,
-            )
-        )
+    starts = np.flatnonzero(edges == 1)
+    ends = np.flatnonzero(edges == -1)
+
+    # --------------------------------------------------
+    # Update hydrogen-burning shading
+    # --------------------------------------------------
 
     for ax, spans in zip(axs, burning_spans):
 
@@ -1127,9 +1089,17 @@ def update(i):
         for j, (start, end) in enumerate(zip(starts, ends)):
 
             x0 = p.mass[start]
-            x1 = p.mass[np.minimum(end, len(p.mass) - 1)]
+            x1 = p.mass[min(end, len(p.mass) - 1)]
 
-            spans[j].set_bounds(x0, 0, x1 - x0, 0.5)
+            spans[j].set_xy(
+                [
+                    [x0, 0],
+                    [x0, 0.5],
+                    [x1, 0.5],
+                    [x1, 0],
+                    [x0, 0],
+                ]
+            )
 
             spans[j].set_visible(True)
 
@@ -1149,305 +1119,6 @@ def update(i):
 
 # --------------------------------------------------
 # Animate
-# --------------------------------------------------
-
-ani = FuncAnimation(
-    fig,
-    update,
-    frames=len(profiles_sorted),
-    interval=1000 / 60,
-    blit=False,
-)
-
-plt.show()
-
-# %%
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.animation import FuncAnimation
-from matplotlib.colors import LogNorm
-
-# --------------------------------------------------
-# Sort profiles by age
-# --------------------------------------------------
-
-profiles_sorted = sorted(profiles, key=lambda p: p.star_age)[2:]
-
-# --------------------------------------------------
-# Global pp normalization
-# --------------------------------------------------
-
-pp_values = np.concatenate(
-    [
-        np.asarray(p.pp)[np.isfinite(p.pp) & (np.asarray(p.pp) > 0)]
-        for p in profiles_sorted
-    ]
-)
-
-vmin = np.nanmin(pp_values)
-vmax = np.nanmax(pp_values)
-
-# Avoid a degenerate normalization
-if vmin == vmax:
-    vmin /= 10
-    vmax *= 10
-
-pp_norm = LogNorm(vmin=vmin, vmax=vmax)
-pp_cmap = mpl.cm.inferno
-
-# --------------------------------------------------
-# Figure
-# --------------------------------------------------
-
-fig, axs = plt.subplots(
-    1,
-    2,
-    figsize=set_size(2 * column, height=0.85),
-    sharey=True,
-    constrained_layout=True,
-)
-
-ax_fixed, ax_tracking = axs
-
-my_colors = np.array(mpl.cm.Set2.colors)
-eos_colors = [my_colors[5], my_colors[0], my_colors[4]]
-
-# --------------------------------------------------
-# Initialize lines
-# --------------------------------------------------
-
-lines = []
-
-for ax in axs:
-
-    (line1,) = ax.plot(
-        [],
-        [],
-        c="royalblue",
-        zorder=100,
-        linewidth=1,
-        label="Ledoux B",
-    )
-
-    (line2,) = ax.plot(
-        [],
-        [],
-        c="firebrick",
-        zorder=100,
-        linewidth=1,
-        label=r"$^3$He",
-    )
-
-    lines.append((line1, line2))
-
-# --------------------------------------------------
-# Helper: mass cell boundaries
-# --------------------------------------------------
-
-
-def get_mass_edges(mass):
-    edges = np.empty(len(mass) + 1)
-
-    edges[1:-1] = 0.5 * (mass[:-1] + mass[1:])
-    edges[0] = mass[0] - 0.5 * (mass[1] - mass[0])
-    edges[-1] = mass[-1] + 0.5 * (mass[-1] - mass[-2])
-
-    return edges
-
-
-# --------------------------------------------------
-# Annotation strips
-#
-# EOS: upper 1/8
-# pp:  lower 1/8
-# --------------------------------------------------
-
-eos_spans = []
-pp_meshes = []
-
-p0 = profiles_sorted[0]
-mass_edges = get_mass_edges(p0.mass)
-
-pp0 = np.asarray(p0.pp, dtype=float)
-pp0 = np.ma.masked_where(
-    ~np.isfinite(pp0) | (pp0 <= 0),
-    pp0,
-)
-
-for ax in axs:
-
-    # EOS strip
-    spans = []
-
-    for color in eos_colors:
-        span = ax.axvspan(
-            0,
-            0,
-            ymin=0.875,
-            ymax=1.0,
-            facecolor=color,
-            alpha=0.8,
-            edgecolor="none",
-            zorder=10,
-        )
-        spans.append(span)
-
-    eos_spans.append(spans)
-
-    # pp-chain strip
-    mesh = ax.pcolormesh(
-        mass_edges,
-        [0.75, 0.875],
-        pp0[np.newaxis, :],
-        cmap=pp_cmap,
-        norm=pp_norm,
-        shading="flat",
-        transform=ax.get_xaxis_transform(),
-        zorder=10,
-    )
-
-    pp_meshes.append(mesh)
-
-# --------------------------------------------------
-# Colorbar
-# --------------------------------------------------
-
-cbar = fig.colorbar(
-    pp_meshes[0],
-    ax=axs,
-    location="right",
-    pad=0.02,
-    shrink=0.8,
-)
-
-cbar.set_label(r"$\epsilon_{\rm pp}$")
-
-# --------------------------------------------------
-# Axis formatting
-# --------------------------------------------------
-
-for ax in axs:
-    ax.set_ylim(-10e-5, 50e-5)
-    ax.spines[["right", "top"]].set_visible(False)
-    ax.set_xlabel(r"$m$ ($M_\odot$)")
-
-ax_fixed.set_ylabel(r"$\nabla_{\rm L, composition}$")
-
-ax_fixed.set_title("Fixed mass range")
-ax_tracking.set_title("Mixing region")
-
-ax_fixed.set_xlim(0.3, 0.425)
-ax_fixed.set_xticks(np.arange(0.30, 0.426, 0.01))
-
-ax_tracking.set_xticks(np.arange(0.25, 0.426, 0.01))
-
-# --------------------------------------------------
-# Legend and title
-# --------------------------------------------------
-
-ax_fixed.legend(loc="lower left", frameon=False)
-
-title = fig.suptitle("")
-
-# --------------------------------------------------
-# Update function
-# --------------------------------------------------
-
-
-def update(i):
-
-    p = profiles_sorted[i]
-
-    mass = np.asarray(p.mass)
-    pp = np.asarray(p.pp, dtype=float)
-
-    # ----------------------------------------------
-    # Update lines
-    # ----------------------------------------------
-
-    for line1, line2 in lines:
-        line1.set_data(mass, p.gradL_composition_term)
-        line2.set_data(mass, p.he3)
-
-    # ----------------------------------------------
-    # Determine EOS transition boundaries
-    # ----------------------------------------------
-
-    full_skye = np.flatnonzero(p.eos_frac_Skye == 1)
-    any_skye = np.flatnonzero(p.eos_frac_Skye > 0)
-
-    if len(full_skye) and len(any_skye):
-
-        x_max = mass[full_skye[0]]
-        x_min = mass[any_skye[0]]
-
-        boundaries = [-2, x_max, x_min, 2]
-
-        # Update EOS strips
-        for spans in eos_spans:
-
-            for j, span in enumerate(spans):
-
-                left = boundaries[j]
-                right = boundaries[j + 1]
-
-                span.set_bounds(
-                    left,
-                    0.875,
-                    right - left,
-                    0.125,
-                )
-
-                span.set_visible(True)
-
-        # Update tracking panel
-        dx = x_min - x_max
-
-        ax_tracking.set_xlim(
-            x_max - 5 * dx,
-            x_min + 15 * dx,
-        )
-
-    else:
-        for spans in eos_spans:
-            for span in spans:
-                span.set_visible(False)
-
-    # ----------------------------------------------
-    # Update pp-chain strips
-    # ----------------------------------------------
-
-    # ----------------------------------------------
-    # Update pp-chain strips
-    # ----------------------------------------------
-
-    pp_plot = np.ma.masked_where(
-        ~np.isfinite(pp) | (pp <= 0),
-        pp,
-    )
-
-    for mesh in pp_meshes:
-        mesh.set_array(pp_plot)
-
-    # ----------------------------------------------
-    # Update title
-    # ----------------------------------------------
-
-    title.set_text(f"Age = {p.star_age:.4e} yr")
-
-    return (
-        [line for pair in lines for line in pair]
-        + [span for group in eos_spans for span in group]
-        + pp_meshes
-        + [title]
-    )
-
-
-# --------------------------------------------------
-# Animation
 # --------------------------------------------------
 
 ani = FuncAnimation(
