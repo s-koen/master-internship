@@ -18,6 +18,89 @@
 %Begin the document
 \begin{document}
 \setuplayout
+\section{Full grid}
+
+This week, the shorter initial period models also completed simulating.
+This means I now have a full grid ranging from RLOF \emph{before} significant dredge-up up to the models that just about miss RLOF with an emphesis on models that interact during the latter part of the TPAGB evolution.
+
+To start, let me show the [s/Fe] values that follow from the models.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-s-proc}
+\end{figure}
+
+I think this looks great.
+We clearly simulate the entire initial period range over which we can
+produce barium stars.
+The circles are datapoints obtained from the detailed \emph{MESA} simulations while the
+squares are datapoints that I got from the simple binary simulations.
+
+The black line gives a rough idea of the boundary between the regime where stars will undergo RLOF and
+the regime where stars only experience winds.
+
+Now in reality, systems close to the boundary in the RLOF region will experience relatively little RLOF because
+they lose most of their mass due to winds.
+Systems that lie close to the boundary in the No RLOF regime can still lose some of their mass because
+during thermal pulses the radius of the star might still get very close to the Roche radius.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-period-days}
+\end{figure}
+
+The figure above shows the log final period.
+We can clearly see that the wind only regime
+behaves quite different from the RLOF regime.
+The rough boundary based on the maximum ratio between the
+stars radius and the Roche lobe radius quite nicely separates these regimes.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-rl-frac}
+\end{figure}
+
+This plot shows the overfill ratios.
+It also clearly shows how I define the black line.
+It seems like the overfill ratio does not drastically change for many of the short initial period
+models.
+Only for some models that interact during a thermal pulse after significant mass loss, we see significantly
+larger overfill ratios.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-mdot}
+\end{figure}
+
+The figure above shows the maximum \(\dot{M}\) that is reached during the binary evolution.
+Clearly there is quite a big difference with initial period.
+For the masses, there is not
+such a clear relation.
+We see that there is sort of plateau where the initial period does not
+really affect the mass loss rate much.
+This is the region where winds are unimportant.
+
+Then, as the winds become important, the maximum mass loss rate quite quickly drops.
+
+We can also compare this to the quasi adiabatic mass loss rate from \citet{temmink2022}.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-mdot-crit}
+\end{figure}
+
+These are \emph{very} similar.
+This is because the critical mass loss rate at the moment of the
+maximum ratio, is pretty close to \(1\; M_\odot \) / yr.
+See the plot below.
+
+\nextpage
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-mdot-crit-2}
+\end{figure}
+
 \section{Test}
 
 My aim is to construct a way to predict the final period of a final ``simple'' binary calculation
@@ -32,7 +115,7 @@ radius.
 	\incplot{w38-direct}
 \end{figure}
 
-Now, let me see the final period for all of the models and compare them with detailed MESA models.
+Now, let me see the final period for all models and compare them with detailed MESA models.
 
 \begin{figure}[ht]
 	\centering
@@ -69,10 +152,211 @@ However, it seems quite difficult to, in advance, predict how much wind happens 
 	\incplot{w38-fracs-cum}
 \end{figure}
 
+In the figure below, I plot the final value of the evolving fraction that I show above.
+We can clearly see the same plateau as we saw in the figure for the mass loss rates.
+
 \begin{figure}[ht]
 	\centering
 	\incplot{w38-fracs-2}
 \end{figure}
+
+This plateau also aligns well with the region where the simple predictions are most accurate.
+
+However, this is not the best estimation we can make.
+Really, we should only consider how mass is lost
+\emph{after} the initial start of RLOF, because the simple binary already traces the first part of
+the evolution before RLOF.
+
+Taking this into account, we obtain:
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-fracs-3}
+\end{figure}
+This is a bit different, although not very different.
+
+If we use these values to constrain \(\alpha,\) \(\beta \) and \(\delta \) we should
+be able to get better predictions for the final period.
+
+For simplicity, I assume mass is lost in a continuous event starting at the start of RLOF and
+ending when the envelope is stripped.
+
+This means I do not simulate the more realistic scenario where mass is first lost through RLOF and at
+some point, wind takes over.
+
+\nextpage
+
+To start, we need to know how much of the mass that is lost through winds ends up at the accretor.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-beta}
+\end{figure}
+
+As expected this is about \(30\%\) for quite a large part of the parameter space.
+However, we also
+see that, as the winds increase, this average fraction drops.
+
+\(\varepsilon_\text{MT} = 1 - \alpha - \beta - \delta \).
+We know the relation between \(\beta \) and \(\delta \), and we know
+\(\varepsilon \).
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-eps}
+\end{figure}
+
+I think this plot makes a lot of sense.
+In the bottom left, where we can be quite certain nearly
+the entire envelope is stripped before significant winds in a single RLOF episode, we see
+accretion efficiencies of 0.1, exactly as we expect from my RLOF settings of \(\delta =0.1\) and \(\beta =0.8\).
+
+However, as we go to the regime where winds become important during (and after RLOF), we see that the accretion efficiency increases since
+the winds will have a larger accretion efficiency than my selected RLOF accretion efficiencies.
+
+Now let me actually compute \(\alpha , \beta \) and \(\delta \) using the wind mass losses and RLOF mass losses and the
+total amount of accreted material.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-fracs-4}
+\end{figure}
+
+This is already quite a lot better than the simple computation, however this requires some preliminary knowledge of the
+importance of winds.
+
+I think we can go one step further and use \citet{saladino2018} winds to evolve the orbits.
+
+This again requires some assumptions.
+Most importantly, I use a constant wind accretion coefficient \(\beta \) and specific
+angular momentum coefficient \(\eta \) based on some average.
+
+In \citet{saladino2018}, equation 3 gives the change in binary separation as a function of \(\dot{M} /M \) and \(q\).
+
+Let me rewrite this in terms of \(q\) only:
+\begin{align*}
+	\frac{\dot{a}}{a}                       & = -2 \frac{\dot{M}_\text{d} }{M_\text{d}} \l[1 - \beta q - \eta (1-\beta )(1+q) - (1-\beta ) \frac{q}{2(1+q)}\r]                          \\
+	\intertext{Using \(\dot{M}_\text{a} = -\beta \dot{M}_\text{d}  \) and \(q = M_\text{d} / M_\text{a}\)}
+	\ln q                                   & = \ln M_\text{d} - \ln M_\text{a} \implies \frac{\dot{q}}{q} =  \frac{\dot{M}_\text{d}}{M_\text{d}} - \frac{\dot{M}_\text{a}}{M_\text{a}} \\
+	\frac{\dot{q}}{q}                       & = \frac{\dot{M}_\text{d}}{M_\text{d}} + \beta q\frac{\dot{M}_\text{d} }{M_\text{d}} = \frac{\dot{M}_\text{d}}{M_\text{d}}(1+\beta q)      \\
+	\frac{\dot{M}_\text{d}}{M_\text{d}}     & = \frac{\dot{q}   }{(1+\beta q)q}                                                                                                         \\
+	\intertext{Substituting this into the expression for \(\dot{a}  / a \), we obtain}
+	\frac{\dot{a}}{a}                       & = -2 \frac{\dot{q}   }{(1+\beta q)q} \l[1 - \beta q - \eta (1-\beta )(1+q) - (1-\beta ) \frac{q}{2(1+q)}\r],                              \\
+	\intertext{or, equivalently}
+	\frac{\text{d} \ln a }{\text{d} \ln q } & =  -\frac{2}{1+\beta q} \l[1 - \beta q - \eta (1-\beta )(1+q) - (1-\beta ) \frac{q}{2(1+q)}\r],                                           \\
+\end{align*}
+
+I use scipy to find the partial fraction decomposition.
+
+\begin{minted}[fontsize=\small]{py}
+import sympy as sp
+
+q, b, e = sp.symbols("q b e")
+B = (
+    -2
+    * (1 - b * q - e * (1 - b) * (1 + q) - (1 - b) * q / (2 * (1 + q)))
+    / (q * (1 + b * q))
+)
+sp.apart(B, q)
+\end{minted}
+This gives:
+\begin{align*}
+	\frac{\text{d} \ln a}{\dd{q} } & = \frac{2\beta^{2}\eta  - 4\beta \eta  + 3\beta  + 2\eta }{\beta q + 1}+ \frac{1}{q + 1} - \frac{2(\beta \eta  - \eta  + 1)}{q}            \\
+	\intertext{Analogous to \citet{soberman1997}, let me define some coefficients which are independent of \(q\).}
+	\mathcal{D}                    & = 2\beta^{2}\eta  - 4\beta \eta  + 3\beta  + 2\eta \qq{and} \mathcal{E} = 2(\beta \eta  - \eta  + 1),                                      \\
+	\intertext{then the expression becomes}
+	\frac{\text{d}\ln a}{\dd{q} }  & = \frac{\mathcal{D} }{\beta q + 1}+ \frac{1}{q + 1} - \frac{\mathcal{E} }{q}.                                                              \\
+	\int_{a_0}^{a}  \,\dd{ \ln a}  & = \mathcal{D} \int_{q0}^{q}  \frac{\dd{q}}{\beta q + 1} + \int_{q_0}^{q}  \frac{\dd{q}}{q+1} + \mathcal{E}\int_{q_0}^{q}  \frac{\dd{q}}{q} \\
+	\ln (\frac{a}{a_{0} })         & = \frac{\mathcal{D}}{\beta }\ln (\frac{1 + \beta q}{1+\beta q_0}) + \ln (\frac{1+q}{ 1+q_0}) - 2 \mathcal{E} \ln (\frac{q}{q_0})           \\
+	\frac{a}{a_{0} }               & =\l( \frac{1 + \beta q}{1+\beta q_0}\r)^{\mathcal{D} / \beta }  \l( \frac{1+q}{ 1+q_0}\r) \l( \frac{q}{q_0}\r)^{-2 \mathcal{E} }
+\end{align*}
+
+I can use this and some constant value for \(\beta \) and \(\delta \) to get an estimate for the change in orbit
+due to winds.
+
+Below I show an example of a MESA model that just barely missed RLOF.
+
+\begin{figure}[ht]
+	\marginfignote{0}{This seems like a really good approximation \emph{if} we know how much mass is lost through RLOF and
+		what the approximate \(\beta \) and \(\delta \) values are.}
+	\centering
+	\incplot{w38-compare-simple-sal-mesa}
+\end{figure}
+
+Now my idea is to split the analytic approximation in two steps.
+Below I show \emph{why} I think this is a good approximation:
+\nextpage
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here I show orbital evolution and the fraction of the mass loss rate that is due to winds.
+		Clearly they are quite strongly related \emph{and} there is a clear pattern.
+		Stars will first experience wind mass loss,
+		then possibly a period of RLOF mass loss, then, towards the end, the stars lose mass due to winds again.
+	}
+	\centering
+	\incplot{w38-frac-wind}
+\end{figure}
+
+We should be able to capture this quite well with the following setup:
+\begin{enumd}
+	\item  Trace the orbital evolution using the simple binary until the point of RLOF.
+	\item  Analytically estimate the orbital effects of losing a mass \(M_{1} \) using RLOF with \(\varepsilon =0.1,\; \beta =0.8,\; \delta =0.1\) using the \citet{soberman1997} prescription.
+	\item  Analytically lose the remaining mass \(M_{2}\) using the \citet{saladino2018} winds.
+\end{enumd}
+
+\begin{figure}[ht]
+	\marginfignote{0}{Although it is not perfect, I am able to capture the shape of the orbital evolution quite well with
+		quite a simple setup.}
+	\marginfignote{6}{Another cool thing about this setup is that it ``only'' requires 1 unknown value that I cannot
+		get directly from the simple binary evolution.
+		This is the amount of mass that gets transferred because of RLOF.
+	}
+	\marginfignote{15}{My hope is that I can get hopefully get some estimate of this some way.}
+	\centering
+	\incplot{w38-mesa-vs-rlof-then-wind}
+\end{figure}
+
+But first, let me show how accurate this method is \emph{if} we know the amount of RLOF mass transfer perfectly.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-rlof-then-wind}
+\end{figure}
+This is really quite good!
+Now let me plot \(\delta M_\text{RLOF}\), the quantity that is the unknown in this case.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-m_rlof}
+\end{figure}
+
+This plot does not show a clear relation, but luckily I think we can do better.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-m_rlof-2}
+\end{figure}
+
+This plot replaces the axes with envelope and \(q\) values at the moment of RLOF.
+We now see a much clearer relation.
+
+In fact, the relation is even clearer if I plot the scatter in 3d and twist and twist the view.
+\vspace{-10pt}
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-3d-fit}
+\end{figure}
+\vspace{-30pt}
+Here I twist the 3d view in such a way that the blended plane collapses to a line.
+We can clearly see that this is an
+\emph{excellent} fit.
+
+The relation is as follows:
+\begin{equation*}
+	\delta M_\text{RLOF} = \max (-0.5508q + 0.8204 M_\text{env} + 0.5578,\; 0).
+\end{equation*}
+
+Now let me try to use this on uninformed simple binaries!
 
 \bibliography{master.bib}
 \end{document}

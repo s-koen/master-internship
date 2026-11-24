@@ -310,9 +310,12 @@ class MesaRun:
             )
             bin = Bins[0]
             m2 = np.interp(star.age, bin.age, bin.m2, np.nan, np.nan)
+            beta = np.interp(
+                star.age, bin.age[-len(bin.beta) :], bin.beta, np.nan, np.nan
+            )
             a = np.interp(star.age, bin.age, bin.a, np.nan, np.nan)
 
-            self.sb = SimpleBinary(a, m2)
+            self.sb = SimpleBinary(a, m2, beta)
             with open(f"{self.run_dir}/simple_binary.pkl", "wb") as f:
                 pickle.dump(self.sb, f, protocol=pickle.HIGHEST_PROTOCOL)
             return
@@ -500,6 +503,7 @@ class MesaRun:
 
 class SimpleBinary:
 
-    def __init__(self, a, m2):
+    def __init__(self, a, m2, beta):
         self.a = a
         self.m2 = m2
+        self.beta = beta

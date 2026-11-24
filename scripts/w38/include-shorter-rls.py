@@ -425,7 +425,23 @@ gridshort = MesaGrid(
 )
 grid.merge(gridshort)
 # %%
-grid.axes
+sgrid = SimpleGrid()
+
+for m in np.arange(1, 3.1, 0.1):
+    filename = f"/home/koen/master-internship/scripts/w37/cache/sgrid_m{m:.1f}.pkl"
+    with open(filename, "rb") as f:
+        models = pickle.load(f)
+    sgrid.models.extend(models)
+    print(m)
+
+sgrid.models.sort(
+    key=lambda model: (
+        model.params["m"],
+        model.params["R"],
+    )
+)
+
+
 # %%
 from scipy.optimize import brentq
 
@@ -654,7 +670,7 @@ axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
 plt.xlabel("Initial Roche lobe radius ($R_\\odot$)")
 plt.ylabel("Initial mass ($M_\\odot$)")
 # plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
-plt.savefig("/home/koen/LaTeX-setup/plots/w38-test.pgf", format="pgf", dpi=600)
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-s-proc.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
 
@@ -2397,3 +2413,1082 @@ plt.ylabel("Initial mass ($M_\\odot$)")
 plt.savefig("/home/koen/LaTeX-setup/plots/w38-mass-8.pgf", format="pgf", dpi=600)
 plt.show()
 plt.close()
+
+# %%
+
+cmap = "coolwarm"
+
+levels = 12
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+rlof_lims = []
+
+m_s = np.arange(1, 3.1, 0.1)
+for m_i in m_s:
+
+    models = []
+    radii = []
+    for r in grid.filter(m=m_i):
+        models.append(r)
+        radii.append(r.params["R"])
+
+    models = np.array(models)
+    radii = np.array(radii)
+    args = np.argsort(radii)
+    models = models[args]
+    radii = radii[args]
+
+    radii = list(radii)
+
+    for sm in sgrid.models:
+        if np.isclose(sm.params["m"], m_i):
+            radii.append(sm.params["R"])
+
+
+    counter = -1
+    for i, r in enumerate(models):
+        if np.nanmax(r.R / r.rl_1) > 1:
+            counter = i
+    rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+plt.plot(period_days(0.9, m_s, rlof_lims), m_s, c="k", zorder=100000)
+
+plt.annotate(
+    "No RLOF",
+    xy=(period_days(0.9, m_s, rlof_lims)[-1], 3.1),
+    xycoords="data",
+    xytext=(50, 0),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="<-", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+plt.annotate(
+    "RLOF",
+    xy=(period_days(0.9, m_s, rlof_lims)[-1], 3.1),
+    xycoords="data",
+    xytext=(-50, 0),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="<-", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(r.s)
+    z_mesa.append(r.s)
+
+
+for r in sgrid.models:
+
+    if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+        print(r)
+        continue
+    if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+        continue
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_simple.append(r.params["m"])
+    z.append(r.s)
+    z_simple.append(r.s)
+
+norm = TwoSlopeNorm(0.25, min(z), max(z))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="linear",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=10000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=20,
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=15,
+    marker="s",
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    norm=norm,
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="[s/Fe]")
+
+plt.xlim(np.min(x) - 20, 10e5)
+plt.ylim(np.min(y) - 0.05, 3.2)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-s-proc.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+cmap = "viridis"
+
+levels = 20
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+rlof_lims = []
+
+m_s = np.arange(1, 3.1, 0.1)
+for m_i in m_s:
+
+    models = []
+    radii = []
+    for r in grid.filter(m=m_i):
+        models.append(r)
+        radii.append(r.params["R"])
+
+    models = np.array(models)
+    radii = np.array(radii)
+    args = np.argsort(radii)
+    models = models[args]
+    radii = radii[args]
+
+    radii = list(radii)
+
+    for sm in sgrid.models:
+        if np.isclose(sm.params["m"], m_i):
+            radii.append(sm.params["R"])
+
+
+    counter = -1
+    for i, r in enumerate(models):
+        if np.nanmax(r.R / r.rl_1) > 1:
+            counter = i
+    rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+plt.plot(period_days(0.9, m_s, rlof_lims), m_s, c="k", zorder=100000)
+
+plt.annotate(
+    "No RLOF",
+    xy=(period_days(0.9, m_s, rlof_lims)[-1], 3.1),
+    xycoords="data",
+    xytext=(50, 0),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="<-", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+plt.annotate(
+    "RLOF",
+    xy=(period_days(0.9, m_s, rlof_lims)[-1], 3.1),
+    xycoords="data",
+    xytext=(-50, 0),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="<-", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(r.period_days[-1])
+    z_mesa.append(r.period_days[-1])
+
+
+for r in sgrid.models:
+
+    if r.params["R"] > 8000:
+        continue
+    if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+        print(r)
+        continue
+    if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+        continue
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_simple.append(r.params["m"])
+    z.append(r.period_days[-1])
+    z_simple.append(r.period_days[-1])
+
+z_simple = np.log10(z_simple)
+z_mesa = np.log10(z_mesa)
+z = np.log10(z)
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="linear",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=10000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+    vmin=min(z),
+    vmax=max(z)
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=15,
+    marker="s",
+    vmin=min(z),
+    vmax=max(z)
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    zorder=-20,
+    vmin=min(z),
+    vmax=max(z)
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$\log(P / \\textrm{days})$")
+
+plt.xlim(np.min(x) - 20, 2e5)
+plt.ylim(np.min(y) - 0.05, 3.2)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-period-days.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+cmap = "coolwarm"
+
+levels = 16
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+rlof_lims = []
+
+m_s = np.arange(1, 3.1, 0.1)
+for m_i in m_s:
+
+    models = []
+    radii = []
+    for r in grid.filter(m=m_i):
+        models.append(r)
+        radii.append(r.params["R"])
+
+    models = np.array(models)
+    radii = np.array(radii)
+    args = np.argsort(radii)
+    models = models[args]
+    radii = radii[args]
+
+    radii = list(radii)
+
+    for sm in sgrid.models:
+        if np.isclose(sm.params["m"], m_i):
+            radii.append(sm.params["R"])
+
+
+    counter = -1
+    for i, r in enumerate(models):
+        if np.nanmax(r.R / r.rl_1) > 1:
+            counter = i
+    rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+plt.plot(period_days(0.9, m_s, rlof_lims), m_s, c="k", zorder=100000)
+
+plt.annotate(
+    "No RLOF",
+    xy=(period_days(0.9, m_s, rlof_lims)[-1], 3.1),
+    xycoords="data",
+    xytext=(50, 0),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="<-", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+plt.annotate(
+    "RLOF",
+    xy=(period_days(0.9, m_s, rlof_lims)[-1], 3.1),
+    xycoords="data",
+    xytext=(-50, 0),
+    textcoords="offset points",
+    arrowprops=dict(arrowstyle="<-", linewidth=0.75, color="C9"),
+    fontsize=8,
+    va="center",
+    ha="center",
+)
+
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(np.nanmax(r.R / r.rl_1))
+    z_mesa.append(np.nanmax(r.R / r.rl_1))
+
+
+for r in sgrid.models:
+
+    if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+        print(r)
+        continue
+    if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+        continue
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_simple.append(r.params["m"])
+    z.append(np.nanmax(10**r.log_R / r.rl_1))
+    z_simple.append(np.nanmax(10**r.log_R / r.rl_1))
+
+norm = TwoSlopeNorm(1, min(z), max(z))
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="linear",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=10000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=20,
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    norm=norm,
+    s=15,
+    marker="s",
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    norm=norm,
+    zorder=-20,
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$\\textrm{max}(R_\\textrm{star} / R_\\textrm{RL})$")
+
+plt.xlim(np.min(x) - 20, 10e5)
+plt.ylim(np.min(y) - 0.05, 3.2)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-rl-frac.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+
+# %%
+
+rlof_lims = []
+
+m_s = np.arange(1, 3.1, 0.1)
+for m_i in m_s:
+
+    models = []
+    radii = []
+    for r in grid.filter(m=m_i):
+        models.append(r)
+        radii.append(r.params["R"])
+
+    models = np.array(models)
+    radii = np.array(radii)
+    args = np.argsort(radii)
+    models = models[args]
+    radii = radii[args]
+
+    radii = list(radii)
+
+    for sm in sgrid.models:
+        if np.isclose(sm.params["m"], m_i):
+            radii.append(sm.params["R"])
+
+
+    counter = -1
+    for i, r in enumerate(models):
+        if np.nanmax(r.R / r.rl_1) > 1:
+            counter = i
+    rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+print(rlof_lims)
+
+# %%
+
+cmap = "viridis"
+
+levels = 10
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+rlof_lims = []
+
+# m_s = np.arange(1, 3.1, 0.1)
+# for m_i in m_s:
+#
+#     models = []
+#     radii = []
+#     for r in grid.filter(m=m_i):
+#         models.append(r)
+#         radii.append(r.params["R"])
+#
+#     models = np.array(models)
+#     radii = np.array(radii)
+#     args = np.argsort(radii)
+#     models = models[args]
+#     radii = radii[args]
+#
+#     radii = list(radii)
+#
+#     for sm in sgrid.models:
+#         if np.isclose(sm.params["m"], m_i):
+#             radii.append(sm.params["R"])
+#
+#
+#     counter = -1
+#     for i, r in enumerate(models):
+#         if np.nanmax(r.R / r.rl_1) > 1:
+#             counter = i
+#     rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+# plt.plot(period_days(0.9, m_s, rlof_lims), m_s, c="k", zorder=100000)
+
+
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(np.nanmax(r.lg_mstar_dot_1))
+    z_mesa.append(np.nanmax(r.lg_mstar_dot_1))
+
+
+# for r in sgrid.models:
+#
+#     if r.params["R"] > 8000:
+#         continue
+#     if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+#         print(r)
+#         continue
+#     if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+#         continue
+#     x.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     y.append(r.params["m"])
+#     y_simple.append(r.params["m"])
+#     z.append(r.period_days[-1])
+#     z_simple.append(r.period_days[-1])
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="linear",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=10000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+    vmin=min(z),
+    vmax=max(z)
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=15,
+    marker="s",
+    vmin=min(z),
+    vmax=max(z)
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    zorder=-20,
+    vmin=min(z),
+    vmax=max(z)
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$\\textrm{max}(\\log(\\dot{M} / (M_\\odot\\textrm{ yr}^{-1})))$")
+
+plt.xlim(np.min(x) - 20, np.max(x) + 100)
+plt.ylim(np.min(y) - 0.05, 3.2)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-mdot.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+cmap = "viridis"
+
+levels = 10
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+rlof_lims = []
+
+# m_s = np.arange(1, 3.1, 0.1)
+# for m_i in m_s:
+#
+#     models = []
+#     radii = []
+#     for r in grid.filter(m=m_i):
+#         models.append(r)
+#         radii.append(r.params["R"])
+#
+#     models = np.array(models)
+#     radii = np.array(radii)
+#     args = np.argsort(radii)
+#     models = models[args]
+#     radii = radii[args]
+#
+#     radii = list(radii)
+#
+#     for sm in sgrid.models:
+#         if np.isclose(sm.params["m"], m_i):
+#             radii.append(sm.params["R"])
+#
+#
+#     counter = -1
+#     for i, r in enumerate(models):
+#         if np.nanmax(r.R / r.rl_1) > 1:
+#             counter = i
+#     rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+# plt.plot(period_days(0.9, m_s, rlof_lims), m_s, c="k", zorder=100000)
+
+
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+    z.append(np.log10(np.nanmax(10**r.lg_mstar_dot_1 / r.quasi_adiabatic_Mdot)))
+    z_mesa.append(np.log10(np.nanmax(10**r.lg_mstar_dot_1 / r.quasi_adiabatic_Mdot)))
+
+
+# for r in sgrid.models:
+#
+#     if r.params["R"] > 8000:
+#         continue
+#     if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+#         print(r)
+#         continue
+#     if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+#         continue
+#     x.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     y.append(r.params["m"])
+#     y_simple.append(r.params["m"])
+#     z.append(r.period_days[-1])
+#     z_simple.append(r.period_days[-1])
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="linear",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=10000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+    vmin=min(z),
+    vmax=max(z)
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=15,
+    marker="s",
+    vmin=min(z),
+    vmax=max(z)
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    zorder=-20,
+    vmin=min(z),
+    vmax=max(z)
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$\\log(\\textrm{max}(\\dot{M}_\\textrm{star} / \\dot{M}_\\textrm{crit}))$")
+
+plt.xlim(np.min(x) - 20, np.max(x) + 100)
+plt.ylim(np.min(y) - 0.05, 3.2)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-mdot-crit.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
+cmap = "viridis"
+
+levels = 10
+
+from scipy.interpolate import griddata
+
+fig, axs = plt.subplots(
+    1, 1, sharex=True, figsize=set_size(full), constrained_layout=True
+)
+
+
+rlof_lims = []
+
+# m_s = np.arange(1, 3.1, 0.1)
+# for m_i in m_s:
+#
+#     models = []
+#     radii = []
+#     for r in grid.filter(m=m_i):
+#         models.append(r)
+#         radii.append(r.params["R"])
+#
+#     models = np.array(models)
+#     radii = np.array(radii)
+#     args = np.argsort(radii)
+#     models = models[args]
+#     radii = radii[args]
+#
+#     radii = list(radii)
+#
+#     for sm in sgrid.models:
+#         if np.isclose(sm.params["m"], m_i):
+#             radii.append(sm.params["R"])
+#
+#
+#     counter = -1
+#     for i, r in enumerate(models):
+#         if np.nanmax(r.R / r.rl_1) > 1:
+#             counter = i
+#     rlof_lims.append((radii[counter ] + radii[counter+1]) / 2)
+
+# plt.plot(period_days(0.9, m_s, rlof_lims), m_s, c="k", zorder=100000)
+
+
+
+x = []
+x_mesa = []
+x_simple = []
+y = []
+y_mesa = []
+y_simple = []
+z = []
+z_mesa = []
+z_simple = []
+
+for r in grid.models:
+    if r.envelope_mass[-1] > 0.01:
+        continue
+
+    x.append(period_days(0.9, r.params["m"], r.params["R"]))
+    x_mesa.append(period_days(0.9, r.params["m"], r.params["R"]))
+    y.append(r.params["m"])
+    y_mesa.append(r.params["m"])
+
+    arg = np.argmax((10**r.lg_mstar_dot_1 / r.quasi_adiabatic_Mdot))
+    z.append((r.quasi_adiabatic_Mdot)[arg])
+    z_mesa.append((r.quasi_adiabatic_Mdot)[arg])
+
+
+# for r in sgrid.models:
+#
+#     if r.params["R"] > 8000:
+#         continue
+#     if r.age[-1] < get_star(m=r.params["m"]).age[-1]:
+#         print(r)
+#         continue
+#     if np.isclose(r.params["m"], 3) and r.params["R"] < 20000:
+#         continue
+#     x.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     x_simple.append(period_days(0.9, r.params["m"], r.params["R"]))
+#     y.append(r.params["m"])
+#     y_simple.append(r.params["m"])
+#     z.append(r.period_days[-1])
+#     z_simple.append(r.period_days[-1])
+
+xi = np.linspace(np.log10(min(x)), np.log10(max(x)), 1000)
+yi = np.linspace(min(y), max(y), 1000)
+X, Y = np.meshgrid(xi, yi)
+
+Z = griddata(
+    (np.log10(x), y),
+    z,
+    (X, Y),
+    method="linear",
+)
+
+plt.scatter(
+    x_mesa,
+    y_mesa,
+    c=z_mesa,
+    cmap=cmap,
+    zorder=10000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=20,
+    vmin=min(z),
+    vmax=max(z)
+)
+
+plt.scatter(
+    x_simple,
+    y_simple,
+    c=z_simple,
+    cmap=cmap,
+    zorder=1000000000,
+    edgecolor="w",
+    linewidth=0.75 / 2,
+    s=15,
+    marker="s",
+    vmin=min(z),
+    vmax=max(z)
+)
+
+c = axs.contourf(
+    10**X,
+    Y,
+    Z,
+    levels=levels,
+    cmap=cmap,
+    zorder=-20,
+    vmin=min(z),
+    vmax=max(z)
+)
+axs.set_rasterization_zorder(-10)
+axs.contour(10**X, Y, Z, levels=levels, colors="w", linewidths=0.75 / 2, zorder=-11)
+
+# for x in [1.4,1.8,2.2,2.6,3.0]:
+#     plt.axhline(x, c="w", alpha=0.5, linewidth=0.75/2, zorder=100)
+
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="x", which="both")
+plt.grid(c="w", alpha=0.5, linewidth=0.75 / 2, axis="y", which="major")
+
+
+plt.yticks(
+    [1.4, 1.8, 2.2, 2.6, 3.0],
+)
+plt.tick_params(color="w", axis="both", which="both")
+
+plt.colorbar(c, ax=axs, label="$\\dot{M}_\\textrm{crit}$ ($M_\\odot$ / yr)")
+
+plt.xlim(np.min(x) - 20, np.max(x) + 100)
+plt.ylim(np.min(y) - 0.05, 3.2)
+plt.xscale("log")
+
+axs.spines[["right", "top", "left", "bottom"]].set_visible(False)
+plt.xlabel("Initial Period (days)")
+plt.ylabel("Initial mass ($M_\\odot$)")
+# plt.title("$q=0.85,\\;\\varepsilon=0.1,\\;f_\\delta=0.1$")
+plt.savefig("/home/koen/LaTeX-setup/plots/w38-mdot-crit-2.pgf", format="pgf", dpi=600)
+plt.show()
+plt.close()
+
+# %%
+
