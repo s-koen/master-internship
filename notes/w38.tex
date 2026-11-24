@@ -20,12 +20,51 @@
 \setuplayout
 \section{Test}
 
+My aim is to construct a way to predict the final period of a final ``simple'' binary calculation
+based \emph{only} on the detailed single star model.
+
+The easiest and most straightforward way to compute the final period is to use the simple binary
+to trace the orbital evolution up to the point where the radius of the star is larger than the Roche lobe
+radius.
+
 \begin{figure}[ht]
+	\centering
+	\incplot{w38-direct}
+\end{figure}
+
+Now, let me see the final period for all of the models and compare them with detailed MESA models.
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-fracs-5}
+\end{figure}
+
+This is not great.
+We see quite large differences probably largely due to the negligence of wind
+during or after RLOF.
+
+However, it seems quite difficult to, in advance, predict how much wind happens during and after RLOF.
+
+\begin{figure}[ht]
+	\marginfignote{0}{Here I show the fraction of the mass loss rate that is caused by wind versus the total
+		mass loss rate.}
+	\marginfignote{6}{The dots denote the rough start of RLOF.
+		This is at the start of the most important
+		``dip'' in this fraction.
+	}
+	\marginfignote{12}{Clearly, later models never really reach fractions close to 0, meaning winds will always
+		remain important.}
 	\centering
 	\incplot{w38-fracs}
 \end{figure}
 
 \begin{figure}[ht]
+	\marginfignote{0}{Here, I plot the change in mass due to winds and the total mass loss from \(q=0\) to some
+		value \(q\).
+		Here we can again clearly see that the fraction drops below unity once RLOF starts.
+	}
+	\marginfignote{9}{Now we again see that for the larger initial models, the fraction does not
+		decrease to 0.}
 	\centering
 	\incplot{w38-fracs-cum}
 \end{figure}
