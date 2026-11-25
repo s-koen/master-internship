@@ -320,7 +320,7 @@ But first, let me show how accurate this method is \emph{if} we know the amount 
 
 \begin{figure}[ht]
 	\centering
-	\incplot{w38-rlof-then-wind}
+	\incplot{w38-a-orbit-two-way-vs-mesa}
 \end{figure}
 This is really quite good!
 Now let me plot \(\delta M_\text{RLOF}\), the quantity that is the unknown in this case.
@@ -356,7 +356,23 @@ The relation is as follows:
 	\delta M_\text{RLOF} = \max (-0.5508q + 0.8204 M_\text{env} + 0.5578,\; 0).
 \end{equation*}
 
-Now let me try to use this on uninformed simple binaries!
+\nextpage
+
+Now let me try to use this on uninformed simple binaries and the fit!
+
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-uninformed}
+\end{figure}
+
+This is nice!
+
+As a final test, let me plot the period that I get from this uninformed binaries and the fit on the left,
+and the detailed MESA computations on the right:
+\begin{figure}[ht]
+	\centering
+	\incplot{w38-uninformed-final-period}
+\end{figure}
 
 \bibliography{master.bib}
 \end{document}
